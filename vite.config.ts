@@ -143,6 +143,11 @@ function captureSaver(): Plugin {
 
 export default defineConfig({
   base,
+  // Allow tunneling the dev server through ngrok (e.g. to test on a real phone).
+  // A leading dot matches the domain and all its subdomains, so any *.ngrok-free.app URL works.
+  server: {
+    allowedHosts: ['.ngrok-free.app'],
+  },
   // Ship only the app. ocr-test.html (a dev-only OCR harness) is still served in
   // `vite dev` but is left out of the production build.
   build: {
