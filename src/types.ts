@@ -99,6 +99,8 @@ export interface OcrResult {
 export interface OcrEngine {
   init(onProgress?: (ratio: number) => void): Promise<void>;
   recognize(source: HTMLCanvasElement): Promise<OcrResult>;
+  /** OCR several crops in parallel (one per located code box). */
+  recognizeMany(sources: HTMLCanvasElement[]): Promise<OcrResult[]>;
   terminate(): Promise<void>;
 }
 
@@ -121,8 +123,12 @@ export interface AutoCapture {
 
 export interface AutoCaptureDeps {
   source: FrameSource;
-  /** Called once per settled sticker with a freshly captured frame. */
-  onCapture: (frame: HTMLCanvasElement) => void | Promise<void>;
+  /** Called for each frame of a settled sticker's burst. Resolve `true` to stop the
+   *  burst early (a result was confirmed); `false`/void to keep reading more frames. */
+  onCapture: (frame: HTMLCanvasElement) => boolean | void | Promise<boolean | void>;
+  /** Called once when a new sticker settles, before its first burst frame — the
+   *  place to reset any per-sticker accumulation (e.g. the multi-frame confirmer). */
+  onBurstStart?: () => void;
 }
 
 // ---------- Storage ----------

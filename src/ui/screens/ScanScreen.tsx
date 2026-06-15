@@ -11,7 +11,8 @@ import type {
 import { CONFIG } from '../../config';
 import { checklist } from '../../data/checklist';
 import { pt } from '../../i18n/pt';
-import { matchCode, matchLines } from '../../domain/matching';
+import { matchCode, bestMatchFromText } from '../../domain/matching';
+import { createConfirmer } from '../../domain/confirm';
 import { createOcrEngine } from '../../ocr/engine';
 import { createCameraSource } from '../../ocr/frameSource';
 import { findCodeBoxes, codeCropCandidates, stackCrops } from '../../ocr/locate';
@@ -54,6 +55,8 @@ export function ScanScreen({ session, collection, settings, onPersist, onFinish 
   // Serializes every OCR call (auto-capture, photo, manual share one worker) so a
   // user-triggered read is queued behind a live one instead of being dropped.
   const recognizeChainRef = useRef<Promise<void>>(Promise.resolve());
+  // Per-sticker agreement across the burst of frames; reset when a new sticker settles.
+  const confirmerRef = useRef(createConfirmer(CONFIG.match.confirmations));
   const audioCtxRef = useRef<AudioContext | null>(null);
   const flashCounter = useRef(0);
 
@@ -221,48 +224,83 @@ export function ScanScreen({ session, collection, settings, onPersist, onFinish 
     return ocrInitRef.current;
   };
 
-  /** Recognize a drawn canvas, serialized so concurrent reads queue (one worker).
-   *  Returns the chained promise so callers (auto-capture, photo) can await it. */
-  const recognizeCanvas = (canvas: HTMLCanvasElement): Promise<void> => {
-    const job = recognizeChainRef.current.then(async () => {
+  /**
+   * Recognize a drawn canvas, serialized so concurrent reads queue (one worker).
+   * `confirm` (the live burst) only commits a code once the multi-frame confirmer
+   * agrees, and stays silent on a miss so empty frames don't spam "try again".
+   * `!confirm` (an explicit photo/tap) commits a single read and does report a miss.
+   * Resolves true once at least one code is committed — the burst stops on that.
+   */
+  const recognizeCanvas = (
+    canvas: HTMLCanvasElement,
+    opts: { confirm: boolean; silent: boolean },
+  ): Promise<boolean> => {
+    const job = recognizeChainRef.current.then(async (): Promise<boolean> => {
       const ready = await ensureOcr();
       const ocr = ocrRef.current;
-      if (!ready || !ocr) return;
+      if (!ready || !ocr) return false;
       try {
         if (DEBUG) postDebugImg('pixel-' + Date.now(), canvas);
         // Yield once so the camera preview can paint before the synchronous
         // detection work (cheap, but avoids a dropped frame on low-end phones).
         await new Promise((r) => setTimeout(r, 0));
-        // Locate the printed code box(es) and OCR only those crops, stacked into one
-        // image — far faster and more accurate than scanning the whole frame. Handles
-        // several backs at once, and each box yields upright + flipped crops so codes
-        // that aren't upright still read.
+        // Locate the printed code box(es) and OCR only those crops — far faster and
+        // more accurate than the whole frame. Each box yields an upright + a flipped
+        // crop (so rotated codes read), and every crop is OCR'd ON ITS OWN: stacking
+        // them confuses Tesseract's layout analysis and drops thin glyphs (CIV→CV).
+        // The small crops run in parallel across a worker pool (~tens of ms each).
         const boxes = findCodeBoxes(canvas);
         const crops = boxes.flatMap((b) => codeCropCandidates(canvas, b));
-        let matches: MatchResult[] = [];
+        const resolved: MatchResult[] = [];
         let rawText = '';
         if (crops.length) {
-          const stack = stackCrops(crops);
-          if (DEBUG) postDebugImg('stack-live', stack);
-          const result = await ocr.recognize(stack);
-          rawText = result.text.replace(/\s+/g, ' ').trim();
-          matches = matchLines(result.text, checklist);
+          if (DEBUG) postDebugImg('stack-live', stackCrops(crops));
+          const results = await ocr.recognizeMany(crops);
+          rawText = results
+            .map((r) => r.text.replace(/\s+/g, ' ').trim())
+            .filter(Boolean)
+            .join(' | ');
+          const seen = new Set<string>();
+          for (const r of results) {
+            const m = bestMatchFromText(r.text, checklist);
+            if (m?.entry && !seen.has(m.entry.code)) {
+              seen.add(m.entry.code);
+              resolved.push(m);
+            }
+          }
         }
+
+        // Live burst: only act on codes that agree across frames. Single shot: trust
+        // the one read (there is no next frame to confirm against).
+        let toCommit = resolved;
+        if (opts.confirm) {
+          const ok = new Set(confirmerRef.current.add(resolved.map((m) => m.entry!.code)));
+          toCommit = resolved.filter((m) => ok.has(m.entry!.code));
+        }
+
         if (DEBUG) {
           setDebugText(
             `${boxes.length}cx "${rawText.slice(0, 70)}" → ${
-              matches.map((m) => m.entry?.code).join(', ') || '(nenhum)'
-            }`,
+              resolved.map((m) => m.entry?.code).join(', ') || '(nenhum)'
+            }${opts.confirm ? ` ✓[${toCommit.map((m) => m.entry?.code).join(',') || '-'}]` : ''}`,
           );
         }
-        handleMatches(matches);
+
+        if (toCommit.length > 0) {
+          handleMatches(toCommit);
+          return true;
+        }
+        if (!opts.silent) handleMatches([]); // explicit read that found nothing
+        return false;
       } catch {
-        // A bad read shouldn't break the loop — but still give feedback (a thrown
-        // error on an explicit photo/manual tap would otherwise leave a dead UI).
-        handleMatches([]);
+        if (!opts.silent) handleMatches([]);
+        return false;
       }
     });
-    recognizeChainRef.current = job.catch(() => {});
+    recognizeChainRef.current = job.then(
+      () => {},
+      () => {},
+    );
     return job;
   };
 
@@ -292,7 +330,8 @@ export function ScanScreen({ session, collection, settings, onPersist, onFinish 
 
       const capture = createAutoCapture({
         source,
-        onCapture: (frame) => recognizeCanvas(frame),
+        onBurstStart: () => confirmerRef.current.reset(),
+        onCapture: (frame) => recognizeCanvas(frame, { confirm: true, silent: true }),
       });
       captureRef.current = capture;
       capture.start();
@@ -342,7 +381,7 @@ export function ScanScreen({ session, collection, settings, onPersist, onFinish 
       const ctx = canvas.getContext('2d', { willReadFrequently: true });
       if (!ctx) return;
       ctx.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
-      await recognizeCanvas(canvas);
+      await recognizeCanvas(canvas, { confirm: false, silent: false });
     } finally {
       setAnalyzing(false);
     }
@@ -367,7 +406,7 @@ export function ScanScreen({ session, collection, settings, onPersist, onFinish 
     if (!source || !source.isReady()) return;
     const canvas = document.createElement('canvas');
     if (!source.drawTo(canvas, CONFIG.ocr.maxWidth)) return;
-    void recognizeCanvas(canvas);
+    void recognizeCanvas(canvas, { confirm: false, silent: false });
   };
 
   const retryCamera = () => {

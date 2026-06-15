@@ -98,15 +98,25 @@ export function createAutoCapture(deps: AutoCaptureDeps): AutoCapture {
   }
 
   async function capture() {
-    if (!deps.source.drawTo(captureCanvas, CONFIG.ocr.maxWidth)) return;
+    deps.onBurstStart?.();
+    const { burstFrames, burstIntervalMs } = CONFIG.capture;
     try {
-      await deps.onCapture(captureCanvas);
+      // Read several frames of the held sticker until a result is confirmed (or we
+      // run out of attempts). One frame can mis-read; agreement across frames can't.
+      for (let attempt = 0; attempt < burstFrames; attempt++) {
+        if (!deps.source.drawTo(captureCanvas, CONFIG.ocr.maxWidth)) break;
+        const done = await deps.onCapture(captureCanvas);
+        if (done === true) break;
+        if (attempt < burstFrames - 1) await delay(burstIntervalMs);
+      }
     } finally {
       state = 'locked';
       sawMotion = false;
       stillSince = null;
     }
   }
+
+  const delay = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
   // Self-scheduling loop: the next sample is queued only after the current tick
   // (including any awaited capture) finishes, so ticks can't pile up under load

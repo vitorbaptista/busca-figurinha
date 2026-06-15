@@ -19,9 +19,18 @@ export const CONFIG = {
     rearmThreshold: 0.06,
     /** How often the capture loop samples the frame difference (ms). */
     sampleIntervalMs: 120,
+    /** While a sticker is held still, OCR up to this many frames looking for an
+     *  agreeing read before giving up and waiting for the next sticker. */
+    burstFrames: 5,
+    /** Small gap between burst frames so the preview can paint and autofocus can
+     *  settle between reads. */
+    burstIntervalMs: 70,
   },
   match: {
     /** Max Levenshtein distance for an OCR token to snap to a real code. */
     maxDistance: 1,
+    /** A code must be read on this many frames of one hold before we commit it —
+     *  filters a single blurry frame that mis-reads one valid code as another. */
+    confirmations: 2,
   },
 } as const;
