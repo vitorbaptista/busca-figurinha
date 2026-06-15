@@ -11,6 +11,7 @@ import { resolve } from 'node:path';
 import puppeteer from 'puppeteer-core';
 
 const QUICK = process.argv.includes('--quick');
+const LATENCY = process.argv.includes('--latency');
 const CHROME =
   ['/usr/bin/google-chrome-stable', '/usr/bin/chromium', '/usr/bin/chromium-browser'].find((p) => {
     try {
@@ -56,7 +57,8 @@ try {
   });
   const page = await browser.newPage();
   page.on('pageerror', (e) => console.error('[page error]', e.message));
-  const url = `http://localhost:${server.port}/bench.html${QUICK ? '?quick' : ''}`;
+  const q = LATENCY ? '?latency' : QUICK ? '?quick' : '';
+  const url = `http://localhost:${server.port}/bench.html${q}`;
   await page.goto(url, { waitUntil: 'load', timeout: 60000 });
   await page.waitForFunction(() => document.title === 'bench done', { timeout: TIMEOUT_MS });
   const report = readFileSync(resolve('captures', 'bench-results.md'), 'utf8');

@@ -20,10 +20,26 @@ import { checklist } from '../data/checklist';
 import { CONFIG } from '../config';
 
 const QUICK = new URLSearchParams(location.search).has('quick');
+// `?latency` measures how FAST the pipeline runs (not how accurate) over the real
+// front-camera video frames — the closest thing we have to live conditions.
+const LATENCY = new URLSearchParams(location.search).has('latency');
 
 const root = document.getElementById('out')!;
 const status = document.createElement('div');
 root.replaceChildren(status);
+
+/** avg / median / p90 / max of a list of ms timings, rounded. */
+function stats(xs: number[]): { avg: number; median: number; p90: number; max: number } {
+  if (!xs.length) return { avg: 0, median: 0, p90: 0, max: 0 };
+  const s = [...xs].sort((a, b) => a - b);
+  const at = (p: number) => s[Math.min(s.length - 1, Math.floor(p * s.length))];
+  return {
+    avg: Math.round(xs.reduce((a, b) => a + b, 0) / xs.length),
+    median: Math.round(at(0.5)),
+    p90: Math.round(at(0.9)),
+    max: Math.round(s[s.length - 1]),
+  };
+}
 
 /** Pull the expected codes out of a dataset filename (the labels). */
 function labelsOf(filename: string): string[] {
@@ -223,6 +239,60 @@ const minus = (a: Set<string>, b: Set<string>) => [...a].filter((x) => !b.has(x)
     videos: string[];
     frames: string[];
   };
+
+  // ---- Latency mode (?latency): how FAST is one pipeline pass on real frames? ----
+  if (LATENCY) {
+    const det: number[] = [];
+    const ocrT: number[] = [];
+    const total: number[] = [];
+    const cropsN: number[] = [];
+    const withCode: number[] = []; // total ms only for frames that actually resolved a code
+    for (let i = 0; i < list.frames.length; i++) {
+      status.textContent = `latency ${i + 1}/${list.frames.length}…`;
+      const frame = await loadImage(`/dataset/frames/${list.frames[i]}`);
+      const t0 = performance.now();
+      const boxes = findCodeBoxes(frame);
+      const t1 = performance.now();
+      const crops = boxes.flatMap((b) => codeCropCandidates(frame, b));
+      const results = crops.length ? await ocr.recognizeMany(crops) : [];
+      const t2 = performance.now();
+      const got = results.some((r) => bestMatchFromText(r.text, checklist)?.entry);
+      if (i >= 3) {
+        // drop first 3 as warm-up (JIT / first OCR dispatch)
+        det.push(t1 - t0);
+        ocrT.push(t2 - t1);
+        total.push(t2 - t0);
+        cropsN.push(crops.length);
+        if (got) withCode.push(t2 - t0);
+      }
+    }
+    const row = (label: string, s: ReturnType<typeof stats>) =>
+      `| ${label} | ${s.avg} | ${s.median} | ${s.p90} | ${s.max} |`;
+    const avgCrops = cropsN.length ? (cropsN.reduce((a, b) => a + b, 0) / cropsN.length).toFixed(1) : '0';
+    const md = [
+      '# Sticker detection LATENCY benchmark',
+      '',
+      `One pipeline pass (findCodeBoxes → codeCropCandidates → recognizeMany) over **${total.length}**`,
+      `real front-camera video frames; first 3 dropped as warm-up. All times in **ms**.`,
+      '',
+      '| stage (ms) | avg | median | p90 | max |',
+      '|---|---|---|---|---|',
+      row('detection', stats(det)),
+      row('OCR', stats(ocrT)),
+      row('**total / frame**', stats(total)),
+      row(`total — frames with a code (${withCode.length})`, stats(withCode)),
+      '',
+      `- avg crops OCR'd per frame: **${avgCrops}** (this is what dominates the OCR time).`,
+      `- the live app may run several passes before a code commits, so user-felt latency ≈ this × a few.`,
+      '',
+      '_done_',
+    ].join('\n');
+    await fetch('/bench-log', { method: 'POST', body: md }).catch(() => {});
+    await ocr.terminate();
+    status.textContent = 'latency done';
+    document.title = 'bench done';
+    return;
+  }
 
   // ---- 1. Static images: single-frame recall ----
   const staticMd = ['## Static images (single-frame recall)', ''];
