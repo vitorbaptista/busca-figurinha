@@ -6,10 +6,12 @@ type Worker = Awaited<ReturnType<typeof createWorker>>;
 
 /** How many Tesseract workers to run in parallel. Each located code-box crop is
  *  OCR'd on its own (stacking crops confuses the layout analysis and drops thin
- *  glyphs like the "I" in CIV), so a small pool reads several crops at once. */
+ *  glyphs like the "I" in CIV), so a small pool reads several crops at once. Capped
+ *  at 2: the sparse-ink gate makes most crops return instantly, so only a couple do
+ *  real work — and each worker costs ~10–15MB, which matters on low-end phones. */
 function workerCount(): number {
   const cores = typeof navigator !== 'undefined' ? navigator.hardwareConcurrency || 2 : 2;
-  return Math.max(1, Math.min(3, cores - 1));
+  return Math.max(1, Math.min(2, cores - 1));
 }
 
 /** Tesseract.js engine: a small scheduler of workers, created lazily on init(). */
