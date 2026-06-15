@@ -19,7 +19,14 @@ export function createOcrEngine(): OcrEngine {
       });
       await worker.setParameters({
         tessedit_char_whitelist: CONFIG.ocr.charWhitelist,
-        tessedit_pageseg_mode: PSM.SPARSE_TEXT,
+        // We OCR a small image built from located code-box crops stacked into rows
+        // (one code per line). A uniform-block mode reads them in a single pass —
+        // far faster and more accurate than scanning the whole frame for sparse text.
+        tessedit_pageseg_mode: PSM.SINGLE_BLOCK,
+        // Codes aren't dictionary words; disable the language model so Tesseract
+        // doesn't "correct" e.g. CIV→CV based on English word priors.
+        load_system_dawg: '0',
+        load_freq_dawg: '0',
       });
     },
 

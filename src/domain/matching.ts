@@ -34,13 +34,18 @@ export function extractCodes(text: string): string[] {
   return out;
 }
 
+/** Tokens shorter than this are too ambiguous to auto-correct (e.g. "SE3" could
+ *  be many codes); we only accept them on an exact match. Real codes are 4+ chars. */
+const MIN_CORRECT_LEN = 4;
+
 /**
  * Match a single raw token against the checklist. Exact lookup first; otherwise the
- * nearest SAME-LENGTH code within `maxDistance` edits — i.e. we only auto-correct
- * character substitutions (C→G, I→1), not insertions/deletions. That keeps good
- * fixes like "GIV12"→"CIV12" while refusing to snap a garbled short read like "SE3"
- * onto a real code ("SEN3"): for a trading app a confident wrong answer is worse
- * than a miss. Ties keep the first entry in list order.
+ * UNIQUE nearest same-length code within `maxDistance` edits (a single-character
+ * substitution, e.g. "GIV12"→"CIV12"). Two guards keep us from confident wrong
+ * answers — worse than a miss for a trading app:
+ *  - tokens shorter than 4 chars are only matched exactly ("SE3" stays unknown);
+ *  - if two real codes are equally near, it's ambiguous → unknown ("CV12" is one
+ *    edit from both CIV12 and CPV12; "EGYA" from EGY1..EGY9). We never guess.
  */
 export function matchCode(
   raw: string,
@@ -52,19 +57,31 @@ export function matchCode(
   const exact = list.byCode.get(normalized);
   if (exact) return { raw: normalized, status: 'exact', entry: exact, distance: 0 };
 
+  if (normalized.length < MIN_CORRECT_LEN) {
+    return { raw: normalized, status: 'unknown', entry: null, distance: -1 };
+  }
+
   let bestEntry = null as MatchResult['entry'];
   let bestDistance = Infinity;
+  let tieAtBest = 0;
 
   for (const entry of list.entries) {
-    if (entry.code.length !== normalized.length) continue;
+    if (entry.code.length !== normalized.length) continue; // substitutions only
     const distance = levenshtein(normalized, entry.code);
-    if (distance <= maxDistance && distance < bestDistance) {
+    if (distance > maxDistance) continue;
+    if (distance < bestDistance) {
       bestEntry = entry;
       bestDistance = distance;
+      tieAtBest = 1;
+    } else if (distance === bestDistance) {
+      tieAtBest++;
     }
   }
 
-  if (bestEntry) return { raw: normalized, status: 'corrected', entry: bestEntry, distance: bestDistance };
+  // Accept only a single, unambiguous nearest code.
+  if (bestEntry && tieAtBest === 1) {
+    return { raw: normalized, status: 'corrected', entry: bestEntry, distance: bestDistance };
+  }
   return { raw: normalized, status: 'unknown', entry: null, distance: -1 };
 }
 
@@ -95,6 +112,31 @@ export function bestMatchFromText(
     else if (result.status === 'corrected' && result.distance < best.distance) best = result;
   }
   return best;
+}
+
+/**
+ * Match a block of OCR text where each line is one located code-box crop. Each line
+ * is matched on its own and long lines are skipped, so legal-text crops can't
+ * contribute a spurious code substring. Returns one MatchResult per unique entry.
+ */
+export function matchLines(
+  text: string,
+  list: Checklist,
+  maxDistance: number = CONFIG.match.maxDistance,
+): MatchResult[] {
+  const seen = new Set<string>();
+  const results: MatchResult[] = [];
+  for (const line of text.split('\n')) {
+    const norm = normalizeCode(line);
+    // A real code line is short; skip blank and long (legal-text) lines.
+    if (norm.length < 2 || norm.length > 8) continue;
+    const m = bestMatchFromText(line, list, maxDistance);
+    if (m?.entry && !seen.has(m.entry.code)) {
+      seen.add(m.entry.code);
+      results.push(m);
+    }
+  }
+  return results;
 }
 
 /**

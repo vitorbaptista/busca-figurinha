@@ -119,24 +119,24 @@ describe('matchCode', () => {
     expect(r.entry?.code).toBe('FWC11');
   });
 
-  it('refuses different-length corrections but keeps same-length ones', () => {
-    // "SE3" (3 chars) is a garbled read — it must NOT snap to a real 4-char code
-    // like "SEN3" (that confident-wrong-answer is worse than a miss).
+  it('only corrects to a UNIQUE near code; rejects ambiguous or short reads', () => {
+    // Unique single substitution is fixed (only CIV12 is one edit from GIV12).
+    expect(matchCode('GIV12', checklist).entry?.code).toBe('CIV12');
+    // "CV12" is one edit from BOTH CIV12 and CPV12 — ambiguous, so don't guess.
+    expect(matchCode('CV12', checklist).status).toBe('unknown');
+    // "EGYA" is one edit from EGY1..EGY9 — ambiguous.
+    expect(matchCode('EGYA', checklist).status).toBe('unknown');
+    // "SE3" (3 chars) is too short to correct safely.
     expect(matchCode('SE3', checklist).status).toBe('unknown');
-    // A same-length single substitution (N read as M) still corrects.
-    const r = matchCode('SEM3', checklist);
-    expect(r.status).toBe('corrected');
-    expect(r.entry?.code).toBe('SEN3');
   });
 
   it('works against the real baked-in checklist', () => {
     expect(matchCode('CIV12', checklist).status).toBe('exact');
-    // 'C1V12' is one edit from several real codes; matchCode should still snap
-    // to a real entry (the chosen one depends on list order, which is fine).
-    expect(matchCode('C1V12', checklist).status).toBe('corrected');
-    // A wrong prefix letter corrects back to the right code (distance 1).
-    expect(matchCode('CIW12', checklist).entry?.code).toBe('CIV12');
     expect(matchCode('00', checklist).status).toBe('exact');
+    // A unique single substitution corrects (only CIV12 is one edit from GIV12).
+    expect(matchCode('GIV12', checklist).entry?.code).toBe('CIV12');
+    // Near-collisions make many 1-edit reads ambiguous → unknown (never a wrong guess).
+    expect(matchCode('C1V12', checklist).status).toBe('unknown');
   });
 });
 

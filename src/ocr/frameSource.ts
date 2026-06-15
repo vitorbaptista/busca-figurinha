@@ -17,8 +17,11 @@ export function createCameraSource(opts?: { facingMode?: string }): FrameSource 
       stream = await navigator.mediaDevices.getUserMedia({
         video: {
           facingMode: opts?.facingMode ?? 'environment',
-          width: { ideal: 1280 },
-          height: { ideal: 720 },
+          // High resolution so a small sticker code still has enough pixels to read
+          // (especially with several backs in view). `ideal` negotiates down if the
+          // camera can't provide it.
+          width: { ideal: 1920 },
+          height: { ideal: 1080 },
         },
         audio: false,
       });

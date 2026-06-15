@@ -8,7 +8,7 @@ export const CONFIG = {
     /** Width the captured frame is OCR'd at. High enough that several sticker codes
      *  stay legible when multiple backs are in view; only the on-demand capture pays
      *  this cost — the frame-difference loop samples a tiny 160px canvas. */
-    maxWidth: 1280,
+    maxWidth: 1920,
   },
   capture: {
     /** Frame must stay still this long before we OCR it. */

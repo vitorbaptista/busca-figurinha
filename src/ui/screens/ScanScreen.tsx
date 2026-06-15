@@ -11,10 +11,10 @@ import type {
 import { CONFIG } from '../../config';
 import { checklist } from '../../data/checklist';
 import { pt } from '../../i18n/pt';
-import { matchCode, matchAllFromText } from '../../domain/matching';
+import { matchCode, matchLines } from '../../domain/matching';
 import { createOcrEngine } from '../../ocr/engine';
 import { createCameraSource } from '../../ocr/frameSource';
-import { preprocess } from '../../ocr/preprocess';
+import { findCodeBoxes, codeCropCandidates, stackCrops } from '../../ocr/locate';
 import { createAutoCapture } from '../../ocr/autoCapture';
 import { Flash, type FlashState } from '../components/Flash';
 import { MultiResult, type ScanResultItem } from '../components/MultiResult';
@@ -26,6 +26,10 @@ interface ScanScreenProps {
   onPersist: () => void;
   onFinish: () => void;
 }
+
+// Opt-in debug readout (open with ?debug): shows raw OCR text + matched codes and
+// makes tapping the camera trigger an immediate capture. No effect without the flag.
+const DEBUG = typeof location !== 'undefined' && new URLSearchParams(location.search).has('debug');
 
 type CameraState = 'loading' | 'ready' | 'denied';
 
@@ -65,6 +69,7 @@ export function ScanScreen({ session, collection, settings, onPersist, onFinish 
   const [showManual, setShowManual] = useState(false);
   const [manualValue, setManualValue] = useState('');
   const [analyzing, setAnalyzing] = useState(false);
+  const [debugText, setDebugText] = useState('');
 
   // ---------- Result handling shared by all input paths ----------
 
@@ -216,9 +221,30 @@ export function ScanScreen({ session, collection, settings, onPersist, onFinish 
       const ocr = ocrRef.current;
       if (!ready || !ocr) return;
       try {
-        preprocess(canvas);
-        const result = await ocr.recognize(canvas);
-        handleMatches(matchAllFromText(result.text, checklist));
+        if (DEBUG) postDebugImg('pixel-' + Date.now(), canvas);
+        // Locate the printed code box(es) and OCR only those crops, stacked into one
+        // image — far faster and more accurate than scanning the whole frame. Handles
+        // several backs at once, and each box yields upright + flipped crops so codes
+        // that aren't upright still read.
+        const boxes = findCodeBoxes(canvas);
+        const crops = boxes.flatMap((b) => codeCropCandidates(canvas, b));
+        let matches: MatchResult[] = [];
+        let rawText = '';
+        if (crops.length) {
+          const stack = stackCrops(crops);
+          if (DEBUG) postDebugImg('stack-live', stack);
+          const result = await ocr.recognize(stack);
+          rawText = result.text.replace(/\s+/g, ' ').trim();
+          matches = matchLines(result.text, checklist);
+        }
+        if (DEBUG) {
+          setDebugText(
+            `${boxes.length}cx "${rawText.slice(0, 70)}" → ${
+              matches.map((m) => m.entry?.code).join(', ') || '(nenhum)'
+            }`,
+          );
+        }
+        handleMatches(matches);
       } catch {
         // A single bad read shouldn't break the loop.
       }
@@ -309,6 +335,28 @@ export function ScanScreen({ session, collection, settings, onPersist, onFinish 
     }
   };
 
+  /** Debug-only: ship a canvas to the dev server (./captures) so we can inspect
+   *  real device frames and OCR crops offline. */
+  const postDebugImg = (name: string, canvas: HTMLCanvasElement) => {
+    try {
+      void fetch('/__capture', {
+        method: 'POST',
+        body: JSON.stringify({ name, dataUrl: canvas.toDataURL('image/jpeg', 0.92) }),
+      }).catch(() => {});
+    } catch {
+      /* dev-only, best effort */
+    }
+  };
+
+  /** Debug-only: capture the current camera frame immediately (tap the preview). */
+  const captureNow = () => {
+    const source = sourceRef.current;
+    if (!source || !source.isReady()) return;
+    const canvas = document.createElement('canvas');
+    if (!source.drawTo(canvas, CONFIG.ocr.maxWidth)) return;
+    void recognizeCanvas(canvas);
+  };
+
   const retryCamera = () => {
     setCameraState('loading');
     setOcrReady(false);
@@ -326,9 +374,11 @@ export function ScanScreen({ session, collection, settings, onPersist, onFinish 
         {announce}
       </p>
 
-      <div class="scan-video-wrap">
+      <div class="scan-video-wrap" onClick={DEBUG ? captureNow : undefined}>
         {/* Camera <video> is appended here imperatively; Preact leaves it alone. */}
         <div class="scan-video-layer" ref={videoLayerRef} aria-hidden="true" />
+
+        {DEBUG && <div class="debug-box">{debugText || 'toque na câmera p/ capturar'}</div>}
 
         {cameraState !== 'denied' && (
           <>

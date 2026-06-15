@@ -1,13 +1,74 @@
-import { defineConfig } from 'vite';
+import { defineConfig, type Plugin } from 'vite';
 import preact from '@preact/preset-vite';
 import { VitePWA } from 'vite-plugin-pwa';
+import { mkdirSync, writeFileSync } from 'node:fs';
+import { resolve } from 'node:path';
 
 // GitHub Pages serves from a repo subpath. Set GH_PAGES=1 in CI to use it.
 const base = process.env.GH_PAGES ? '/figurinhas-app/' : '/';
 
+// Dev-only: lets the app (in ?debug) POST a captured camera frame so we can save
+// real device frames to ./captures and iterate on OCR offline. Not part of the build.
+function captureSaver(): Plugin {
+  return {
+    name: 'capture-saver',
+    apply: 'serve',
+    configureServer(server) {
+      server.middlewares.use('/__capture', (req, res) => {
+        if (req.method !== 'POST') {
+          res.statusCode = 405;
+          res.end();
+          return;
+        }
+        let body = '';
+        req.on('data', (chunk) => (body += chunk));
+        req.on('end', () => {
+          try {
+            const { name, dataUrl } = JSON.parse(body) as { name: string; dataUrl: string };
+            const b64 = dataUrl.replace(/^data:image\/\w+;base64,/, '');
+            const dir = resolve('captures');
+            mkdirSync(dir, { recursive: true });
+            const safe = (name || 'frame').replace(/[^a-z0-9_-]/gi, '').slice(0, 60);
+            writeFileSync(resolve(dir, `${safe}.jpg`), Buffer.from(b64, 'base64'));
+            res.statusCode = 200;
+            res.end('ok');
+          } catch (err) {
+            res.statusCode = 500;
+            res.end(String(err));
+          }
+        });
+      });
+      // Dev-only: text results sink so harness output can be read from disk even
+      // when the renderer is busy (Tesseract may run on the main thread).
+      server.middlewares.use('/__log', (req, res) => {
+        if (req.method !== 'POST') {
+          res.statusCode = 405;
+          res.end();
+          return;
+        }
+        let body = '';
+        req.on('data', (chunk) => (body += chunk));
+        req.on('end', () => {
+          try {
+            const dir = resolve('captures');
+            mkdirSync(dir, { recursive: true });
+            writeFileSync(resolve(dir, 'ocr-results.txt'), body);
+            res.statusCode = 200;
+            res.end('ok');
+          } catch (err) {
+            res.statusCode = 500;
+            res.end(String(err));
+          }
+        });
+      });
+    },
+  };
+}
+
 export default defineConfig({
   base,
   plugins: [
+    captureSaver(),
     preact(),
     VitePWA({
       registerType: 'autoUpdate',

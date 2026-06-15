@@ -9,3 +9,5 @@ dev-dist
 
 # Local OCR test fixtures (sample sticker backs) — not shipped.
 public/samples
+# Real device frames captured for offline OCR iteration (dev-only).
+captures

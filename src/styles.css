@@ -371,6 +371,22 @@ button {
   line-height: 1.4;
 }
 
+/* Debug-only readout (?debug). */
+.debug-box {
+  position: absolute;
+  top: 6px;
+  left: 6px;
+  right: 6px;
+  z-index: 6;
+  background: rgba(0, 0, 0, 0.78);
+  color: #6ee7b7;
+  font: 600 11px/1.35 ui-monospace, monospace;
+  padding: 6px 8px;
+  border-radius: 8px;
+  word-break: break-word;
+  pointer-events: none;
+}
+
 .scan-hint {
   position: absolute;
   bottom: 18px;
