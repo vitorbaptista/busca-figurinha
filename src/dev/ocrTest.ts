@@ -12,7 +12,7 @@ const CASES: Array<{ src: string; expect: string[] }> = [
   { src: '/samples/civ.jpg', expect: ['CIV12'] },
   { src: '/samples/CIV12.jpg', expect: ['CIV12'] },
   { src: '/samples/EGY4.jpg', expect: ['EGY4'] },
-  { src: '/samples/realframe.jpg', expect: [] },
+  { src: '/samples/realframe.jpg', expect: [] }, // 4 backs + 2 face-up
   { src: '/samples/composite2.jpg', expect: [] },
   { src: '/samples/composite4.jpg', expect: [] },
 ];
@@ -63,7 +63,7 @@ async function loadImage(src: string): Promise<HTMLCanvasElement> {
     const got = [...found];
     const ok = expect.length === 0 ? '·' : expect.every((e) => found.has(e)) ? '✓' : '✗';
     lines.push(
-      `${src}  ${ms}ms ${boxes.length}box ${crops.length}crop\n  expect [${expect.join(', ')}] got [${got.join(', ')}] ${ok}\n  reads: ${reads.join(' | ').slice(0, 160)}`,
+      `${src}  ${ms}ms ${boxes.length}box ${crops.length}crop\n  got [${got.join(', ')}] ${ok}\n  reads: ${reads.join(' | ').slice(0, 150)}`,
     );
     void fetch('/__log', { method: 'POST', body: lines.join('\n\n') }).catch(() => {});
   }
