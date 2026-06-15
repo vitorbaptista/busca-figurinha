@@ -1,21 +1,25 @@
-// DEV-ONLY accuracy benchmark (served at /bench.html). Measures how well the REAL
-// production pipeline (findCodeBoxes → codeCropCandidates → recognizeMany →
-// bestMatchFromText, plus the multi-frame confirmer for the video) recovers the
-// sticker codes from the labeled dataset in data/raw/stickers/.
+// DEV-ONLY accuracy benchmark (served at /bench.html; run headless via `npm run bench`).
+// Measures how well the REAL production pipeline (findCodeBoxes → codeCropCandidates →
+// recognizeMany → bestMatchFromText, plus the multi-frame confirmer for video)
+// recovers sticker codes from the labeled dataset in data/raw/stickers/.
 //
-// Ground truth is the FILENAME: "RSA17_EGY5_CIV12_RSA19_EGY4_AUT4.jpg" expects those
-// six codes; the video frames inherit the labels of the .mp4 they were extracted
-// from. Add a labeled image to data/raw/stickers/ (or re-extract frames) and the
-// benchmark picks it up automatically — no code change needed.
+// THREE sections:
+//  1. Static     — single-frame recall on each labeled photo (deterministic headline).
+//  2. Robustness — each single-code close-up under transforms that keep it READABLE
+//                  (rotation, blur, noise, downscale, darkness, JPEG). Target: 100%
+//                  — "perfect as long as the image is readable".
+//  3. Video      — the real front-camera flow over extracted frames + the confirmer.
 //
-// Output: a Markdown report written to captures/bench-results.md via /bench-log, so
-// the headline accuracy can be tracked across attempts without scraping the DOM.
+// Ground truth is the FILENAME. Output: Markdown → captures/bench-results.md (/bench-log).
+// `?quick` skips the slow video section.
 import { findCodeBoxes, codeCropCandidates } from '../ocr/locate';
 import { createOcrEngine } from '../ocr/engine';
 import { bestMatchFromText } from '../domain/matching';
 import { createConfirmer } from '../domain/confirm';
 import { checklist } from '../data/checklist';
 import { CONFIG } from '../config';
+
+const QUICK = new URLSearchParams(location.search).has('quick');
 
 const root = document.getElementById('out')!;
 const status = document.createElement('div');
@@ -45,7 +49,6 @@ interface FrameRead {
   reads: string[];
 }
 
-/** Run the exact production recognize path on one frame; return resolved codes. */
 async function recognizeFrame(
   ocr: ReturnType<typeof createOcrEngine>,
   frame: HTMLCanvasElement,
@@ -64,6 +67,82 @@ async function recognizeFrame(
   return { found: [...found], reads };
 }
 
+// ---------- Augmentations (canvas transforms that keep the code readable) ----------
+type Canvas = HTMLCanvasElement;
+const clamp = (v: number) => (v < 0 ? 0 : v > 255 ? 255 : v);
+function blank(w: number, h: number): Canvas {
+  const c = document.createElement('canvas');
+  c.width = Math.max(1, w);
+  c.height = Math.max(1, h);
+  return c;
+}
+function rotate(src: Canvas, deg: number): Canvas {
+  const rad = (deg * Math.PI) / 180;
+  const cos = Math.abs(Math.cos(rad));
+  const sin = Math.abs(Math.sin(rad));
+  const nw = Math.round(src.width * cos + src.height * sin);
+  const nh = Math.round(src.width * sin + src.height * cos);
+  const c = blank(nw, nh);
+  const ctx = c.getContext('2d')!;
+  ctx.fillStyle = '#7a7a7a'; // neutral fill for the corners, not black (avoids fake dark blobs)
+  ctx.fillRect(0, 0, nw, nh);
+  ctx.translate(nw / 2, nh / 2);
+  ctx.rotate(rad);
+  ctx.drawImage(src, -src.width / 2, -src.height / 2);
+  return c;
+}
+function filtered(src: Canvas, filter: string): Canvas {
+  const c = blank(src.width, src.height);
+  const ctx = c.getContext('2d')!;
+  ctx.filter = filter;
+  ctx.drawImage(src, 0, 0);
+  return c;
+}
+function noise(src: Canvas, sigma: number): Canvas {
+  const c = blank(src.width, src.height);
+  const ctx = c.getContext('2d', { willReadFrequently: true })!;
+  ctx.drawImage(src, 0, 0);
+  const img = ctx.getImageData(0, 0, c.width, c.height);
+  const d = img.data;
+  for (let i = 0; i < d.length; i += 4) {
+    const n = (Math.random() + Math.random() + Math.random() - 1.5) * sigma; // ~gaussian
+    d[i] = clamp(d[i] + n);
+    d[i + 1] = clamp(d[i + 1] + n);
+    d[i + 2] = clamp(d[i + 2] + n);
+  }
+  ctx.putImageData(img, 0, 0);
+  return c;
+}
+function rescale(src: Canvas, factor: number): Canvas {
+  const small = blank(src.width * factor, src.height * factor);
+  small.getContext('2d')!.drawImage(src, 0, 0, small.width, small.height);
+  const c = blank(src.width, src.height);
+  c.getContext('2d')!.drawImage(small, 0, 0, c.width, c.height);
+  return c;
+}
+async function jpeg(src: Canvas, q: number): Promise<Canvas> {
+  const img = new Image();
+  img.src = src.toDataURL('image/jpeg', q);
+  await img.decode();
+  const c = blank(src.width, src.height);
+  c.getContext('2d')!.drawImage(img, 0, 0);
+  return c;
+}
+
+const AUGS: Array<{ name: string; run: (c: Canvas) => Canvas | Promise<Canvas> }> = [
+  { name: 'orig', run: (c) => c },
+  { name: 'rot90', run: (c) => rotate(c, 90) },
+  { name: 'rot180', run: (c) => rotate(c, 180) },
+  { name: 'rot270', run: (c) => rotate(c, 270) },
+  { name: 'rot+12', run: (c) => rotate(c, 12) },
+  { name: 'rot-12', run: (c) => rotate(c, -12) },
+  { name: 'blur', run: (c) => filtered(c, 'blur(1.4px)') },
+  { name: 'noise', run: (c) => noise(c, 16) },
+  { name: 'scale0.5', run: (c) => rescale(c, 0.5) },
+  { name: 'dark', run: (c) => filtered(c, 'brightness(0.6)') },
+  { name: 'jpeg40', run: (c) => jpeg(c, 0.4) },
+];
+
 const set = (xs: string[]) => new Set(xs);
 const inter = (a: Set<string>, b: Set<string>) => [...a].filter((x) => b.has(x));
 const minus = (a: Set<string>, b: Set<string>) => [...a].filter((x) => !b.has(x));
@@ -73,107 +152,128 @@ const minus = (a: Set<string>, b: Set<string>) => [...a].filter((x) => !b.has(x)
   const ocr = createOcrEngine();
   await ocr.init();
 
-  const md: string[] = ['# Sticker detection accuracy benchmark', ''];
-  let staticHit = 0;
-  let staticTotal = 0;
-  let staticFalse = 0;
-  const missByCode = new Map<string, number>(); // expected code -> times missed (static)
-
   const list = (await (await fetch('/dataset/list')).json()) as {
     images: string[];
     videos: string[];
     frames: string[];
   };
 
-  // ---- Static images: single-frame recall (the deterministic headline) ----
-  md.push('## Static images (single-frame recall)', '');
-  md.push('| image | expected | found | missed | false+ |', '|---|---|---|---|---|');
+  // ---- 1. Static images: single-frame recall ----
+  const staticMd = ['## Static images (single-frame recall)', ''];
+  staticMd.push('| image | expected | found | missed | false+ |', '|---|---|---|---|---|');
+  let staticHit = 0;
+  let staticTotal = 0;
+  let staticFalse = 0;
+  const bases: Array<{ code: string; canvas: HTMLCanvasElement }> = [];
   for (const name of list.images.sort()) {
-    status.textContent = `image ${name}…`;
+    status.textContent = `static ${name}…`;
     const expected = set(labelsOf(name));
     if (expected.size === 0) continue;
     const frame = await loadImage(`/dataset/${name}`);
+    // Single-code sharp photos are the bases for the robustness section.
+    if (expected.size === 1) bases.push({ code: [...expected][0], canvas: frame });
     const { found, reads } = await recognizeFrame(ocr, frame);
     const f = set(found);
-    const hit = inter(expected, f);
     const missed = minus(expected, f);
     const falsePos = minus(f, expected);
-    staticHit += hit.length;
+    staticHit += inter(expected, f).length;
     staticTotal += expected.size;
     staticFalse += falsePos.length;
-    for (const c of missed) missByCode.set(c, (missByCode.get(c) ?? 0) + 1);
-    md.push(
-      `| ${name} | ${[...expected].sort().join(' ')} | ${hit.sort().join(' ') || '—'} | ` +
+    staticMd.push(
+      `| ${name} | ${[...expected].sort().join(' ')} | ${inter(expected, f).sort().join(' ') || '—'} | ` +
         `**${missed.sort().join(' ') || '—'}** | ${falsePos.sort().join(' ') || '—'} |`,
     );
-    md.push('', `  reads: \`${reads.join(' | ').slice(0, 240)}\``, '');
+    staticMd.push('', `  reads: \`${reads.join(' | ').slice(0, 200)}\``, '');
   }
 
-  // ---- Video: temporal session recall (real front-camera flow) ----
-  let videoLines: string[] = [];
-  if (list.frames.length && list.videos.length) {
-    status.textContent = 'video frames…';
+  // ---- 2. Robustness: each single-code close-up under readable transforms ----
+  status.textContent = 'robustness…';
+  const robMd = [
+    '## Robustness (augmented readable variants)',
+    '',
+    'Each single-code close-up under transforms that keep it readable. Target: every cell ✓.',
+    '',
+    `| augmentation | ${bases.map((b) => b.code).join(' | ')} | recall |`,
+    `|---|${bases.map(() => '---|').join('')}`,
+  ];
+  let robHit = 0;
+  let robTotal = 0;
+  let robFalse = 0;
+  const robMissByAug = new Map<string, string[]>();
+  for (const aug of AUGS) {
+    status.textContent = `robustness ${aug.name}…`;
+    const cells: string[] = [];
+    let hits = 0;
+    for (const base of bases) {
+      const variant = await aug.run(base.canvas);
+      const { found } = await recognizeFrame(ocr, variant);
+      const ok = found.includes(base.code);
+      const falsePos = found.filter((c) => c !== base.code);
+      robTotal++;
+      robFalse += falsePos.length;
+      if (ok) {
+        hits++;
+        robHit++;
+        cells.push('✓');
+      } else {
+        cells.push(`✗ \`${found.join(',') || '—'}\``);
+        robMissByAug.set(aug.name, [...(robMissByAug.get(aug.name) ?? []), base.code]);
+      }
+    }
+    robMd.push(`| ${aug.name} | ${cells.join(' | ')} | ${hits}/${bases.length} |`);
+  }
+
+  // ---- 3. Video: temporal session recall (real front-camera flow) ----
+  let videoMd: string[] = [];
+  let videoLine = '- Video: skipped (?quick)';
+  if (!QUICK && list.frames.length && list.videos.length) {
     const expected = set(labelsOf(list.videos[0]));
     const confirmer = createConfirmer(CONFIG.match.confirmations);
     const everSeen = new Set<string>();
     const confirmed = new Set<string>();
     const perFrame: string[] = ['', '<details><summary>per-frame</summary>', ''];
-    let firstFrameDims = '';
+    let dims = '';
     for (const fname of list.frames) {
+      status.textContent = `video ${fname}…`;
       const frame = await loadImage(`/dataset/frames/${fname}`);
-      if (!firstFrameDims) firstFrameDims = `${frame.width}x${frame.height}`;
+      if (!dims) dims = `${frame.width}x${frame.height}`;
       const { found, reads } = await recognizeFrame(ocr, frame);
       found.forEach((c) => everSeen.add(c));
       confirmer.add(found).forEach((c) => confirmed.add(c));
-      perFrame.push(
-        `- ${fname}: found [${found.sort().join(' ') || '—'}]  reads \`${reads.join(' | ').slice(0, 90) || '—'}\``,
-      );
+      perFrame.push(`- ${fname}: [${found.sort().join(' ') || '—'}]  \`${reads.join(' | ').slice(0, 80) || '—'}\``);
     }
     perFrame.push('', '</details>', '');
-    const sessionHit = inter(expected, confirmed);
-    const sessionMiss = minus(expected, confirmed);
-    const falseConf = minus(confirmed, expected);
-    // "ceiling" = best possible if confirmation were perfect (any frame read it once).
-    const ceilingMiss = minus(expected, everSeen);
-    videoLines = [
-      `## Video (${list.videos[0]}, ${list.frames.length} frames @ ~1fps, ${firstFrameDims})`,
+    const hit = inter(expected, confirmed);
+    videoLine = `- **Video session recall: ${hit.length}/${expected.size}** (confirmed: ${hit.sort().join(' ') || '—'})`;
+    videoMd = [
+      `## Video (${list.videos[0]}, ${list.frames.length} frames, ${dims})`,
       '',
-      `Simulates the live front-camera flow with the ${CONFIG.match.confirmations}-frame confirmer.`,
-      '',
-      `- **Session recall (confirmed): ${sessionHit.length}/${expected.size}** — ${sessionHit.sort().join(' ') || '—'}`,
-      `- Missed (never confirmed): **${sessionMiss.sort().join(' ') || '—'}**`,
-      `- False confirmations: ${falseConf.sort().join(' ') || '—'}`,
-      `- Read at least once on some frame (confirmation ceiling): ${[...everSeen].sort().join(' ') || '—'}`,
-      `- Never read on any frame: ${ceilingMiss.sort().join(' ') || '—'}`,
+      `- **Session recall (confirmed): ${hit.length}/${expected.size}** — ${hit.sort().join(' ') || '—'}`,
+      `- Missed: **${minus(expected, confirmed).sort().join(' ') || '—'}**`,
+      `- False confirmations: ${minus(confirmed, expected).sort().join(' ') || '—'}`,
+      `- Read at least once (confirmation ceiling): ${[...everSeen].sort().join(' ') || '—'}`,
       ...perFrame,
-    ];
-  } else {
-    videoLines = [
-      '## Video',
-      '',
-      '_No frames found. Extract them once:_',
-      '```',
-      'ffmpeg -y -i data/raw/stickers/<video>.mp4 -vf fps=1 -q:v 3 data/raw/stickers/frames/f%03d.jpg',
-      '```',
-      '',
     ];
   }
 
-  // ---- Headline + hardest stickers ----
-  const recallPct = staticTotal ? Math.round((staticHit / staticTotal) * 100) : 0;
-  const hardest = [...missByCode.entries()].sort((a, b) => b[1] - a[1]);
+  // ---- Headline ----
+  const robPct = robTotal ? Math.round((robHit / robTotal) * 100) : 0;
+  const staticPct = staticTotal ? Math.round((staticHit / staticTotal) * 100) : 0;
+  const hardAugs = [...robMissByAug.entries()].map(([a, cs]) => `${a}(${cs.join(',')})`);
   const headline = [
+    '# Sticker detection accuracy benchmark',
+    '',
     '## Headline',
     '',
-    `- **Static recall: ${staticHit}/${staticTotal} (${recallPct}%)**`,
-    `- Static false positives (wrong codes reported): **${staticFalse}** _(must stay 0 — a wrong code is a bad trade)_`,
-    hardest.length
-      ? `- Hardest codes (missed most): ${hardest.map(([c, n]) => `${c}×${n}`).join(', ')}`
-      : '- No static misses 🎉',
+    `- **Robustness recall: ${robHit}/${robTotal} (${robPct}%)** ← target 100% (readable variants)`,
+    `- Static recall: ${staticHit}/${staticTotal} (${staticPct}%)`,
+    videoLine,
+    `- **False positives (wrong codes) — robustness: ${robFalse}, static: ${staticFalse}** _(must be 0)_`,
+    hardAugs.length ? `- Robustness failures: ${hardAugs.join(', ')}` : '- Robustness: all variants pass 🎉',
     '',
   ];
 
-  const report = [md[0], md[1], ...headline, ...videoLines, ...md.slice(2), '', '_done_'].join('\n');
+  const report = [...headline, ...robMd, '', ...videoMd, '', ...staticMd, '', '_done_'].join('\n');
   await fetch('/bench-log', { method: 'POST', body: report }).catch(() => {});
   await ocr.terminate();
   status.textContent = 'done — see captures/bench-results.md';
