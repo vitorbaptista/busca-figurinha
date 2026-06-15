@@ -157,10 +157,15 @@ export interface CollectionStore {
 // ---------- Settings ----------
 export type Language = 'pt';
 
+/** Which camera the scanner uses. 'front' (screen-side) is the default: the phone
+ *  lies flat on the table and the user shows the sticker back to the front camera. */
+export type CameraFacing = 'front' | 'back';
+
 export interface Settings {
   language: Language;
   sound: boolean;
   onboarded: boolean;
+  camera: CameraFacing;
 }
 
 /** Reactive settings store (see state/settings.ts: createSettingsStore). */

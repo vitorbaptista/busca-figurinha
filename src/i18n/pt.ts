@@ -20,7 +20,7 @@ export const pt = {
       {
         emoji: '🔃',
         title: 'Mostre o verso',
-        text: 'Deixe o celular num apoio, com a câmera virada para a mesa. Passe o VERSO da figurinha, onde fica o codiguinho (ex: CIV 12).',
+        text: 'Deixe o celular na mesa, de tela pra cima, e mostre o VERSO da figurinha pra câmera da frente — onde fica o codiguinho (ex: CIV 12). Dá pra trocar pra câmera de trás no botão.',
       },
       {
         emoji: '🟢',
@@ -57,7 +57,10 @@ export const pt = {
     cameraDenied: 'Não consegui acessar a câmera.',
     cameraDeniedHint: 'Toque em permitir a câmera nas configurações do navegador e tente de novo.',
     retry: 'Tentar de novo',
-    startHint: 'Aponte para o verso da figurinha',
+    startHint: 'Mostre o verso da figurinha',
+    flipCamera: 'Virar câmera',
+    cameraFront: 'Câmera frontal',
+    cameraBack: 'Câmera traseira',
   },
 
   report: {

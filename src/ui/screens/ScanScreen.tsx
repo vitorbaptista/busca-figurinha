@@ -69,6 +69,9 @@ export function ScanScreen({ session, collection, settings, onPersist, onFinish 
   const [announce, setAnnounce] = useState('');
   const [counters, setCounters] = useState({ neededCount: 0, repeatedCount: 0 });
   const [recent, setRecent] = useState<RecentScan[]>([]);
+  const [facing, setFacing] = useState<'user' | 'environment'>(
+    settings.get().camera === 'back' ? 'environment' : 'user',
+  );
   const [showManual, setShowManual] = useState(false);
   const [manualValue, setManualValue] = useState('');
   const [analyzing, setAnalyzing] = useState(false);
@@ -304,30 +307,47 @@ export function ScanScreen({ session, collection, settings, onPersist, onFinish 
     return job;
   };
 
-  // ---------- Camera + OCR lifecycle ----------
+  // ---------- OCR lifecycle (independent of which camera is active) ----------
+
+  useEffect(() => {
+    // Preload OCR up front so it's ready by the time a sticker is shown. The
+    // photo-upload path can also trigger it on demand when the camera is denied.
+    void ensureOcr();
+    return () => {
+      window.clearTimeout(flashTimerRef.current);
+      window.clearTimeout(multiTimerRef.current);
+      ocrRef.current?.terminate().catch(() => {});
+      audioCtxRef.current?.close().catch(() => {});
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // ---------- Camera lifecycle (restarts when the user flips the camera) ----------
 
   useEffect(() => {
     let cancelled = false;
-    const source = createCameraSource();
+    setCameraState('loading');
+    const source = createCameraSource({ facingMode: facing });
     sourceRef.current = source;
 
     const start = async () => {
       try {
         await source.start();
-        if (cancelled) return;
-        source.element.classList.add('scan-video');
-        videoLayerRef.current?.appendChild(source.element);
-        setCameraState('ready');
       } catch {
         if (!cancelled) setCameraState('denied');
         return;
       }
+      if (cancelled) {
+        source.stop();
+        return;
+      }
+      source.element.classList.add('scan-video');
+      // replaceChildren so flipping the camera swaps the <video> cleanly.
+      videoLayerRef.current?.replaceChildren(source.element);
+      setCameraState('ready');
 
-      // Preload OCR now that the camera is live (idempotent; the photo-upload
-      // path can also trigger it on demand when the camera is denied).
-      const ready = await ensureOcr();
-      if (cancelled || !ready) return;
-
+      // The burst calls recognizeCanvas, which waits for OCR itself — so the loop
+      // can start now and simply no-ops until the engine finishes loading.
       const capture = createAutoCapture({
         source,
         onBurstStart: () => confirmerRef.current.reset(),
@@ -341,15 +361,18 @@ export function ScanScreen({ session, collection, settings, onPersist, onFinish 
 
     return () => {
       cancelled = true;
-      window.clearTimeout(flashTimerRef.current);
-      window.clearTimeout(multiTimerRef.current);
       captureRef.current?.stop();
-      sourceRef.current?.stop();
-      ocrRef.current?.terminate().catch(() => {});
-      audioCtxRef.current?.close().catch(() => {});
+      captureRef.current = null;
+      source.stop();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [facing]);
+
+  const flipCamera = () => {
+    const next = facing === 'user' ? 'environment' : 'user';
+    setFacing(next);
+    settings.set({ camera: next === 'user' ? 'front' : 'back' });
+  };
 
   // ---------- Manual entry ----------
 
@@ -448,6 +471,14 @@ export function ScanScreen({ session, collection, settings, onPersist, onFinish 
               </div>
             )}
             {ocrReady && !flash && <p class="scan-hint">{pt.scan.startHint}</p>}
+            <button
+              class="btn-flip"
+              onClick={flipCamera}
+              aria-label={pt.scan.flipCamera}
+              title={facing === 'user' ? pt.scan.cameraFront : pt.scan.cameraBack}
+            >
+              🔄
+            </button>
           </>
         )}
 

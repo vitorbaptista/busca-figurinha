@@ -4,6 +4,9 @@ export const DEFAULT_SETTINGS: Settings = {
   language: 'pt',
   sound: false,
   onboarded: false,
+  // Front (screen-side) camera by default: phone flat on the table, sticker back
+  // shown to it. The user can switch to the back camera from the scan screen.
+  camera: 'front',
 };
 
 export function createSettingsStore(storage: Storage = localStorage, key = 'settings'): SettingsStore {
