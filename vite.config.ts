@@ -1,7 +1,7 @@
 import { defineConfig, type Plugin } from 'vite';
 import preact from '@preact/preset-vite';
 import { VitePWA } from 'vite-plugin-pwa';
-import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
 // GitHub Pages serves from a repo subpath. Set GH_PAGES=1 in CI to use it.
@@ -26,6 +26,69 @@ function captureSaver(): Plugin {
           res.statusCode = 404;
           res.end();
         }
+      });
+
+      // The labeled accuracy benchmark dataset (committed in data/raw/stickers).
+      // `/dataset/list` returns the images + extracted video frames; `/dataset/<path>`
+      // serves a file. Used by bench.html (dev-only; never built).
+      const DATASET = resolve('data/raw/stickers');
+      server.middlewares.use('/dataset', (req, res) => {
+        const url = (req.url || '/').split('?')[0];
+        if (url === '/list' || url === '/list/') {
+          let images: string[] = [];
+          let videos: string[] = [];
+          let frames: string[] = [];
+          try {
+            const all = readdirSync(DATASET);
+            images = all.filter((f) => /\.(jpe?g|png)$/i.test(f));
+            videos = all.filter((f) => /\.(mp4|mov|webm)$/i.test(f));
+          } catch {
+            /* dataset dir may be absent */
+          }
+          try {
+            frames = readdirSync(resolve(DATASET, 'frames'))
+              .filter((f) => /\.(jpe?g|png)$/i.test(f))
+              .sort();
+          } catch {
+            /* frames not extracted yet */
+          }
+          res.setHeader('Content-Type', 'application/json');
+          res.end(JSON.stringify({ images, videos, frames }));
+          return;
+        }
+        // Serve a file under the dataset dir (sanitized: no .., only safe chars).
+        const rel = url.replace(/^\//, '').replace(/\.\.+/g, '').replace(/[^a-z0-9._/-]/gi, '');
+        try {
+          const buf = readFileSync(resolve(DATASET, rel));
+          res.setHeader('Content-Type', 'image/jpeg');
+          res.end(buf);
+        } catch {
+          res.statusCode = 404;
+          res.end();
+        }
+      });
+
+      // Benchmark report sink (separate from /__log so a bench run and a harness run
+      // don't clobber each other). Writes captures/bench-results.md.
+      server.middlewares.use('/bench-log', (req, res) => {
+        if (req.method !== 'POST') {
+          res.statusCode = 405;
+          res.end();
+          return;
+        }
+        let body = '';
+        req.on('data', (chunk) => (body += chunk));
+        req.on('end', () => {
+          try {
+            mkdirSync(resolve('captures'), { recursive: true });
+            writeFileSync(resolve('captures', 'bench-results.md'), body);
+            res.statusCode = 200;
+            res.end('ok');
+          } catch (err) {
+            res.statusCode = 500;
+            res.end(String(err));
+          }
+        });
       });
       server.middlewares.use('/__capture', (req, res) => {
         if (req.method !== 'POST') {

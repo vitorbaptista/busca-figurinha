@@ -11,3 +11,6 @@ dev-dist
 dev-fixtures
 # Real device frames captured for offline OCR iteration (dev-only).
 captures
+
+# Video frames extracted for the accuracy benchmark (derived from the committed .mp4).
+data/raw/stickers/frames
