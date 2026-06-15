@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { Checklist, ChecklistEntry } from '../types';
 import { checklist } from '../data/checklist';
-import { bestMatchFromText, extractCodes, matchCode } from './matching';
+import { bestMatchFromText, extractCodes, matchAllFromText, matchCode } from './matching';
 
 /** Build a tiny synthetic checklist from canonical codes for focused tests. */
 function makeChecklist(codes: string[]): Checklist {
@@ -119,6 +119,16 @@ describe('matchCode', () => {
     expect(r.entry?.code).toBe('FWC11');
   });
 
+  it('refuses different-length corrections but keeps same-length ones', () => {
+    // "SE3" (3 chars) is a garbled read — it must NOT snap to a real 4-char code
+    // like "SEN3" (that confident-wrong-answer is worse than a miss).
+    expect(matchCode('SE3', checklist).status).toBe('unknown');
+    // A same-length single substitution (N read as M) still corrects.
+    const r = matchCode('SEM3', checklist);
+    expect(r.status).toBe('corrected');
+    expect(r.entry?.code).toBe('SEN3');
+  });
+
   it('works against the real baked-in checklist', () => {
     expect(matchCode('CIV12', checklist).status).toBe('exact');
     // 'C1V12' is one edit from several real codes; matchCode should still snap
@@ -161,5 +171,32 @@ describe('bestMatchFromText', () => {
     const text = 'FIFA WORLD CUP 2026\nCIV 12\n© Panini';
     const r = bestMatchFromText(text, checklist);
     expect(r?.entry?.code).toBe('CIV12');
+  });
+});
+
+describe('matchAllFromText', () => {
+  it('resolves every distinct sticker when several are in view', () => {
+    const text = 'FIFA WORLD CUP 2026 CIV 12\nEGY 4\nBRA 5\nFWC 1';
+    const results = matchAllFromText(text, checklist);
+    const codes = results.map((r) => r.entry?.code);
+    expect(codes).toEqual(['CIV12', 'EGY4', 'BRA5', 'FWC1']);
+    expect(results.every((r) => r.entry !== null)).toBe(true);
+  });
+
+  it('dedupes repeated codes and drops unmatched noise', () => {
+    const text = 'CIV12 CIV 12 ZZZ99 EGY4';
+    const codes = matchAllFromText(text, checklist).map((r) => r.entry?.code);
+    expect(codes).toEqual(['CIV12', 'EGY4']);
+  });
+
+  it('returns an empty list when nothing matches', () => {
+    expect(matchAllFromText('just some words', checklist)).toEqual([]);
+  });
+
+  it('corrects OCR slips on individual codes in a group', () => {
+    const text = 'GIV12 EGY4'; // "GIV12" is a one-edit slip of CIV12
+    const codes = matchAllFromText(text, checklist).map((r) => r.entry?.code);
+    expect(codes).toContain('CIV12');
+    expect(codes).toContain('EGY4');
   });
 });

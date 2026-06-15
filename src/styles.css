@@ -464,6 +464,93 @@ button {
 }
 
 /* ---- Top bar ---- */
+/* ---- Multi-sticker result panel (several backs in view at once) ---- */
+.multi-result {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  background: rgba(15, 17, 21, 0.93);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 16px;
+  animation: flash-in 0.16s ease-out;
+}
+.multi-head {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  flex-wrap: wrap;
+  color: var(--text);
+  font-weight: 800;
+  font-size: 1.15rem;
+}
+.multi-count {
+  font-size: 1.9rem;
+  font-weight: 900;
+  color: var(--green);
+}
+.multi-sub {
+  margin-left: auto;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--text-dim);
+}
+.multi-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  overflow-y: auto;
+}
+.multi-row {
+  display: grid;
+  grid-template-columns: auto auto 1fr auto;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+  border-radius: var(--radius-sm);
+  border-left: 6px solid transparent;
+}
+.multi-needed {
+  background: var(--green-soft);
+  border-left-color: var(--green);
+}
+.multi-owned {
+  background: var(--red-soft);
+  border-left-color: var(--red);
+}
+.multi-mark {
+  font-size: 1.2rem;
+}
+.multi-code {
+  font-weight: 900;
+  font-size: 1.1rem;
+  color: var(--text);
+  white-space: nowrap;
+}
+.multi-team {
+  color: var(--text-dim);
+  font-size: 0.9rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.multi-tag {
+  font-weight: 800;
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+.multi-needed .multi-tag {
+  color: #7ee2a0;
+}
+.multi-owned .multi-tag {
+  color: #f3a3a3;
+}
+
 .scan-topbar {
   display: flex;
   align-items: center;

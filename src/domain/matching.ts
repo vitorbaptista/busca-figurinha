@@ -35,9 +35,12 @@ export function extractCodes(text: string): string[] {
 }
 
 /**
- * Match a single raw token against the checklist. Exact lookup first; otherwise
- * the nearest code within `maxDistance` edits. Among equally-near candidates we
- * prefer one of the same length as the raw token, then the first in list order.
+ * Match a single raw token against the checklist. Exact lookup first; otherwise the
+ * nearest SAME-LENGTH code within `maxDistance` edits — i.e. we only auto-correct
+ * character substitutions (C→G, I→1), not insertions/deletions. That keeps good
+ * fixes like "GIV12"→"CIV12" while refusing to snap a garbled short read like "SE3"
+ * onto a real code ("SEN3"): for a trading app a confident wrong answer is worse
+ * than a miss. Ties keep the first entry in list order.
  */
 export function matchCode(
   raw: string,
@@ -51,21 +54,13 @@ export function matchCode(
 
   let bestEntry = null as MatchResult['entry'];
   let bestDistance = Infinity;
-  let bestSameLength = false;
 
   for (const entry of list.entries) {
+    if (entry.code.length !== normalized.length) continue;
     const distance = levenshtein(normalized, entry.code);
-    if (distance > maxDistance) continue;
-
-    const sameLength = entry.code.length === normalized.length;
-    // Strictly-closer wins; on a tie, a same-length candidate beats a different
-    // length. Equal-priority ties keep the earlier list entry (no replacement).
-    const better =
-      distance < bestDistance || (distance === bestDistance && sameLength && !bestSameLength);
-    if (better) {
+    if (distance <= maxDistance && distance < bestDistance) {
       bestEntry = entry;
       bestDistance = distance;
-      bestSameLength = sameLength;
     }
   }
 
@@ -100,4 +95,25 @@ export function bestMatchFromText(
     else if (result.status === 'corrected' && result.distance < best.distance) best = result;
   }
   return best;
+}
+
+/**
+ * Match EVERY distinct code found in the text — for when several sticker backs are
+ * in view at once. Returns one resolved MatchResult per unique album entry (exact
+ * or corrected), in first-seen order. Unmatched noise tokens are dropped.
+ */
+export function matchAllFromText(
+  text: string,
+  list: Checklist,
+  maxDistance: number = CONFIG.match.maxDistance,
+): MatchResult[] {
+  const seen = new Set<string>();
+  const results: MatchResult[] = [];
+  for (const code of extractCodes(text)) {
+    const result = matchCode(code, list, maxDistance);
+    if (!result.entry || seen.has(result.entry.code)) continue;
+    seen.add(result.entry.code);
+    results.push(result);
+  }
+  return results;
 }

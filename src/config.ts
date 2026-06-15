@@ -5,8 +5,10 @@ export const CONFIG = {
   ocr: {
     lang: 'eng',
     charWhitelist: 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 ',
-    /** Frames are downscaled to this width before OCR to keep it fast on cheap phones. */
-    maxWidth: 720,
+    /** Width the captured frame is OCR'd at. High enough that several sticker codes
+     *  stay legible when multiple backs are in view; only the on-demand capture pays
+     *  this cost — the frame-difference loop samples a tiny 160px canvas. */
+    maxWidth: 1280,
   },
   capture: {
     /** Frame must stay still this long before we OCR it. */

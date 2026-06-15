@@ -11,12 +11,13 @@ import type {
 import { CONFIG } from '../../config';
 import { checklist } from '../../data/checklist';
 import { pt } from '../../i18n/pt';
-import { matchCode, bestMatchFromText } from '../../domain/matching';
+import { matchCode, matchAllFromText } from '../../domain/matching';
 import { createOcrEngine } from '../../ocr/engine';
 import { createCameraSource } from '../../ocr/frameSource';
 import { preprocess } from '../../ocr/preprocess';
 import { createAutoCapture } from '../../ocr/autoCapture';
 import { Flash, type FlashState } from '../components/Flash';
+import { MultiResult, type ScanResultItem } from '../components/MultiResult';
 
 interface ScanScreenProps {
   session: ScanSession;
@@ -45,6 +46,7 @@ export function ScanScreen({ session, collection, settings, onPersist, onFinish 
   const sourceRef = useRef<ReturnType<typeof createCameraSource> | null>(null);
   const captureRef = useRef<AutoCapture | null>(null);
   const flashTimerRef = useRef<number | undefined>(undefined);
+  const multiTimerRef = useRef<number | undefined>(undefined);
   // Serializes every OCR call (auto-capture, photo, manual share one worker) so a
   // user-triggered read is queued behind a live one instead of being dropped.
   const recognizeChainRef = useRef<Promise<void>>(Promise.resolve());
@@ -56,6 +58,7 @@ export function ScanScreen({ session, collection, settings, onPersist, onFinish 
   const [ocrReady, setOcrReady] = useState(false);
   const [ocrFailed, setOcrFailed] = useState(false);
   const [flash, setFlash] = useState<FlashState | null>(null);
+  const [multi, setMulti] = useState<ScanResultItem[] | null>(null);
   const [announce, setAnnounce] = useState('');
   const [counters, setCounters] = useState({ neededCount: 0, repeatedCount: 0 });
   const [recent, setRecent] = useState<RecentScan[]>([]);
@@ -65,49 +68,93 @@ export function ScanScreen({ session, collection, settings, onPersist, onFinish 
 
   // ---------- Result handling shared by all input paths ----------
 
-  /** Turn a match into a flash + session record + counters.
+  /** Route one OR MANY recognized stickers (several backs can be in view at once)
+   *  to the flash/panel, counters, session, and the screen-reader announcer.
    *  A resolved checklist code (exact or autocorrected) is trusted directly — the
-   *  match itself is the confidence signal. We deliberately do NOT gate on
-   *  Tesseract's whole-frame mean confidence: the sticker back is full of noisy
-   *  legal text that drags that number down and would reject good reads. */
-  const handleMatch = (match: MatchResult | null) => {
+   *  match is the confidence signal. We deliberately do NOT gate on Tesseract's
+   *  whole-frame mean confidence: the sticker back is full of noisy legal text
+   *  that drags that number down and would reject good reads. */
+  const handleMatches = (matches: MatchResult[]) => {
     flashCounter.current += 1;
     const key = flashCounter.current;
-
     // A toggled zero-width space forces the aria-live region to re-announce even
     // when the same result repeats; it is not spoken by screen readers.
     const zwsp = '​'.repeat(key % 2);
 
-    if (!match || !match.entry) {
+    // Resolve to unique album entries, recording each into the session.
+    const items: ScanResultItem[] = [];
+    const seen = new Set<string>();
+    for (const match of matches) {
+      if (!match.entry || seen.has(match.entry.code)) continue;
+      seen.add(match.entry.code);
+      const owned = collection.has(match.entry.code);
+      items.push({
+        code: match.entry.code,
+        display: match.entry.display,
+        teamName: match.entry.teamName,
+        outcome: owned ? 'owned' : 'needed',
+      });
+      session.add(match, owned);
+    }
+
+    if (items.length === 0) {
+      clearMulti();
       showFlash({ outcome: 'unknown', display: '', teamName: '', key });
       setAnnounce(pt.scan.tryAgain + zwsp);
       return;
     }
 
-    const entry = match.entry;
-    const owned = collection.has(entry.code);
-    const outcome: ScanOutcome = owned ? 'owned' : 'needed';
-
-    session.add(match, owned);
     onPersist();
 
+    const neededCount = items.filter((i) => i.outcome === 'needed').length;
     setCounters((c) => ({
-      neededCount: c.neededCount + (owned ? 0 : 1),
-      repeatedCount: c.repeatedCount + (owned ? 1 : 0),
+      neededCount: c.neededCount + neededCount,
+      repeatedCount: c.repeatedCount + (items.length - neededCount),
     }));
-    setRecent((r) => [{ id: key, outcome, label: entry.display }, ...r].slice(0, 12));
-    showFlash({ outcome, display: entry.display, teamName: owned ? '' : entry.teamName, key });
-    // Announce for screen readers / when sound is off (the flash alone isn't enough).
-    setAnnounce(
-      `${owned ? pt.scan.owned : pt.scan.needed}: ${entry.display}${owned ? '' : ', ' + entry.teamName}${zwsp}`,
+    setRecent((r) =>
+      [
+        ...items.map((it, i) => ({ id: key * 100 + i, outcome: it.outcome, label: it.display })),
+        ...r,
+      ].slice(0, 12),
     );
-    beep(outcome);
+    setAnnounce(
+      items
+        .map((it) => `${it.outcome === 'owned' ? pt.scan.owned : pt.scan.needed}: ${it.display}`)
+        .join('. ') + zwsp,
+    );
+
+    if (items.length === 1) {
+      const it = items[0];
+      clearMulti();
+      showFlash({
+        outcome: it.outcome,
+        display: it.display,
+        teamName: it.outcome === 'owned' ? '' : it.teamName,
+        key,
+      });
+    } else {
+      setFlash(null);
+      showMulti(items);
+    }
+    beep(neededCount > 0 ? 'needed' : 'owned');
   };
 
   const showFlash = (next: FlashState) => {
     setFlash(next);
     window.clearTimeout(flashTimerRef.current);
     flashTimerRef.current = window.setTimeout(() => setFlash(null), FLASH_MS);
+  };
+
+  /** Multi-sticker panel: shown a bit longer so all rows can be read. */
+  const showMulti = (items: ScanResultItem[]) => {
+    setMulti(items);
+    window.clearTimeout(multiTimerRef.current);
+    const ms = Math.min(5000, 1600 + items.length * 500);
+    multiTimerRef.current = window.setTimeout(() => setMulti(null), ms);
+  };
+  const clearMulti = () => {
+    window.clearTimeout(multiTimerRef.current);
+    setMulti(null);
   };
 
   const beep = (outcome: ScanOutcome) => {
@@ -171,7 +218,7 @@ export function ScanScreen({ session, collection, settings, onPersist, onFinish 
       try {
         preprocess(canvas);
         const result = await ocr.recognize(canvas);
-        handleMatch(bestMatchFromText(result.text, checklist));
+        handleMatches(matchAllFromText(result.text, checklist));
       } catch {
         // A single bad read shouldn't break the loop.
       }
@@ -217,6 +264,7 @@ export function ScanScreen({ session, collection, settings, onPersist, onFinish 
     return () => {
       cancelled = true;
       window.clearTimeout(flashTimerRef.current);
+      window.clearTimeout(multiTimerRef.current);
       captureRef.current?.stop();
       sourceRef.current?.stop();
       ocrRef.current?.terminate().catch(() => {});
@@ -231,7 +279,7 @@ export function ScanScreen({ session, collection, settings, onPersist, onFinish 
     e.preventDefault();
     const value = manualValue.trim();
     if (!value) return;
-    handleMatch(matchCode(value, checklist));
+    handleMatches([matchCode(value, checklist)]);
     setManualValue('');
     setShowManual(false);
   };
@@ -320,6 +368,7 @@ export function ScanScreen({ session, collection, settings, onPersist, onFinish 
         )}
 
         {flash && <Flash state={flash} />}
+        {multi && <MultiResult items={multi} />}
       </div>
 
       {/* Top bar */}
