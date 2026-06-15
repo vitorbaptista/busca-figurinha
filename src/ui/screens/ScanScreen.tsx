@@ -155,7 +155,9 @@ export function ScanScreen({ session, collection, settings, onPersist, onFinish 
       setFlash(null);
       showMulti(items);
     }
-    beep(items.some((it) => it.outcome === 'needed') ? 'needed' : 'owned');
+    const outcome = items.some((it) => it.outcome === 'needed') ? 'needed' : 'owned';
+    beep(outcome);
+    haptic(outcome);
   };
 
   const showFlash = (next: FlashState) => {
@@ -174,6 +176,18 @@ export function ScanScreen({ session, collection, settings, onPersist, onFinish 
   const clearMulti = () => {
     window.clearTimeout(multiTimerRef.current);
     setMulti(null);
+  };
+
+  /** A short buzz so the result lands even when the phone is on the table and the
+   *  user is looking at the sticker, not the screen — the "scanner beeped" feel.
+   *  KEEP gets a brighter double pulse, REPEAT a single tap. No-op where unsupported
+   *  (iOS); independent of the sound setting since it's the silent feedback. */
+  const haptic = (outcome: ScanOutcome) => {
+    try {
+      navigator.vibrate?.(outcome === 'needed' ? [28, 45, 28] : 22);
+    } catch {
+      /* vibration unsupported */
+    }
   };
 
   const beep = (outcome: ScanOutcome) => {
