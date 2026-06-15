@@ -17,7 +17,7 @@ export const CONFIG = {
      *  a lower floor is faster but risks a confident-but-wrong fast read snapping to a real
      *  (wrong) checklist code — a false positive. Tune DOWN against the bench + on-device
      *  use-case frames, never up past where 0 FP holds. */
-    hybridFastConf: 88,
+    hybridFastConf: 70,
   },
   capture: {
     /** Frame must stay still this long before we OCR it. */

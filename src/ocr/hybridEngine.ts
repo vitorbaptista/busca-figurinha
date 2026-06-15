@@ -23,11 +23,17 @@ import { CONFIG } from '../config';
 import { createOcrEngine } from './engine';
 import { createGlyphOcrEngine } from './glyphEngine';
 
-/** True when a fast (glyph) read is clean enough to trust without a tesseract second
- *  opinion: a non-empty token at or above the confidence floor. The glyph engine returns
- *  a reject sentinel + confidence 0 for noise crops, so those always fall through. */
-function trustFast(r: OcrResult): boolean {
-  return !!r.text && r.confidence >= CONFIG.ocr.hybridFastConf;
+/** How the fast (glyph) read routes each crop:
+ *   - 'drop'   : empty text → a blank/no-glyph crop. Tesseract would read nothing too, so
+ *                skip it entirely (this is the speed win — most crops on a frame are blank).
+ *   - 'accept' : a confident read (mean-glyph confidence ≥ floor) → take it, skip tesseract.
+ *   - 'verify' : an ink-bearing read the matcher ISN'T sure about — the engine forces
+ *                confidence 0 on its rejects (ambiguous/garbled), and a genuinely soft pill
+ *                reads low — so hand it to tesseract for a second opinion. This is what keeps
+ *                the blurry-frame recall the glyph matcher alone would lose. */
+function route(r: OcrResult): 'drop' | 'accept' | 'verify' {
+  if (!r.text) return 'drop';
+  return r.confidence >= CONFIG.ocr.hybridFastConf ? 'accept' : 'verify';
 }
 
 export function createHybridOcrEngine(): OcrEngine {
@@ -43,7 +49,8 @@ export function createHybridOcrEngine(): OcrEngine {
 
     async recognize(source) {
       const f = await fast.recognize(source);
-      return trustFast(f) ? f : slow.recognize(source);
+      // 'drop' returns the empty read as-is; only 'verify' pays tesseract.
+      return route(f) === 'verify' ? slow.recognize(source) : f;
     },
 
     async recognizeMany(sources) {
@@ -51,8 +58,11 @@ export function createHybridOcrEngine(): OcrEngine {
       const out: OcrResult[] = new Array(sources.length);
       const fallback: number[] = [];
       for (let i = 0; i < sources.length; i++) {
-        if (trustFast(fastReads[i])) out[i] = fastReads[i];
-        else fallback.push(i);
+        // 'drop' and 'accept' both keep the fast read (empty, or confident); only 'verify'
+        // ink-bearing-but-unsure crops go to tesseract — so a blank-heavy frame pays almost
+        // no tesseract at all.
+        if (route(fastReads[i]) === 'verify') fallback.push(i);
+        else out[i] = fastReads[i];
       }
       // Only the crops the fast path didn't trust pay tesseract — and they run together on
       // its worker pool, so a single soft crop in an otherwise sharp frame stays cheap.
