@@ -73,7 +73,9 @@ export function App() {
 
   return (
     <div class="app">
-      {screen === 'scan' && (
+      {/* Mount the scanner only after onboarding so the camera permission prompt
+          appears when the user actually starts scanning, not behind the intro. */}
+      {screen === 'scan' && onboarded && (
         <ScanScreen
           session={session}
           collection={collection}

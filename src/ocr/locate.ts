@@ -115,7 +115,7 @@ function scoreBox(w: number, h: number, area: number): { orient: 'h' | 'v'; scor
   // pill's fill varies with framing: ~0.5 close up, ~0.7 farther, so don't gate hard.)
   if (ar < 2.0 || ar > 6.0) return null; // "CIV 12" pill is ~3-4:1 (samples ~3.1)
   if (fill < 0.35 || fill > 0.95) return null; // solid-ish blob with text holes
-  if (long < DET_LONG * 0.03 || long > DET_LONG * 0.5) return null; // size sanity
+  if (long < DET_LONG * 0.03 || long > DET_LONG * 0.4) return null; // size sanity
   if (short < 4) return null;
 
   const arScore = 1 - Math.min(1, Math.abs(ar - 3.2) / 3);
@@ -190,6 +190,12 @@ export function stackCrops(crops: HTMLCanvasElement[], gap = 18): HTMLCanvasElem
  *  Generous so thin strokes (the "I" in CIV) survive binarization. */
 const TARGET_H = 96;
 const BORDER = 16;
+/** A real code pill is a few sparse glyphs — well under this share of ink after the
+ *  card margin is cleared. A crop with more ink than this is a photo or a paragraph
+ *  of legal text (a face-up sticker, the back's fine print); we blank it so OCR
+ *  returns instantly instead of grinding through dozens of characters (which made a
+ *  busy multi-sticker frame take >12s on a phone). */
+const MAX_INK_FRACTION = 0.28;
 
 /** Upscale to a good OCR size and binarize to dark-text-on-white with a quiet
  *  border. The code is LIGHT text on a DARK pill, so ink (black) = the light pixels
@@ -233,6 +239,12 @@ function prepForOcr(src: HTMLCanvasElement): HTMLCanvasElement {
   for (let p = 0; p < count; p++) bin[p] = gray[p] > threshold ? 0 : 255;
 
   floodClearFromBorder(bin, cw, ch);
+
+  // Sparse-ink gate: a code is a few glyphs; anything denser is a photo or fine
+  // print. Blank it so the OCR call returns at once (the per-crop speed guard).
+  let ink = 0;
+  for (let p = 0; p < count; p++) if (bin[p] === 0) ink++;
+  if (ink > count * MAX_INK_FRACTION) bin.fill(255);
 
   for (let i = 0, p = 0; i < px.length; i += 4, p++) {
     const v = bin[p];
