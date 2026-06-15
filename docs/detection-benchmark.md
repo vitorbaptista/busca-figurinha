@@ -43,26 +43,32 @@ but the **accuracy numbers are deterministic** — re-navigate for a clean run.
 
 ## Progress
 
-| metric | first run | after deskew |
-|---|---|---|
-| **Robustness recall** (readable variants) | 17/22 (77%) | **22/22 (100%)** ✅ |
-| Static recall | 4/8 (50%) | 4/8 (50%) |
-| Video session recall | 0/6 | 0/6 |
-| **False positives** | 0 | **0** ✅ |
+The robustness set grew from 11 to **50 readable variants** (full rotation sweep ±15/30/45/60/75,
+skew, combined). Numbers below are on the set in use at each step.
 
-The deskew commit (estimate each pill's lean from its pixel moments, de-rotate the crop before
-OCR) took the readable-variant robustness to 100% at zero false positives — off-axis tilt,
-blur, noise, downscale, darkness and JPEG all pass now. Video frames at 3fps.
+| metric | first run (11) | deskew (11) | small-pill (11) | **moment-detect (50)** |
+|---|---|---|---|---|
+| **Robustness** (readable variants) | 17/22 (77%) | 22/22 (100%) | 22/22 (100%) | **46/50 (92%)** |
+| Static recall | 4/8 | 4/8 | 5/8 | **6/8** |
+| Video session recall | 0/6 | 0/6 | 1/6 | **1/6** |
+| **False positives** | 0 | 0 | 0 | **0** ✅ |
 
-## Remaining gaps (what to attack)
+Detection is now **rotation-invariant**: `scoreBox` gates on the component's pixel-moment geometry
+(rotation-invariant AR/fill) instead of the axis-aligned bounding box — a pill at any in-plane angle
+is found — and the crop is de-rotated ONCE by its moment angle (**2 crops/box**, fast). Deskew →
+small-pill (adaptive crop height + dual-radius) → moment-detect, all at **0 false positives**.
 
-1. **Small / soft pills** — the sharp 6-sticker photo still reads only 2/6 (RSA17, RSA19): the
-   four small/tilted pills read as fragments, and CIV reads `CV2` (loses both `I` and `1`). The
-   720×1280 front-camera **video is 0/6** — nothing reads on any frame, so it's an image-detail
-   wall, not a sampling one. Likely needs sharper/larger crops for small pills (the crop is
-   upscaled to a fixed height; a tiny pill loses detail) and stroke-aware prep.
-2. **Thin strokes under blur/scale** — `CIV 12` → `CV2`; a 3-char token is too short to correct
-   safely. The thin-letter recovery only restores dropped *letters*, not digits.
+## Remaining gaps
+
+1. **CIV12 under combined stress** — the 4 robustness misses (rot-30, rot-75, skew+, blur+rot+25)
+   are all CIV12, whose thin `I`/`1` degrade below readability when de-rotation resample stacks with
+   blur/skew. These are **safe misses** (read `CV2`/`G 12`, below the matcher's correction threshold
+   → never a wrong code) and are beyond realistic handheld use. Closing them would need stroke-aware
+   prep or a font-specific recogniser — weigh against complexity (see `ocr-approach-decision`).
+2. **Static 2 misses & video 1/6** — the multi-sticker photo's hardest rotated pills and the 720p
+   front-camera video are **capture-limited**: the pill competes with the PANINI bar / legal text,
+   and the video is soft. The real lever is sharper capture — the front-camera focus-lock (verify
+   on the Pixel via `/focus-probe.html`) and the higher-res STILL frames the live app grabs.
 3. **Stylized glyphs** — the font's `Y` reads as `V` (`EGY 4` prints as `EGV 4`).
 
 Invariant for all of the above: **false positives must stay 0** — never invent a code to lift recall.
