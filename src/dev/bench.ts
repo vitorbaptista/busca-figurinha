@@ -98,14 +98,24 @@ function filtered(src: Canvas, filter: string): Canvas {
   ctx.drawImage(src, 0, 0);
   return c;
 }
+// Seeded PRNG so the noise augmentation is DETERMINISTIC — the benchmark must give
+// the same score every run, or "100%" is just luck and an agent can't measure progress.
+let _seed = 0;
+function rng(): number {
+  _seed = (_seed + 0x6d2b79f5) | 0;
+  let t = Math.imul(_seed ^ (_seed >>> 15), 1 | _seed);
+  t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+  return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+}
 function noise(src: Canvas, sigma: number): Canvas {
+  _seed = 0x5715c0de; // reset → identical noise pattern every run
   const c = blank(src.width, src.height);
   const ctx = c.getContext('2d', { willReadFrequently: true })!;
   ctx.drawImage(src, 0, 0);
   const img = ctx.getImageData(0, 0, c.width, c.height);
   const d = img.data;
   for (let i = 0; i < d.length; i += 4) {
-    const n = (Math.random() + Math.random() + Math.random() - 1.5) * sigma; // ~gaussian
+    const n = (rng() + rng() + rng() - 1.5) * sigma; // ~gaussian
     d[i] = clamp(d[i] + n);
     d[i + 1] = clamp(d[i + 1] + n);
     d[i + 2] = clamp(d[i + 2] + n);
