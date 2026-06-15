@@ -29,41 +29,33 @@ export interface CodeBox {
 /** Long side (px) of the downscaled image used for detection. */
 const DET_LONG = 720;
 
-export function findCodeBoxes(frame: HTMLCanvasElement): CodeBox[] {
-  const fw = frame.width;
-  const fh = frame.height;
-  if (!fw || !fh) return [];
+/** Local-background radii (as a fraction of DET_LONG) the pill detector runs at. The
+ *  larger radius is the long-proven one for close-up backs; the smaller one rescues a
+ *  far / multi-up pill whose body otherwise stays hollow next to the big FIFA logo.
+ *  Boxes from both passes are merged and NMS-deduped. */
+const DET_BG_RADII = [0.045, 0.025] as const;
 
-  const scale = DET_LONG / Math.max(fw, fh);
-  const dw = Math.max(1, Math.round(fw * scale));
-  const dh = Math.max(1, Math.round(fh * scale));
+/** How much darker than its local background a pixel must be to count as pill foreground. */
+const FG_DELTA = 12;
 
-  const det = document.createElement('canvas');
-  det.width = dw;
-  det.height = dh;
-  const ctx = det.getContext('2d', { willReadFrequently: true });
-  if (!ctx) return [];
-  ctx.drawImage(frame, 0, 0, dw, dh);
-  const data = ctx.getImageData(0, 0, dw, dh).data;
-
+/** Run the connected-component pill search at one background radius, appending every
+ *  box that passes the geometry gate to `out`. Split out so findCodeBoxes can run it at
+ *  several radii (small + large pills need different local-threshold scales). */
+function collectBoxes(
+  gray: Uint8Array,
+  dw: number,
+  dh: number,
+  scale: number,
+  radius: number,
+  out: CodeBox[],
+): void {
   const n = dw * dh;
-  const gray = new Uint8Array(n);
-  for (let i = 0, p = 0; i < data.length; i += 4, p++) {
-    gray[p] = (data[i] * 77 + data[i + 1] * 150 + data[i + 2] * 29) >> 8;
-  }
-
-  // Foreground = pixels darker than their local background (the dark pill stands
-  // out from the card; the light text inside does not).
-  const radius = Math.max(6, Math.round(DET_LONG * 0.045));
   const bg = boxBlur(gray, dw, dh, radius);
   const fg = new Uint8Array(n);
-  for (let i = 0; i < n; i++) fg[i] = gray[i] < bg[i] - 12 ? 1 : 0;
+  for (let i = 0; i < n; i++) fg[i] = gray[i] < bg[i] - FG_DELTA ? 1 : 0;
 
-  // Connected components (4-connectivity, iterative flood fill).
   const labels = new Int32Array(n).fill(-1);
   const stack = new Int32Array(n);
-  const boxes: CodeBox[] = [];
-
   for (let start = 0; start < n; start++) {
     if (fg[start] === 0 || labels[start] !== -1) continue;
     let sp = 0;
@@ -74,7 +66,6 @@ export function findCodeBoxes(frame: HTMLCanvasElement): CodeBox[] {
     let maxX = 0;
     let maxY = 0;
     let area = 0;
-    // Pixel-moment accumulators for the component's principal-axis (tilt) estimate.
     let sx = 0;
     let sy = 0;
     let sxx = 0;
@@ -104,7 +95,7 @@ export function findCodeBoxes(frame: HTMLCanvasElement): CodeBox[] {
     const h = maxY - minY + 1;
     const scored = scoreBox(w, h, area);
     if (scored) {
-      boxes.push({
+      out.push({
         x: minX / scale,
         y: minY / scale,
         w: w / scale,
@@ -115,9 +106,57 @@ export function findCodeBoxes(frame: HTMLCanvasElement): CodeBox[] {
       });
     }
   }
+}
 
-  boxes.sort((a, b) => b.score - a.score);
-  const kept = nonMaxSuppress(boxes, 0.3).slice(0, 10);
+export function findCodeBoxes(frame: HTMLCanvasElement): CodeBox[] {
+  const fw = frame.width;
+  const fh = frame.height;
+  if (!fw || !fh) return [];
+
+  const scale = DET_LONG / Math.max(fw, fh);
+  const dw = Math.max(1, Math.round(fw * scale));
+  const dh = Math.max(1, Math.round(fh * scale));
+
+  const det = document.createElement('canvas');
+  det.width = dw;
+  det.height = dh;
+  const ctx = det.getContext('2d', { willReadFrequently: true });
+  if (!ctx) return [];
+  ctx.drawImage(frame, 0, 0, dw, dh);
+  const data = ctx.getImageData(0, 0, dw, dh).data;
+
+  const n = dw * dh;
+  const gray = new Uint8Array(n);
+  for (let i = 0, p = 0; i < data.length; i += 4, p++) {
+    gray[p] = (data[i] * 77 + data[i + 1] * 150 + data[i + 2] * 29) >> 8;
+  }
+
+  // Foreground = pixels darker than their local background (the dark pill stands out
+  // from the card; the light text inside does not). The background radius is the catch:
+  //  - a LARGE radius (≈ pill size or more) makes a small/far pill pop solid, but on a
+  //    close-up pill the radius sits INSIDE the pill, so its dark interior raises the
+  //    local mean and only the rim survives — the body goes hollow;
+  //  - a SMALL radius makes a close-up pill solid, but a far pill next to a big dark
+  //    neighbour (the FIFA "2026" logo) gets a contaminated, too-dark local mean and the
+  //    body fails the threshold.
+  // No single radius fits both a close-up and a held-at-arm's-length video pill, so we
+  // run the component pass at EACH radius and merge by PRIORITY: the first (large,
+  // long-proven for close-ups) radius wins, and a later radius only ADDS a pill in a
+  // region the earlier one left empty. That way the finer radius can never replace a
+  // close-up pill's clean segmentation with a worse, taller merge of itself — it only
+  // rescues far/multi-up pills the coarse radius missed. The passes are linear and the
+  // detection image is tiny, so the cost is negligible.
+  let kept: CodeBox[] = [];
+  for (const rFrac of DET_BG_RADII) {
+    const pass: CodeBox[] = [];
+    collectBoxes(gray, dw, dh, scale, Math.max(5, Math.round(DET_LONG * rFrac)), pass);
+    pass.sort((a, b) => b.score - a.score);
+    for (const b of nonMaxSuppress(pass, 0.3)) {
+      if (kept.every((k) => iou(b, k) <= 0.3)) kept.push(b);
+    }
+  }
+  kept.sort((a, b) => b.score - a.score);
+  kept = kept.slice(0, 10);
 
   // Only the strongest, most pill-shaped boxes get de-rotated. A weak box (low score)
   // is usually NOT a code pill, and de-rotating it tends to manufacture a clean-looking
@@ -353,8 +392,21 @@ function tightenToPillBand(src: HTMLCanvasElement): HTMLCanvasElement {
  *  candidates resolve the 0°/180° (or 90°/270°) ambiguity at OCR time. */
 export function codeCropCandidates(frame: HTMLCanvasElement, box: CodeBox): HTMLCanvasElement[] {
   const { axis, rotated } = rawCropGroups(frame, box);
-  return [...axis.map((c) => prepForOcr(c, true)), ...rotated.map((c) => prepForOcr(c, false))];
+  // The taller small-source target (which rescues a far/tiny pill's thin strokes) also
+  // sharpens the FIFA logo's stray round blobs into a phantom "00" on a WEAK box. So we
+  // only boost a box that scores like a real pill; a low-score blob keeps the modest 96
+  // target, at which its upscaled blobs stay unreadable noise the matcher drops.
+  const boost = box.score >= SMALL_BOOST_MIN_SCORE;
+  return [
+    ...axis.map((c) => prepForOcr(c, true, boost)),
+    ...rotated.map((c) => prepForOcr(c, false, boost)),
+  ];
 }
+
+/** A box must score at least this to receive the taller small-source OCR target. Real
+ *  code pills score ≥0.85; a spurious logo-blob box scores ~0.58, and boosting it turns
+ *  its round blobs into a false "00". */
+const SMALL_BOOST_MIN_SCORE = 0.68;
 
 /** DEV-ONLY hooks for the probe harness (brute-force angle sweep). Not used by app. */
 export function _rawRegion(frame: HTMLCanvasElement, box: CodeBox): HTMLCanvasElement {
@@ -415,6 +467,16 @@ export function stackCrops(crops: HTMLCanvasElement[], gap = 18): HTMLCanvasElem
 /** Target text-band height (px) Tesseract reads best; we upscale the crop to it.
  *  Generous so thin strokes (the "I" in CIV) survive binarization. */
 const TARGET_H = 96;
+/** Taller target for a SMALL source crop (a far/multi-sticker pill only tens of px
+ *  tall). At 96px such a pill's "1"/"I" wash out — "CIV 12" reads "CV"; at 160px the
+ *  same crop reads "CV12", which the matcher restores to CIV12. Applied ONLY when the
+ *  source is short: a close-up pill is already ~100–130px tall, so it keeps the 96
+ *  target and its noise behaviour (a bigger upscale of a noisy close-up manufactured a
+ *  false positive). */
+const TARGET_H_SMALL = 160;
+/** Source crops shorter than this (px) are "small" and get TARGET_H_SMALL. Chosen
+ *  between the multi-photo pills (raw height ~27–44px) and the close-up pills (~100px+). */
+const SMALL_SRC_H = 64;
 const BORDER = 16;
 /** Unsharp-mask strength (percent) applied before binarization to rescue thin strokes
  *  from a soft/blurry capture. Gentle — enough to recover the "I"/"1" without turning
@@ -433,9 +495,10 @@ const MAX_INK_FRACTION = 0.28;
  *  margin around the pill, and any inverted dark-on-light region) is then cleared,
  *  which both isolates the text and turns false-positive boxes (legal text, logos)
  *  into blanks that match nothing. */
-function prepForOcr(src: HTMLCanvasElement, sharpen: boolean): HTMLCanvasElement {
+function prepForOcr(src: HTMLCanvasElement, sharpen: boolean, boostSmall = true): HTMLCanvasElement {
   const sh = src.height || 1;
-  const factor = Math.max(1, TARGET_H / sh);
+  const target = boostSmall && sh < SMALL_SRC_H ? TARGET_H_SMALL : TARGET_H;
+  const factor = Math.max(1, target / sh);
   const cw = Math.max(1, Math.round(src.width * factor));
   const ch = Math.max(1, Math.round(src.height * factor));
 
@@ -468,7 +531,7 @@ function prepForOcr(src: HTMLCanvasElement, sharpen: boolean): HTMLCanvasElement
   // second sharpening fragments the digits ("CIV 12" → "CIV" + "12").
   const hist = new Array<number>(256).fill(0);
   if (sharpen) {
-    const usRadius = Math.max(1, Math.round(TARGET_H * 0.04));
+    const usRadius = Math.max(1, Math.round(target * 0.04));
     const mean = boxBlur(gray, cw, ch, usRadius);
     for (let p = 0; p < count; p++) {
       const s = gray[p] + ((gray[p] - mean[p]) * UNSHARP_AMOUNT) / 100;

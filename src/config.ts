@@ -32,7 +32,11 @@ export const CONFIG = {
     /** Max Levenshtein distance for an OCR token to snap to a real code. */
     maxDistance: 1,
     /** A code must be read on this many frames of one hold before we commit it —
-     *  filters a single blurry frame that mis-reads one valid code as another. */
-    confirmations: 2,
+     *  filters a blurry frame that mis-reads one valid code as another. A soft far pill
+     *  can mis-read the SAME digit the same wrong way on two consecutive frames (e.g. a
+     *  soft "5" reads "8" twice, then "5", then "6"), so two agreements isn't enough to
+     *  reject it; three is — the true reading and the slips split the frames and neither
+     *  wrong code repeats three times. A genuinely legible pill clears three easily. */
+    confirmations: 3,
   },
 } as const;
