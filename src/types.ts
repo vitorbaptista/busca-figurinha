@@ -133,6 +133,21 @@ export interface AutoCapture {
   stop(): void;
 }
 
+/** Per-tick heartbeat of the capture loop (for the debug readout): what the loop is
+ *  doing right now, so a user can see it's alive and why it is/isn't reading. */
+export interface AutoCaptureStatus {
+  /** waiting = armed, show a sticker; moving = sticker in motion; holding = still,
+   *  counting toward the read; reading = OCR burst in flight; locked = already read,
+   *  move/swap the sticker to re-arm. */
+  phase: 'waiting' | 'moving' | 'holding' | 'reading' | 'locked';
+  /** Sampled frame-change fraction (0..1) this tick. */
+  change: number;
+  /** ms the sticker has been held still (0 when moving). */
+  heldMs: number;
+  /** Monotonic tick counter — a visible proof the loop is still ticking. */
+  tick: number;
+}
+
 export interface AutoCaptureDeps {
   source: FrameSource;
   /** Called for each frame of a settled sticker's burst. Resolve `true` to stop the
@@ -141,6 +156,8 @@ export interface AutoCaptureDeps {
   /** Called once when a new sticker settles, before its first burst frame — the
    *  place to reset any per-sticker accumulation (e.g. the multi-frame confirmer). */
   onBurstStart?: () => void;
+  /** Optional per-tick heartbeat (every sampleIntervalMs) for a debug readout. */
+  onTick?: (status: AutoCaptureStatus) => void;
 }
 
 // ---------- Storage ----------

@@ -44,6 +44,21 @@ export function createAutoCapture(deps: AutoCaptureDeps): AutoCapture {
   let prevFrame: Uint8ClampedArray | null = null;
   let stillSince: number | null = null;
   let sawMotion = false;
+  let ticks = 0;
+
+  /** Report the loop's current phase to the debug heartbeat (if any). */
+  function emitTick(change: number): void {
+    if (!deps.onTick) return;
+    const phase =
+      state === 'locked'
+        ? 'locked'
+        : !sawMotion
+          ? 'waiting'
+          : change < CONFIG.capture.stillThreshold
+            ? 'holding'
+            : 'moving';
+    deps.onTick({ phase, change, heldMs: stillSince ? Date.now() - stillSince : 0, tick: ticks });
+  }
 
   function reset() {
     state = 'waiting';
@@ -58,11 +73,16 @@ export function createAutoCapture(deps: AutoCaptureDeps): AutoCapture {
   }
 
   async function tick() {
+    ticks++;
     const frame = grabSampleFrame();
-    if (!frame) return;
+    if (!frame) {
+      emitTick(0);
+      return;
+    }
 
     if (!prevFrame) {
       prevFrame = frame;
+      emitTick(0);
       return;
     }
 
@@ -95,9 +115,12 @@ export function createAutoCapture(deps: AutoCaptureDeps): AutoCapture {
         stillSince = null;
       }
     }
+
+    emitTick(change);
   }
 
   async function capture() {
+    deps.onTick?.({ phase: 'reading', change: 0, heldMs: 0, tick: ticks });
     deps.onBurstStart?.();
     const { burstFrames, burstIntervalMs } = CONFIG.capture;
     try {

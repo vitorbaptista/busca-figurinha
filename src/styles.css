@@ -316,7 +316,11 @@ button {
   position: relative;
   flex: 1;
   min-height: 46vh;
-  background: #000;
+  /* White, not black: the front camera faces the sticker AND so does the screen, so a
+     bright background turns the screen into a FILL LIGHT — more light means shorter
+     exposure (less motion blur) and better contrast, which is what actually makes the
+     code pill readable. Only meaningful for the front camera. */
+  background: #fff;
   overflow: hidden;
   display: flex;
   align-items: center;
@@ -334,17 +338,19 @@ button {
   object-fit: cover;
 }
 
-/* Reticle guiding where to place the sticker. */
+/* Reticle guiding where to place the sticker. Everything OUTSIDE it is painted bright
+   white by the box-shadow spread — that white area is the fill light (the screen faces
+   the sticker), with the camera visible through the reticle "window". */
 .scan-frame {
   position: absolute;
-  top: 50%;
+  top: 42%;
   left: 50%;
-  width: min(78vw, 320px);
-  height: min(46vw, 190px);
+  width: min(86vw, 380px);
+  height: min(56vw, 250px);
   transform: translate(-50%, -50%);
-  border: 3px solid rgba(255, 255, 255, 0.85);
+  border: 3px solid rgba(40, 120, 80, 0.9);
   border-radius: 16px;
-  box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.35);
+  box-shadow: 0 0 0 9999px #fff;
   z-index: 2;
   /* Gentle breathing so the user can see the scanner is live and waiting. */
   animation: scan-breathe 2.4s ease-in-out infinite;
@@ -352,10 +358,10 @@ button {
 @keyframes scan-breathe {
   0%,
   100% {
-    border-color: rgba(255, 255, 255, 0.82);
+    border-color: rgba(40, 120, 80, 0.7);
   }
   50% {
-    border-color: rgba(110, 231, 167, 0.95);
+    border-color: rgba(16, 185, 129, 0.95);
   }
 }
 @media (prefers-reduced-motion: reduce) {

@@ -76,6 +76,8 @@ export function ScanScreen({ session, collection, settings, onPersist, onFinish 
   const [manualValue, setManualValue] = useState('');
   const [analyzing, setAnalyzing] = useState(false);
   const [debugText, setDebugText] = useState('');
+  // Debug-only capture-loop heartbeat (a rotating spinner proves the loop is ticking).
+  const [beat, setBeat] = useState('');
 
   // ---------- Result handling shared by all input paths ----------
 
@@ -364,6 +366,25 @@ export function ScanScreen({ session, collection, settings, onPersist, onFinish 
         source,
         onBurstStart: () => confirmerRef.current.reset(),
         onCapture: (frame) => recognizeCanvas(frame, { confirm: true, silent: true }),
+        // Debug heartbeat: a braille spinner that advances every tick (so a frozen loop is
+        // obvious) plus the current phase — notably "lido ✓ — troque" when it's locked and
+        // waiting for you to swap the sticker (the usual reason it looks "stopped").
+        onTick: DEBUG
+          ? (s) => {
+              const sp = '⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏'[s.tick % 10];
+              const label =
+                s.phase === 'waiting'
+                  ? 'aguardando figurinha'
+                  : s.phase === 'moving'
+                    ? `movendo ${Math.round(s.change * 100)}%`
+                    : s.phase === 'holding'
+                      ? `parado ${s.heldMs}ms`
+                      : s.phase === 'reading'
+                        ? 'lendo…'
+                        : 'lido ✓ — troque a figurinha';
+              setBeat(`${sp} ${label}`);
+            }
+          : undefined,
       });
       captureRef.current = capture;
       capture.start();
@@ -465,7 +486,12 @@ export function ScanScreen({ session, collection, settings, onPersist, onFinish 
         {/* Camera <video> is appended here imperatively; Preact leaves it alone. */}
         <div class="scan-video-layer" ref={videoLayerRef} aria-hidden="true" />
 
-        {DEBUG && <div class="debug-box">{debugText || 'toque na câmera p/ capturar'}</div>}
+        {DEBUG && (
+          <div class="debug-box">
+            {beat || 'iniciando…'}
+            {debugText ? ` · ${debugText}` : ''}
+          </div>
+        )}
 
         {cameraState !== 'denied' && (
           <>

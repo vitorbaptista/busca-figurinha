@@ -20,22 +20,25 @@ export const CONFIG = {
     hybridFastConf: 70,
   },
   capture: {
-    /** Frame must stay still this long before we OCR it. */
-    stabilityMs: 250,
+    /** Frame must stay still this long before we OCR it. Kept short: the screen fill-light
+     *  gives sharp frames quickly, and the conservative matcher rejects a too-early/soft read
+     *  (a miss, retried next tick) rather than posting a wrong code — so a long settle is just
+     *  dead time per sticker. */
+    stabilityMs: 130,
     /** Fraction of changed pixels below which a frame counts as "still". */
     stillThreshold: 0.02,
     /** Frame must change at least this much after a read before we arm again. */
     rearmThreshold: 0.06,
-    /** How often the capture loop samples the frame difference (ms). */
-    sampleIntervalMs: 120,
-    /** While a sticker is held still, OCR up to this many frames looking for
-     *  agreeing reads. The burst stops one frame after the last code confirms, so a
-     *  lone sticker typically uses ~3; the cap only bites on a busy multi-sticker
-     *  frame or one too soft to ever agree. */
+    /** How often the capture loop samples the frame difference (ms). Lower = the loop
+     *  notices a sticker landing (and the previous one leaving) sooner. The sample is a tiny
+     *  160px frame-diff, so checking ~twice as often is cheap and shaves the felt latency. */
+    sampleIntervalMs: 60,
+    /** While a sticker is held still, OCR up to this many frames looking for an agreeing
+     *  read. The burst stops as soon as a code confirms (confirmations=1), so a sharp
+     *  fill-lit sticker usually resolves on frame 1–2; the cap only bites on a soft frame. */
     burstFrames: 6,
-    /** Small gap between burst frames so the preview can paint and autofocus can
-     *  settle between reads. */
-    burstIntervalMs: 70,
+    /** Small gap between burst frames so the preview can paint between reads. */
+    burstIntervalMs: 35,
   },
   match: {
     /** Max Levenshtein distance for an OCR token to snap to a real code. */
