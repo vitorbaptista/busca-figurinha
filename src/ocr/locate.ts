@@ -8,7 +8,7 @@
 //
 // Pure typed-array canvas work — no OpenCV. Detection runs on a downscaled copy.
 
-import { rotateCanvas } from './rotate';
+import { rotateCanvas, rotateCanvasDeg } from './rotate';
 
 export interface CodeBox {
   /** Bounding box in full-frame pixels. */
@@ -19,6 +19,11 @@ export interface CodeBox {
   /** 'h' = text runs horizontally (upright or 180°), 'v' = rotated 90°/270°. */
   orient: 'h' | 'v';
   score: number;
+  /** In-plane tilt (degrees) of the pill's long axis relative to the box orientation,
+   *  estimated from the dark component's pixel moments. A handheld sticker is tilted a
+   *  few degrees; de-rotating the crop by -tilt brings the text horizontal for OCR.
+   *  null when the component is too round to give a trustworthy axis. */
+  tilt: number | null;
 }
 
 /** Long side (px) of the downscaled image used for detection. */
@@ -69,6 +74,12 @@ export function findCodeBoxes(frame: HTMLCanvasElement): CodeBox[] {
     let maxX = 0;
     let maxY = 0;
     let area = 0;
+    // Pixel-moment accumulators for the component's principal-axis (tilt) estimate.
+    let sx = 0;
+    let sy = 0;
+    let sxx = 0;
+    let syy = 0;
+    let sxy = 0;
     while (sp > 0) {
       const idx = stack[--sp];
       const x = idx % dw;
@@ -78,6 +89,11 @@ export function findCodeBoxes(frame: HTMLCanvasElement): CodeBox[] {
       if (y < minY) minY = y;
       if (y > maxY) maxY = y;
       area++;
+      sx += x;
+      sy += y;
+      sxx += x * x;
+      syy += y * y;
+      sxy += x * y;
       if (x > 0 && fg[idx - 1] && labels[idx - 1] === -1) ((labels[idx - 1] = start), (stack[sp++] = idx - 1));
       if (x < dw - 1 && fg[idx + 1] && labels[idx + 1] === -1) ((labels[idx + 1] = start), (stack[sp++] = idx + 1));
       if (y > 0 && fg[idx - dw] && labels[idx - dw] === -1) ((labels[idx - dw] = start), (stack[sp++] = idx - dw));
@@ -95,12 +111,86 @@ export function findCodeBoxes(frame: HTMLCanvasElement): CodeBox[] {
         h: h / scale,
         orient: scored.orient,
         score: scored.score,
+        tilt: componentTilt(scored.orient, area, sx, sy, sxx, syy, sxy),
       });
     }
   }
 
   boxes.sort((a, b) => b.score - a.score);
-  return nonMaxSuppress(boxes, 0.3).slice(0, 10);
+  const kept = nonMaxSuppress(boxes, 0.3).slice(0, 10);
+
+  // Only the strongest, most pill-shaped boxes get de-rotated. A weak box (low score)
+  // is usually NOT a code pill, and de-rotating it tends to manufacture a clean-looking
+  // but spurious read (e.g. a stray dark blob that resolves to the "00" logo) — a false
+  // positive a trading app must never produce. The real code pill always scores near the
+  // top, so we drop the tilt on any box more than TILT_SCORE_MARGIN below the best.
+  const best = kept.length ? kept[0].score : 0;
+  for (const b of kept) {
+    if (b.score < best - TILT_SCORE_MARGIN) b.tilt = null;
+  }
+  return kept;
+}
+
+/** A box is only de-rotated when its measured lean is in [MIN_TILT_DEG, MAX_TILT_DEG].
+ *  Below the minimum the upright crop reads fine and de-rotation risks dropping a digit
+ *  into a wrong real code; above the maximum the component is likely mis-segmented and
+ *  the 90°-turn candidates cover it. */
+const MIN_TILT_DEG = 6;
+const MAX_TILT_DEG = 30;
+
+/** A box is only de-rotated if its score is within this margin of the frame's best box.
+ *  Weaker boxes are rarely the real pill, and de-rotating them invents false positives. */
+const TILT_SCORE_MARGIN = 0.08;
+
+/** In-plane tilt (degrees) of a component's long axis, from its pixel moments. For an
+ *  'h' box the long axis is near horizontal, so the tilt IS the long-axis angle; for a
+ *  'v' box the long axis is near vertical, so the tilt relative to the 90°-turned crop
+ *  is (angle - 90). Returns null when the component isn't clearly elongated (a round
+ *  mass has no meaningful axis) or the tilt is too large to be a small off-axis lean
+ *  (beyond that the axis-aligned + 90° candidates already cover it). All inputs are in
+ *  the downscaled detection space, which is fine — angle is scale-invariant. */
+function componentTilt(
+  orient: 'h' | 'v',
+  area: number,
+  sx: number,
+  sy: number,
+  sxx: number,
+  syy: number,
+  sxy: number,
+): number | null {
+  if (area < 12) return null;
+  const cx = sx / area;
+  const cy = sy / area;
+  const uxx = sxx / area - cx * cx;
+  const uyy = syy / area - cy * cy;
+  const uxy = sxy / area - cx * cy;
+
+  // Elongation: require the long axis to clearly dominate, else the angle is noise.
+  const tr = uxx + uyy;
+  const det = uxx * uyy - uxy * uxy;
+  const disc = Math.sqrt(Math.max(0, (tr * tr) / 4 - det));
+  const l1 = tr / 2 + disc;
+  const l2 = tr / 2 - disc;
+  if (l2 <= 0 || l1 / l2 < 1.8) return null;
+
+  // Long-axis angle (degrees), in (-90, 90].
+  let deg = (0.5 * Math.atan2(2 * uxy, uxx - uyy) * 180) / Math.PI;
+  while (deg > 90) deg -= 180;
+  while (deg <= -90) deg += 180;
+
+  // Tilt relative to the box's nominal orientation.
+  let tilt = orient === 'h' ? deg : deg - 90;
+  while (tilt > 45) tilt -= 90;
+  while (tilt < -45) tilt += 90;
+
+  // Only de-rotate a box with a CLEAR off-axis lean. Below MIN_TILT_DEG the upright
+  // axis-aligned crop already reads cleanly, and de-rotating it only risks the OCR
+  // dropping a thin digit (e.g. "CIV 12" → "CIV 2" = a real but WRONG code) — a false
+  // positive a trading app must never produce. Above MAX_TILT_DEG the component is
+  // usually mis-segmented and the 90°-turn candidates already cover that band.
+  if (tilt < -MAX_TILT_DEG || tilt > MAX_TILT_DEG) return null;
+  if (Math.abs(tilt) < MIN_TILT_DEG) return null;
+  return tilt;
 }
 
 /** Geometry gate + score for "is this the code pill?". Returns null if not. */
@@ -123,23 +213,159 @@ function scoreBox(w: number, h: number, area: number): { orient: 'h' | 'v'; scor
   return { orient: w >= h ? 'h' : 'v', score: arScore * 0.5 + fillScore * 0.5 };
 }
 
-/** The two orientation candidates for a box, rotated upright but NOT yet prepared.
- *  Splitting this out lets the dev harness try alternative prep functions on the
- *  exact same raw crop the app uses. */
+/** Crop rotations (degrees, canvas clockwise-positive) to APPLY once a box is judged
+ *  TILTED. The pill's moment axis reliably tells us a box is off-axis, but its
+ *  magnitude/sign are too noisy on a downscaled component to pin the exact correction,
+ *  so we sweep a small fixed spread that brackets both lean directions across the
+ *  realistic handheld range (~±16°). OCR all of them; the conservative matcher keeps
+ *  only the flat one.
+ *
+ *  This sweep runs ONLY for a clearly-tilted, top-scoring box — never an upright or
+ *  weak box — because de-rotating those just manufactures garbled reads that can snap
+ *  to a wrong real code (the false positive a trading app must never produce). */
+const TILT_SWEEP = [2, -4, 8, 14, -10, 16, -16];
+
+/** Crop rotations to try for a box: the fixed sweep when the box is tilted, else none.
+ *  `tilt` is the box's measured lean (null = upright/non-pill → no de-rotation). */
+function tiltAngles(tilt: number | null): number[] {
+  return tilt === null ? [] : TILT_SWEEP;
+}
+
+/** Orientation candidates for a box, rotated toward upright but NOT yet prepared.
+ *  Always includes the two axis-aligned candidates (0°/180° or 90°/270°) that resolve
+ *  the upside-down ambiguity, PLUS a few extra crops de-rotated by the pill's measured
+ *  tilt and small fixed leans so a handheld, slightly-rotated sticker still lands
+ *  upright for OCR.
+ *
+ *  Splitting this out lets the dev harness try alternative prep functions on the exact
+ *  same raw crops the app uses. */
 export function rawCropCandidates(frame: HTMLCanvasElement, box: CodeBox): HTMLCanvasElement[] {
+  const { axis, rotated } = rawCropGroups(frame, box);
+  return [...axis, ...rotated];
+}
+
+/** Raw crops split into AXIS-aligned (0°/180°/90°/270°) and tilt-corrected groups.
+ *  They get prepared differently: the axis crops are sharpened (rescuing thin strokes a
+ *  soft capture washed out), but the de-rotated crops are NOT — the rotation resample
+ *  already softens them and a second sharpening fragments the digits (e.g. a tilted
+ *  "CIV 12" breaks into "CIV" + "12"). */
+function rawCropGroups(
+  frame: HTMLCanvasElement,
+  box: CodeBox,
+): { axis: HTMLCanvasElement[]; rotated: HTMLCanvasElement[] } {
   // A little padding so the pill has a margin of card around it — the prep step
   // flood-clears that margin, which cleanly isolates the text.
   const region = cropRegion(frame, box, 0.18);
-  const base = box.orient === 'h' ? rotateCanvas(region, 0) : rotateCanvas(region, 90);
-  const flip = box.orient === 'h' ? rotateCanvas(region, 180) : rotateCanvas(region, 270);
-  return [base, flip];
+
+  // Axis-aligned base: 'h' is already horizontal, 'v' needs a 90° turn first.
+  const baseTurn = box.orient === 'h' ? 0 : 90;
+  const base = rotateCanvas(region, baseTurn as 0 | 90);
+  const flip = rotateCanvas(base, 180);
+  const axis = [base, flip];
+
+  // De-rotated crops: rotating the upright base brings a tilted pill flat. A tilted
+  // pill's axis-aligned bbox is much taller than the pill, so after rotation the (now
+  // horizontal) text sits in a tall canvas full of empty card; prepForOcr scales by the
+  // FULL crop height, which would shrink the text band too far. So we tighten the
+  // rotated crop to the dark pill's horizontal band first, restoring a text-sized crop.
+  // We add both the rotated crop and its 180° flip (the code may be upside down).
+  // tiltAngles returns the rotation to APPLY directly (canvas clockwise-positive).
+  const rotated: HTMLCanvasElement[] = [];
+  for (const deg of tiltAngles(box.tilt)) {
+    const r = tightenToPillBand(rotateCanvasDeg(base, deg));
+    rotated.push(r, rotateCanvas(r, 180));
+  }
+  return { axis, rotated };
+}
+
+/** Crop a de-rotated canvas down to the horizontal band containing the dark pill, so
+ *  the (now upright) text fills the crop and survives prepForOcr's height-based scaling.
+ *  We find the rows whose darkest pixels form the pill body (darker than the overall
+ *  mean) and keep that band plus a small margin; columns are kept full-width so the
+ *  whole code stays in view. Falls back to the input unchanged when no clear band is
+ *  found (e.g. a near-blank crop). */
+function tightenToPillBand(src: HTMLCanvasElement): HTMLCanvasElement {
+  const w = src.width;
+  const h = src.height;
+  if (w < 8 || h < 8) return src;
+  const ctx = src.getContext('2d', { willReadFrequently: true });
+  if (!ctx) return src;
+  const data = ctx.getImageData(0, 0, w, h).data;
+
+  // Per-row count of "dark" pixels (the pill body is darker than the card/grey fill).
+  // Threshold from the global mean keeps this robust to brightness.
+  let sum = 0;
+  const n = w * h;
+  for (let i = 0; i < data.length; i += 4) {
+    sum += (data[i] * 77 + data[i + 1] * 150 + data[i + 2] * 29) >> 8;
+  }
+  const mean = sum / n;
+  const thresh = mean * 0.7;
+
+  const rowDark = new Int32Array(h);
+  for (let y = 0; y < h; y++) {
+    let c = 0;
+    for (let x = 0; x < w; x++) {
+      const p = (y * w + x) * 4;
+      const g = (data[p] * 77 + data[p + 1] * 150 + data[p + 2] * 29) >> 8;
+      if (g < thresh) c++;
+    }
+    rowDark[y] = c;
+  }
+
+  // A pill row is one with a meaningful run of dark pixels. Find the tallest contiguous
+  // band of such rows (the pill body), then add a margin so glyph tops/bottoms survive.
+  const rowMin = w * 0.12;
+  let bestStart = -1;
+  let bestLen = 0;
+  let curStart = -1;
+  for (let y = 0; y <= h; y++) {
+    const on = y < h && rowDark[y] >= rowMin;
+    if (on && curStart < 0) curStart = y;
+    if (!on && curStart >= 0) {
+      const len = y - curStart;
+      if (len > bestLen) {
+        bestLen = len;
+        bestStart = curStart;
+      }
+      curStart = -1;
+    }
+  }
+  if (bestStart < 0 || bestLen >= h * 0.85) return src; // no clear band, or already tight
+
+  const margin = Math.round(bestLen * 0.5) + 2;
+  const y0 = Math.max(0, bestStart - margin);
+  const y1 = Math.min(h, bestStart + bestLen + margin);
+  const bh = y1 - y0;
+  if (bh <= 0 || bh >= h) return src;
+
+  const out = document.createElement('canvas');
+  out.width = w;
+  out.height = bh;
+  const octx = out.getContext('2d', { willReadFrequently: true });
+  if (!octx) return src;
+  octx.drawImage(src, 0, y0, w, bh, 0, 0, w, bh);
+  return out;
 }
 
 /** Build the upright + 180°-flipped OCR crops for a detected box, each prepared
  *  (rotated upright, upscaled, binarized to dark-text-on-white, padded). The two
  *  candidates resolve the 0°/180° (or 90°/270°) ambiguity at OCR time. */
 export function codeCropCandidates(frame: HTMLCanvasElement, box: CodeBox): HTMLCanvasElement[] {
-  return rawCropCandidates(frame, box).map(prepForOcr);
+  const { axis, rotated } = rawCropGroups(frame, box);
+  return [...axis.map((c) => prepForOcr(c, true)), ...rotated.map((c) => prepForOcr(c, false))];
+}
+
+/** DEV-ONLY hooks for the probe harness (brute-force angle sweep). Not used by app. */
+export function _rawRegion(frame: HTMLCanvasElement, box: CodeBox): HTMLCanvasElement {
+  const region = cropRegion(frame, box, 0.18);
+  return box.orient === 'h' ? rotateCanvas(region, 0) : rotateCanvas(region, 90);
+}
+export function _rotDeg(c: HTMLCanvasElement, deg: number): HTMLCanvasElement {
+  return tightenToPillBand(rotateCanvasDeg(c, deg));
+}
+export function _prep(c: HTMLCanvasElement): HTMLCanvasElement {
+  return prepForOcr(c, false);
 }
 
 /** Crop a padded region (in full-frame pixels) into its own canvas. */
@@ -190,6 +416,10 @@ export function stackCrops(crops: HTMLCanvasElement[], gap = 18): HTMLCanvasElem
  *  Generous so thin strokes (the "I" in CIV) survive binarization. */
 const TARGET_H = 96;
 const BORDER = 16;
+/** Unsharp-mask strength (percent) applied before binarization to rescue thin strokes
+ *  from a soft/blurry capture. Gentle — enough to recover the "I"/"1" without turning
+ *  sensor noise into ink. */
+const UNSHARP_AMOUNT = 30;
 /** A real code pill is a few sparse glyphs — well under this share of ink after the
  *  card margin is cleared. A crop with more ink than this is a photo or a paragraph
  *  of legal text (a face-up sticker, the back's fine print); we blank it so OCR
@@ -203,7 +433,7 @@ const MAX_INK_FRACTION = 0.28;
  *  margin around the pill, and any inverted dark-on-light region) is then cleared,
  *  which both isolates the text and turns false-positive boxes (legal text, logos)
  *  into blanks that match nothing. */
-function prepForOcr(src: HTMLCanvasElement): HTMLCanvasElement {
+function prepForOcr(src: HTMLCanvasElement, sharpen: boolean): HTMLCanvasElement {
   const sh = src.height || 1;
   const factor = Math.max(1, TARGET_H / sh);
   const cw = Math.max(1, Math.round(src.width * factor));
@@ -225,12 +455,29 @@ function prepForOcr(src: HTMLCanvasElement): HTMLCanvasElement {
   const px = img.data;
   const count = cw * ch;
 
-  const hist = new Array<number>(256).fill(0);
   const gray = new Uint8Array(count);
   for (let i = 0, p = 0; i < px.length; i += 4, p++) {
-    const g = (px[i] * 77 + px[i + 1] * 150 + px[i + 2] * 29) >> 8;
-    gray[p] = g;
-    hist[g]++;
+    gray[p] = (px[i] * 77 + px[i + 1] * 150 + px[i + 2] * 29) >> 8;
+  }
+
+  // Unsharp mask (axis-aligned crops only): restore local contrast on thin strokes that
+  // a soft/blurry capture washed out (the "I" in CIV, the "1" in 12 fade into the pill
+  // and otsu then drops them, mis-reading "CIV 12" as "CV2"). sharp = gray + amount·(gray
+  // − localMean), clamped. Gentle radius/amount so it sharpens edges without amplifying
+  // noise. Skipped on de-rotated crops: the rotation resample already softens them and a
+  // second sharpening fragments the digits ("CIV 12" → "CIV" + "12").
+  const hist = new Array<number>(256).fill(0);
+  if (sharpen) {
+    const usRadius = Math.max(1, Math.round(TARGET_H * 0.04));
+    const mean = boxBlur(gray, cw, ch, usRadius);
+    for (let p = 0; p < count; p++) {
+      const s = gray[p] + ((gray[p] - mean[p]) * UNSHARP_AMOUNT) / 100;
+      const v = s < 0 ? 0 : s > 255 ? 255 : s | 0;
+      gray[p] = v;
+      hist[v]++;
+    }
+  } else {
+    for (let p = 0; p < count; p++) hist[gray[p]]++;
   }
   const threshold = otsu(hist, count);
 
