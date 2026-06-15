@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Front camera focus probe</title>
+    <style>
+      body { font: 15px ui-monospace, monospace; background: #0f1115; color: #6ee7b7; padding: 16px; }
+      button { font-size: 18px; padding: 12px 18px; margin-bottom: 12px; }
+      pre { white-space: pre-wrap; word-break: break-word; color: #ddd; }
+      video { width: 70vw; max-width: 320px; border: 1px solid #444; display: block; margin-top: 12px; }
+    </style>
+  </head>
+  <body>
+    <!-- DEV-ONLY probe (excluded from the production build). Tap Start on the phone,
+         allow the camera, and read whether the FRONT camera supports manual focus and
+         what distance range it offers — answers "can we lock near focus?" on-device. -->
+    <button id="go">Start front camera</button>
+    <pre id="out">Tap “Start”, then allow the camera.</pre>
+    <video id="v" autoplay playsinline muted></video>
+    <script>
+      document.getElementById('go').onclick = async () => {
+        const out = document.getElementById('out');
+        try {
+          const stream = await navigator.mediaDevices.getUserMedia({
+            video: { facingMode: 'user', width: { ideal: 1920 }, height: { ideal: 1080 } },
+            audio: false,
+          });
+          document.getElementById('v').srcObject = stream;
+          const track = stream.getVideoTracks()[0];
+          const caps = track.getCapabilities ? track.getCapabilities() : {};
+          const settings = track.getSettings ? track.getSettings() : {};
+          let msg =
+            'camera: ' + track.label + '\n\nfocusMode: ' + JSON.stringify(caps.focusMode) +
+            '\nfocusDistance: ' + JSON.stringify(caps.focusDistance) +
+            '\nzoom: ' + JSON.stringify(caps.zoom) +
+            '\n\ncurrent settings:\n' + JSON.stringify(settings, null, 2);
+          if (caps.focusMode && caps.focusMode.includes('manual') && caps.focusDistance) {
+            try {
+              await track.applyConstraints({
+                advanced: [{ focusMode: 'manual', focusDistance: caps.focusDistance.min }],
+              });
+              msg += '\n\n✅ Manual focus SUPPORTED — locked to near (' + caps.focusDistance.min + ').' +
+                ' Hold a sticker close and see if it looks sharp.';
+            } catch (e) {
+              msg += '\n\n⚠️ Manual focus advertised but applyConstraints failed: ' + e;
+            }
+          } else {
+            msg += '\n\n❌ No manual focus on this camera (likely fixed-focus). Focus locking ' +
+              'won’t help — hold the sticker at the camera’s natural focus distance, or use the back camera.';
+          }
+          out.textContent = msg;
+        } catch (e) {
+          out.textContent = 'error: ' + e;
+        }
+      };
+    </script>
+  </body>
+</html>
