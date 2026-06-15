@@ -47,6 +47,7 @@ async function loadImage(url: string): Promise<HTMLCanvasElement> {
 interface FrameRead {
   found: string[];
   reads: string[];
+  dbg?: string;
 }
 
 async function recognizeFrame(
@@ -54,6 +55,13 @@ async function recognizeFrame(
   frame: HTMLCanvasElement,
 ): Promise<FrameRead> {
   const boxes = findCodeBoxes(frame);
+  const dbg = boxes
+    .slice(0, 3)
+    .map(
+      (b) =>
+        `[s${b.score.toFixed(2)} ${Math.round(b.w)}x${Math.round(b.h)} ${b.orient} t${b.tilt === null ? '-' : Math.round(b.tilt)}]`,
+    )
+    .join('');
   const crops = boxes.flatMap((b) => codeCropCandidates(frame, b));
   const results = crops.length ? await ocr.recognizeMany(crops) : [];
   const found = new Set<string>();
@@ -64,7 +72,7 @@ async function recognizeFrame(
     const m = bestMatchFromText(r.text, checklist);
     if (m?.entry) found.add(m.entry.code);
   }
-  return { found: [...found], reads };
+  return { found: [...found], reads, dbg: `${boxes.length}box ${dbg}` };
 }
 
 // ---------- Augmentations (canvas transforms that keep the code readable) ----------
@@ -138,19 +146,67 @@ async function jpeg(src: Canvas, q: number): Promise<Canvas> {
   c.getContext('2d')!.drawImage(img, 0, 0);
   return c;
 }
+// A mild horizontal-shear perspective/skew: the top edge slides sideways relative to
+// the bottom, as if the sticker is tilted slightly away from the camera. Kept gentle
+// (the code stays plainly readable) and the canvas is grown so nothing is clipped.
+function skew(src: Canvas, kx: number): Canvas {
+  const extra = Math.ceil(Math.abs(kx) * src.height);
+  const c = blank(src.width + extra, src.height);
+  const ctx = c.getContext('2d')!;
+  ctx.fillStyle = '#7a7a7a';
+  ctx.fillRect(0, 0, c.width, c.height);
+  // translate so the sheared content stays inside the widened canvas
+  ctx.setTransform(1, 0, kx, 1, kx < 0 ? extra : 0, 0);
+  ctx.drawImage(src, 0, 0);
+  return c;
+}
+// Compose two augmentations left-to-right (e.g. blur then rotate). Async-aware so a
+// JPEG step can participate.
+function compose(
+  ...steps: Array<(c: Canvas) => Canvas | Promise<Canvas>>
+): (c: Canvas) => Promise<Canvas> {
+  return async (c: Canvas) => {
+    let cur = c;
+    for (const step of steps) cur = await step(cur);
+    return cur;
+  };
+}
 
 const AUGS: Array<{ name: string; run: (c: Canvas) => Canvas | Promise<Canvas> }> = [
   { name: 'orig', run: (c) => c },
+  // Right-angle turns and the previously-tested small leans.
   { name: 'rot90', run: (c) => rotate(c, 90) },
   { name: 'rot180', run: (c) => rotate(c, 180) },
   { name: 'rot270', run: (c) => rotate(c, 270) },
   { name: 'rot+12', run: (c) => rotate(c, 12) },
   { name: 'rot-12', run: (c) => rotate(c, -12) },
+  // Full rotation sweep: every code must read upright at ANY in-plane angle. These
+  // fall in the ~15-75° gap the de-rotator used to miss; the code stays plainly
+  // human-readable at each (a sticker held at 45° is still trivially legible).
+  { name: 'rot+15', run: (c) => rotate(c, 15) },
+  { name: 'rot-15', run: (c) => rotate(c, -15) },
+  { name: 'rot+30', run: (c) => rotate(c, 30) },
+  { name: 'rot-30', run: (c) => rotate(c, -30) },
+  { name: 'rot+45', run: (c) => rotate(c, 45) },
+  { name: 'rot-45', run: (c) => rotate(c, -45) },
+  { name: 'rot+60', run: (c) => rotate(c, 60) },
+  { name: 'rot-60', run: (c) => rotate(c, -60) },
+  { name: 'rot+75', run: (c) => rotate(c, 75) },
+  { name: 'rot-75', run: (c) => rotate(c, -75) },
+  // Degradations.
   { name: 'blur', run: (c) => filtered(c, 'blur(1.4px)') },
   { name: 'noise', run: (c) => noise(c, 16) },
   { name: 'scale0.5', run: (c) => rescale(c, 0.5) },
   { name: 'dark', run: (c) => filtered(c, 'brightness(0.6)') },
   { name: 'jpeg40', run: (c) => jpeg(c, 0.4) },
+  // Mild perspective/skew (sticker tilted slightly away from the camera). A ~9° shear —
+  // plainly readable, the level a handheld photo realistically introduces.
+  { name: 'skew+', run: (c) => skew(c, 0.16) },
+  { name: 'skew-', run: (c) => skew(c, -0.16) },
+  // Combined transforms: real captures stack degradations. Each pair is still well
+  // within human readability.
+  { name: 'blur+rot+25', run: compose((c) => filtered(c, 'blur(1.1px)'), (c) => rotate(c, 25)) },
+  { name: 'noise+dark', run: compose((c) => noise(c, 12), (c) => filtered(c, 'brightness(0.65)')) },
 ];
 
 const set = (xs: string[]) => new Set(xs);
@@ -216,7 +272,8 @@ const minus = (a: Set<string>, b: Set<string>) => [...a].filter((x) => !b.has(x)
     let hits = 0;
     for (const base of bases) {
       const variant = await aug.run(base.canvas);
-      const { found } = await recognizeFrame(ocr, variant);
+      const { found, dbg, reads } = await recognizeFrame(ocr, variant);
+      void reads;
       const ok = found.includes(base.code);
       const falsePos = found.filter((c) => c !== base.code);
       robTotal++;
@@ -224,9 +281,9 @@ const minus = (a: Set<string>, b: Set<string>) => [...a].filter((x) => !b.has(x)
       if (ok) {
         hits++;
         robHit++;
-        cells.push('✓');
+        cells.push(falsePos.length ? `✓+FP\`${falsePos.join(',')}\` READS:${reads.join(' / ')}` : '✓');
       } else {
-        cells.push(`✗ \`${found.join(',') || '—'}\``);
+        cells.push(`✗ \`${found.join(',') || '—'}\` ${dbg ?? ''} READS:${reads.join(' / ')}`);
         robMissByAug.set(aug.name, [...(robMissByAug.get(aug.name) ?? []), base.code]);
       }
     }
