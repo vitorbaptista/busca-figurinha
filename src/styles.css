@@ -945,6 +945,18 @@ button {
   flex-direction: column;
   gap: 8px;
 }
+/* "Grupo A" … section label before each World Cup group, mirroring the album. */
+.group-header {
+  margin: 12px 2px 0;
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+.group-header:first-child {
+  margin-top: 0;
+}
 .team {
   background: var(--bg-2);
   border-radius: var(--radius);

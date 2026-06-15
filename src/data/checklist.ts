@@ -64,6 +64,24 @@ const RAW_TEAMS: RawTeam[] = [
   { code: 'UZB', name: 'Uzbequistão', count: 20 },
 ];
 
+// Album order: teams are laid out by 2026 World Cup GROUP (A→L), and within each group in the
+// official position order, matching how the Panini album prints them (NOT alphabetically).
+// Source: the official final draw (cross-checked against ge.globo.com's group tables/simulator).
+const ALBUM_GROUPS: { group: string; codes: string[] }[] = [
+  { group: 'A', codes: ['MEX', 'RSA', 'KOR', 'CZE'] },
+  { group: 'B', codes: ['CAN', 'BIH', 'QAT', 'SUI'] },
+  { group: 'C', codes: ['BRA', 'MAR', 'HAI', 'SCO'] },
+  { group: 'D', codes: ['USA', 'PAR', 'AUS', 'TUR'] },
+  { group: 'E', codes: ['GER', 'CUW', 'CIV', 'ECU'] },
+  { group: 'F', codes: ['NED', 'JPN', 'SWE', 'TUN'] },
+  { group: 'G', codes: ['BEL', 'EGY', 'IRN', 'NZL'] },
+  { group: 'H', codes: ['ESP', 'CPV', 'KSA', 'URU'] },
+  { group: 'I', codes: ['FRA', 'SEN', 'IRQ', 'NOR'] },
+  { group: 'J', codes: ['ARG', 'ALG', 'AUT', 'JOR'] },
+  { group: 'K', codes: ['POR', 'COD', 'UZB', 'COL'] },
+  { group: 'L', codes: ['ENG', 'CRO', 'GHA', 'PAN'] },
+];
+
 // Special section: Panini logo "00" + FWC1..FWC19 (opening + FIFA World Cup history foils).
 const SPECIAL_NAME = 'Especiais';
 const SPECIAL_CODE = 'FWC';
@@ -102,12 +120,25 @@ function specialEntries(): ChecklistEntry[] {
 }
 
 function build(): Checklist {
-  const teamGroups: TeamGroup[] = RAW_TEAMS.map((t) => ({
-    teamCode: t.code,
-    teamName: t.name,
-    entries: teamEntries(t),
-  }));
-  teamGroups.sort((a, b) => a.teamName.localeCompare(b.teamName, 'pt'));
+  const byTeamCode = new Map(RAW_TEAMS.map((t) => [t.code, t] as const));
+
+  // Teams in ALBUM order: group A→L, each group in its printed position order.
+  const teamGroups: TeamGroup[] = [];
+  for (const { group, codes } of ALBUM_GROUPS) {
+    for (const code of codes) {
+      const t = byTeamCode.get(code);
+      if (!t) continue; // data guard — an unknown code is skipped, not crashed
+      teamGroups.push({ teamCode: t.code, teamName: t.name, entries: teamEntries(t), group });
+    }
+  }
+  // Safety net: any team missing from ALBUM_GROUPS still appears (alphabetically) so the
+  // checklist can never silently drop a team if the group data and RAW_TEAMS drift apart.
+  const placed = new Set(teamGroups.map((g) => g.teamCode));
+  RAW_TEAMS.filter((t) => !placed.has(t.code))
+    .sort((a, b) => a.name.localeCompare(b.name, 'pt'))
+    .forEach((t) =>
+      teamGroups.push({ teamCode: t.code, teamName: t.name, entries: teamEntries(t) }),
+    );
 
   const specials: TeamGroup = {
     teamCode: SPECIAL_CODE,
@@ -115,7 +146,7 @@ function build(): Checklist {
     entries: specialEntries(),
   };
 
-  // Teams first (alphabetical), specials last.
+  // Teams in album/group order, specials last.
   const teams: TeamGroup[] = [...teamGroups, specials];
 
   const entries = teams.flatMap((g) => g.entries);

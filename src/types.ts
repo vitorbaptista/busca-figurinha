@@ -24,6 +24,9 @@ export interface TeamGroup {
   teamName: string;
   /** Entries ordered by number. */
   entries: ChecklistEntry[];
+  /** World Cup group letter (A–L) this team is drawn into, for album-order grouping.
+   *  Undefined for the special "FWC" section. */
+  group?: string;
 }
 
 export interface Checklist {

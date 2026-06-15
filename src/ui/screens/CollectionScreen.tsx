@@ -1,3 +1,4 @@
+import { Fragment } from 'preact';
 import { useMemo, useState } from 'preact/hooks';
 import type { CollectionStore, TeamGroup } from '../../types';
 import { checklist } from '../../data/checklist';
@@ -13,23 +14,12 @@ export function CollectionScreen({ collection }: CollectionScreenProps) {
   useStore(collection);
 
   const [query, setQuery] = useState('');
-  const [open, setOpen] = useState<Set<string>>(() => new Set());
 
   const owned = collection.codes();
   const total = checklist.total;
   const pct = total === 0 ? 0 : Math.round((owned.size / total) * 100);
 
   const teams = useMemo(() => filterTeams(checklist.teams, query), [query]);
-
-  const toggleTeam = (code: string) =>
-    setOpen((prev) => {
-      const next = new Set(prev);
-      next.has(code) ? next.delete(code) : next.add(code);
-      return next;
-    });
-
-  // When searching, auto-open matching teams so chips are visible.
-  const isOpen = (code: string) => open.has(code) || query.trim().length > 0;
 
   return (
     <div class="screen collection-screen">
@@ -55,47 +45,48 @@ export function CollectionScreen({ collection }: CollectionScreenProps) {
         <p class="collection-empty">{pt.collection.noResults}</p>
       ) : (
         <ul class="team-list">
-          {teams.map((team) => {
+          {teams.map((team, i) => {
             const ownedInTeam = team.entries.filter((e) => owned.has(e.code)).length;
-            const expanded = isOpen(team.teamCode);
+            // A "Grupo X" header before the first team of each group, mirroring the album.
+            const showGroupHeader = !!team.group && team.group !== teams[i - 1]?.group;
             return (
-              <li key={team.teamCode} class="team">
-                <button
-                  class="team-head"
-                  onClick={() => toggleTeam(team.teamCode)}
-                  aria-expanded={expanded}
-                >
-                  <span class="team-name">{team.teamName}</span>
-                  <span class="team-meta">
-                    <span
-                      class={`team-progress ${ownedInTeam === team.entries.length ? 'is-complete' : ''}`}
-                    >
-                      {pt.collection.teamProgress(ownedInTeam, team.entries.length)}
-                    </span>
-                    <span class="chevron">{expanded ? '▾' : '▸'}</span>
-                  </span>
-                </button>
-
-                {expanded && (
-                  <div class="chip-grid">
-                    {team.entries.map((e) => {
-                      const has = owned.has(e.code);
-                      const numberLabel = e.number === 0 ? '00' : String(e.number);
-                      return (
-                        <button
-                          key={e.code}
-                          class={`chip ${has ? 'chip-owned' : 'chip-needed'}`}
-                          onClick={() => collection.toggle(e.code)}
-                          aria-pressed={has}
-                          aria-label={`${e.display} ${has ? 'na coleção' : 'falta'}`}
-                        >
-                          {numberLabel}
-                        </button>
-                      );
-                    })}
-                  </div>
+              <Fragment key={team.teamCode}>
+                {showGroupHeader && (
+                  <li class="group-header" aria-hidden="true">
+                    Grupo {team.group}
+                  </li>
                 )}
-              </li>
+                <li class="team">
+                {/* Every team stays expanded — no accordion — so you can tick stickers off
+                    straight down the list while looking at the album. */}
+                <div class="team-head team-head-static">
+                  <span class="team-name">{team.teamName}</span>
+                  <span
+                    class={`team-progress ${ownedInTeam === team.entries.length ? 'is-complete' : ''}`}
+                  >
+                    {pt.collection.teamProgress(ownedInTeam, team.entries.length)}
+                  </span>
+                </div>
+
+                <div class="chip-grid">
+                  {team.entries.map((e) => {
+                    const has = owned.has(e.code);
+                    const numberLabel = e.number === 0 ? '00' : String(e.number);
+                    return (
+                      <button
+                        key={e.code}
+                        class={`chip ${has ? 'chip-owned' : 'chip-needed'}`}
+                        onClick={() => collection.toggle(e.code)}
+                        aria-pressed={has}
+                        aria-label={`${e.display} ${has ? 'na coleção' : 'falta'}`}
+                      >
+                        {numberLabel}
+                      </button>
+                    );
+                  })}
+                </div>
+                </li>
+              </Fragment>
             );
           })}
         </ul>
