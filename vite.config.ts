@@ -5,7 +5,7 @@ import { mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
 // GitHub Pages serves from a repo subpath. Set GH_PAGES=1 in CI to use it.
-const base = process.env.GH_PAGES ? '/figurinhas-app/' : '/';
+const base = process.env.GH_PAGES ? '/busca-figurinha/' : '/';
 
 // Dev-only: lets the app (in ?debug) POST a captured camera frame so we can save
 // real device frames to ./captures and iterate on OCR offline. Not part of the build.
