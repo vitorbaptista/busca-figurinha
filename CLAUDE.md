@@ -12,6 +12,9 @@ a **hybrid recognizer** (a pure-JS glyph matcher first, `tesseract.js` only as f
 kids/teens on low-end phones, so performance and simplicity are priorities. **Reads ~85 ms/pass on
 a Pixel** (down from ~465 ms) — see "Hard-won lessons" before you optimize further.
 
+**Every user-facing text must be in pt-BR** — the README, CHANGELOG, and anything that appears in
+the app itself. This does NOT apply to code, code comments, or this CLAUDE.md file.
+
 ## Commands
 
 ```bash
