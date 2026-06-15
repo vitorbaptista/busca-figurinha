@@ -13,7 +13,7 @@
 // Ground truth is the FILENAME. Output: Markdown → captures/bench-results.md (/bench-log).
 // `?quick` skips the slow video section.
 import { findCodeBoxes } from '../ocr/locate';
-import { createOcrEngine } from '../ocr/engine';
+import { createHybridOcrEngine as createOcrEngine } from '../ocr/hybridEngine';
 import { recognizeFrameInOrder } from '../ocr/recognize';
 import { createConfirmer } from '../domain/confirm';
 import { checklist } from '../data/checklist';
@@ -23,6 +23,11 @@ const QUICK = new URLSearchParams(location.search).has('quick');
 // `?latency` measures how FAST the pipeline runs (not how accurate) over the real
 // front-camera video frames — the closest thing we have to live conditions.
 const LATENCY = new URLSearchParams(location.search).has('latency');
+// `?latencysharp` measures latency over the SHARP static close-ups instead — the real
+// use-case (phone flat, one sticker shown close + steady + focus-locked) produces sharp
+// frames, where the hybrid recognizer takes its fast path. The blurry video frames hide
+// that win (they fall back to tesseract), so this is the honest use-case latency number.
+const LATENCY_SHARP = new URLSearchParams(location.search).has('latencysharp');
 
 const root = document.getElementById('out')!;
 const status = document.createElement('div');
@@ -236,16 +241,22 @@ const minus = (a: Set<string>, b: Set<string>) => [...a].filter((x) => !b.has(x)
     frames: string[];
   };
 
-  // ---- Latency mode (?latency): how FAST is one pipeline pass on real frames? ----
-  if (LATENCY) {
+  // ---- Latency mode (?latency / ?latencysharp): how FAST is one pipeline pass? ----
+  if (LATENCY || LATENCY_SHARP) {
     const det: number[] = [];
     const ocrT: number[] = [];
     const total: number[] = [];
     const cropsN: number[] = [];
     const withCode: number[] = []; // total ms only for frames that actually resolved a code
-    for (let i = 0; i < list.frames.length; i++) {
-      status.textContent = `latency ${i + 1}/${list.frames.length}…`;
-      const frame = await loadImage(`/dataset/frames/${list.frames[i]}`);
+    // Sharp mode: loop the SHARP static close-ups (use-case input) several times for a
+    // stable timing sample; otherwise the real blurry video frames.
+    const SHARP_REPEATS = 30;
+    const latFrames: string[] = LATENCY_SHARP
+      ? Array.from({ length: SHARP_REPEATS }, () => list.images.map((n) => `/dataset/${n}`)).flat()
+      : list.frames.map((n) => `/dataset/frames/${n}`);
+    for (let i = 0; i < latFrames.length; i++) {
+      status.textContent = `latency ${i + 1}/${latFrames.length}…`;
+      const frame = await loadImage(latFrames[i]);
       // Measure the EXACT production strategy: detection, then OCR crops in score order
       // one at a time, stopping at the first crop that resolves a real checklist code
       // (stopOnFirstCode=true — the prominent pill is box[0], so a clean frame is one OCR).
@@ -269,13 +280,16 @@ const minus = (a: Set<string>, b: Set<string>) => [...a].filter((x) => !b.has(x)
     const row = (label: string, s: ReturnType<typeof stats>) =>
       `| ${label} | ${s.avg} | ${s.median} | ${s.p90} | ${s.max} |`;
     const avgCrops = cropsN.length ? (cropsN.reduce((a, b) => a + b, 0) / cropsN.length).toFixed(1) : '0';
+    const srcLabel = LATENCY_SHARP
+      ? `**${total.length}** passes over the SHARP static close-ups (the real use-case: one sticker shown close, steady, focus-locked)`
+      : `**${total.length}** real front-camera video frames (blurry — a worst-case lower bound)`;
     const md = [
-      '# Sticker detection LATENCY benchmark',
+      `# Sticker detection LATENCY benchmark${LATENCY_SHARP ? ' — SHARP / use-case' : ''}`,
       '',
       `One pipeline pass mirroring the LIVE burst (findCodeBoxes → recognizeFrameInOrder:`,
       `top-N boxes best-first, ink-bearing upright crops OCR'd in parallel, flip round only`,
       `for boxes that didn't resolve, STOP the frame at the first checklist match) over`,
-      `**${total.length}** real front-camera video frames; first 3 dropped as warm-up. All times in **ms**.`,
+      `${srcLabel}; first 3 dropped as warm-up. All times in **ms**.`,
       '',
       '| stage (ms) | avg | median | p90 | max |',
       '|---|---|---|---|---|',

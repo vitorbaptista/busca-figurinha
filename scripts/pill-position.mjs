@@ -1,18 +1,11 @@
-// Headless runner for the detection-accuracy benchmark. Spawns a dev server on a
-// free port, drives /bench.html in headless system Chrome until it finishes, then
-// prints captures/bench-results.md. Makes `npm run bench` a single command that any
-// agent can run in its own worktree to self-measure accuracy.
-//
-//   node scripts/bench.mjs           # full run (static + robustness + video)
-//   node scripts/bench.mjs --quick   # skip the slow video section
+// DEV-ONLY headless runner for the pill vertical-position probe (mirrors bench.mjs).
+// Spawns a dev server, drives /pill-position.html in headless Chrome, prints the JSON
+// the page writes to captures/bench-results.md.
 import { spawn } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import puppeteer from 'puppeteer-core';
 
-const QUICK = process.argv.includes('--quick');
-const LATENCY = process.argv.includes('--latency');
-const LATENCY_SHARP = process.argv.includes('--latency-sharp');
 const CHROME =
   ['/usr/bin/google-chrome-stable', '/usr/bin/chromium', '/usr/bin/chromium-browser'].find((p) => {
     try {
@@ -27,7 +20,7 @@ const TIMEOUT_MS = 5 * 60 * 1000;
 
 function startServer() {
   return new Promise((res, rej) => {
-    const proc = spawn('npx', ['vite', '--port', '5300', '--clearScreen', 'false'], {
+    const proc = spawn('npx', ['vite', '--port', '5301', '--clearScreen', 'false'], {
       stdio: ['ignore', 'pipe', 'pipe'],
       env: process.env,
     });
@@ -58,18 +51,19 @@ try {
   });
   const page = await browser.newPage();
   page.on('pageerror', (e) => console.error('[page error]', e.message));
-  const q = LATENCY_SHARP ? '?latencysharp' : LATENCY ? '?latency' : QUICK ? '?quick' : '';
-  const url = `http://localhost:${server.port}/bench.html${q}`;
+  page.on('console', (m) => {
+    if (m.type() === 'error') console.error('[console]', m.text());
+  });
+  const url = `http://localhost:${server.port}/pill-position.html`;
   await page.goto(url, { waitUntil: 'load', timeout: 60000 });
   await page.waitForFunction(() => document.title === 'bench done', { timeout: TIMEOUT_MS });
   const report = readFileSync(resolve('captures', 'bench-results.md'), 'utf8');
   process.stdout.write('\n' + report + '\n');
 } catch (err) {
-  console.error('BENCH FAILED:', err.message);
+  console.error('PROBE FAILED:', err.message);
   process.exitCode = 1;
 } finally {
   await browser?.close().catch(() => {});
   server?.proc.kill('SIGTERM');
-  // Vite can linger; force-exit so the command returns promptly.
   setTimeout(() => process.exit(process.exitCode ?? 0), 500);
 }

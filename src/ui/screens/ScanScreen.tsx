@@ -13,7 +13,7 @@ import { checklist } from '../../data/checklist';
 import { pt } from '../../i18n/pt';
 import { matchCode } from '../../domain/matching';
 import { createConfirmer } from '../../domain/confirm';
-import { createOcrEngine } from '../../ocr/engine';
+import { createHybridOcrEngine as createOcrEngine } from '../../ocr/hybridEngine';
 import { createCameraSource } from '../../ocr/frameSource';
 import { recognizeFrameInOrder } from '../../ocr/recognize';
 import { createAutoCapture } from '../../ocr/autoCapture';

@@ -9,6 +9,15 @@ export const CONFIG = {
      *  stay legible when multiple backs are in view; only the on-demand capture pays
      *  this cost — the frame-difference loop samples a tiny 160px canvas. */
     maxWidth: 1920,
+    /** Hybrid recognizer gate (createHybridOcrEngine). The fast pure-JS glyph matcher
+     *  runs first on each crop; its read is ACCEPTED (skipping the ~10× slower tesseract
+     *  recognize) only when its mean-glyph confidence clears this floor. Below it, we fall
+     *  back to tesseract — so blurry pills keep tesseract's recall while the sharp, close,
+     *  focus-locked pills of the real use-case take the fast path. Set conservatively HIGH:
+     *  a lower floor is faster but risks a confident-but-wrong fast read snapping to a real
+     *  (wrong) checklist code — a false positive. Tune DOWN against the bench + on-device
+     *  use-case frames, never up past where 0 FP holds. */
+    hybridFastConf: 88,
   },
   capture: {
     /** Frame must stay still this long before we OCR it. */
