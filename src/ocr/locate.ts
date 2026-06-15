@@ -9,6 +9,7 @@
 // Pure typed-array canvas work — no OpenCV. Detection runs on a downscaled copy.
 
 import { rotateCanvas, rotateCanvasDeg } from './rotate';
+import { CONFIG } from '../config';
 
 export interface CodeBox {
   /** Axis-aligned bounding box in full-frame pixels. For a rotated pill this is the
@@ -199,12 +200,63 @@ function collectBoxes(
   }
 }
 
+/** Public detection entry. When CONFIG.detect.roiTopFraction > 0, detection runs ONLY on a
+ *  bottom band of the frame (rows [roiTopFraction*H .. H]): the band is drawn into its own
+ *  sub-canvas, the FULL detection pipeline runs on it, and the band's top offset is added
+ *  back to every box's y so the result is in FULL-FRAME coordinates — cropRegion /
+ *  codeCropSource then extract the right pixels unchanged. The band cuts detection cost
+ *  (~O(area)) and stops the FIFA logo / header / legal text above the pill from ever
+ *  becoming a crop. roiTopFraction = 0 (default) detects the whole frame, byte-identical to
+ *  the previous behaviour (no sub-canvas, no offset). */
 export function findCodeBoxes(frame: HTMLCanvasElement): CodeBox[] {
   const fw = frame.width;
   const fh = frame.height;
   if (!fw || !fh) return [];
 
-  const scale = DET_LONG / Math.max(fw, fh);
+  const roi = CONFIG.detect.roiTopFraction;
+  if (roi <= 0 || roi >= 1) return detectBoxes(frame);
+
+  // Full-frame pixel band [bandY0 .. fh). Round the top so the band aligns to a pixel row;
+  // a height of at least 1 keeps drawImage's source rect valid for extreme fractions.
+  const bandY0 = Math.min(fh - 1, Math.max(0, Math.round(roi * fh)));
+  const bandH = fh - bandY0;
+
+  const band = document.createElement('canvas');
+  band.width = fw;
+  band.height = bandH;
+  const bctx = band.getContext('2d', { willReadFrequently: true });
+  if (!bctx) return detectBoxes(frame);
+  bctx.drawImage(frame, 0, bandY0, fw, bandH, 0, 0, fw, bandH);
+
+  // CRITICAL: scale the band against the FULL frame's long side, not the band's own. The
+  // detection raster, the local-background radii and every DET_LONG-relative gate (pill
+  // size, score) are calibrated to a 720px-long full frame. If the band re-derived scale
+  // from its own (now shorter) long side, a 720×640 band would upscale to ~720×640 detection
+  // px — a LARGER, mis-calibrated raster that is both slower AND fails the size gates (a pill
+  // that was 30px is now ~50px against a different DET_LONG). Passing the full-frame long side
+  // makes the band's raster exactly the bottom slice of the full-frame raster: same pixel
+  // density, same gates, just fewer rows → genuinely cheaper detection.
+  const boxes = detectBoxes(band, Math.max(fw, fh));
+  // Boxes come back in BAND coordinates; shift y (and only y — x/w/h/pillW/tilt are
+  // unaffected by a vertical translation) back into full-frame space so the crop lands on
+  // the pill. The moment-derived tilt and pillW are translation-invariant, so they carry
+  // over directly.
+  for (const b of boxes) b.y += bandY0;
+  return boxes;
+}
+
+/** Run the full pill-detection pipeline on a canvas, returning boxes in THAT canvas's
+ *  coordinates. findCodeBoxes calls this on either the whole frame or a bottom-band
+ *  sub-canvas (then offsets y). `scaleLong` is the long side (px) the DET_LONG downscale is
+ *  computed against — the band passes the FULL frame's long side so its detection raster,
+ *  radii and size gates stay identical to a full-frame pass (only the row count shrinks).
+ *  Defaults to the canvas's own max dimension (the full-frame call). */
+function detectBoxes(frame: HTMLCanvasElement, scaleLong?: number): CodeBox[] {
+  const fw = frame.width;
+  const fh = frame.height;
+  if (!fw || !fh) return [];
+
+  const scale = DET_LONG / (scaleLong ?? Math.max(fw, fh));
   const dw = Math.max(1, Math.round(fw * scale));
   const dh = Math.max(1, Math.round(fh * scale));
 

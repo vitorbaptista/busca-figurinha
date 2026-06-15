@@ -45,6 +45,7 @@ export function createAutoCapture(deps: AutoCaptureDeps): AutoCapture {
   let stillSince: number | null = null;
   let sawMotion = false;
   let ticks = 0;
+  let lastCaptureAt = 0;
 
   /** Report the loop's current phase to the debug heartbeat (if any). */
   function emitTick(change: number): void {
@@ -101,7 +102,12 @@ export function createAutoCapture(deps: AutoCaptureDeps): AutoCapture {
 
       if (change < stillThreshold) {
         if (stillSince === null) stillSince = Date.now();
-        else if (Date.now() - stillSince >= stabilityMs) {
+        else if (
+          Date.now() - stillSince >= stabilityMs &&
+          // Cooldown: a "new" sticker sooner than this since the last read can't be a real
+          // swap — it's the same one re-triggering, so ignore it until enough time passes.
+          Date.now() - lastCaptureAt >= CONFIG.capture.minRecaptureMs
+        ) {
           await capture();
         }
       } else {
@@ -136,6 +142,7 @@ export function createAutoCapture(deps: AutoCaptureDeps): AutoCapture {
       state = 'locked';
       sawMotion = false;
       stillSince = null;
+      lastCaptureAt = Date.now();
     }
   }
 

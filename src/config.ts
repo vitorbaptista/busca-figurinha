@@ -39,16 +39,36 @@ export const CONFIG = {
     burstFrames: 6,
     /** Small gap between burst frames so the preview can paint between reads. */
     burstIntervalMs: 35,
+    /** Minimum time between two consecutive captures (ms). A person needs more than this
+     *  to physically swap stickers, so a "new" read sooner than this is almost certainly the
+     *  SAME sticker re-triggering (a flicker re-arm) — bogus. The loop won't fire again until
+     *  this has elapsed since the last capture, on top of the motion re-arm. */
+    minRecaptureMs: 500,
+  },
+  detect: {
+    /** Restrict pill detection to a BOTTOM vertical band of the frame: rows
+     *  [roiTopFraction*H .. H]. Matches the use-case + the on-screen reticle, which sits at
+     *  the bottom of the view (everything above is the white fill-light, where no sticker
+     *  is shown). Scanning only the band cuts detection cost (~O(area)) AND skips OCR of the
+     *  room/face the front camera sees above the sticker. 0 = full frame; 0.5 = bottom half,
+     *  0.67 = bottom third. Boxes are returned in FULL-FRAME coordinates (the band offset is
+     *  added back), so the crop step is unchanged. A pill ABOVE the band isn't detected — so
+     *  this must stay aligned with where the reticle puts the sticker. NOTE: the static/video
+     *  benches are NOT bottom-framed, so a non-zero value lowers their recall by construction;
+     *  validate this one LIVE, not against those benches. */
+    roiTopFraction: 0.67 as number,
   },
   match: {
     /** Max Levenshtein distance for an OCR token to snap to a real code. */
     maxDistance: 1,
-    /** How many frames of one hold must agree before a code commits. Set to 1: we
-     *  commit on a single read and rely on (a) the conservative matcher, which only
-     *  ever resolves to a REAL checklist code and never invents one, and (b) feeding
-     *  the OCR a sharp, in-focus frame (the focus lock) rather than averaging over soft
-     *  ones. Multi-frame agreement was a crutch for soft input — slow, and it masked
-     *  the real fix. Raise it only if wrong codes slip through on genuinely soft frames. */
-    confirmations: 1,
+    /** How many frames of one hold must agree before a code commits. Back to 2: live testing
+     *  showed the fast glyph path occasionally MISREADS one frame of a sticker as a different
+     *  real code (NZL 18 → a one-off "BIH 4"), which committed as a bogus second code. Requiring
+     *  agreement across 2 frames rejects that — a one-off misread never repeats, so it never
+     *  confirms, while the correct code reads consistently and confirms on the 2nd frame. This
+     *  is the principled 0-false-positive guard; the small extra frame is cheap now that reads
+     *  are ~85ms. The burst stops one frame after the first confirmation, so only ONE code
+     *  commits per sticker hold. */
+    confirmations: 2,
   },
 } as const;
