@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512" role="img" aria-label="Troca Figurinhas">
+  <!-- Solid background fills the full canvas so the icon works as a maskable icon.
+       All meaningful content stays inside the central 80% safe zone (~51px margin). -->
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#16a34a"/>
+      <stop offset="1" stop-color="#0b7d3b"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="512" height="512" fill="url(#bg)"/>
+
+  <!-- Sticker / figurinha: a rounded square tilted like a card, on a white tile. -->
+  <g transform="rotate(-6 256 256)">
+    <rect x="120" y="116" width="272" height="272" rx="44" fill="#ffffff"/>
+    <rect x="120" y="116" width="272" height="272" rx="44" fill="none" stroke="#0b7d3b" stroke-width="10" stroke-opacity="0.12"/>
+
+    <!-- Soccer ball: white circle with a green pentagon and seams. -->
+    <g transform="translate(256 236)">
+      <circle r="92" fill="#0b7d3b"/>
+      <circle r="92" fill="none" stroke="#075a2a" stroke-width="6"/>
+      <!-- center pentagon -->
+      <polygon points="0,-34 32,-11 20,28 -20,28 -32,-11" fill="#ffffff"/>
+      <!-- seams radiating from pentagon vertices -->
+      <g stroke="#ffffff" stroke-width="9" stroke-linecap="round">
+        <line x1="0" y1="-34" x2="0" y2="-86"/>
+        <line x1="32" y1="-11" x2="82" y2="-26"/>
+        <line x1="20" y1="28" x2="52" y2="72"/>
+        <line x1="-20" y1="28" x2="-52" y2="72"/>
+        <line x1="-32" y1="-11" x2="-82" y2="-26"/>
+      </g>
+    </g>
+
+    <!-- "26" badge bottom-right of the sticker. -->
+    <g transform="translate(330 330)">
+      <circle r="40" fill="#0b7d3b"/>
+      <circle r="40" fill="none" stroke="#ffffff" stroke-width="5"/>
+      <text x="0" y="14" text-anchor="middle" font-family="Arial, Helvetica, sans-serif"
+            font-size="42" font-weight="700" fill="#ffffff">26</text>
+    </g>
+  </g>
+</svg>

@@ -1,0 +1,11 @@
+node_modules
+dist
+dist-ssr
+*.local
+.DS_Store
+.vite
+coverage
+dev-dist
+
+# Local OCR test fixtures (sample sticker backs) — not shipped.
+public/samples
