@@ -397,7 +397,9 @@ export function ScanScreen({ session, collection, settings, onPersist, onFinish 
                       ? `parado ${s.heldMs}ms`
                       : s.phase === 'reading'
                         ? 'lendo…'
-                        : 'lido ✓ — troque a figurinha';
+                        : s.phase === 'stalled'
+                          ? 'sem vídeo — reconectando'
+                          : 'lido ✓ — troque a figurinha';
               setBeat(`${sp} ${label}`);
             }
           : undefined,

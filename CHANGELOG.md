@@ -3,6 +3,22 @@
 Notable changes to the sticker scanner. Newest first. No formal releases yet (deploys on push to
 `main`), so entries are grouped by date. Keep this updated when you ship something notable.
 
+## 2026-06-15 — Scan-loop responsiveness + stall recovery
+
+### Fixed
+- **Scanner could get stuck on "troque a figurinha".** When the camera `<video>` paused/stalled
+  after a while (Android dims the screen, the app briefly backgrounds, or a focus constraint
+  hiccups), nothing re-played it, so the capture loop starved (`drawTo` kept failing) and the
+  auto-capture state machine froze on its last phase — usually `locked`. Added a recovery watchdog
+  in `frameSource.ts` that re-plays the video on `pause` and on tab re-visibility, and a distinct
+  `stalled` heartbeat phase ("sem vídeo — reconectando") so a starved loop no longer masquerades as
+  `locked` in the debug readout.
+
+### Changed
+- **Faster sticker-to-sticker swaps**: `capture.minRecaptureMs` 500 → 250 ms. Reads are ~85 ms, so
+  the old cooldown was the dominant idle gap between stickers. Multi-frame confirmation
+  (`match.confirmations ≥ 2`) remains the primary 0-FP guard. **Re-validate 0 FP live on the Pixel.**
+
 ## 2026-06-15 — GitHub Pages deployment
 
 ### Added

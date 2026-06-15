@@ -141,8 +141,9 @@ export interface AutoCapture {
 export interface AutoCaptureStatus {
   /** waiting = armed, show a sticker; moving = sticker in motion; holding = still,
    *  counting toward the read; reading = OCR burst in flight; locked = already read,
-   *  move/swap the sticker to re-arm. */
-  phase: 'waiting' | 'moving' | 'holding' | 'reading' | 'locked';
+   *  move/swap the sticker to re-arm; stalled = no camera frame this tick (video
+   *  paused/not ready) — the loop is alive but starved, NOT locked. */
+  phase: 'waiting' | 'moving' | 'holding' | 'reading' | 'locked' | 'stalled';
   /** Sampled frame-change fraction (0..1) this tick. */
   change: number;
   /** ms the sticker has been held still (0 when moving). */

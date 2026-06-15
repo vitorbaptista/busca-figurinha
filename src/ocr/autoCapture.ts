@@ -47,11 +47,14 @@ export function createAutoCapture(deps: AutoCaptureDeps): AutoCapture {
   let ticks = 0;
   let lastCaptureAt = 0;
 
-  /** Report the loop's current phase to the debug heartbeat (if any). */
-  function emitTick(change: number): void {
+  /** Report the loop's current phase to the debug heartbeat (if any). `stalled` means
+   *  we couldn't grab a camera frame this tick — surfaced distinctly so a starved loop
+   *  doesn't masquerade as `locked` ("troque a figurinha") in the debug readout. */
+  function emitTick(change: number, stalled = false): void {
     if (!deps.onTick) return;
-    const phase =
-      state === 'locked'
+    const phase = stalled
+      ? 'stalled'
+      : state === 'locked'
         ? 'locked'
         : !sawMotion
           ? 'waiting'
@@ -77,7 +80,9 @@ export function createAutoCapture(deps: AutoCaptureDeps): AutoCapture {
     ticks++;
     const frame = grabSampleFrame();
     if (!frame) {
-      emitTick(0);
+      // No frame this tick (video paused/not ready). Don't touch prevFrame or state —
+      // when frames resume, the normal motion check re-arms a `locked` swap as usual.
+      emitTick(0, true);
       return;
     }
 

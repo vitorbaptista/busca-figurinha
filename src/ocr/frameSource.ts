@@ -40,6 +40,19 @@ export function createCameraSource(opts?: { facingMode?: string }): FrameSource 
 
   let stream: MediaStream | null = null;
 
+  // Recovery watchdog. On Android the camera <video> can silently pause/stall after a
+  // while — the screen dims, the app briefly backgrounds, or a focus constraint hiccups —
+  // and nothing re-plays it. The capture loop then starves (drawTo keeps returning false)
+  // and the auto-capture state machine freezes on whatever phase it was in, which looks
+  // like being stuck on "locked"/"troque a figurinha". Re-play whenever the element pauses
+  // or the tab becomes visible again. play() on an already-playing video is a cheap no-op.
+  const replayIfPaused = () => {
+    if (stream && video.paused) void video.play().catch(() => {});
+  };
+  const onVisibility = () => {
+    if (!document.hidden) replayIfPaused();
+  };
+
   return {
     async start() {
       stream = await navigator.mediaDevices.getUserMedia({
@@ -54,6 +67,8 @@ export function createCameraSource(opts?: { facingMode?: string }): FrameSource 
         audio: false,
       });
       video.srcObject = stream;
+      video.addEventListener('pause', replayIfPaused);
+      document.addEventListener('visibilitychange', onVisibility);
       await video.play();
       // Stickers are always shown close, so lock focus to the lens's NEAR limit on
       // either camera rather than let continuous autofocus hunt (the main cause of soft,
@@ -62,6 +77,8 @@ export function createCameraSource(opts?: { facingMode?: string }): FrameSource 
     },
 
     stop() {
+      video.removeEventListener('pause', replayIfPaused);
+      document.removeEventListener('visibilitychange', onVisibility);
       stream?.getTracks().forEach((track) => track.stop());
       stream = null;
       video.srcObject = null;

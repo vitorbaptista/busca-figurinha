@@ -43,7 +43,7 @@ export const CONFIG = {
      *  to physically swap stickers, so a "new" read sooner than this is almost certainly the
      *  SAME sticker re-triggering (a flicker re-arm) — bogus. The loop won't fire again until
      *  this has elapsed since the last capture, on top of the motion re-arm. */
-    minRecaptureMs: 500,
+    minRecaptureMs: 250,
   },
   detect: {
     /** Restrict pill detection to a BOTTOM vertical band of the frame: rows
