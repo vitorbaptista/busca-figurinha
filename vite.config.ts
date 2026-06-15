@@ -1,7 +1,7 @@
 import { defineConfig, type Plugin } from 'vite';
 import preact from '@preact/preset-vite';
 import { VitePWA } from 'vite-plugin-pwa';
-import { mkdirSync, writeFileSync } from 'node:fs';
+import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
 // GitHub Pages serves from a repo subpath. Set GH_PAGES=1 in CI to use it.
@@ -14,6 +14,19 @@ function captureSaver(): Plugin {
     name: 'capture-saver',
     apply: 'serve',
     configureServer(server) {
+      // Serve the OCR test fixtures (gitignored, never built) so the dev harness can
+      // load them without shipping them in public/.
+      server.middlewares.use('/samples', (req, res) => {
+        const name = (req.url || '').replace(/^\//, '').replace(/[^a-z0-9._-]/gi, '');
+        try {
+          const buf = readFileSync(resolve('dev-fixtures', name));
+          res.setHeader('Content-Type', 'image/jpeg');
+          res.end(buf);
+        } catch {
+          res.statusCode = 404;
+          res.end();
+        }
+      });
       server.middlewares.use('/__capture', (req, res) => {
         if (req.method !== 'POST') {
           res.statusCode = 405;
@@ -67,6 +80,13 @@ function captureSaver(): Plugin {
 
 export default defineConfig({
   base,
+  // Ship only the app. ocr-test.html (a dev-only OCR harness) is still served in
+  // `vite dev` but is left out of the production build.
+  build: {
+    rollupOptions: {
+      input: resolve('index.html'),
+    },
+  },
   plugins: [
     captureSaver(),
     preact(),

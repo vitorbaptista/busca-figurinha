@@ -1,49 +1,68 @@
-import { createWorker, PSM } from 'tesseract.js';
+import { createWorker, createScheduler, PSM } from 'tesseract.js';
 import { CONFIG } from '../config';
 import type { OcrEngine } from '../types';
 
 type Worker = Awaited<ReturnType<typeof createWorker>>;
 
-/** Tesseract.js v5 backed OCR engine. The worker is created lazily on first init(). */
+/** How many Tesseract workers to run in parallel. Each located code-box crop is
+ *  OCR'd on its own (stacking crops confuses the layout analysis and drops thin
+ *  glyphs like the "I" in CIV), so a small pool reads several crops at once. */
+function workerCount(): number {
+  const cores = typeof navigator !== 'undefined' ? navigator.hardwareConcurrency || 2 : 2;
+  return Math.max(1, Math.min(3, cores - 1));
+}
+
+/** Tesseract.js engine: a small scheduler of workers, created lazily on init(). */
 export function createOcrEngine(): OcrEngine {
-  let worker: Worker | null = null;
+  const scheduler = createScheduler();
+  const workers: Worker[] = [];
   let initPromise: Promise<void> | null = null;
 
   return {
     init(onProgress) {
-      // Idempotent regardless of caller: concurrent init() calls share one worker.
       if (initPromise) return initPromise;
       initPromise = (async () => {
-        const w = await createWorker('eng', 1, {
-          logger: (m) => {
-            if (m.status === 'recognizing text' && onProgress) onProgress(m.progress);
-          },
-        });
-        await w.setParameters({
-          tessedit_char_whitelist: CONFIG.ocr.charWhitelist,
-          // We OCR a small image built from located code-box crops stacked into rows
-          // (one code per line). A uniform-block mode reads them in a single pass —
-          // far faster and more accurate than scanning the whole frame for sparse text.
-          tessedit_pageseg_mode: PSM.SINGLE_BLOCK,
-          // Codes aren't dictionary words; disable the language model so Tesseract
-          // doesn't "correct" e.g. CIV→CV based on English word priors.
-          load_system_dawg: '0',
-          load_freq_dawg: '0',
-        });
-        worker = w;
+        const count = workerCount();
+        await Promise.all(
+          Array.from({ length: count }, async (_, i) => {
+            const worker = await createWorker('eng', 1, {
+              // Always a function — tesseract.js calls it unconditionally. Only the
+              // first worker forwards progress to the UI.
+              logger: (m) => {
+                if (i === 0 && onProgress && m.status === 'recognizing text') {
+                  onProgress(m.progress);
+                }
+              },
+            });
+            await worker.setParameters({
+              tessedit_char_whitelist: CONFIG.ocr.charWhitelist,
+              // Each crop is just the code box; a uniform-block read of the lone crop
+              // is the most accurate (and ~tens of ms on a small image).
+              tessedit_pageseg_mode: PSM.SINGLE_BLOCK,
+            });
+            workers.push(worker);
+            scheduler.addWorker(worker);
+          }),
+        );
       })();
       return initPromise;
     },
 
     async recognize(source) {
-      if (!worker) throw new Error('OcrEngine.recognize called before init()');
-      const { data } = await worker.recognize(source);
+      const { data } = await scheduler.addJob('recognize', source);
       return { text: data.text, confidence: data.confidence };
     },
 
+    async recognizeMany(sources) {
+      const results = await Promise.all(
+        sources.map((s) => scheduler.addJob('recognize', s)),
+      );
+      return results.map((r) => ({ text: r.data.text, confidence: r.data.confidence }));
+    },
+
     async terminate() {
-      await worker?.terminate();
-      worker = null;
+      await scheduler.terminate().catch(() => {});
+      workers.length = 0;
       initPromise = null;
     },
   };

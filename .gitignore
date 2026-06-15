@@ -7,7 +7,7 @@ dist-ssr
 coverage
 dev-dist
 
-# Local OCR test fixtures (sample sticker backs) — not shipped.
-public/samples
+# Local OCR test fixtures (sample sticker backs) — served only in dev, never shipped.
+dev-fixtures
 # Real device frames captured for offline OCR iteration (dev-only).
 captures
