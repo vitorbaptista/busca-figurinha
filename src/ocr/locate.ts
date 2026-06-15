@@ -11,19 +11,96 @@
 import { rotateCanvas, rotateCanvasDeg } from './rotate';
 
 export interface CodeBox {
-  /** Bounding box in full-frame pixels. */
+  /** Axis-aligned bounding box in full-frame pixels. For a rotated pill this is the
+   *  square-ish box that wraps the tilted blob; the crop is de-rotated by `tilt` to
+   *  bring the pill horizontal before OCR. */
   x: number;
   y: number;
   w: number;
   h: number;
-  /** 'h' = text runs horizontally (upright or 180°), 'v' = rotated 90°/270°. */
+  /** 'h' = text runs horizontally (upright or 180°), 'v' = rotated 90°/270°. Kept for
+   *  the bench debug line; with moment-based detection the de-rotation angle (`tilt`)
+   *  carries the real orientation, so this is only a coarse landscape/portrait hint. */
   orient: 'h' | 'v';
   score: number;
-  /** In-plane tilt (degrees) of the pill's long axis relative to the box orientation,
-   *  estimated from the dark component's pixel moments. A handheld sticker is tilted a
-   *  few degrees; de-rotating the crop by -tilt brings the text horizontal for OCR.
-   *  null when the component is too round to give a trustworthy axis. */
+  /** In-plane angle (degrees, canvas clockwise-positive) the crop must be rotated by to
+   *  bring the pill's long axis horizontal, from the dark component's pixel moments.
+   *  Rotation-invariant: works for a steeply-tilted pill (30–75°) whose axis-aligned
+   *  box is nearly square. null when the component is too round to give a trustworthy
+   *  axis, or the box is too weak to safely de-rotate (false-positive guard). */
   tilt: number | null;
+  /** Moment-derived pill short side (px, full-frame). After de-rotating the square bbox
+   *  about its centre the pill is a horizontal strip ~this tall through the middle, so we
+   *  crop a centred strip of this height (+margin) — far more reliable than searching the
+   *  de-rotated square for a dark band (which can grab the card's legal-text block). */
+  pillW: number;
+  /** Moment fill = area / (L·W): how solidly the blob fills its equivalent rectangle. A
+   *  real pill is solid (~0.7); a hollow stray "0" blob or sparse legal text is lower. */
+  fill: number;
+  /** Whether this box may use the taller small-source OCR target. Set in findCodeBoxes:
+   *  the boost rescues a genuinely small/far PILL's thin strokes, but it also sharpens a
+   *  hollow stray blob (a "0" ring) into a phantom "00", so it's gated on score AND fill. */
+  boost: boolean;
+}
+
+/** Rotation-invariant shape descriptors of a connected component, from its pixel
+ *  moments. Unlike the axis-aligned w×h, these hold at ANY in-plane rotation: a code
+ *  pill tilted 45° has a near-square bounding box (AR≈1) but its moment AR is still
+ *  ~3–4. `angle` is the long-axis angle in degrees, in (-90, 90], measured from the
+ *  +x axis; de-rotating a crop by -angle brings the pill horizontal. */
+interface MomentShape {
+  /** Rotation-invariant aspect ratio L/W (equivalent-rectangle side lengths). */
+  ar: number;
+  /** Fill = area / (L·W): how fully the blob fills its equivalent rectangle. */
+  fill: number;
+  /** Equivalent-rectangle long side L (px, detection space). */
+  size: number;
+  /** Equivalent-rectangle short side W (px, detection space). */
+  short: number;
+  /** Larger eigenvalue of the central second-moment matrix. */
+  l1: number;
+  /** Smaller eigenvalue. l1/l2 ≫ 1 ⇒ clearly elongated (a trustworthy axis). */
+  l2: number;
+  /** Long-axis angle in degrees, (-90, 90], from +x. */
+  angle: number;
+}
+
+/** Compute the rotation-invariant shape from a component's accumulated pixel moments.
+ *  Shared by the geometry gate (scoreBox) and the de-rotation angle — they must agree.
+ *  Returns null when the component is too small to be meaningful. */
+function momentShape(
+  area: number,
+  sx: number,
+  sy: number,
+  sxx: number,
+  syy: number,
+  sxy: number,
+): MomentShape | null {
+  if (area < 12) return null;
+  const cx = sx / area;
+  const cy = sy / area;
+  const uxx = sxx / area - cx * cx;
+  const uyy = syy / area - cy * cy;
+  const uxy = sxy / area - cx * cy;
+
+  // Eigenvalues of the 2×2 central second-moment matrix [[uxx,uxy],[uxy,uyy]].
+  const tr = uxx + uyy;
+  const det = uxx * uyy - uxy * uxy;
+  const disc = Math.sqrt(Math.max(0, (tr * tr) / 4 - det));
+  const l1 = tr / 2 + disc;
+  const l2 = tr / 2 - disc;
+
+  // Side lengths of the uniform rectangle with the same second moments (var = s²/12).
+  const L = Math.sqrt(Math.max(0, 12 * l1));
+  const W = Math.sqrt(Math.max(0, 12 * l2));
+  if (W <= 0 || L <= 0) return null;
+
+  // Long-axis angle (degrees), in (-90, 90].
+  let angle = (0.5 * Math.atan2(2 * uxy, uxx - uyy) * 180) / Math.PI;
+  while (angle > 90) angle -= 180;
+  while (angle <= -90) angle += 180;
+
+  return { ar: L / W, fill: area / (L * W), size: L, short: W, l1, l2, angle };
 }
 
 /** Long side (px) of the downscaled image used for detection. */
@@ -93,16 +170,20 @@ function collectBoxes(
 
     const w = maxX - minX + 1;
     const h = maxY - minY + 1;
-    const scored = scoreBox(w, h, area);
-    if (scored) {
+    const shape = momentShape(area, sx, sy, sxx, syy, sxy);
+    const scored = shape && scoreBox(shape);
+    if (scored && shape) {
       out.push({
         x: minX / scale,
         y: minY / scale,
         w: w / scale,
         h: h / scale,
-        orient: scored.orient,
+        orient: w >= h ? 'h' : 'v',
         score: scored.score,
-        tilt: componentTilt(scored.orient, area, sx, sy, sxx, syy, sxy),
+        tilt: deRotationAngle(shape),
+        pillW: shape.short / scale,
+        fill: shape.fill,
+        boost: false, // set in findCodeBoxes (needs score + fill)
       });
     }
   }
@@ -158,163 +239,223 @@ export function findCodeBoxes(frame: HTMLCanvasElement): CodeBox[] {
   kept.sort((a, b) => b.score - a.score);
   kept = kept.slice(0, 10);
 
-  // Only the strongest, most pill-shaped boxes get de-rotated. A weak box (low score)
-  // is usually NOT a code pill, and de-rotating it tends to manufacture a clean-looking
-  // but spurious read (e.g. a stray dark blob that resolves to the "00" logo) — a false
-  // positive a trading app must never produce. The real code pill always scores near the
-  // top, so we drop the tilt on any box more than TILT_SCORE_MARGIN below the best.
+  // Decide which boxes keep their de-rotation `tilt`. A box that isn't the real code pill,
+  // de-rotated, tends to manufacture a clean-looking but spurious read (a stray blob → the
+  // "00" logo; a digit cluster → a wrong code) — a false positive a trading app must never
+  // produce. Two regimes, by how steep the correction is:
+  //
+  //  • NEAR-AXIS tilt (snaps to the 0°/90° turn, no resample): the long-proven, low-risk
+  //    path. Keep it for every box that scores within TILT_SCORE_MARGIN of the best — flat
+  //    multi-sticker frames have several real pills, all near-axis.
+  //
+  //  • STEEP diagonal tilt (a true resample): the risky one. In a tilted frame several
+  //    non-pill regions (legal-text blocks, digit clusters) score as high as the pill, and
+  //    a tiny fragment de-rotates into "7 00" → the "00" logo. A single hold has ONE real
+  //    pill, and it's the LARGEST elongated blob — so we de-rotate only the single biggest
+  //    candidate (max pillW), and only if it scores near the best large box. Tiny fragments
+  //    and the smaller, contaminated re-segmentations of the same pill keep tilt=null and
+  //    read through the safe axis path instead.
   const best = kept.length ? kept[0].score : 0;
+  const maxPillW = kept.reduce((m, b) => Math.max(m, b.pillW), 0);
+  const bestLarge = kept
+    .filter((b) => b.pillW >= maxPillW * PILL_SIZE_RATIO)
+    .reduce((s, b) => Math.max(s, b.score), 0);
+  const out: CodeBox[] = [];
   for (const b of kept) {
-    if (b.score < best - TILT_SCORE_MARGIN) b.tilt = null;
+    if (b.tilt !== null && isSteepTilt(b.tilt)) {
+      // A box with a STEEP moment angle is only detectable BECAUSE the detector is rotation-
+      // invariant — a flat frame would never surface it (its axis-aligned box is square). In a
+      // tilted frame these are the real pill PLUS a litter of contaminants the same tilt makes
+      // visible: the card's legal-text block, digit clusters, pill-fragment re-segmentations.
+      // Only the single biggest, pill-scored blob is the real code; we de-rotate just that one
+      // and DROP the other steep boxes entirely — left in, their tilted dense text OCRs into
+      // stray codes ("STN 8" → SEN8) the matcher can't tell from a real read (a false positive).
+      if (b.pillW < maxPillW - 1e-6 || b.score < bestLarge - TILT_SCORE_MARGIN) continue;
+    } else if (b.tilt !== null && b.score < best - TILT_SCORE_MARGIN) {
+      // Near-axis box too weak to be the pill: keep it (the safe axis path reads it) but don't
+      // de-rotate — de-rotating a weak box invents false positives.
+      b.tilt = null;
+    }
+    // The taller small-source target rescues a far PILL's thin strokes, but on a HOLLOW
+    // stray "0" blob it sharpens the ring's two sides into a phantom "00". A real pill is
+    // solid (fill ≥ ~0.6); the "0" blob is sparse (~0.54), so gate the boost on fill too.
+    b.boost = b.score >= SMALL_BOOST_MIN_SCORE && b.fill >= BOOST_MIN_FILL;
+    out.push(b);
   }
-  return kept;
+  return out;
 }
 
-/** A box is only de-rotated when its measured lean is in [MIN_TILT_DEG, MAX_TILT_DEG].
- *  Below the minimum the upright crop reads fine and de-rotation risks dropping a digit
- *  into a wrong real code; above the maximum the component is likely mis-segmented and
- *  the 90°-turn candidates cover it. */
-const MIN_TILT_DEG = 6;
-const MAX_TILT_DEG = 30;
+/** A box is only de-rotated when its long axis is clearly elongated: l1/l2 must exceed
+ *  this. A round mass has no trustworthy axis, and de-rotating it manufactures a clean
+ *  but spurious read — the false positive a trading app must never produce. */
+const TILT_MIN_ELONGATION = 2.2;
 
 /** A box is only de-rotated if its score is within this margin of the frame's best box.
  *  Weaker boxes are rarely the real pill, and de-rotating them invents false positives. */
 const TILT_SCORE_MARGIN = 0.08;
 
-/** In-plane tilt (degrees) of a component's long axis, from its pixel moments. For an
- *  'h' box the long axis is near horizontal, so the tilt IS the long-axis angle; for a
- *  'v' box the long axis is near vertical, so the tilt relative to the 90°-turned crop
- *  is (angle - 90). Returns null when the component isn't clearly elongated (a round
- *  mass has no meaningful axis) or the tilt is too large to be a small off-axis lean
- *  (beyond that the axis-aligned + 90° candidates already cover it). All inputs are in
- *  the downscaled detection space, which is fine — angle is scale-invariant. */
-function componentTilt(
-  orient: 'h' | 'v',
-  area: number,
-  sx: number,
-  sy: number,
-  sxx: number,
-  syy: number,
-  sxy: number,
-): number | null {
-  if (area < 12) return null;
-  const cx = sx / area;
-  const cy = sy / area;
-  const uxx = sxx / area - cx * cx;
-  const uyy = syy / area - cy * cy;
-  const uxy = sxy / area - cx * cy;
+/** A box is only de-rotated if its pill body (short side) is at least this fraction of the
+ *  largest detected candidate's. The real pill is the big elongated blob; the spurious
+ *  near-top boxes a steep tilt creates are small fragments that de-rotate into stray-digit
+ *  reads ("7 00" → the "00" logo false positive). */
+const PILL_SIZE_RATIO = 0.5;
 
-  // Elongation: require the long axis to clearly dominate, else the angle is noise.
-  const tr = uxx + uyy;
-  const det = uxx * uyy - uxy * uxy;
-  const disc = Math.sqrt(Math.max(0, (tr * tr) / 4 - det));
-  const l1 = tr / 2 + disc;
-  const l2 = tr / 2 - disc;
-  if (l2 <= 0 || l1 / l2 < 1.8) return null;
+/** Canvas-clockwise rotation (degrees) that brings the pill's long axis horizontal, from
+ *  the rotation-invariant moment shape. The moment angle is measured from +x; rotating
+ *  the crop by -angle lays the text flat. Returns null when the component isn't clearly
+ *  elongated (a round mass has no meaningful axis — de-rotating it invents a false
+ *  read). The 180° ambiguity (text upright vs upside-down) is resolved at OCR time by
+ *  also feeding the flip. The angle is scale-invariant, so the detection-space estimate
+ *  applies directly to the full-frame crop. */
+/** A tilt is "steep" (a true diagonal de-rotation that resamples) when it isn't within
+ *  UPRIGHT_DEG of an axis (0° or ±90°). Near-axis crops snap to the cheap rotateCanvas
+ *  turn (low risk); steep ones are restricted to the single biggest pill. */
+function isSteepTilt(tilt: number): boolean {
+  return Math.abs(tilt) >= UPRIGHT_DEG && Math.abs(Math.abs(tilt) - 90) >= UPRIGHT_DEG;
+}
 
-  // Long-axis angle (degrees), in (-90, 90].
-  let deg = (0.5 * Math.atan2(2 * uxy, uxx - uyy) * 180) / Math.PI;
+function deRotationAngle(shape: MomentShape): number | null {
+  if (shape.l2 <= 0 || shape.l1 / shape.l2 < TILT_MIN_ELONGATION) return null;
+  // Bring the long axis to horizontal: rotate the crop by the negated long-axis angle.
+  let deg = -shape.angle;
   while (deg > 90) deg -= 180;
   while (deg <= -90) deg += 180;
-
-  // Tilt relative to the box's nominal orientation.
-  let tilt = orient === 'h' ? deg : deg - 90;
-  while (tilt > 45) tilt -= 90;
-  while (tilt < -45) tilt += 90;
-
-  // Only de-rotate a box with a CLEAR off-axis lean. Below MIN_TILT_DEG the upright
-  // axis-aligned crop already reads cleanly, and de-rotating it only risks the OCR
-  // dropping a thin digit (e.g. "CIV 12" → "CIV 2" = a real but WRONG code) — a false
-  // positive a trading app must never produce. Above MAX_TILT_DEG the component is
-  // usually mis-segmented and the 90°-turn candidates already cover that band.
-  if (tilt < -MAX_TILT_DEG || tilt > MAX_TILT_DEG) return null;
-  if (Math.abs(tilt) < MIN_TILT_DEG) return null;
-  return tilt;
+  return deg;
 }
 
-/** Geometry gate + score for "is this the code pill?". Returns null if not. */
-function scoreBox(w: number, h: number, area: number): { orient: 'h' | 'v'; score: number } | null {
-  const fill = area / (w * h);
-  const long = Math.max(w, h);
-  const short = Math.min(w, h);
-  const ar = long / short;
+/** Geometry gate + score for "is this the code pill?", from the ROTATION-INVARIANT
+ *  moment shape (not the axis-aligned w×h, which goes square at a steep tilt and used to
+ *  reject every steeply-rotated pill before OCR). Returns null if not a plausible pill.
+ *  The real code pill ranks highest by score; we keep the top candidates and let the OCR
+ *  + per-line matching reject any false positives. */
+/** The card's legal-text block measures a longer, sparser rectangle than a real pill.
+ *  A box that is BOTH this elongated AND this hollow is rejected as the legal block (the
+ *  one contaminant rotation-invariant detection surfaces in a tilted frame). Real pills sit
+ *  at AR ≤ ~3.2 / fill ≥ ~0.56, so they clear at least one side of this AND. */
+const LEGAL_BLOCK_AR = 3.4;
+const LEGAL_BLOCK_FILL = 0.6;
 
-  // Loose sanity gates — the real code pill ranks highest by score; we keep the top
-  // candidates and let the OCR + per-line matching reject any false positives. (The
-  // pill's fill varies with framing: ~0.5 close up, ~0.7 farther, so don't gate hard.)
-  if (ar < 2.0 || ar > 6.0) return null; // "CIV 12" pill is ~3-4:1 (samples ~3.1)
+function scoreBox(shape: MomentShape): { score: number } | null {
+  const { ar, fill, size, l2 } = shape;
+
+  // Loose sanity gates. A real code pill measures AR≈2.4–3.2 and fill≈0.56–0.74 from
+  // moments at ANY rotation (verified across the dataset; fill varies with framing).
+  if (ar < 2.0 || ar > 6.0) return null; // pill is ~2.4–3.2:1
   if (fill < 0.35 || fill > 0.95) return null; // solid-ish blob with text holes
-  if (long < DET_LONG * 0.03 || long > DET_LONG * 0.4) return null; // size sanity
-  if (short < 4) return null;
+  if (size < DET_LONG * 0.03 || size > DET_LONG * 0.5) return null; // size sanity
+  if (l2 < 2) return null; // short side too thin to be a pill body
 
-  const arScore = 1 - Math.min(1, Math.abs(ar - 3.2) / 3);
-  const fillScore = 1 - Math.min(1, Math.abs(fill - 0.6) / 0.4);
-  return { orient: w >= h ? 'h' : 'v', score: arScore * 0.5 + fillScore * 0.5 };
+  // The card's printed legal-text block is the one contaminant that mimics a pill's AR but
+  // not its solidity: it measures a LONGER, SPARSER rectangle (AR ≳ 3.5, fill ≲ 0.6) than a
+  // real pill (AR ≤ ~3.2, fill ≥ ~0.56). Rotation-invariant detection surfaces it in a tilted
+  // frame (its axis box is square when flat, so a flat capture never saw it), where its tilted
+  // dense text OCRs into stray codes ("STN 8" → SEN8) — a false positive. Reject that
+  // long-and-sparse signature; a genuine pill clears either the AR or the fill side.
+  if (ar > LEGAL_BLOCK_AR && fill < LEGAL_BLOCK_FILL) return null;
+
+  // Score peaks at the real pill's measured shape: AR≈3.0 and fill≈0.72 (dataset). The fill
+  // ideal matters — at the old 0.6 ideal a HOLLOW stray "0" blob (fill≈0.54) outscored the
+  // solid pill (fill≈0.74) and stole the top spot, de-rotating into a phantom "00". Centring
+  // on the real fill makes the solid pill the clear winner and drops the sparse blob below the
+  // de-rotation margin.
+  const arScore = 1 - Math.min(1, Math.abs(ar - 3.0) / 3);
+  const fillScore = 1 - Math.min(1, Math.abs(fill - 0.72) / 0.4);
+  return { score: arScore * 0.5 + fillScore * 0.5 };
 }
 
-/** Crop rotations (degrees, canvas clockwise-positive) to APPLY once a box is judged
- *  TILTED. The pill's moment axis reliably tells us a box is off-axis, but its
- *  magnitude/sign are too noisy on a downscaled component to pin the exact correction,
- *  so we sweep a small fixed spread that brackets both lean directions across the
- *  realistic handheld range (~±16°). OCR all of them; the conservative matcher keeps
- *  only the flat one.
- *
- *  This sweep runs ONLY for a clearly-tilted, top-scoring box — never an upright or
- *  weak box — because de-rotating those just manufactures garbled reads that can snap
- *  to a wrong real code (the false positive a trading app must never produce). */
-const TILT_SWEEP = [2, -4, 8, 14, -10, 16, -16];
+/** Below this absolute de-rotation angle the crop is treated as already upright: no
+ *  rotation resample is applied, so the crop can be SHARPENED (rescuing thin strokes the
+ *  same way the long-proven axis path did) and read full-width without a band-tighten
+ *  that can grab the wrong rows on a nearly-flat pill. A handheld lean this small reads
+ *  fine upright, so correcting it only adds resample softening for no gain. Above it a
+ *  real resample happens, a second sharpening would fragment the digits, and the
+ *  axis-aligned bbox is now tall enough that we must tighten to the pill band. */
+const UPRIGHT_DEG = 8;
 
-/** Crop rotations to try for a box: the fixed sweep when the box is tilted, else none.
- *  `tilt` is the box's measured lean (null = upright/non-pill → no de-rotation). */
-function tiltAngles(tilt: number | null): number[] {
-  return tilt === null ? [] : TILT_SWEEP;
-}
-
-/** Orientation candidates for a box, rotated toward upright but NOT yet prepared.
- *  Always includes the two axis-aligned candidates (0°/180° or 90°/270°) that resolve
- *  the upside-down ambiguity, PLUS a few extra crops de-rotated by the pill's measured
- *  tilt and small fixed leans so a handheld, slightly-rotated sticker still lands
- *  upright for OCR.
+/** Two raw OCR crops for a box, rotated upright by the pill's MOMENT angle but not yet
+ *  prepared. The single moment-angle de-rotation brings the pill horizontal at ANY
+ *  in-plane rotation (the rotation-invariant detector measures the angle even when the
+ *  axis-aligned box is square); the 180° flip resolves the upright/upside-down ambiguity.
+ *  When the box has no trustworthy axis (`tilt === null` — a round blob, or a box too
+ *  weak to safely de-rotate) we fall back to the axis-aligned base + 180° flip.
  *
  *  Splitting this out lets the dev harness try alternative prep functions on the exact
  *  same raw crops the app uses. */
 export function rawCropCandidates(frame: HTMLCanvasElement, box: CodeBox): HTMLCanvasElement[] {
-  const { axis, rotated } = rawCropGroups(frame, box);
-  return [...axis, ...rotated];
+  return rawCropGroups(frame, box).crops;
 }
 
-/** Raw crops split into AXIS-aligned (0°/180°/90°/270°) and tilt-corrected groups.
- *  They get prepared differently: the axis crops are sharpened (rescuing thin strokes a
- *  soft capture washed out), but the de-rotated crops are NOT — the rotation resample
- *  already softens them and a second sharpening fragments the digits (e.g. a tilted
- *  "CIV 12" breaks into "CIV" + "12"). */
+/** Build the two raw upright crops plus the flag telling prepForOcr whether to sharpen.
+ *  A de-rotated crop (real resample) is NOT sharpened — the resample already softens it
+ *  and a second sharpening fragments the digits (e.g. a tilted "CIV 12" breaks into
+ *  "CIV" + "12"). An already-upright crop (no resample) IS sharpened to rescue thin
+ *  strokes a soft capture washed out (the "I" in CIV, the "1" in 12). */
 function rawCropGroups(
   frame: HTMLCanvasElement,
   box: CodeBox,
-): { axis: HTMLCanvasElement[]; rotated: HTMLCanvasElement[] } {
+): { crops: HTMLCanvasElement[]; sharpen: boolean; despeckle: boolean } {
   // A little padding so the pill has a margin of card around it — the prep step
   // flood-clears that margin, which cleanly isolates the text.
   const region = cropRegion(frame, box, 0.18);
 
-  // Axis-aligned base: 'h' is already horizontal, 'v' needs a 90° turn first.
-  const baseTurn = box.orient === 'h' ? 0 : 90;
-  const base = rotateCanvas(region, baseTurn as 0 | 90);
-  const flip = rotateCanvas(base, 180);
-  const axis = [base, flip];
-
-  // De-rotated crops: rotating the upright base brings a tilted pill flat. A tilted
-  // pill's axis-aligned bbox is much taller than the pill, so after rotation the (now
-  // horizontal) text sits in a tall canvas full of empty card; prepForOcr scales by the
-  // FULL crop height, which would shrink the text band too far. So we tighten the
-  // rotated crop to the dark pill's horizontal band first, restoring a text-sized crop.
-  // We add both the rotated crop and its 180° flip (the code may be upside down).
-  // tiltAngles returns the rotation to APPLY directly (canvas clockwise-positive).
-  const rotated: HTMLCanvasElement[] = [];
-  for (const deg of tiltAngles(box.tilt)) {
-    const r = tightenToPillBand(rotateCanvasDeg(base, deg));
-    rotated.push(r, rotateCanvas(r, 180));
+  // No trustworthy moment axis: fall back to the axis-aligned crop. 'h' is already
+  // horizontal, 'v' needs a 90° turn. Sharpened, like the long-proven axis path.
+  if (box.tilt === null) {
+    const base = rotateCanvas(region, box.orient === 'h' ? 0 : 90);
+    return { crops: [base, rotateCanvas(base, 180)], sharpen: true, despeckle: false };
   }
-  return { axis, rotated };
+
+  // Snap a near-right-angle moment angle to the exact 0/90 turn: that rotation does NOT
+  // resample (so the crop can be sharpened to rescue thin strokes, exactly like the old
+  // axis path) and the pill already fills its bbox, so no band-tighten is needed. A handheld
+  // lean below UPRIGHT_DEG reads fine upright, so we don't correct it.
+  const deg = box.tilt;
+  const nearUpright = Math.abs(deg) < UPRIGHT_DEG;
+  const nearQuarter = Math.abs(Math.abs(deg) - 90) < UPRIGHT_DEG;
+  if (nearUpright || nearQuarter) {
+    const base = rotateCanvas(region, nearQuarter ? 90 : 0);
+    return { crops: [base, rotateCanvas(base, 180)], sharpen: true, despeckle: false };
+  }
+
+  // Genuinely diagonal pill: de-rotate the WHOLE padded region by the moment angle so the
+  // pill lands horizontal. Its axis-aligned bbox is square and full of empty card, so after
+  // rotation the (now horizontal) text sits in a canvas with big margins; prepForOcr scales
+  // by the FULL crop height, which would shrink the text band too far. Since the rotation is
+  // about the CENTRE, the pill is a horizontal strip ~pillW tall through the middle — so we
+  // crop that centred strip directly. This is far more reliable than searching the de-rotated
+  // square for a dark band, which can grab the card's off-centre legal-text block (a false
+  // read). resample already softens the crop, so the band would otherwise need its own care.
+  // Despeckle the binarized crop: the de-rotation leaves a stray pill-end speck that derails
+  // Tesseract's segmentation into a wrong-code false positive.
+  const rotated = cropCenterStrip(rotateCanvasDeg(region, deg), box.pillW);
+  return { crops: [rotated, rotateCanvas(rotated, 180)], sharpen: true, despeckle: true };
+}
+
+/** Crop a de-rotated canvas to a CENTRED horizontal strip tall enough to hold the pill
+ *  (`pillH` px) plus a glyph margin. The crop was rotated about its centre, so the pill
+ *  sits across the middle; a centred strip isolates it without picking up the card's
+ *  off-centre text. Full width is kept so the whole code stays in view. */
+function cropCenterStrip(src: HTMLCanvasElement, pillH: number): HTMLCanvasElement {
+  const w = src.width;
+  const h = src.height;
+  if (w < 8 || h < 8 || pillH <= 0) return src;
+  // Keep the strip close to the pill height (just a small quiet margin each side for the
+  // border-flood) so the text BAND dominates the crop. prepForOcr upscales by the FULL crop
+  // height, so an over-tall strip would shrink the text — at which the thin "1" in "CIV 12"
+  // washes out and the read drops to "CIV2" (a real but WRONG code). ~1.4× brackets the
+  // glyphs with a thin margin while keeping them large.
+  const strip = Math.min(h, Math.round(pillH * 1.4));
+  if (strip >= h) return src;
+  const y0 = Math.max(0, Math.round((h - strip) / 2));
+  const bh = Math.min(h - y0, strip);
+
+  const out = document.createElement('canvas');
+  out.width = w;
+  out.height = bh;
+  const octx = out.getContext('2d', { willReadFrequently: true });
+  if (!octx) return src;
+  octx.drawImage(src, 0, y0, w, bh, 0, 0, w, bh);
+  return out;
 }
 
 /** Crop a de-rotated canvas down to the horizontal band containing the dark pill, so
@@ -352,24 +493,36 @@ function tightenToPillBand(src: HTMLCanvasElement): HTMLCanvasElement {
     rowDark[y] = c;
   }
 
-  // A pill row is one with a meaningful run of dark pixels. Find the tallest contiguous
-  // band of such rows (the pill body), then add a margin so glyph tops/bottoms survive.
+  // A pill row is one with a meaningful run of dark pixels. The crop was de-rotated about
+  // its CENTRE, so the pill body is the dark band straddling the centre row — NOT
+  // necessarily the tallest band (a square crop of a steeply-tilted pill also catches the
+  // card's legal-text block off-centre, which can be taller). So prefer the band covering
+  // the centre; fall back to the tallest only if no band reaches the centre.
   const rowMin = w * 0.12;
-  let bestStart = -1;
-  let bestLen = 0;
+  const centre = h / 2;
+  let centreStart = -1;
+  let centreLen = 0;
+  let tallStart = -1;
+  let tallLen = 0;
   let curStart = -1;
   for (let y = 0; y <= h; y++) {
     const on = y < h && rowDark[y] >= rowMin;
     if (on && curStart < 0) curStart = y;
     if (!on && curStart >= 0) {
       const len = y - curStart;
-      if (len > bestLen) {
-        bestLen = len;
-        bestStart = curStart;
+      if (len > tallLen) {
+        tallLen = len;
+        tallStart = curStart;
+      }
+      if (curStart <= centre && y > centre && len > centreLen) {
+        centreLen = len;
+        centreStart = curStart;
       }
       curStart = -1;
     }
   }
+  const bestStart = centreStart >= 0 ? centreStart : tallStart;
+  const bestLen = centreStart >= 0 ? centreLen : tallLen;
   if (bestStart < 0 || bestLen >= h * 0.85) return src; // no clear band, or already tight
 
   const margin = Math.round(bestLen * 0.5) + 2;
@@ -391,22 +544,20 @@ function tightenToPillBand(src: HTMLCanvasElement): HTMLCanvasElement {
  *  (rotated upright, upscaled, binarized to dark-text-on-white, padded). The two
  *  candidates resolve the 0°/180° (or 90°/270°) ambiguity at OCR time. */
 export function codeCropCandidates(frame: HTMLCanvasElement, box: CodeBox): HTMLCanvasElement[] {
-  const { axis, rotated } = rawCropGroups(frame, box);
-  // The taller small-source target (which rescues a far/tiny pill's thin strokes) also
-  // sharpens the FIFA logo's stray round blobs into a phantom "00" on a WEAK box. So we
-  // only boost a box that scores like a real pill; a low-score blob keeps the modest 96
-  // target, at which its upscaled blobs stay unreadable noise the matcher drops.
-  const boost = box.score >= SMALL_BOOST_MIN_SCORE;
-  return [
-    ...axis.map((c) => prepForOcr(c, true, boost)),
-    ...rotated.map((c) => prepForOcr(c, false, boost)),
-  ];
+  const { crops, sharpen, despeckle } = rawCropGroups(frame, box);
+  // box.boost (set in findCodeBoxes) gates the taller small-source target: it rescues a
+  // far/tiny PILL's thin strokes but sharpens a stray blob's dots into a phantom "00", so
+  // only a pill-sized, pill-scored box gets it.
+  return crops.map((c) => prepForOcr(c, sharpen, box.boost, despeckle));
 }
 
 /** A box must score at least this to receive the taller small-source OCR target. Real
  *  code pills score ≥0.85; a spurious logo-blob box scores ~0.58, and boosting it turns
  *  its round blobs into a false "00". */
 const SMALL_BOOST_MIN_SCORE = 0.68;
+/** ...and its body must be at least this solid. A hollow stray "0" blob (fill ≈ 0.54)
+ *  boosted turns into a phantom "00"; a real pill is solid (fill ≥ ~0.6). */
+const BOOST_MIN_FILL = 0.6;
 
 /** DEV-ONLY hooks for the probe harness (brute-force angle sweep). Not used by app. */
 export function _rawRegion(frame: HTMLCanvasElement, box: CodeBox): HTMLCanvasElement {
@@ -495,7 +646,12 @@ const MAX_INK_FRACTION = 0.28;
  *  margin around the pill, and any inverted dark-on-light region) is then cleared,
  *  which both isolates the text and turns false-positive boxes (legal text, logos)
  *  into blanks that match nothing. */
-function prepForOcr(src: HTMLCanvasElement, sharpen: boolean, boostSmall = true): HTMLCanvasElement {
+function prepForOcr(
+  src: HTMLCanvasElement,
+  sharpen: boolean,
+  boostSmall = true,
+  despeckle = false,
+): HTMLCanvasElement {
   const sh = src.height || 1;
   const target = boostSmall && sh < SMALL_SRC_H ? TARGET_H_SMALL : TARGET_H;
   const factor = Math.max(1, target / sh);
@@ -550,6 +706,14 @@ function prepForOcr(src: HTMLCanvasElement, sharpen: boolean, boostSmall = true)
 
   floodClearFromBorder(bin, cw, ch);
 
+  // Despeckle (de-rotated crops only): clear ink blobs far too small to be a glyph. A
+  // de-rotated crop of a steep pill keeps a stray speck (a rounded pill-end remnant) beside
+  // the code; left in, it throws Tesseract's segmentation off so the leading "C" reads "G"
+  // and the code snaps to a wrong real code ("CIV 12" → "GIV2" → CIV2, a false positive).
+  // Glyphs are large after the upscale, so a generous min-area removes only specks. The axis
+  // path skips this so its sharpened thin strokes are never touched.
+  if (despeckle) removeSmallInkBlobs(bin, cw, ch, Math.max(4, Math.round(ch * ch * 0.005)));
+
   // Sparse-ink gate: a code is a few glyphs; anything denser is a photo or fine
   // print. Blank it so the OCR call returns at once (the per-crop speed guard).
   let ink = 0;
@@ -591,6 +755,34 @@ function floodClearFromBorder(bin: Uint8Array, w: number, h: number): void {
     if (x < w - 1) visit(i + 1);
     if (y > 0) visit(i - w);
     if (y < h - 1) visit(i + w);
+  }
+}
+
+/** Clear every connected ink (0) component smaller than `minArea` pixels (4-connected),
+ *  leaving the glyphs. A flood fill per unvisited ink pixel: collect the component, and if
+ *  it's a speck, white it out. Glyphs survive (they're far larger after the upscale). */
+function removeSmallInkBlobs(bin: Uint8Array, w: number, h: number, minArea: number): void {
+  const n = w * h;
+  const seen = new Uint8Array(n);
+  const stack = new Int32Array(n);
+  const comp = new Int32Array(n);
+  for (let start = 0; start < n; start++) {
+    if (bin[start] !== 0 || seen[start]) continue;
+    let sp = 0;
+    let c = 0;
+    stack[sp++] = start;
+    seen[start] = 1;
+    while (sp > 0) {
+      const i = stack[--sp];
+      comp[c++] = i;
+      const x = i % w;
+      const y = (i / w) | 0;
+      if (x > 0 && bin[i - 1] === 0 && !seen[i - 1]) ((seen[i - 1] = 1), (stack[sp++] = i - 1));
+      if (x < w - 1 && bin[i + 1] === 0 && !seen[i + 1]) ((seen[i + 1] = 1), (stack[sp++] = i + 1));
+      if (y > 0 && bin[i - w] === 0 && !seen[i - w]) ((seen[i - w] = 1), (stack[sp++] = i - w));
+      if (y < h - 1 && bin[i + w] === 0 && !seen[i + w]) ((seen[i + w] = 1), (stack[sp++] = i + w));
+    }
+    if (c < minArea) for (let k = 0; k < c; k++) bin[comp[k]] = 255;
   }
 }
 
