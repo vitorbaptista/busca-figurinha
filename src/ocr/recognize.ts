@@ -113,29 +113,54 @@ export async function recognizeFrameInOrder(
       // same boxes, so there's no more useful work — stop.
       break;
     }
-    crops += jobs.length;
-    const results = await ocr.recognizeMany(jobs.map((j) => j.crop));
-    let resolvedThisRound = false;
-    for (let i = 0; i < results.length; i++) {
-      const r = results[i];
+    // Handle one OCR result: record the read, snap it to a checklist code (or not), and
+    // mark the box done when it resolved OR read to nothing legible (so its flip is skipped).
+    // Returns true when this crop resolved a code.
+    const handle = (job: { p: Pending; crop: HTMLCanvasElement }, r: { text: string }): boolean => {
       const clean = r.text.replace(/\s+/g, ' ').trim();
       if (clean) reads.push(clean);
       const m = bestMatchFromText(r.text, checklist);
       if (m?.entry) {
-        jobs[i].p.done = true; // this box resolved — its flip round is skipped
-        resolvedThisRound = true;
+        job.p.done = true; // this box resolved — its flip round is skipped
         if (!seen.has(m.entry.code)) {
           seen.add(m.entry.code);
           resolved.push(m);
         }
-      } else if (round === 0 && !/[A-Z0-9]/i.test(clean)) {
+        return true;
+      }
+      if (round === 0 && !/[A-Z0-9]/i.test(clean)) {
         // The upright crop OCR'd to NOTHING legible (no letter or digit). The flip is the
         // SAME pixels rotated 180°, so a crop with no glyph either way carries no code — its
         // flip would only burn another OCR call to read nothing. Upside-down REAL text reads
         // as garbage characters upright (not empty), so it still has glyph chars here and
         // keeps its flip. This skips the wasted second call on the many video frames whose
         // box holds an unreadable smudge, without dropping any genuinely flipped code.
-        jobs[i].p.done = true;
+        job.p.done = true;
+      }
+      return false;
+    };
+
+    let resolvedThisRound = false;
+    if (stopOnFirstCode) {
+      // Live/latency: jobs are in SCORE order (the real pill is the top box). OCR them one
+      // at a time and stop the instant one resolves — so a clean frame ends after the pill
+      // (box[0]) reads, before any lower-ranked spurious crop is ever OCR'd. That spurious
+      // crop is exactly the one the hybrid would otherwise pay a tesseract verify on.
+      for (const job of jobs) {
+        crops += 1;
+        const [r] = await ocr.recognizeMany([job.crop]);
+        if (handle(job, r)) {
+          resolvedThisRound = true;
+          break;
+        }
+      }
+    } else {
+      // Recall mode (multi-sticker static): we want EVERY distinct code, so OCR the whole
+      // round in parallel across the worker pool and process all results.
+      crops += jobs.length;
+      const results = await ocr.recognizeMany(jobs.map((j) => j.crop));
+      for (let i = 0; i < results.length; i++) {
+        if (handle(jobs[i], results[i])) resolvedThisRound = true;
       }
     }
     if (resolvedThisRound && stopOnFirstCode) break; // frame resolved — done
