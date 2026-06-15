@@ -96,8 +96,7 @@ album is built in `src/data/checklist.ts`; UI strings are in `src/i18n/pt.ts`.
 
 ## Gotchas
 
-- The default branch is **`master`**, but `.github/workflows/deploy.yml` triggers on push to
-  **`main`** — a real mismatch; deploys won't fire on `master` until the workflow (or branch) is
-  fixed. The build there uses `GH_PAGES=1`, which sets the `/figurinhas-app/` base path in `vite.config.ts`.
+- The default branch is **`main`**, which matches the push trigger in `.github/workflows/deploy.yml`.
+  The build there uses `GH_PAGES=1`, which sets the `/figurinhas-app/` base path in `vite.config.ts`.
 - PNG app icons are generated from `public/icons/icon.svg` via `node scripts/gen-icons.mjs` (needs
   `npm i -D sharp`); the SVG is the source of truth.
