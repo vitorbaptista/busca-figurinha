@@ -3,6 +3,20 @@
 Notable changes to the sticker scanner. Newest first. No formal releases yet (deploys on push to
 `main`), so entries are grouped by date. Keep this updated when you ship something notable.
 
+## 2026-06-15 — GitHub Pages deployment
+
+### Added
+- **GitHub Pages deploy** is live at http://vitorbaptista.com/busca-figurinha/ — enabled the Pages
+  site (GitHub Actions source); the existing `deploy.yml` workflow auto-deploys on push to `main`.
+
+### Fixed
+- **Vite base path** corrected to `/busca-figurinha/` (was `/figurinhas-app/`, which didn't match the
+  repo name and broke asset loading under the Pages subpath).
+
+### Changed
+- **CI runners**: `actions/checkout` + `actions/setup-node` bumped to v5, Node 24 LTS; opted the
+  Pages actions into the Node 24 runtime to clear the Node 20 deprecation warnings.
+
 ## 2026-06-15 — Real-world speed + correctness pass
 
 The scanner went from a slow, often-unreadable prototype to ~85 ms/pass on a Pixel, reading real
