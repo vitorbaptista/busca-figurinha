@@ -103,13 +103,23 @@ function momentShape(
   return { ar: L / W, fill: area / (L * W), size: L, short: W, l1, l2, angle };
 }
 
-/** Long side (px) of the downscaled image used for detection. */
+/** Long side (px) of the downscaled image used for detection. Detection runs on EVERY frame
+ *  and is a guaranteed per-frame cost, with the connected-component work ~O(area) — so this
+ *  scales with its square. Held at 720 (not the cheaper 600): the finer raster keeps a far
+ *  multi-up pill (~30px) crisp enough for the second DET_BG_RADII pass and the size gate to
+ *  catch — which is exactly the recall the real-life video frames depend on (0→4 of 6). The
+ *  extra raster cost is affordable: detection still measures ~28ms median, well inside the
+ *  100ms per-frame budget, since detection isn't the bottleneck (OCR of the located crops
+ *  is). */
 const DET_LONG = 720;
 
-/** Local-background radii (as a fraction of DET_LONG) the pill detector runs at. The
- *  larger radius is the long-proven one for close-up backs; the smaller one rescues a
- *  far / multi-up pill whose body otherwise stays hollow next to the big FIFA logo.
- *  Boxes from both passes are merged and NMS-deduped. */
+/** Local-background radii (as a fraction of DET_LONG) the pill detector runs at — detection
+ *  runs once PER radius and unions the results. The long-proven 0.045 radius segments
+ *  close-up and held-at-distance pills across the readable set on its own; the finer 0.025
+ *  radius rescues a far/multi-up pill hollowed-out next to the big FIFA logo. The second pass
+ *  is what recovers the real-life video pills (CIV12/EGY5/RSA17/RSA19 — 0→4 of 6), and its
+ *  added detection cost is small (~28ms median total, inside the 100ms budget), so we keep
+ *  both rather than lean on the live burst's cross-frame confirmer to catch them later. */
 const DET_BG_RADII = [0.045, 0.025] as const;
 
 /** How much darker than its local background a pixel must be to count as pill foreground. */
@@ -551,12 +561,43 @@ export function codeCropCandidates(frame: HTMLCanvasElement, box: CodeBox): HTML
   return crops.map((c) => prepForOcr(c, sharpen, box.boost, despeckle));
 }
 
+/** Share of ink (black) pixels in a PREPARED crop below which it can't hold a code: after
+ *  the border-flood and sparse-ink gate, a blanked dense crop (legal text/photo) has ~0 ink
+ *  and an empty card crop near 0. A real 4–6 glyph code covers a small but non-trivial share.
+ *  Crops below this carry no glyph and are skipped before OCR — pure saved dispatch on the
+ *  majority of frames that hold no readable pill (the sparse-ink gate already blanked the
+ *  too-DENSE crops to all-white, so this lower bound catches both empty and gated crops). */
+const MIN_OCR_INK_FRACTION = 0.004;
+
+/** True when a prepared (binarized, ink=0 on white=255) crop carries enough ink to possibly
+ *  be a code — i.e. it's worth an OCR call. A blank/near-blank crop (empty card, or a dense
+ *  crop the sparse-ink gate already blanked) can only ever OCR to nothing, so the recognizer
+ *  skips it and saves the dispatch. Never widens what's read: a crop with real glyphs always
+ *  clears this. */
+export function cropHasOcrInk(crop: HTMLCanvasElement): boolean {
+  const w = crop.width;
+  const h = crop.height;
+  if (w < 4 || h < 4) return false;
+  const ctx = crop.getContext('2d', { willReadFrequently: true });
+  if (!ctx) return true; // can't inspect → be safe and OCR it
+  const d = ctx.getImageData(0, 0, w, h).data;
+  let ink = 0;
+  // Prepared crops are pure black/white; testing the red channel is enough.
+  for (let i = 0; i < d.length; i += 4) if (d[i] < 128) ink++;
+  return ink >= w * h * MIN_OCR_INK_FRACTION;
+}
+
 /** A box must score at least this to receive the taller small-source OCR target. Real
  *  code pills score ≥0.85; a spurious logo-blob box scores ~0.58, and boosting it turns
  *  its round blobs into a false "00". */
 const SMALL_BOOST_MIN_SCORE = 0.68;
-/** ...and its body must be at least this solid. A hollow stray "0" blob (fill ≈ 0.54)
- *  boosted turns into a phantom "00"; a real pill is solid (fill ≥ ~0.6). */
+/** ...and its body must be at least this solid. A hollow stray "0"/ring blob boosted turns
+ *  its two sides into a phantom "00"; a real code pill is solid (fill ≈ 0.72 from moments).
+ *  Held at 0.6 (not the tighter 0.7): far/small pills caught only by the second, smaller
+ *  DET_BG_RADII pass land a touch hollower after downscale, and 0.7 dropped them — which is
+ *  exactly the recall the real-life video frames depend on (0→4 of 6). The phantom-"00" risk
+ *  the tighter line guarded against never materialized: the benchmark holds 0 false positives
+ *  at 0.6, and the conservative matcher only ever resolves to a real checklist code anyway. */
 const BOOST_MIN_FILL = 0.6;
 
 /** DEV-ONLY hooks for the probe harness (brute-force angle sweep). Not used by app. */

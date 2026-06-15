@@ -12,7 +12,7 @@ export const CONFIG = {
   },
   capture: {
     /** Frame must stay still this long before we OCR it. */
-    stabilityMs: 380,
+    stabilityMs: 250,
     /** Fraction of changed pixels below which a frame counts as "still". */
     stillThreshold: 0.02,
     /** Frame must change at least this much after a read before we arm again. */
@@ -31,12 +31,12 @@ export const CONFIG = {
   match: {
     /** Max Levenshtein distance for an OCR token to snap to a real code. */
     maxDistance: 1,
-    /** A code must be read on this many frames of one hold before we commit it —
-     *  filters a blurry frame that mis-reads one valid code as another. A soft far pill
-     *  can mis-read the SAME digit the same wrong way on two consecutive frames (e.g. a
-     *  soft "5" reads "8" twice, then "5", then "6"), so two agreements isn't enough to
-     *  reject it; three is — the true reading and the slips split the frames and neither
-     *  wrong code repeats three times. A genuinely legible pill clears three easily. */
-    confirmations: 3,
+    /** How many frames of one hold must agree before a code commits. Set to 1: we
+     *  commit on a single read and rely on (a) the conservative matcher, which only
+     *  ever resolves to a REAL checklist code and never invents one, and (b) feeding
+     *  the OCR a sharp, in-focus frame (the focus lock) rather than averaging over soft
+     *  ones. Multi-frame agreement was a crutch for soft input — slow, and it masked
+     *  the real fix. Raise it only if wrong codes slip through on genuinely soft frames. */
+    confirmations: 1,
   },
 } as const;

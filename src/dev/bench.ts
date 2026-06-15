@@ -12,9 +12,9 @@
 //
 // Ground truth is the FILENAME. Output: Markdown → captures/bench-results.md (/bench-log).
 // `?quick` skips the slow video section.
-import { findCodeBoxes, codeCropCandidates } from '../ocr/locate';
+import { findCodeBoxes } from '../ocr/locate';
 import { createOcrEngine } from '../ocr/engine';
-import { bestMatchFromText } from '../domain/matching';
+import { recognizeFrameInOrder } from '../ocr/recognize';
 import { createConfirmer } from '../domain/confirm';
 import { checklist } from '../data/checklist';
 import { CONFIG } from '../config';
@@ -78,17 +78,13 @@ async function recognizeFrame(
         `[s${b.score.toFixed(2)} ${Math.round(b.w)}x${Math.round(b.h)} ${b.orient} t${b.tilt === null ? '-' : Math.round(b.tilt)}]`,
     )
     .join('');
-  const crops = boxes.flatMap((b) => codeCropCandidates(frame, b));
-  const results = crops.length ? await ocr.recognizeMany(crops) : [];
-  const found = new Set<string>();
-  const reads: string[] = [];
-  for (const r of results) {
-    const clean = r.text.replace(/\s+/g, ' ').trim();
-    if (clean) reads.push(clean);
-    const m = bestMatchFromText(r.text, checklist);
-    if (m?.entry) found.add(m.entry.code);
-  }
-  return { found: [...found], reads, dbg: `${boxes.length}box ${dbg}` };
+  // Mirror the production strategy: OCR crops in score order, one at a time, skipping a
+  // box's flip crop once its upright crop resolves. NOT stop-on-first here, so a static
+  // multi-sticker frame still surfaces every distinct code (the robustness/static sets are
+  // single-code, so this is identical to stop-on-first for them).
+  const { resolved, reads } = await recognizeFrameInOrder(ocr, frame, checklist, false);
+  const found = resolved.map((m) => m.entry!.code);
+  return { found, reads, dbg: `${boxes.length}box ${dbg}` };
 }
 
 // ---------- Augmentations (canvas transforms that keep the code readable) ----------
@@ -250,19 +246,23 @@ const minus = (a: Set<string>, b: Set<string>) => [...a].filter((x) => !b.has(x)
     for (let i = 0; i < list.frames.length; i++) {
       status.textContent = `latency ${i + 1}/${list.frames.length}…`;
       const frame = await loadImage(`/dataset/frames/${list.frames[i]}`);
+      // Measure the EXACT production strategy: detection, then OCR crops in score order
+      // one at a time, stopping at the first crop that resolves a real checklist code
+      // (stopOnFirstCode=true — the prominent pill is box[0], so a clean frame is one OCR).
+      // onDetected splits detection time from OCR time without forking the measured path.
       const t0 = performance.now();
-      const boxes = findCodeBoxes(frame);
-      const t1 = performance.now();
-      const crops = boxes.flatMap((b) => codeCropCandidates(frame, b));
-      const results = crops.length ? await ocr.recognizeMany(crops) : [];
+      let t1 = t0;
+      const { resolved, crops } = await recognizeFrameInOrder(ocr, frame, checklist, true, () => {
+        t1 = performance.now();
+      });
       const t2 = performance.now();
-      const got = results.some((r) => bestMatchFromText(r.text, checklist)?.entry);
+      const got = resolved.length > 0;
       if (i >= 3) {
         // drop first 3 as warm-up (JIT / first OCR dispatch)
         det.push(t1 - t0);
         ocrT.push(t2 - t1);
         total.push(t2 - t0);
-        cropsN.push(crops.length);
+        cropsN.push(crops);
         if (got) withCode.push(t2 - t0);
       }
     }
@@ -272,8 +272,10 @@ const minus = (a: Set<string>, b: Set<string>) => [...a].filter((x) => !b.has(x)
     const md = [
       '# Sticker detection LATENCY benchmark',
       '',
-      `One pipeline pass (findCodeBoxes → codeCropCandidates → recognizeMany) over **${total.length}**`,
-      `real front-camera video frames; first 3 dropped as warm-up. All times in **ms**.`,
+      `One pipeline pass mirroring the LIVE burst (findCodeBoxes → recognizeFrameInOrder:`,
+      `top-N boxes best-first, ink-bearing upright crops OCR'd in parallel, flip round only`,
+      `for boxes that didn't resolve, STOP the frame at the first checklist match) over`,
+      `**${total.length}** real front-camera video frames; first 3 dropped as warm-up. All times in **ms**.`,
       '',
       '| stage (ms) | avg | median | p90 | max |',
       '|---|---|---|---|---|',

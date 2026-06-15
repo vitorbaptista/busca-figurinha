@@ -1,8 +1,8 @@
 import type { FrameSource } from '../types';
 
 /**
- * Stickers are shown CLOSE to the screen, so on the front camera we pin focus to the
- * near end of the lens range instead of letting continuous autofocus hunt — sharper,
+ * Stickers are shown CLOSE, so we pin focus to the near end of the lens range (the
+ * closest the lens can focus) instead of letting continuous autofocus hunt — sharper,
  * steadier frames mean the small code pill reads far more reliably. Best-effort and
  * feature-detected: most desktops and some phones don't expose manual focus, in which
  * case this is a silent no-op and ordinary autofocus stays. `focusDistance.min` is the
@@ -55,9 +55,10 @@ export function createCameraSource(opts?: { facingMode?: string }): FrameSource 
       });
       video.srcObject = stream;
       await video.play();
-      // Front camera: the sticker sits right against the screen, so lock focus near
-      // rather than let autofocus hunt. Fire-and-forget; it settles a frame later.
-      if ((opts?.facingMode ?? 'environment') === 'user') void lockNearFocus(stream);
+      // Stickers are always shown close, so lock focus to the lens's NEAR limit on
+      // either camera rather than let continuous autofocus hunt (the main cause of soft,
+      // variable frames). Fire-and-forget; the focus motor settles a frame later.
+      void lockNearFocus(stream);
     },
 
     stop() {

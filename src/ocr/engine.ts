@@ -38,9 +38,13 @@ export function createOcrEngine(): OcrEngine {
             });
             await worker.setParameters({
               tessedit_char_whitelist: CONFIG.ocr.charWhitelist,
-              // Each crop is just the code box; a uniform-block read of the lone crop
-              // is the most accurate (and ~tens of ms on a small image).
-              tessedit_pageseg_mode: PSM.SINGLE_BLOCK,
+              // Each crop is exactly ONE code on ONE line. SINGLE_LINE skips the layout
+              // analysis SINGLE_BLOCK runs (region/line/word segmentation), which is pure
+              // overhead on a lone code — it's both faster and, since there's only ever one
+              // line, no less accurate. The big speed win, though, is OCR'ing far fewer
+              // crops (score-ordered, stop on first checklist match) — see
+              // recognizeFrameInOrder in ocr/recognize.ts.
+              tessedit_pageseg_mode: PSM.SINGLE_LINE,
             });
             workers.push(worker);
             scheduler.addWorker(worker);

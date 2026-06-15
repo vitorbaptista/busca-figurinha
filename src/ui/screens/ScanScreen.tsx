@@ -11,11 +11,11 @@ import type {
 import { CONFIG } from '../../config';
 import { checklist } from '../../data/checklist';
 import { pt } from '../../i18n/pt';
-import { matchCode, bestMatchFromText } from '../../domain/matching';
+import { matchCode } from '../../domain/matching';
 import { createConfirmer } from '../../domain/confirm';
 import { createOcrEngine } from '../../ocr/engine';
 import { createCameraSource } from '../../ocr/frameSource';
-import { findCodeBoxes, codeCropCandidates, stackCrops } from '../../ocr/locate';
+import { recognizeFrameInOrder } from '../../ocr/recognize';
 import { createAutoCapture } from '../../ocr/autoCapture';
 import { Flash, type FlashState } from '../components/Flash';
 import { MultiResult, type ScanResultItem } from '../components/MultiResult';
@@ -262,30 +262,21 @@ export function ScanScreen({ session, collection, settings, onPersist, onFinish 
         // detection work (cheap, but avoids a dropped frame on low-end phones).
         await new Promise((r) => setTimeout(r, 0));
         // Locate the printed code box(es) and OCR only those crops — far faster and
-        // more accurate than the whole frame. Each box yields an upright + a flipped
-        // crop (so rotated codes read), and every crop is OCR'd ON ITS OWN: stacking
-        // them confuses Tesseract's layout analysis and drops thin glyphs (CIV→CV).
-        // The small crops run in parallel across a worker pool (~tens of ms each).
-        const boxes = findCodeBoxes(canvas);
-        const crops = boxes.flatMap((b) => codeCropCandidates(canvas, b));
-        const resolved: MatchResult[] = [];
-        let rawText = '';
-        if (crops.length) {
-          if (DEBUG) postDebugImg('stack-live', stackCrops(crops));
-          const results = await ocr.recognizeMany(crops);
-          rawText = results
-            .map((r) => r.text.replace(/\s+/g, ' ').trim())
-            .filter(Boolean)
-            .join(' | ');
-          const seen = new Set<string>();
-          for (const r of results) {
-            const m = bestMatchFromText(r.text, checklist);
-            if (m?.entry && !seen.has(m.entry.code)) {
-              seen.add(m.entry.code);
-              resolved.push(m);
-            }
-          }
-        }
+        // more accurate than the whole frame. The boxes come back sorted best-first (the
+        // real code pill scores highest), and recognizeFrameInOrder OCRs their crops in
+        // that order ONE AT A TIME: a box's 180° flip crop is skipped once its upright crop
+        // resolves, and in the live burst (stopOnFirstCode) the whole frame stops at the
+        // first resolved code — the prominent pill is box[0], so a clean frame costs ONE
+        // OCR instead of ~11. The cross-frame confirmer still gathers every sticker in a
+        // multi-sticker hold as the burst progresses; the single-shot photo path keeps
+        // stopOnFirstCode=false so one static photo of several backs surfaces them all.
+        const { resolved, reads, crops } = await recognizeFrameInOrder(
+          ocr,
+          canvas,
+          checklist,
+          /* stopOnFirstCode */ opts.confirm,
+        );
+        const rawText = reads.join(' | ');
 
         // Live burst: only act on codes that agree across frames. Single shot: trust
         // the one read (there is no next frame to confirm against).
@@ -304,7 +295,7 @@ export function ScanScreen({ session, collection, settings, onPersist, onFinish 
 
         if (DEBUG) {
           setDebugText(
-            `${boxes.length}cx "${rawText.slice(0, 70)}" → ${
+            `${crops}cr "${rawText.slice(0, 70)}" → ${
               resolved.map((m) => m.entry?.code).join(', ') || '(nenhum)'
             }${opts.confirm ? ` ✓[${toCommit.map((m) => m.entry?.code).join(',') || '-'}]` : ''}`,
           );
