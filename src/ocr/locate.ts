@@ -110,28 +110,36 @@ function scoreBox(w: number, h: number, area: number): { orient: 'h' | 'v'; scor
   const short = Math.min(w, h);
   const ar = long / short;
 
-  // The pill is a short, solid, elongated blob. Tight gates reject text fragments
-  // (low fill), wide footer/legal bands (high AR), and big regions.
-  if (ar < 2.4 || ar > 5.2) return null; // "CIV 12" pill is ~3-4:1 (samples ~3.1)
-  if (fill < 0.55 || fill > 0.95) return null; // solid with text holes (~0.72)
-  if (long < DET_LONG * 0.03 || long > DET_LONG * 0.45) return null; // size sanity
+  // Loose sanity gates — the real code pill ranks highest by score; we keep the top
+  // candidates and let the OCR + per-line matching reject any false positives. (The
+  // pill's fill varies with framing: ~0.5 close up, ~0.7 farther, so don't gate hard.)
+  if (ar < 2.0 || ar > 6.0) return null; // "CIV 12" pill is ~3-4:1 (samples ~3.1)
+  if (fill < 0.35 || fill > 0.95) return null; // solid-ish blob with text holes
+  if (long < DET_LONG * 0.03 || long > DET_LONG * 0.5) return null; // size sanity
   if (short < 4) return null;
 
   const arScore = 1 - Math.min(1, Math.abs(ar - 3.2) / 3);
-  const fillScore = 1 - Math.min(1, Math.abs(fill - 0.72) / 0.4);
-  return { orient: w >= h ? 'h' : 'v', score: arScore * 0.6 + fillScore * 0.4 };
+  const fillScore = 1 - Math.min(1, Math.abs(fill - 0.6) / 0.4);
+  return { orient: w >= h ? 'h' : 'v', score: arScore * 0.5 + fillScore * 0.5 };
+}
+
+/** The two orientation candidates for a box, rotated upright but NOT yet prepared.
+ *  Splitting this out lets the dev harness try alternative prep functions on the
+ *  exact same raw crop the app uses. */
+export function rawCropCandidates(frame: HTMLCanvasElement, box: CodeBox): HTMLCanvasElement[] {
+  // A little padding so the pill has a margin of card around it — the prep step
+  // flood-clears that margin, which cleanly isolates the text.
+  const region = cropRegion(frame, box, 0.18);
+  const base = box.orient === 'h' ? rotateCanvas(region, 0) : rotateCanvas(region, 90);
+  const flip = box.orient === 'h' ? rotateCanvas(region, 180) : rotateCanvas(region, 270);
+  return [base, flip];
 }
 
 /** Build the upright + 180°-flipped OCR crops for a detected box, each prepared
  *  (rotated upright, upscaled, binarized to dark-text-on-white, padded). The two
  *  candidates resolve the 0°/180° (or 90°/270°) ambiguity at OCR time. */
 export function codeCropCandidates(frame: HTMLCanvasElement, box: CodeBox): HTMLCanvasElement[] {
-  // A little padding so the pill has a margin of card around it — the prep step
-  // flood-clears that margin, which cleanly isolates the text.
-  const region = cropRegion(frame, box, 0.18);
-  const base = box.orient === 'h' ? rotateCanvas(region, 0) : rotateCanvas(region, 90);
-  const flip = box.orient === 'h' ? rotateCanvas(region, 180) : rotateCanvas(region, 270);
-  return [prepForOcr(base), prepForOcr(flip)];
+  return rawCropCandidates(frame, box).map(prepForOcr);
 }
 
 /** Crop a padded region (in full-frame pixels) into its own canvas. */

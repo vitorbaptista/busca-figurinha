@@ -128,12 +128,26 @@ describe('matchCode', () => {
   it('only corrects to a UNIQUE near code; rejects ambiguous or short reads', () => {
     // Unique single substitution is fixed (only CIV12 is one edit from GIV12).
     expect(matchCode('GIV12', checklist).entry?.code).toBe('CIV12');
-    // "CV12" is one edit from BOTH CIV12 and CPV12 — ambiguous, so don't guess.
-    expect(matchCode('CV12', checklist).status).toBe('unknown');
     // "EGYA" is one edit from EGY1..EGY9 — ambiguous.
     expect(matchCode('EGYA', checklist).status).toBe('unknown');
     // "SE3" (3 chars) is too short to correct safely.
     expect(matchCode('SE3', checklist).status).toBe('unknown');
+  });
+
+  it('restores a dropped THIN letter, but only when it is unambiguous', () => {
+    // The OCR font reliably drops the thin "I": "CIV 12" reads as "CV 12". Because
+    // the engine never drops a bold letter, the missing char can only be the thin
+    // "I" — so "CV12" restores to CIV12 even though CPV12 also exists (reaching it
+    // would require dropping a bold "P", which never happens).
+    expect(matchCode('CV12', checklist).entry?.code).toBe('CIV12');
+    // A garbled-but-PRESENT middle char stays ambiguous: "C1V12" could be CIV12 or
+    // CPV12 (we can't tell an "I" from a "P" in that slot).
+    expect(matchCode('C1V12', checklist).status).toBe('unknown');
+    // A missing BOLD letter is never restored (would be a wrong guess): "CPV12"
+    // read as "CV12" is indistinguishable from CIV12, so we must not invent a "P".
+    // (Implicit: only thin letters I/J/L/T are ever inserted.)
+    const onlyBold = makeChecklist(['CPV12']);
+    expect(matchCode('CV12', onlyBold).status).toBe('unknown');
   });
 
   it('works against the real baked-in checklist', () => {

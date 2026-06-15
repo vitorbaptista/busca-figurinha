@@ -38,14 +38,37 @@ export function extractCodes(text: string): string[] {
  *  be many codes); we only accept them on an exact match. Real codes are 4+ chars. */
 const MIN_CORRECT_LEN = 4;
 
+/** Letters with a thin vertical stroke and no enclosed counter. The OCR engine
+ *  reliably DROPS these from this sticker font (the "I" in CIV reads as "CV") and
+ *  never drops a bold letter. So when a read is one character SHORT of a real code,
+ *  the missing character can only have been one of these — which lets us safely
+ *  restore "CV12"→"CIV12" (an "I" was dropped) while still rejecting "CV12"→"CPV12"
+ *  (a bold "P" is never dropped). A garbled-but-present character (e.g. "C1V12") is
+ *  left ambiguous, because we genuinely can't tell an "I" from a "P" there. */
+const DROPPABLE_LETTERS = new Set(['I', 'J', 'L', 'T']);
+
+/** If `longer` becomes `shorter` by removing exactly one character, return that
+ *  character; otherwise null. (Both args already normalized.) */
+function singleRemovedChar(longer: string, shorter: string): string | null {
+  if (longer.length !== shorter.length + 1) return null;
+  let i = 0;
+  while (i < shorter.length && longer[i] === shorter[i]) i++;
+  // Everything after the removed slot must line up.
+  if (longer.slice(i + 1) !== shorter.slice(i)) return null;
+  return longer[i];
+}
+
 /**
  * Match a single raw token against the checklist. Exact lookup first; otherwise the
- * UNIQUE nearest same-length code within `maxDistance` edits (a single-character
- * substitution, e.g. "GIV12"→"CIV12"). Two guards keep us from confident wrong
- * answers — worse than a miss for a trading app:
+ * UNIQUE nearest code, where a "near" code is either:
+ *  - the same length within `maxDistance` substitutions ("GIV12"→"CIV12"), or
+ *  - one character longer/shorter via a single dropped/added THIN letter
+ *    ("CV12"→"CIV12", because the OCR engine only ever drops thin strokes).
+ * Two guards keep us from confident wrong answers — worse than a miss when the user
+ * is deciding a trade:
  *  - tokens shorter than 4 chars are only matched exactly ("SE3" stays unknown);
- *  - if two real codes are equally near, it's ambiguous → unknown ("CV12" is one
- *    edit from both CIV12 and CPV12; "EGYA" from EGY1..EGY9). We never guess.
+ *  - if two real codes are equally near, it's ambiguous → unknown ("EGYA" is one
+ *    edit from EGY1..EGY9; "C1V12" could be CIV12 or CPV12). We never guess.
  */
 export function matchCode(
   raw: string,
@@ -65,16 +88,29 @@ export function matchCode(
   let bestDistance = Infinity;
   let tieAtBest = 0;
 
-  for (const entry of list.entries) {
-    if (entry.code.length !== normalized.length) continue; // substitutions only
-    const distance = levenshtein(normalized, entry.code);
-    if (distance > maxDistance) continue;
+  const consider = (entry: MatchResult['entry'], distance: number) => {
     if (distance < bestDistance) {
       bestEntry = entry;
       bestDistance = distance;
       tieAtBest = 1;
     } else if (distance === bestDistance) {
       tieAtBest++;
+    }
+  };
+
+  for (const entry of list.entries) {
+    const code = entry.code;
+    if (code.length === normalized.length) {
+      const distance = levenshtein(normalized, code);
+      if (distance <= maxDistance) consider(entry, distance);
+    } else if (code.length === normalized.length + 1) {
+      // The read is one char short — the true code has a dropped letter.
+      const dropped = singleRemovedChar(code, normalized);
+      if (dropped && DROPPABLE_LETTERS.has(dropped)) consider(entry, 1);
+    } else if (code.length + 1 === normalized.length) {
+      // The read has one extra char — a phantom thin stroke the engine invented.
+      const added = singleRemovedChar(normalized, code);
+      if (added && DROPPABLE_LETTERS.has(added)) consider(entry, 1);
     }
   }
 
