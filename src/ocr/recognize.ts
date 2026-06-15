@@ -17,7 +17,7 @@
 // so doing less OCR can only ever skip work, never manufacture a false positive.
 
 import type { OcrEngine, MatchResult, Checklist } from '../types';
-import { findCodeBoxes, codeCropCandidates, cropHasOcrInk } from './locate';
+import { findCodeBoxes, codeCropSource, cropHasOcrInk } from './locate';
 import { bestMatchFromText } from '../domain/matching';
 
 /** Cap on boxes OCR'd per frame. findCodeBoxes sorts best-first, and the real code pill is
@@ -41,10 +41,12 @@ export interface RecognizeOutcome {
   crops: number;
 }
 
-/** One pending box: its prepared crop variants (upright at [0], flip at [1]) and whether
- *  it has already resolved a code (so its flip round is skipped). */
+/** One pending box: a lazy source for its prepared crop variants (upright = index 0, 180°
+ *  flip = index 1), a memo of the ones built so far, and whether it has already resolved a
+ *  code (so its flip round is skipped). The flip's prep is only built if round 1 reaches it. */
 interface Pending {
-  variants: HTMLCanvasElement[];
+  src: { count: number; build: (i: number) => HTMLCanvasElement };
+  built: HTMLCanvasElement[];
   done: boolean;
 }
 
@@ -74,10 +76,11 @@ export async function recognizeFrameInOrder(
   const reads: string[] = [];
   let crops = 0;
 
-  // Build the prepared crop variants once (cheap canvas work). variants[0] is upright,
-  // variants[1] the 180° flip; some boxes yield only one.
+  // A lazy crop source per box — the RAW crops are extracted now (cheap), but each variant's
+  // expensive prep (prepForOcr) is deferred to the round that actually uses it.
   const pending: Pending[] = boxes.map((box) => ({
-    variants: codeCropCandidates(frame, box),
+    src: codeCropSource(frame, box),
+    built: [],
     done: false,
   }));
 
@@ -86,10 +89,24 @@ export async function recognizeFrameInOrder(
     const jobs: Array<{ p: Pending; crop: HTMLCanvasElement }> = [];
     for (const p of pending) {
       if (p.done) continue;
-      const crop = p.variants[round];
+      if (round >= p.src.count) continue;
+      // Prepare (and memoize) only this variant now — the flip is built only if we reach here
+      // in round 1, so the common upright-resolves case never pays the flip's prep.
+      let crop = p.built[round];
+      if (!crop) {
+        crop = p.src.build(round);
+        p.built[round] = crop;
+      }
       // A blank/near-blank prepared crop (empty card, or a dense crop the sparse-ink gate
       // already blanked) can only OCR to nothing — skip the call, save the dispatch.
-      if (crop && cropHasOcrInk(crop)) jobs.push({ p, crop });
+      if (cropHasOcrInk(crop)) {
+        jobs.push({ p, crop });
+      } else if (round === 0) {
+        // No ink on the upright crop ⇒ the 180° flip is the SAME pixels rotated, so its ink
+        // fraction is identical and it would be skipped too. Mark the box done so we never
+        // build the flip's prep — same OCR set as before, minus the wasted work.
+        p.done = true;
+      }
     }
     if (jobs.length === 0) {
       // Nothing ink-bearing left to OCR this round; the next round only has flips of these

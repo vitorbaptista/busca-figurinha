@@ -561,6 +561,23 @@ export function codeCropCandidates(frame: HTMLCanvasElement, box: CodeBox): HTML
   return crops.map((c) => prepForOcr(c, sharpen, box.boost, despeckle));
 }
 
+/** Lazy form of codeCropCandidates: extracts the RAW crops once (cheap rotations) but DEFERS
+ *  the expensive prepForOcr (upscale + binarize + border-flood) to build(i). The live read
+ *  resolves on the upright crop (variant 0) the vast majority of the time, so the 180°-flip's
+ *  prep — the dominant per-frame cost once OCR itself is cheap — is never spent on those
+ *  frames. build(i) is byte-identical to codeCropCandidates()[i]; this only changes WHEN the
+ *  work happens, never WHAT is produced, so recall and the 0-FP guarantee are unaffected. */
+export function codeCropSource(
+  frame: HTMLCanvasElement,
+  box: CodeBox,
+): { count: number; build: (i: number) => HTMLCanvasElement } {
+  const { crops, sharpen, despeckle } = rawCropGroups(frame, box);
+  return {
+    count: crops.length,
+    build: (i) => prepForOcr(crops[i], sharpen, box.boost, despeckle),
+  };
+}
+
 /** Share of ink (black) pixels in a PREPARED crop below which it can't hold a code: after
  *  the border-flood and sparse-ink gate, a blanked dense crop (legal text/photo) has ~0 ink
  *  and an empty card crop near 0. A real 4–6 glyph code covers a small but non-trivial share.
