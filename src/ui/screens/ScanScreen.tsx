@@ -290,9 +290,16 @@ export function ScanScreen({ session, collection, settings, onPersist, onFinish 
         // Live burst: only act on codes that agree across frames. Single shot: trust
         // the one read (there is no next frame to confirm against).
         let toCommit = resolved;
+        let stopBurst = true; // single shot: always "done" after one read
         if (opts.confirm) {
-          const ok = new Set(confirmerRef.current.add(resolved.map((m) => m.entry!.code)));
+          const newly = confirmerRef.current.add(resolved.map((m) => m.entry!.code));
+          const ok = new Set(newly);
           toCommit = resolved.filter((m) => ok.has(m.entry!.code));
+          // Keep bursting as long as new codes are still confirming — this lets every
+          // sticker in a multi-sticker frame reach the threshold instead of stopping
+          // on whichever one confirmed first. Stop one frame after the last
+          // confirmation (nothing new AND we've committed at least one).
+          stopBurst = confirmerRef.current.committedCount() > 0 && newly.length === 0;
         }
 
         if (DEBUG) {
@@ -305,13 +312,13 @@ export function ScanScreen({ session, collection, settings, onPersist, onFinish 
 
         if (toCommit.length > 0) {
           handleMatches(toCommit);
-          return true;
+        } else if (!opts.silent) {
+          handleMatches([]); // explicit read that found nothing
         }
-        if (!opts.silent) handleMatches([]); // explicit read that found nothing
-        return false;
+        return opts.confirm ? stopBurst : toCommit.length > 0;
       } catch {
         if (!opts.silent) handleMatches([]);
-        return false;
+        return false; // a bad frame — let the burst try the next one
       }
     });
     recognizeChainRef.current = job.then(

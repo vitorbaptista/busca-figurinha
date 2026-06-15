@@ -1,8 +1,10 @@
 // Multi-frame agreement. A single camera frame can mis-read a code into a DIFFERENT
 // valid one (e.g. "EGY 4" → "EGY 6" under blur), which for a trading app is worse
 // than no read at all. While a sticker is held still we OCR several frames and only
-// commit a code once it has been seen on enough of them — random per-frame slips
-// don't repeat, so they never reach the threshold. Pure and state-only; no I/O.
+// commit a code once it has been seen on enough of them — a transient slip on one
+// frame doesn't repeat, so it never reaches the threshold. (A *systematic* mis-read
+// that repeats every frame can still get through; this guards transient noise, not a
+// genuinely ambiguous glyph.) Pure and state-only; no I/O.
 
 export interface Confirmer {
   /**
@@ -11,6 +13,8 @@ export interface Confirmer {
    * frame it crosses the threshold), ready to commit.
    */
   add(codes: Iterable<string>): string[];
+  /** How many codes have been confirmed so far this burst. */
+  committedCount(): number;
   /** Forget all evidence — call when a new sticker starts being read. */
   reset(): void;
 }
@@ -34,6 +38,7 @@ export function createConfirmer(threshold: number): Confirmer {
       }
       return newlyConfirmed;
     },
+    committedCount: () => committed.size,
     reset() {
       counts.clear();
       committed.clear();

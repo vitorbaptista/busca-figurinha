@@ -19,9 +19,11 @@ export const CONFIG = {
     rearmThreshold: 0.06,
     /** How often the capture loop samples the frame difference (ms). */
     sampleIntervalMs: 120,
-    /** While a sticker is held still, OCR up to this many frames looking for an
-     *  agreeing read before giving up and waiting for the next sticker. */
-    burstFrames: 5,
+    /** While a sticker is held still, OCR up to this many frames looking for
+     *  agreeing reads. The burst stops one frame after the last code confirms, so a
+     *  lone sticker typically uses ~3; the cap only bites on a busy multi-sticker
+     *  frame or one too soft to ever agree. */
+    burstFrames: 6,
     /** Small gap between burst frames so the preview can paint and autofocus can
      *  settle between reads. */
     burstIntervalMs: 70,

@@ -39,6 +39,17 @@ describe('createConfirmer', () => {
     expect(c.add(['AUT4'])).toEqual(['AUT4']);
   });
 
+  it('tracks how many codes have confirmed (for the burst stop signal)', () => {
+    const c = createConfirmer(2);
+    expect(c.committedCount()).toBe(0);
+    c.add(['CIV12', 'EGY4']);
+    expect(c.committedCount()).toBe(0); // seen once each, not yet confirmed
+    c.add(['CIV12']);
+    expect(c.committedCount()).toBe(1); // CIV12 confirmed
+    c.add(['EGY4']);
+    expect(c.committedCount()).toBe(2);
+  });
+
   it('reset forgets all evidence', () => {
     const c = createConfirmer(2);
     c.add(['CIV12']);
