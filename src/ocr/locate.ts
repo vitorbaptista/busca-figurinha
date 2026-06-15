@@ -138,8 +138,8 @@ export function codeCropCandidates(frame: HTMLCanvasElement, box: CodeBox): HTML
 function cropRegion(frame: HTMLCanvasElement, box: CodeBox, padFrac: number): HTMLCanvasElement {
   const padX = box.w * padFrac;
   const padY = box.h * padFrac;
-  const x = Math.max(0, Math.floor(box.x - padX));
-  const y = Math.max(0, Math.floor(box.y - padY));
+  const x = Math.min(frame.width - 1, Math.max(0, Math.floor(box.x - padX)));
+  const y = Math.min(frame.height - 1, Math.max(0, Math.floor(box.y - padY)));
   const w = Math.min(frame.width - x, Math.ceil(box.w + padX * 2));
   const h = Math.min(frame.height - y, Math.ceil(box.h + padY * 2));
 
@@ -147,7 +147,8 @@ function cropRegion(frame: HTMLCanvasElement, box: CodeBox, padFrac: number): HT
   out.width = Math.max(1, w);
   out.height = Math.max(1, h);
   const ctx = out.getContext('2d', { willReadFrequently: true });
-  if (ctx) ctx.drawImage(frame, x, y, w, h, 0, 0, w, h);
+  // Guard against a non-positive source rect (edge box) — drawImage throws on it.
+  if (ctx && w > 0 && h > 0) ctx.drawImage(frame, x, y, w, h, 0, 0, w, h);
   return out;
 }
 

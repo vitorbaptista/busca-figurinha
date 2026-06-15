@@ -86,9 +86,14 @@ export function ScanScreen({ session, collection, settings, onPersist, onFinish 
     // when the same result repeats; it is not spoken by screen readers.
     const zwsp = '​'.repeat(key % 2);
 
-    // Resolve to unique album entries, recording each into the session.
+    // Resolve to unique album entries for this capture. Count/record each sticker
+    // only ONCE per session — re-capturing the same back (a jiggle, a glare re-arm,
+    // or a second copy) still re-flashes for feedback but doesn't double-count.
+    const alreadyInSession = new Set(session.records().map((r) => r.code));
     const items: ScanResultItem[] = [];
     const seen = new Set<string>();
+    let newNeeded = 0;
+    let newOwned = 0;
     for (const match of matches) {
       if (!match.entry || seen.has(match.entry.code)) continue;
       seen.add(match.entry.code);
@@ -99,7 +104,11 @@ export function ScanScreen({ session, collection, settings, onPersist, onFinish 
         teamName: match.entry.teamName,
         outcome: owned ? 'owned' : 'needed',
       });
-      session.add(match, owned);
+      if (!alreadyInSession.has(match.entry.code)) {
+        session.add(match, owned);
+        if (owned) newOwned++;
+        else newNeeded++;
+      }
     }
 
     if (items.length === 0) {
@@ -111,10 +120,9 @@ export function ScanScreen({ session, collection, settings, onPersist, onFinish 
 
     onPersist();
 
-    const neededCount = items.filter((i) => i.outcome === 'needed').length;
     setCounters((c) => ({
-      neededCount: c.neededCount + neededCount,
-      repeatedCount: c.repeatedCount + (items.length - neededCount),
+      neededCount: c.neededCount + newNeeded,
+      repeatedCount: c.repeatedCount + newOwned,
     }));
     setRecent((r) =>
       [
@@ -141,7 +149,7 @@ export function ScanScreen({ session, collection, settings, onPersist, onFinish 
       setFlash(null);
       showMulti(items);
     }
-    beep(neededCount > 0 ? 'needed' : 'owned');
+    beep(items.some((it) => it.outcome === 'needed') ? 'needed' : 'owned');
   };
 
   const showFlash = (next: FlashState) => {
@@ -222,6 +230,9 @@ export function ScanScreen({ session, collection, settings, onPersist, onFinish 
       if (!ready || !ocr) return;
       try {
         if (DEBUG) postDebugImg('pixel-' + Date.now(), canvas);
+        // Yield once so the camera preview can paint before the synchronous
+        // detection work (cheap, but avoids a dropped frame on low-end phones).
+        await new Promise((r) => setTimeout(r, 0));
         // Locate the printed code box(es) and OCR only those crops, stacked into one
         // image — far faster and more accurate than scanning the whole frame. Handles
         // several backs at once, and each box yields upright + flipped crops so codes
@@ -246,7 +257,9 @@ export function ScanScreen({ session, collection, settings, onPersist, onFinish 
         }
         handleMatches(matches);
       } catch {
-        // A single bad read shouldn't break the loop.
+        // A bad read shouldn't break the loop — but still give feedback (a thrown
+        // error on an explicit photo/manual tap would otherwise leave a dead UI).
+        handleMatches([]);
       }
     });
     recognizeChainRef.current = job.catch(() => {});

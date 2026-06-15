@@ -1,7 +1,13 @@
 import { describe, expect, it } from 'vitest';
 import type { Checklist, ChecklistEntry } from '../types';
 import { checklist } from '../data/checklist';
-import { bestMatchFromText, extractCodes, matchAllFromText, matchCode } from './matching';
+import {
+  bestMatchFromText,
+  extractCodes,
+  matchAllFromText,
+  matchCode,
+  matchLines,
+} from './matching';
 
 /** Build a tiny synthetic checklist from canonical codes for focused tests. */
 function makeChecklist(codes: string[]): Checklist {
@@ -191,6 +197,29 @@ describe('matchAllFromText', () => {
 
   it('returns an empty list when nothing matches', () => {
     expect(matchAllFromText('just some words', checklist)).toEqual([]);
+  });
+});
+
+describe('matchLines', () => {
+  it('matches one code per line from stacked crops', () => {
+    const codes = matchLines('CIV 12\nEGY 4\nBRA 5', checklist).map((r) => r.entry?.code);
+    expect(codes).toEqual(['CIV12', 'EGY4', 'BRA5']);
+  });
+
+  it('skips long lines so legal text cannot inject a code substring', () => {
+    // "NID 9" sits inside a long legal-text line that the length gate drops.
+    const text = 'CIV 12\nESTE CROMO E PARTE NID 9 INTEGRANTE DO ALBUM OFICIAL';
+    expect(matchLines(text, checklist).map((r) => r.entry?.code)).toEqual(['CIV12']);
+  });
+
+  it('dedupes repeated codes and ignores blank/unknown lines', () => {
+    expect(matchLines('EGY 4\n\nEGY 4\nZZZ 99', checklist).map((r) => r.entry?.code)).toEqual([
+      'EGY4',
+    ]);
+  });
+
+  it('tolerates a little noise on a short code line', () => {
+    expect(matchLines('EGY 4 7', checklist).map((r) => r.entry?.code)).toEqual(['EGY4']);
   });
 
   it('corrects OCR slips on individual codes in a group', () => {
