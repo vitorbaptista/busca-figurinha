@@ -102,6 +102,18 @@ export interface OcrEngine {
   /** OCR several crops in parallel (one per located code box). */
   recognizeMany(sources: HTMLCanvasElement[]): Promise<OcrResult[]>;
   terminate(): Promise<void>;
+  /** Optional split phases for the two-phase live path (the hybrid engine provides them):
+   *  `recognizeFast` is the cheap recognizer ALONE (no fallback); `recognizeSlow` the
+   *  accurate fallback ALONE. When present, recognizeFrameInOrder reads every crop with the
+   *  fast engine FIRST and only pays the slow engine when no crop's fast read resolved a
+   *  code — so a frame the fast path can read never touches the slow (wasm) engine, even on
+   *  the spurious crops alongside the pill. */
+  recognizeFast?(sources: HTMLCanvasElement[]): Promise<OcrResult[]>;
+  recognizeSlow?(sources: HTMLCanvasElement[]): Promise<OcrResult[]>;
+  /** The fast read's confidence floor for accepting it without the slow engine — exposed so
+   *  the orchestrator applies the SAME gate the hybrid uses internally. Absent on plain
+   *  engines (they have no fast phase). */
+  fastConf?: number;
 }
 
 /** Live or test frame provider (see ocr/frameSource.ts: createCameraSource). */

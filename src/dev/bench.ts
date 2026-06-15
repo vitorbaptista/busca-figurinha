@@ -248,11 +248,15 @@ const minus = (a: Set<string>, b: Set<string>) => [...a].filter((x) => !b.has(x)
     const total: number[] = [];
     const cropsN: number[] = [];
     const withCode: number[] = []; // total ms only for frames that actually resolved a code
-    // Sharp mode: loop the SHARP static close-ups (use-case input) several times for a
-    // stable timing sample; otherwise the real blurry video frames.
-    const SHARP_REPEATS = 30;
+    // Sharp mode: loop the SHARP, SINGLE-sticker close-ups (the real use-case: one sticker
+    // shown close) several times for a stable timing sample. Multi-code images (an underscore
+    // in the name, e.g. RSA17_EGY5_..._.jpg) are a 6-up stress test, NOT the use-case, so they
+    // are excluded — their tiny merged pills fall to the tesseract phase and would mask the
+    // single-sticker latency. Non-sharp mode uses the real blurry video frames.
+    const SHARP_REPEATS = 40;
+    const singleCode = list.images.filter((n) => !n.replace(/\.[a-z]+$/i, '').includes('_'));
     const latFrames: string[] = LATENCY_SHARP
-      ? Array.from({ length: SHARP_REPEATS }, () => list.images.map((n) => `/dataset/${n}`)).flat()
+      ? Array.from({ length: SHARP_REPEATS }, () => singleCode.map((n) => `/dataset/${n}`)).flat()
       : list.frames.map((n) => `/dataset/frames/${n}`);
     for (let i = 0; i < latFrames.length; i++) {
       status.textContent = `latency ${i + 1}/${latFrames.length}…`;

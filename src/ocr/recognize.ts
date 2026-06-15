@@ -141,11 +141,49 @@ export async function recognizeFrameInOrder(
     };
 
     let resolvedThisRound = false;
-    if (stopOnFirstCode) {
-      // Live/latency: jobs are in SCORE order (the real pill is the top box). OCR them one
-      // at a time and stop the instant one resolves — so a clean frame ends after the pill
-      // (box[0]) reads, before any lower-ranked spurious crop is ever OCR'd. That spurious
-      // crop is exactly the one the hybrid would otherwise pay a tesseract verify on.
+    if (stopOnFirstCode && ocr.recognizeFast && ocr.recognizeSlow) {
+      // TWO-PHASE live/latency path (hybrid engine). The expensive engine is tesseract (wasm),
+      // and one tesseract call dwarfs detection on a phone — so the whole game is to NOT call
+      // it when the cheap glyph matcher already read the code.
+      //   Phase 1: glyph-read EVERY crop (microseconds each). A read at/above the confidence
+      //   gate that snaps to a checklist code resolves the frame — with ZERO tesseract, even
+      //   though spurious crops sit alongside the pill (this is what box[0]-first couldn't do
+      //   when a spurious crop out-ranked the small pill).
+      //   Phase 2: only if NOTHING resolved, pay tesseract on the unsure crops in score order,
+      //   stopping at the first match — recovering the soft pills the glyph matcher can't read.
+      const gate = ocr.fastConf ?? 0;
+      const unsure: typeof jobs = [];
+      // Phase 1: glyph-read crops in SCORE order, stopping the instant one resolves a code —
+      // so a clean frame ends after the pill's glyph read, with no tesseract at all.
+      for (const job of jobs) {
+        crops += 1;
+        const [r] = await ocr.recognizeFast([job.crop]);
+        if (r.confidence >= gate) {
+          // Confident glyph read: it either snaps to a code (resolve, done) or is a confident
+          // NON-code (logo fragment) we trust enough to NOT re-check with tesseract.
+          if (handle(job, r)) {
+            resolvedThisRound = true;
+            break;
+          }
+        } else {
+          // Soft/rejected/blank: tesseract might still read it — defer to phase 2.
+          unsure.push(job);
+        }
+      }
+      // Phase 2: only if NOTHING resolved, pay tesseract on the unsure crops in score order.
+      if (!resolvedThisRound) {
+        for (const job of unsure) {
+          crops += 1;
+          const [r] = await ocr.recognizeSlow([job.crop]);
+          if (handle(job, r)) {
+            resolvedThisRound = true;
+            break;
+          }
+        }
+      }
+    } else if (stopOnFirstCode) {
+      // Single-engine live/latency: jobs are in SCORE order (the real pill is the top box).
+      // OCR them one at a time and stop the instant one resolves.
       for (const job of jobs) {
         crops += 1;
         const [r] = await ocr.recognizeMany([job.crop]);

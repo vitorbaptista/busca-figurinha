@@ -73,6 +73,18 @@ export function createHybridOcrEngine(): OcrEngine {
       return out;
     },
 
+    // Split phases for recognizeFrameInOrder's two-phase live path: the glyph matcher and
+    // tesseract, each ALONE. The orchestrator reads every crop fast first and only calls
+    // recognizeSlow when no fast read resolved a code — so a frame the glyph matcher can
+    // read pays NO tesseract, even on the spurious crops that sit alongside the pill.
+    recognizeFast(sources) {
+      return fast.recognizeMany(sources);
+    },
+    recognizeSlow(sources) {
+      return slow.recognizeMany(sources);
+    },
+    fastConf: CONFIG.ocr.hybridFastConf,
+
     async terminate() {
       await Promise.all([fast.terminate(), slow.terminate()]);
     },
