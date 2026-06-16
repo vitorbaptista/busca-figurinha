@@ -35,6 +35,9 @@ Notable changes to the sticker scanner. Newest first. No formal releases yet (de
 - **OCR Android lê `SWE 8` em captura real próxima.** A segmentação agora procura o vale entre
   glifos grudados em uma faixa mais ampla e aceita `8` ambíguo somente quando o glifo tem dois
   buracos fechados, mantendo rejeição conservadora para dígitos sem essa topologia.
+- **Scanner Android dispara em cena já parada.** Ao abrir com a figurinha já no tripé, o app faz uma
+  sondagem única depois da estabilidade e só abre o burst se houver caixa de código na ROI, sem
+  transformar uma cena vazia em OCR contínuo.
 - **Foco perto usa o limite anunciado pela câmera.** O Android agora lê
   `LENS_INFO_MINIMUM_FOCUS_DISTANCE` da câmera selecionada antes de montar os use cases, em vez de
   sempre pedir um valor fixo. Câmeras de foco fixo continuam sem trava manual.

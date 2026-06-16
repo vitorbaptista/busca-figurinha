@@ -96,6 +96,7 @@ class ScanViewModel(
     // The previous small diff frame (the only cross-frame state frameDiff needs). Touched ONLY on
     // the analysis thread (onLumaFrame), so it needs no lock.
     private var prevSmall: GrayImage? = null
+    private val staticSceneProbe = StaticSceneProbe()
 
     // Burst state. `bursting` is read/written on the analysis thread; the actual recognize runs on
     // Dispatchers.Default, serialized by recognizeLock.tryLock so an in-flight recognize never
@@ -250,6 +251,8 @@ class ScanViewModel(
         // ScanScreen's loop, which no-ops until OCR loads).
         val ctrl = controller ?: return
 
+        if (maybeStartStaticSceneBurst(full, now, diff, phase, ctrl)) return
+
         when {
             phase == CapturePhase.FIRE && !bursting -> {
                 // A fresh sticker settled: arm a new burst and read THIS frame as its first.
@@ -272,6 +275,33 @@ class ScanViewModel(
             }
             // WAITING/MOVING/HOLDING/LOCKED outside a burst: nothing to recognize.
         }
+    }
+
+    private fun maybeStartStaticSceneBurst(
+        full: GrayImage,
+        nowMs: Long,
+        diff: Double,
+        phase: CapturePhase,
+        ctrl: ScanController,
+    ): Boolean {
+        if (recognizer == null) return false
+        val shouldStart = staticSceneProbe.maybeStartBurst(
+            diff = diff,
+            nowMs = nowMs,
+            hasCodeBox = {
+                phase == CapturePhase.WAITING &&
+                    !bursting &&
+                    findCodeBoxes(full, Roi.CONFIG).isNotEmpty()
+            },
+        )
+        if (!shouldStart) return false
+
+        ctrl.onBurstStart()
+        bursting = true
+        burstFramesLeft = Config.Capture.BURST_FRAMES
+        dumpedThisBurst = false
+        tryRecognize(full, nowMs)
+        return true
     }
 
     /**
@@ -411,6 +441,7 @@ class ScanViewModel(
         // A facing flip restarts the stream; clear the diff baseline so the first frame of the new
         // camera doesn't read as a huge (false) motion against the old camera's last frame.
         prevSmall = null
+        staticSceneProbe.reset()
         bursting = false
         trigger.reset()
     }
