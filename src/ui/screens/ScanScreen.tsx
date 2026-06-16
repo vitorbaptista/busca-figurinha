@@ -13,6 +13,7 @@ import { checklist } from '../../data/checklist';
 import { pt } from '../../i18n/pt';
 import { matchCode } from '../../domain/matching';
 import { createConfirmer } from '../../domain/confirm';
+import { allowCommit } from '../../domain/commitGate';
 import { createHybridOcrEngine as createOcrEngine } from '../../ocr/hybridEngine';
 import { createCameraSource } from '../../ocr/frameSource';
 import { recognizeFrameInOrder } from '../../ocr/recognize';
@@ -60,6 +61,10 @@ export function ScanScreen({ session, collection, settings, onPersist, onFinish 
   // When the last live code committed — a guard so a "new" code sooner than minRecaptureMs
   // (faster than a person can swap stickers) is dropped as bogus.
   const lastCommitAtRef = useRef(0);
+  // Whether the current burst (one sticker hold) has already committed a code. The commit
+  // cooldown gates only a burst's FIRST commit, so co-present stickers that confirm a frame
+  // later in the SAME hold aren't dropped as a same-sticker re-trigger. Reset on burst start.
+  const committedThisBurstRef = useRef(false);
   const audioCtxRef = useRef<AudioContext | null>(null);
   const flashCounter = useRef(0);
 
@@ -298,15 +303,22 @@ export function ScanScreen({ session, collection, settings, onPersist, onFinish 
           stopBurst = confirmerRef.current.committedCount() > 0 && newly.length === 0;
 
           // Commit cooldown: a person can't swap stickers faster than minRecaptureMs, so a
-          // code committing sooner than that after the last is almost certainly the SAME
-          // sticker mis-confirming a second code — drop it. (Confirmation already rejects
-          // one-off misreads; this catches a misread that happens to confirm twice.)
+          // FRESH hold committing sooner than that after the last is almost certainly the SAME
+          // sticker re-triggering — drop it. But a second code confirmed LATER IN THE SAME
+          // burst is a genuinely co-present sticker (the confirmer settles them a frame apart),
+          // so the gate applies only to the burst's first commit; within-burst misreads are
+          // already rejected by the 2-frame confirmer.
           if (toCommit.length > 0) {
             const now = Date.now();
-            if (now - lastCommitAtRef.current < CONFIG.capture.minRecaptureMs) {
-              toCommit = [];
-            } else {
+            const state = {
+              lastCommitAt: lastCommitAtRef.current,
+              committedThisBurst: committedThisBurstRef.current,
+            };
+            if (allowCommit(state, now, CONFIG.capture.minRecaptureMs)) {
               lastCommitAtRef.current = now;
+              committedThisBurstRef.current = true;
+            } else {
+              toCommit = [];
             }
           }
         }
@@ -380,7 +392,10 @@ export function ScanScreen({ session, collection, settings, onPersist, onFinish 
       // can start now and simply no-ops until the engine finishes loading.
       const capture = createAutoCapture({
         source,
-        onBurstStart: () => confirmerRef.current.reset(),
+        onBurstStart: () => {
+          confirmerRef.current.reset();
+          committedThisBurstRef.current = false;
+        },
         onCapture: (frame) => recognizeCanvas(frame, { confirm: true, silent: true }),
         // Debug heartbeat: a braille spinner that advances every tick (so a frozen loop is
         // obvious) plus the current phase — notably "lido ✓ — troque" when it's locked and

@@ -3,6 +3,18 @@
 Notable changes to the sticker scanner. Newest first. No formal releases yet (deploys on push to
 `main`), so entries are grouped by date. Keep this updated when you ship something notable.
 
+## 2026-06-15 — Multi-sticker repeat-count fix
+
+### Fixed
+- **Dropped co-present stickers in one hold.** When several sticker backs were held together, the
+  commit cooldown (`minRecaptureMs`) dropped any sticker that confirmed a frame *after* the first
+  batch committed — so a frame showing 4 stickers could record only 3 (e.g. 2 new + 1 repeated
+  instead of 2 + 2), undercounting both the live counter and the end-of-session report. The cooldown
+  now gates only a burst's **first** commit (its real job: rejecting a same-sticker re-arm between
+  separate holds); additional co-present stickers in the same hold commit freely, with the 2-frame
+  confirmer (`match.confirmations`) staying the within-burst misread guard. New `domain/commitGate.ts`
+  + tests. **Validate live on the Pixel** — it relaxes a 0-FP backstop.
+
 ## 2026-06-15 — Scan-loop responsiveness + stall recovery
 
 ### Fixed
