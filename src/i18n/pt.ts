@@ -35,7 +35,6 @@ export const pt = {
 
   scan: {
     preparing: (pct: number) => `Preparando o leitor… ${pct}%`,
-    analyzing: 'Lendo a figurinha…',
     ocrUnavailable: 'Não consegui baixar o leitor. Conecte à internet uma vez, ou toque em "Digitar código".',
     finish: 'Terminar',
     needed: 'GUARDAR',
@@ -53,7 +52,6 @@ export const pt = {
     manualEntry: 'Digitar código',
     manualPlaceholder: 'Ex: CIV 12',
     manualConfirm: 'Verificar',
-    sendPhoto: 'Enviar foto',
     cameraDenied: 'Não consegui acessar a câmera.',
     cameraDeniedHint: 'Toque em permitir a câmera nas configurações do navegador e tente de novo.',
     retry: 'Tentar de novo',

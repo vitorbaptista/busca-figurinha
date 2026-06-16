@@ -53,7 +53,7 @@ export function ScanScreen({ session, collection, settings, onPersist, onFinish 
   const captureRef = useRef<AutoCapture | null>(null);
   const flashTimerRef = useRef<number | undefined>(undefined);
   const multiTimerRef = useRef<number | undefined>(undefined);
-  // Serializes every OCR call (auto-capture, photo, manual share one worker) so a
+  // Serializes every OCR call (auto-capture, manual share one worker) so a
   // user-triggered read is queued behind a live one instead of being dropped.
   const recognizeChainRef = useRef<Promise<void>>(Promise.resolve());
   // Per-sticker agreement across the burst of frames; reset when a new sticker settles.
@@ -82,7 +82,6 @@ export function ScanScreen({ session, collection, settings, onPersist, onFinish 
   );
   const [showManual, setShowManual] = useState(false);
   const [manualValue, setManualValue] = useState('');
-  const [analyzing, setAnalyzing] = useState(false);
   const [debugText, setDebugText] = useState('');
   // Debug-only capture-loop heartbeat (a rotating spinner proves the loop is ticking).
   const [beat, setBeat] = useState('');
@@ -224,8 +223,7 @@ export function ScanScreen({ session, collection, settings, onPersist, onFinish 
   };
 
   /** Create + initialize the OCR engine exactly once. Resolves true when ready.
-   *  Decoupled from the camera so the photo-upload fallback works even when the
-   *  camera is denied or unavailable. */
+   *  Decoupled from the camera so OCR can initialize independently of the stream. */
   const ensureOcr = (): Promise<boolean> => {
     if (ocrInitRef.current) return ocrInitRef.current;
     const engine = createOcrEngine();
@@ -255,7 +253,7 @@ export function ScanScreen({ session, collection, settings, onPersist, onFinish 
    * Recognize a drawn canvas, serialized so concurrent reads queue (one worker).
    * `confirm` (the live burst) only commits a code once the multi-frame confirmer
    * agrees, and stays silent on a miss so empty frames don't spam "try again".
-   * `!confirm` (an explicit photo/tap) commits a single read and does report a miss.
+   * `!confirm` (an explicit debug tap) commits a single read and does report a miss.
    * Resolves true once at least one code is committed — the burst stops on that.
    */
   const recognizeCanvas = (
@@ -278,8 +276,8 @@ export function ScanScreen({ session, collection, settings, onPersist, onFinish 
         // resolves, and in the live burst (stopOnFirstCode) the whole frame stops at the
         // first resolved code — the prominent pill is box[0], so a clean frame costs ONE
         // OCR instead of ~11. The cross-frame confirmer still gathers every sticker in a
-        // multi-sticker hold as the burst progresses; the single-shot photo path keeps
-        // stopOnFirstCode=false so one static photo of several backs surfaces them all.
+        // multi-sticker hold as the burst progresses; the single-shot debug-tap path keeps
+        // stopOnFirstCode=false so one static frame of several backs surfaces them all.
         const { resolved, reads, crops } = await recognizeFrameInOrder(
           ocr,
           canvas,
@@ -352,8 +350,7 @@ export function ScanScreen({ session, collection, settings, onPersist, onFinish 
   // ---------- OCR lifecycle (independent of which camera is active) ----------
 
   useEffect(() => {
-    // Preload OCR up front so it's ready by the time a sticker is shown. The
-    // photo-upload path can also trigger it on demand when the camera is denied.
+    // Preload OCR up front so it's ready by the time a sticker is shown.
     void ensureOcr();
     return () => {
       window.clearTimeout(flashTimerRef.current);
@@ -451,31 +448,6 @@ export function ScanScreen({ session, collection, settings, onPersist, onFinish 
     setShowManual(false);
   };
 
-  // ---------- Photo upload ----------
-
-  const onPhotoPicked = async (e: Event) => {
-    const input = e.currentTarget as HTMLInputElement;
-    const file = input.files?.[0];
-    input.value = ''; // allow re-picking the same file
-    if (!file) return;
-
-    setAnalyzing(true);
-    try {
-      const bitmap = await loadImage(file);
-      const canvas = document.createElement('canvas');
-      const maxWidth = CONFIG.ocr.maxWidth;
-      const scale = Math.min(1, maxWidth / bitmap.width);
-      canvas.width = Math.round(bitmap.width * scale);
-      canvas.height = Math.round(bitmap.height * scale);
-      const ctx = canvas.getContext('2d', { willReadFrequently: true });
-      if (!ctx) return;
-      ctx.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
-      await recognizeCanvas(canvas, { confirm: false, silent: false });
-    } finally {
-      setAnalyzing(false);
-    }
-  };
-
   /** Debug-only: ship a canvas to the dev server (./captures) so we can inspect
    *  real device frames and OCR crops offline. */
   const postDebugImg = (name: string, canvas: HTMLCanvasElement) => {
@@ -564,13 +536,6 @@ export function ScanScreen({ session, collection, settings, onPersist, onFinish 
           </div>
         )}
 
-        {analyzing && (
-          <div class="scan-overlay">
-            <div class="spinner" />
-            <p>{ocrReady ? pt.scan.analyzing : pt.scan.preparing(ocrProgress)}</p>
-          </div>
-        )}
-
         {flash && <Flash state={flash} />}
         {multi && <MultiResult items={multi} />}
       </div>
@@ -606,10 +571,6 @@ export function ScanScreen({ session, collection, settings, onPersist, onFinish 
         <button class="btn btn-ghost" onClick={() => setShowManual((s) => !s)}>
           ⌨️ {pt.scan.manualEntry}
         </button>
-        <label class="btn btn-ghost">
-          🖼️ {pt.scan.sendPhoto}
-          <input type="file" accept="image/*" capture="environment" hidden onChange={onPhotoPicked} />
-        </label>
       </div>
 
       {showManual && (
@@ -632,18 +593,4 @@ export function ScanScreen({ session, collection, settings, onPersist, onFinish 
       )}
     </div>
   );
-}
-
-/** Decode a picked image file into something drawable. */
-async function loadImage(file: File): Promise<HTMLImageElement> {
-  const url = URL.createObjectURL(file);
-  try {
-    const img = new Image();
-    img.src = url;
-    await img.decode();
-    return img;
-  } finally {
-    // Revoke after decode; the bitmap is already in memory.
-    URL.revokeObjectURL(url);
-  }
 }

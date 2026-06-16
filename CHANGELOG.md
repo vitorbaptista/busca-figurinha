@@ -3,6 +3,14 @@
 Notable changes to the sticker scanner. Newest first. No formal releases yet (deploys on push to
 `main`), so entries are grouped by date. Keep this updated when you ship something notable.
 
+## 2026-06-15 — Remove "Enviar foto"
+
+### Removed
+- **"Enviar foto" (photo upload) is gone.** Dropped the file-picker fallback from the scan screen
+  along with its `onPhotoPicked` handler, the `loadImage` decoder, the `analyzing` overlay/state, and
+  the `scan.sendPhoto` / `scan.analyzing` strings. The live camera (plus the "Digitar código" manual
+  entry) is the only scan path now.
+
 ## 2026-06-15 — Multi-sticker repeat-count fix
 
 ### Fixed
