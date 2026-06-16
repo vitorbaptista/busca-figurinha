@@ -59,6 +59,8 @@ data class GlyphBox(
     val feat: FloatArray,
     /** Aspect ratio h/w of the tight box — a strong prior (I/1 are tall-thin, M/W wide). */
     val ar: Float,
+    /** Enclosed white holes inside the ink box. Digit 8 has two; 6/9/0 have one; 3/5 have none. */
+    val holes: Int,
 )
 
 /** Internal tight bounding box, matching the TS plain objects (mutable for merge/split). */
@@ -181,13 +183,39 @@ private fun segmentBoxes(mask: ByteArray, w: Int, h: Int): List<Box> {
         merged.add(Box(c.x0, c.y0, c.x1, c.y1, c.area))
     }
 
+    val wholeGlyphs = mergeTouchingFragments(merged, medH)
+
     // SPLIT wide components. A condensed glyph is taller than wide, so a box much WIDER than the
     // band height holds >=2 touching glyphs (the soft-video case: "GY" binarizes into one
     // bridged blob, mis-reading as a wide "W"/"M"). Cut at the deepest interior column-ink
     // valley, recursively, until each piece is a plausible single-glyph width.
     val out = ArrayList<Box>()
-    for (c in merged) splitWide(mask, w, c, medH, out)
+    for (c in wholeGlyphs) splitWide(mask, w, c, medH, out)
     out.sortBy { it.x0 }
+    return out
+}
+
+private fun mergeTouchingFragments(boxes: List<Box>, medH: Int): List<Box> {
+    if (boxes.size < 2) return boxes
+    val out = ArrayList<Box>()
+    for (c in boxes) {
+        val last = out.lastOrNull()
+        if (last != null) {
+            val gap = c.x0 - last.x1 - 1
+            val overlapY = min(last.y1, c.y1) - max(last.y0, c.y0) + 1
+            val minH = min(last.y1 - last.y0 + 1, c.y1 - c.y0 + 1)
+            val combinedW = max(last.x1, c.x1) - min(last.x0, c.x0) + 1
+            if (gap <= 1 && overlapY > minH * 0.50 && combinedW <= medH * 1.08) {
+                last.x0 = min(last.x0, c.x0)
+                last.y0 = min(last.y0, c.y0)
+                last.x1 = max(last.x1, c.x1)
+                last.y1 = max(last.y1, c.y1)
+                last.area += c.area
+                continue
+            }
+        }
+        out.add(Box(c.x0, c.y0, c.x1, c.y1, c.area))
+    }
     return out
 }
 
@@ -210,17 +238,22 @@ private fun splitWide(mask: ByteArray, w: Int, box: Box, medH: Int, out: ArrayLi
         val row = y * w
         for (x in box.x0..box.x1) if (mask[row + x].toInt() == 1) col[x - box.x0]++
     }
-    // Seam ~ one glyph-width in from the left; search a window around it for the least ink.
+    // Seam ~ one glyph-width in from the left; search the full plausible range. Close Pixel
+    // captures can join "SW" into one blob, and the S is almost a full band-height wide; a narrow
+    // window around the condensed-font average cuts the S itself instead of the S/W valley.
     val glyphW = max(8f, tallness * GLYPH_W_FRAC)
     val ideal = min(bw - 4, max(4, round(glyphW).toInt()))
-    val lo = max(3, ideal - round(glyphW * 0.5f).toInt())
-    val hi = min(bw - 4, ideal + round(glyphW * 0.5f).toInt())
+    val lo = max(3, round(tallness * 0.35f).toInt())
+    val hi = min(bw - 4, round(tallness * 1.15f).toInt())
     var cut = -1
     var cutVal = Int.MAX_VALUE
+    var cutDist = Int.MAX_VALUE
     for (x in lo..hi) {
-        if (col[x] < cutVal) {
+        val dist = kotlin.math.abs(x - ideal)
+        if (col[x] < cutVal || (col[x] == cutVal && dist < cutDist)) {
             cutVal = col[x]
             cut = x
+            cutDist = dist
         }
     }
     if (cut < lo) {
@@ -334,6 +367,52 @@ private fun glyphFeature(mask: ByteArray, w: Int, box: Box): FloatArray {
     return feat
 }
 
+private fun countEnclosedWhiteHoles(mask: ByteArray, w: Int, box: Box): Int {
+    val bw = box.x1 - box.x0 + 1
+    val bh = box.y1 - box.y0 + 1
+    val seen = BooleanArray(bw * bh)
+    val stack = IntArray(bw * bh)
+    var holes = 0
+    val minHoleArea = max(4, bw * bh / 180)
+    for (sy in 0 until bh) {
+        for (sx in 0 until bw) {
+            val start = sy * bw + sx
+            if (seen[start]) continue
+            if (mask[(box.y0 + sy) * w + box.x0 + sx].toInt() == 1) {
+                seen[start] = true
+                continue
+            }
+            var sp = 0
+            var area = 0
+            var touchesBorder = false
+            stack[sp++] = start
+            seen[start] = true
+            while (sp > 0) {
+                val i = stack[--sp]
+                val x = i % bw
+                val y = i / bw
+                area++
+                if (x == 0 || y == 0 || x == bw - 1 || y == bh - 1) touchesBorder = true
+                fun visit(nx: Int, ny: Int) {
+                    if (nx < 0 || nx >= bw || ny < 0 || ny >= bh) return
+                    val ni = ny * bw + nx
+                    if (seen[ni]) return
+                    if (mask[(box.y0 + ny) * w + box.x0 + nx].toInt() == 0) {
+                        seen[ni] = true
+                        stack[sp++] = ni
+                    }
+                }
+                visit(x - 1, y)
+                visit(x + 1, y)
+                visit(x, y - 1)
+                visit(x, y + 1)
+            }
+            if (!touchesBorder && area >= minHoleArea) holes++
+        }
+    }
+    return holes
+}
+
 /** Segment + featurize a prepared crop into ordered GlyphBoxes (left-to-right). */
 fun extractGlyphs(img: GrayImage): List<GlyphBox> {
     val w = img.width
@@ -350,6 +429,7 @@ fun extractGlyphs(img: GrayImage): List<GlyphBox> {
             area = b.area,
             feat = glyphFeature(mask, w, b),
             ar = (b.y1 - b.y0 + 1).toFloat() / (b.x1 - b.x0 + 1),
+            holes = countEnclosedWhiteHoles(mask, w, b),
         )
     }
 }

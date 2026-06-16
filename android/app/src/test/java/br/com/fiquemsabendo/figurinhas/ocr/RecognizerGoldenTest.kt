@@ -80,6 +80,17 @@ class RecognizerGoldenTest {
         return out.resolved.mapNotNull { it.entry?.code } to out.reads
     }
 
+    private fun glyphDebug(crop: GrayImage, atlas: FlatAtlas): String =
+        extractGlyphs(crop).joinToString(" | ") { glyph ->
+            val c = classify(glyph, atlas)
+            "x=${glyph.x} ${glyph.w}x${glyph.h} ar=${"%.2f".format(glyph.ar)} " +
+                "holes=${glyph.holes} " +
+                "best=${c.label}:${"%.2f".format(c.score)} " +
+                "L=${c.bestLetter.label}:${"%.2f".format(c.bestLetter.score)} " +
+                "D=${c.bestDigit.label}:${"%.2f".format(c.bestDigit.score)} " +
+                "D2=${"%.2f".format(c.secondDigitScore)}"
+        }
+
     @Test fun reads_CIV12_from_a_real_back() {
         val (codes, reads) = run("/stickers/CIV12.pgm.gz", stopOnFirst = true) ?: return
         assertTrue("CIV12" in codes, "expected CIV12; resolved=$codes reads=$reads")
@@ -125,6 +136,22 @@ class RecognizerGoldenTest {
         assertEquals("SWE8", match?.entry?.code, "read=${read.text} conf=${read.confidence}")
     }
 
+    @Test fun prepared_zoomed_pixel_SWE8_crop_reads_the_code() {
+        val crop = loadFrame("/stickers/SWE8_pixel_zoom_crop0.pgm.gz") ?: return
+        val atlas = atlas() ?: return
+        val read = recognizeCrop(crop, atlas)
+        val match = bestMatchFromText(read.text, checklist)
+        assertEquals("SWE8", match?.entry?.code, "read=${read.text} conf=${read.confidence}")
+    }
+
+    @Test fun prepared_close_pixel_SWE8_crop_reads_the_code() {
+        val crop = loadFrame("/stickers/SWE8_pixel_close_crop0.pgm.gz") ?: return
+        val atlas = atlas() ?: return
+        val read = recognizeCrop(crop, atlas)
+        val match = bestMatchFromText(read.text, checklist)
+        assertEquals("SWE8", match?.entry?.code, "read=${read.text} conf=${read.confidence} ${glyphDebug(crop, atlas)}")
+    }
+
     @Test fun live_pixel_newroi_frames_read_SWE8() {
         for (n in 1..2) {
             val (codes, reads) = runLive("/stickers/SWE8_pixel_newroi_frame$n.pgm.gz") ?: return
@@ -136,5 +163,15 @@ class RecognizerGoldenTest {
         val (codes, reads) = runLive("/stickers/SWE8_pixel_debugreads_frame1.pgm.gz") ?: return
         val falsePositives = codes.toSet() - setOf("SWE8")
         assertTrue(falsePositives.isEmpty(), "FALSE POSITIVES $falsePositives — resolved=$codes reads=$reads")
+    }
+
+    @Test fun live_zoomed_pixel_SWE8_frame_reads_the_code() {
+        val (codes, reads) = runLive("/stickers/SWE8_pixel_zoom_frame1.pgm.gz") ?: return
+        assertEquals(listOf("SWE8"), codes, "reads=$reads")
+    }
+
+    @Test fun live_close_pixel_SWE8_frame_reads_the_code() {
+        val (codes, reads) = runLive("/stickers/SWE8_pixel_close_frame5.pgm.gz") ?: return
+        assertEquals(listOf("SWE8"), codes, "reads=$reads")
     }
 }

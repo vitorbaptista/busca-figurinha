@@ -8,6 +8,7 @@ import androidx.annotation.OptIn
 import androidx.camera.camera2.interop.Camera2CameraInfo
 import androidx.camera.camera2.interop.Camera2Interop
 import androidx.camera.camera2.interop.ExperimentalCamera2Interop
+import androidx.camera.core.Camera
 import androidx.camera.core.CameraInfo
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageAnalysis
@@ -16,6 +17,7 @@ import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.LifecycleOwner
+import br.com.fiquemsabendo.figurinhas.Config
 import br.com.fiquemsabendo.figurinhas.data.CameraFacing
 import br.com.fiquemsabendo.figurinhas.ocr.GrayImage
 import br.com.fiquemsabendo.figurinhas.ocr.rotateRightAngle
@@ -85,7 +87,8 @@ class CameraFrameSource(context: Context) {
             // Re-bind cleanly: drop any previous use cases before binding the new ones so a facing
             // flip swaps the stream without stacking bindings.
             provider.unbindAll()
-            provider.bindToLifecycle(lifecycleOwner, selector, preview, analysis)
+            val camera = provider.bindToLifecycle(lifecycleOwner, selector, preview, analysis)
+            applyLiveZoom(camera, facing)
         }, ContextCompat.getMainExecutor(appContext))
     }
 
@@ -199,6 +202,24 @@ class CameraFrameSource(context: Context) {
             if (min != null && min > 0f) min else null
         } catch (_: Throwable) {
             null
+        }
+    }
+
+    /**
+     * Request a modest front-camera digital zoom after binding. This keeps preview and analysis in
+     * sync because CameraX applies the zoom at the camera pipeline level. The Pixel live dumps showed
+     * the recognizer was fast and conservative, but the printed code pill was too small; zoom makes
+     * the reticle behave like a tighter scanner window without relaxing OCR confidence.
+     */
+    private fun applyLiveZoom(camera: Camera, facing: CameraFacing) {
+        val target = if (facing == CameraFacing.FRONT) Config.Camera.FRONT_ZOOM_RATIO else 1.0f
+        if (target <= 1.0f) return
+        try {
+            val zoomState = camera.cameraInfo.zoomState.value ?: return
+            val clamped = target.coerceIn(zoomState.minZoomRatio, zoomState.maxZoomRatio)
+            if (clamped > zoomState.minZoomRatio) camera.cameraControl.setZoomRatio(clamped)
+        } catch (_: Throwable) {
+            // Zoom unsupported or rejected by this camera; scanning still works without it.
         }
     }
 }

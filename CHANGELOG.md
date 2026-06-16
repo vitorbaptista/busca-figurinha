@@ -29,6 +29,12 @@ Notable changes to the sticker scanner. Newest first. No formal releases yet (de
 - **Debug Android mostra leituras rejeitadas.** O overlay agora exibe textos abaixo do corte de
   confiança com percentual, ajudando a distinguir "não viu nada" de "viu algo inseguro" sem
   permitir commit.
+- **Câmera frontal Android usa zoom moderado.** O scanner pede zoom 2× na câmera frontal, limitado
+  ao que o aparelho anuncia, para o código ocupar mais pixels na ROI sem relaxar o corte de
+  confiança do OCR.
+- **OCR Android lê `SWE 8` em captura real próxima.** A segmentação agora procura o vale entre
+  glifos grudados em uma faixa mais ampla e aceita `8` ambíguo somente quando o glifo tem dois
+  buracos fechados, mantendo rejeição conservadora para dígitos sem essa topologia.
 - **Foco perto usa o limite anunciado pela câmera.** O Android agora lê
   `LENS_INFO_MINIMUM_FOCUS_DISTANCE` da câmera selecionada antes de montar os use cases, em vez de
   sempre pedir um valor fixo. Câmeras de foco fixo continuam sem trava manual.

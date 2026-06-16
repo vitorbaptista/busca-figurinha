@@ -55,6 +55,7 @@ private val DIGITS: Set<Char> = "0123456789".toSet()
  *  digit satisfies neither and is dropped. */
 private const val DIGIT_MARGIN = 0.05
 private const val DIGIT_STRONG = 0.97
+private const val DIGIT_EIGHT_TOPOLOGY_STRONG = 0.88
 
 /** A committed glyph must classify at least this well. A whole crop of card texture or a logo
  *  fragment scores below this on most glyphs; rejecting them makes the token un-matchable (the
@@ -75,6 +76,8 @@ internal class Classified(
      *  this is how decisively the digit reading wins. A small margin means a 4-vs-6-style
      *  ambiguity that we must NOT commit (it would be a wrong code). */
     val secondDigitScore: Double,
+    /** Enclosed white holes in the source glyph. Used only to rescue topologically clear 8s. */
+    val holes: Int = 0,
 )
 
 /** A label paired with its in-class best score (the TS `{ label, score }` shape). */
@@ -128,6 +131,7 @@ internal fun classify(glyph: GlyphBox, atlas: FlatAtlas): Classified {
         bestLetter = LabelScore(bl, bls),
         bestDigit = LabelScore(bd, bds),
         secondDigitScore = bd2,
+        holes = glyph.holes,
     )
 }
 
@@ -184,7 +188,9 @@ internal fun assemble(classified: List<Classified>): Triple<String, Double, Bool
             ch = c.bestDigit.label
             sc = c.bestDigit.score
             val decisive =
-                c.bestDigit.score - c.secondDigitScore >= DIGIT_MARGIN || c.bestDigit.score >= DIGIT_STRONG
+                c.bestDigit.score - c.secondDigitScore >= DIGIT_MARGIN ||
+                    c.bestDigit.score >= DIGIT_STRONG ||
+                    (ch == '8' && c.holes >= 2 && c.bestDigit.score >= DIGIT_EIGHT_TOPOLOGY_STRONG)
             if (!decisive) reject = true
         } else if (DIGITS.contains(ch) && DIGIT_TO_LETTER.containsKey(ch)) {
             ch = DIGIT_TO_LETTER.getValue(ch)

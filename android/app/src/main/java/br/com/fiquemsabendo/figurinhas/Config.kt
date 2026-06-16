@@ -22,6 +22,13 @@ object Config {
         /** Min ms between two consecutive committed captures (same-sticker re-arm guard). */
         const val MIN_RECAPTURE_MS = 250L
     }
+    object Camera {
+        /** Digital zoom requested on the front camera. The live SWE8 Pixel dumps showed the scanner
+         *  was fast but the printed code pill was too tiny for reliable glyph OCR; zooming the camera
+         *  makes the target box behave more like a barcode scanner window without weakening the
+         *  confidence gates. Clamped to the device's reported zoom range at runtime. */
+        const val FRONT_ZOOM_RATIO = 2.0f
+    }
     object Detect {
         /** The OCR target box, as fractions (0..1) of the DISPLAY-oriented frame. Detection runs ONLY
          *  inside this rectangle and the on-screen reticle draws exactly it, so the user lines the

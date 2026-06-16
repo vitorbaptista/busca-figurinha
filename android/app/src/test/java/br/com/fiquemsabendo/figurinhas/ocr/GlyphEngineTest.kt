@@ -45,7 +45,7 @@ class GlyphEngineTest {
 
     /** A GlyphBox whose feature vector is `feat` (the rest is positional padding). */
     private fun glyphWith(feat: FloatArray): GlyphBox =
-        GlyphBox(x = 0, y = 0, w = 10, h = 18, area = 100, feat = feat, ar = 1.8f)
+        GlyphBox(x = 0, y = 0, w = 10, h = 18, area = 100, feat = feat, ar = 1.8f, holes = 0)
 
     /** A confident in-class Classified: best == label at `score`, runner-up digit far below so
      *  digits are decisive. For a letter, bestDigit is set low; for a digit, bestLetter low. */
