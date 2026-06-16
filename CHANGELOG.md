@@ -3,6 +3,24 @@
 Notable changes to the sticker scanner. Newest first. No formal releases yet (deploys on push to
 `main`), so entries are grouped by date. Keep this updated when you ship something notable.
 
+## 2026-06-16 — Android: retry sem falso "lido"
+
+### Fixed
+- **Burst vazio não trava mais o scanner Android.** Quando a figurinha fica parada mas o OCR não
+  confirma nenhum código, o app agora rearma a captura e tenta de novo no mesmo alvo em vez de
+  entrar em `LOCKED` e mostrar falsamente "lido ✓ — troque a figurinha". O `LOCKED` fica reservado
+  para bursts que realmente commitam um código.
+
+### Changed
+- **Retículo Android virou janela de captura com fill-light.** A área fora da caixa fica branca para
+  iluminar a figurinha, e a ROI foi apertada para uma caixa central menor, alinhada ao que o
+  reconhecedor lê.
+- **Foco perto usa o limite anunciado pela câmera.** O Android agora lê
+  `LENS_INFO_MINIMUM_FOCUS_DISTANCE` da câmera selecionada antes de montar os use cases, em vez de
+  sempre pedir um valor fixo. Câmeras de foco fixo continuam sem trava manual.
+- **Backup Android preserva o modo debug.** Exportar/importar agora mantém o ajuste `debug`, e
+  backups antigos sem esse campo continuam importando com debug desligado.
+
 ## 2026-06-15 — Remove "Enviar foto"
 
 ### Removed
