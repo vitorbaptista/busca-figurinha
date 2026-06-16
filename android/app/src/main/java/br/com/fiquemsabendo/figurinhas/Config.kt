@@ -29,10 +29,10 @@ object Config {
          *  centered and free of background — far more reliable than scanning the whole frame. Tune
          *  these live on the device (move/resize the box to where stickers actually land). The whole
          *  frame would be 0,0,1,1 (used by the benches/golden tests, which aren't framed to a box). */
-        const val ROI_LEFT = 0.16
-        const val ROI_TOP = 0.38
-        const val ROI_RIGHT = 0.84
-        const val ROI_BOTTOM = 0.62
+        const val ROI_LEFT = 0.22
+        const val ROI_TOP = 0.37
+        const val ROI_RIGHT = 0.78
+        const val ROI_BOTTOM = 0.53
     }
     object Ocr {
         /** Glyph-matcher accept floor: a fast read with mean-glyph confidence below this is NOT

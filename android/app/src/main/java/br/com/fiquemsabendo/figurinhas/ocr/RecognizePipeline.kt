@@ -28,6 +28,7 @@ import br.com.fiquemsabendo.figurinhas.Config
 import br.com.fiquemsabendo.figurinhas.domain.Checklist
 import br.com.fiquemsabendo.figurinhas.domain.MatchResult
 import br.com.fiquemsabendo.figurinhas.domain.bestMatchFromText
+import kotlin.math.roundToInt
 
 /** Cap on boxes OCR'd per frame. findCodeBoxes sorts best-first, and the real code pill is
  *  usually box[0] (or a near-duplicate re-segmentation in the next slot). Lower boxes are
@@ -206,6 +207,8 @@ fun recognizeFrameInOrder(
                     }
                 } else {
                     // Soft/rejected/blank: the slow engine might still read it — defer to phase 2.
+                    val clean = r.text.replace(WHITESPACE_RE, " ").trim()
+                    if (clean.isNotEmpty()) reads.add("$clean (${r.confidence.roundToInt()}%)")
                     unsure.add(job)
                 }
             }

@@ -1,9 +1,11 @@
 package br.com.fiquemsabendo.figurinhas.ocr
 
 import br.com.fiquemsabendo.figurinhas.data.checklist
+import br.com.fiquemsabendo.figurinhas.domain.bestMatchFromText
 import java.io.File
 import java.util.zip.GZIPInputStream
 import kotlin.test.Test
+import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
 // END-TO-END recognizer validation on REAL sticker backs. The whole recognizer is pure Kotlin (no
@@ -71,6 +73,13 @@ class RecognizerGoldenTest {
         return out.resolved.mapNotNull { it.entry?.code } to out.reads
     }
 
+    private fun runLive(resource: String): Pair<List<String>, List<String>>? {
+        val frame = loadFrame(resource) ?: return null
+        val eng = recognizer(gate = 70.0) ?: return null
+        val out = recognizeFrameInOrder(eng, frame, checklist, stopOnFirstCode = true, roi = Roi.CONFIG)
+        return out.resolved.mapNotNull { it.entry?.code } to out.reads
+    }
+
     @Test fun reads_CIV12_from_a_real_back() {
         val (codes, reads) = run("/stickers/CIV12.pgm.gz", stopOnFirst = true) ?: return
         assertTrue("CIV12" in codes, "expected CIV12; resolved=$codes reads=$reads")
@@ -91,5 +100,41 @@ class RecognizerGoldenTest {
         assertTrue(falsePositives.isEmpty(), "FALSE POSITIVES $falsePositives — resolved=$codeSet reads=$reads")
         // And recover at least one (full recall is validated live; this is a floor that the chain works).
         assertTrue(codeSet.isNotEmpty(), "resolved nothing; reads=$reads")
+    }
+
+    @Test fun live_pixel_tripod_SWE8_has_zero_false_positives() {
+        for (n in 1..4) {
+            val resource = "/stickers/SWE8_pixel_tripod_frame$n.pgm.gz"
+            val (codes, reads) = runLive(resource) ?: return
+            val falsePositives = codes.toSet() - setOf("SWE8")
+            assertTrue(
+                falsePositives.isEmpty(),
+                "FALSE POSITIVES $falsePositives in frame $n — resolved=$codes reads=$reads",
+            )
+            if (n <= 2) {
+                assertTrue("SWE8" in codes, "expected SWE8 in frame $n — resolved=$codes reads=$reads")
+            }
+        }
+    }
+
+    @Test fun prepared_pixel_SWE8_crop_reads_the_code() {
+        val crop = loadFrame("/stickers/SWE8_pixel_newroi_crop2.pgm.gz") ?: return
+        val atlas = atlas() ?: return
+        val read = recognizeCrop(crop, atlas)
+        val match = bestMatchFromText(read.text, checklist)
+        assertEquals("SWE8", match?.entry?.code, "read=${read.text} conf=${read.confidence}")
+    }
+
+    @Test fun live_pixel_newroi_frames_read_SWE8() {
+        for (n in 1..2) {
+            val (codes, reads) = runLive("/stickers/SWE8_pixel_newroi_frame$n.pgm.gz") ?: return
+            assertEquals(listOf("SWE8"), codes, "frame=$n reads=$reads")
+        }
+    }
+
+    @Test fun tiny_live_pixel_SWE8_frame_has_zero_false_positives() {
+        val (codes, reads) = runLive("/stickers/SWE8_pixel_debugreads_frame1.pgm.gz") ?: return
+        val falsePositives = codes.toSet() - setOf("SWE8")
+        assertTrue(falsePositives.isEmpty(), "FALSE POSITIVES $falsePositives — resolved=$codes reads=$reads")
     }
 }

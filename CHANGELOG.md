@@ -5,6 +5,11 @@ Notable changes to the sticker scanner. Newest first. No formal releases yet (de
 
 ## 2026-06-16 — Android: retry sem falso "lido"
 
+### Added
+- **Fixture real do Pixel para SWE 8.** O teste de ouro Android agora inclui quadros capturados no
+  Pixel em modo debug e valida a ROI/fill-light reais: quadros próximos precisam ler `SWE 8`, e
+  todos precisam manter 0 falso positivo.
+
 ### Fixed
 - **Burst vazio não trava mais o scanner Android.** Quando a figurinha fica parada mas o OCR não
   confirma nenhum código, o app agora rearma a captura e tenta de novo no mesmo alvo em vez de
@@ -15,6 +20,15 @@ Notable changes to the sticker scanner. Newest first. No formal releases yet (de
 - **Retículo Android virou janela de captura com fill-light.** A área fora da caixa fica branca para
   iluminar a figurinha, e a ROI foi apertada para uma caixa central menor, alinhada ao que o
   reconhecedor lê.
+- **ROI Android ficou mais estreita para leitura ao vivo.** A janela agora prioriza a faixa central
+  onde o código `SWE 8` foi lido no Pixel, reduzindo fundo analisado e deixando mais claro que a
+  figurinha precisa estar perto o suficiente para o código preencher o retículo.
+- **Instrução do scanner ficou mais direta.** O texto agora pede para aproximar o código da caixa,
+  não para enquadrar a figurinha inteira, porque os dumps do Pixel mostraram que o código pequeno
+  demais vira leitura de baixa confiança.
+- **Debug Android mostra leituras rejeitadas.** O overlay agora exibe textos abaixo do corte de
+  confiança com percentual, ajudando a distinguir "não viu nada" de "viu algo inseguro" sem
+  permitir commit.
 - **Foco perto usa o limite anunciado pela câmera.** O Android agora lê
   `LENS_INFO_MINIMUM_FOCUS_DISTANCE` da câmera selecionada antes de montar os use cases, em vez de
   sempre pedir um valor fixo. Câmeras de foco fixo continuam sem trava manual.

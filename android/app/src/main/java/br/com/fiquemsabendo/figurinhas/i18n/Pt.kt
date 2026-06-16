@@ -67,7 +67,7 @@ object Pt {
         const val cameraDenied = "Não consegui acessar a câmera."
         const val cameraDeniedHint = "Toque em permitir a câmera nas configurações do app e tente de novo."
         const val retry = "Tentar de novo"
-        const val startHint = "Mostre o verso da figurinha"
+        const val startHint = "Aproxime o código da caixa"
         const val flipCamera = "Virar câmera"
         const val cameraFront = "Câmera frontal"
         const val cameraBack = "Câmera traseira"
