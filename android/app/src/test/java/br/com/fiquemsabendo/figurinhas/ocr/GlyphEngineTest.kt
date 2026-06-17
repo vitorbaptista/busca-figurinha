@@ -339,6 +339,49 @@ class GlyphEngineTest {
         assertEquals("RSA 6", text)
     }
 
+    @Test fun assemble_accepts_a_strong_one_hole_5_when_the_letter_score_is_lower() {
+        val strongFive = Classified(
+            label = '5',
+            score = 0.94,
+            bestLetter = LabelScore('B', 0.90),
+            bestDigit = LabelScore('5', 0.94),
+            secondDigitScore = 0.93,
+            holes = 1,
+        )
+        val list = listOf(
+            classifiedLetter('E', 0.95),
+            classifiedLetter('G', 0.93),
+            classifiedLetter('Y', 0.94),
+            strongFive,
+        )
+
+        val (text, _, reject) = assemble(list)
+
+        assertFalse(reject, "a one-hole 5 with strong digit score and lower letter score should commit")
+        assertEquals("EGY 5", text)
+    }
+
+    @Test fun assemble_rejects_a_one_hole_5_when_it_does_not_beat_the_letter_shape() {
+        val letterLikeFive = Classified(
+            label = '5',
+            score = 0.94,
+            bestLetter = LabelScore('B', 0.92),
+            bestDigit = LabelScore('5', 0.94),
+            secondDigitScore = 0.93,
+            holes = 1,
+        )
+        val list = listOf(
+            classifiedLetter('E', 0.95),
+            classifiedLetter('G', 0.93),
+            classifiedLetter('Y', 0.94),
+            letterLikeFive,
+        )
+
+        val (_, _, reject) = assemble(list)
+
+        assertTrue(reject, "a one-hole 5 still needs separation from the best letter")
+    }
+
     @Test fun assemble_rejects_a_low_cosine_glyph() {
         // A glyph whose max(bestLetter, bestDigit) < MIN_GLYPH_COS is noise -> reject.
         val noise = Classified(

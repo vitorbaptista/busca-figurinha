@@ -65,6 +65,7 @@ private const val DIGIT_STRONG = 0.95
 private const val DIGIT_EIGHT_TOPOLOGY_STRONG = 0.88
 private const val DIGIT_ONE_HOLE_TOPOLOGY_STRONG = 0.94
 private const val DIGIT_ONE_HOLE_LETTER_MARGIN = 0.03
+private const val DIGIT_FIVE_ONE_HOLE_TOPOLOGY_STRONG = 0.93
 private const val DIGIT_ZERO_TWO_HOLE_TOPOLOGY_STRONG = 0.91
 private const val DIGIT_ZERO_TWO_HOLE_MARGIN = 0.005
 
@@ -216,6 +217,12 @@ internal fun assemble(
                         ch in "069" &&
                             c.holes == 1 &&
                             c.bestDigit.score >= DIGIT_ONE_HOLE_TOPOLOGY_STRONG &&
+                            c.bestDigit.score - c.bestLetter.score >= DIGIT_ONE_HOLE_LETTER_MARGIN
+                    ) ||
+                    (
+                        ch == '5' &&
+                            c.holes == 1 &&
+                            c.bestDigit.score >= DIGIT_FIVE_ONE_HOLE_TOPOLOGY_STRONG &&
                             c.bestDigit.score - c.bestLetter.score >= DIGIT_ONE_HOLE_LETTER_MARGIN
                     ) ||
                     (
