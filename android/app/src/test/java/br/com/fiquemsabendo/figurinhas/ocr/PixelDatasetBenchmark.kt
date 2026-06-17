@@ -40,6 +40,8 @@ class PixelDatasetBenchmark {
     private val notStickerLabel = "not_sticker"
     private val baselineMinRecallPercent = 100.0
     private val baselineMinConfirmedHolds = 11
+    private val baselineMaxAverageCrops = 0.70
+    private val baselineMaxCropsPerFrame = 2
     private val watchedDifficultCodes = listOf("MEX15", "IRQ20", "TUN10")
 
     private data class ManifestRow(
@@ -839,9 +841,12 @@ class PixelDatasetBenchmark {
                 "baseline Pixel benchmark hold confirmation regressed: confirmed $confirmedHolds/${confirmableHolds.size} confirmable holds",
             )
             assertTrue(wrongHoldCommits.isEmpty(), "baseline Pixel benchmark produced wrong hold commits: $wrongHoldCommits")
-            assertTrue(totalCrops <= 150, "baseline Pixel benchmark OCR work regressed: total crops=$totalCrops")
+            assertTrue(
+                results.isEmpty() || totalCrops.toDouble() / results.size <= baselineMaxAverageCrops,
+                "baseline Pixel benchmark OCR work regressed: total crops=$totalCrops frames=${results.size}",
+            )
             assertTrue(cropsP95 <= 2, "baseline Pixel benchmark typical OCR work regressed: p95 crops=$cropsP95")
-            assertTrue(maxCrops <= 4, "baseline Pixel benchmark has a high-work frame: max crops=$maxCrops")
+            assertTrue(maxCrops <= baselineMaxCropsPerFrame, "baseline Pixel benchmark has a high-work frame: max crops=$maxCrops")
         }
     }
 }

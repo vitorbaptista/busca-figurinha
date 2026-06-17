@@ -31,7 +31,8 @@ Notable changes to the sticker scanner. Newest first. No formal releases yet (de
   `TUN10` ainda não tem frame revisado e não deve ser usado para validar melhoria.
 - **Gate do benchmark Pixel acompanha o novo baseline manual.** A suíte Android agora falha se o
   recall do CSV verificado manualmente cair abaixo de `100%`, além de manter `0` falso positivo,
-  confirmação de seguradas e orçamento de crops.
+  confirmação de seguradas e orçamento de crops. O orçamento agora também trava o novo teto local:
+  média máxima de `0,70` crop por frame, p95 `2` e máximo `2` crops por frame.
 
 ## 2026-06-16 — Android: retry sem falso "lido"
 
