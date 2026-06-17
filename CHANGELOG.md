@@ -6,6 +6,11 @@ Notable changes to the sticker scanner. Newest first. No formal releases yet (de
 ## 2026-06-17 — Android: baseline Pixel combinado
 
 ### Fixed
+- **Matcher Android aceita aliases exatos de `CUW4` em confiança média sem relaxar confusões gerais.**
+  Leituras Pixel verificadas como `DXW 4` e `DAV 4` agora entram por um caminho separado de alias
+  exato a partir de `82%`, enquanto as confusões por letra continuam exigindo `85,5%`. O baseline
+  combinado sobe para `150/216` positivos (`69,44%` recall), `63` leituras exatas, `41/43`
+  seguradas avaliáveis confirmadas, `0/157` falsos positivos e `0` commits errados.
 - **OCR Android recupera `TUN10` quando o `N` afina como `I` e o `0` fecha como `Q`.** O resgate
   fica preso ao shape completo `TUI 10`, exige score mínimo no `N` afinado e topologia de um furo
   no zero final. O baseline combinado sobe para `148/216` positivos (`68,52%` recall), `63`

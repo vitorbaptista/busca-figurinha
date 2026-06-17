@@ -95,6 +95,8 @@ private val HIGH_CONF_EXACT_ALIASES = mapOf(
     "IL10" to "TUN10",
     "WAI2" to "AUS2",
     "OAV4" to "CUW4",
+    "DXW4" to "CUW4",
+    "DAV4" to "CUW4",
     "UJMJ10" to "TUN10",
 ).also { aliases ->
     require(aliases.all { (raw, target) -> numericSuffix(raw) == numericSuffix(target) }) {
@@ -203,12 +205,17 @@ fun bestMatchFromText(text: String, list: Checklist, maxDistance: Int = Config.M
     return best
 }
 
-fun bestHighConfidenceConfusionMatchFromText(text: String, list: Checklist): MatchResult? {
+fun bestHighConfidenceExactAliasMatchFromText(text: String, list: Checklist): MatchResult? {
     val exactAliasRaw = normalizeCode(text)
     HIGH_CONF_EXACT_ALIASES[exactAliasRaw]?.let { code ->
         val entry = list.byCode[code] ?: return@let
         return MatchResult(exactAliasRaw, MatchStatus.CORRECTED, entry, levenshtein(exactAliasRaw, code))
     }
+    return null
+}
+
+fun bestHighConfidenceConfusionMatchFromText(text: String, list: Checklist): MatchResult? {
+    bestHighConfidenceExactAliasMatchFromText(text, list)?.let { return it }
 
     val codes = extractCodes(text)
     if (codes.isEmpty()) return null

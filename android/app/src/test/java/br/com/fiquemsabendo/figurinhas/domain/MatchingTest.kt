@@ -175,6 +175,11 @@ class MatchingTest {
         assertEquals("AUT4", wShape?.entry?.code)
         assertEquals(2, wShape?.distance)
     }
+    @Test fun high_confidence_exact_alias_recovers_verified_cuw4_shapes() {
+        assertEquals("CUW4", bestHighConfidenceExactAliasMatchFromText("DXW 4", checklist)?.entry?.code)
+        assertEquals("CUW4", bestHighConfidenceExactAliasMatchFromText("DAV 4", checklist)?.entry?.code)
+        assertNull(bestHighConfidenceExactAliasMatchFromText("DXW 5", checklist))
+    }
     @Test fun high_confidence_confusion_recovers_verified_pixel_shapes() {
         val verifiedPixelShapes = linkedMapOf(
             "DUA 19" to "GHA19",
@@ -223,6 +228,8 @@ class MatchingTest {
             "OJW 4" to "CUW4",
             "DAY 4" to "CUW4",
             "OAV 4" to "CUW4",
+            "DXW 4" to "CUW4",
+            "DAV 4" to "CUW4",
             "BN 10" to "POR10",
             "TXN 10" to "POR10",
             "IWJ 20" to "IRQ20",

@@ -29,6 +29,7 @@ import br.com.fiquemsabendo.figurinhas.domain.Checklist
 import br.com.fiquemsabendo.figurinhas.domain.MatchResult
 import br.com.fiquemsabendo.figurinhas.domain.MatchStatus
 import br.com.fiquemsabendo.figurinhas.domain.bestHighConfidenceConfusionMatchFromText
+import br.com.fiquemsabendo.figurinhas.domain.bestHighConfidenceExactAliasMatchFromText
 import br.com.fiquemsabendo.figurinhas.domain.bestMatchFromText
 import kotlin.math.abs
 import kotlin.math.max
@@ -48,6 +49,7 @@ private const val LIVE_MAX_BOXES_DEFAULT = 2
 // per-frame hot path). ALNUM mirrors the TS /[A-Z0-9]/i (case-insensitive).
 private val WHITESPACE_RE = Regex("\\s+")
 private val ALNUM_RE = Regex("[A-Za-z0-9]")
+private const val EXACT_ALIAS_MIN_CONF = 82.0
 private const val HIGH_CONFUSION_MIN_CONF = 85.5
 
 /** The outcome of recognizing one frame (ports the TS RecognizeOutcome). */
@@ -561,8 +563,13 @@ fun recognizeFrameInOrder(
             val normalMatch = bestMatchFromText(text, checklist)
             val m = if (normalMatch?.entry != null) {
                 normalMatch
-            } else if (confidence != null && confidence >= HIGH_CONFUSION_MIN_CONF) {
-                bestHighConfidenceConfusionMatchFromText(text, checklist)
+            } else if (confidence != null && confidence >= EXACT_ALIAS_MIN_CONF) {
+                bestHighConfidenceExactAliasMatchFromText(text, checklist)
+                    ?: if (confidence >= HIGH_CONFUSION_MIN_CONF) {
+                        bestHighConfidenceConfusionMatchFromText(text, checklist)
+                    } else {
+                        normalMatch
+                    }
             } else {
                 normalMatch
             }
