@@ -112,6 +112,10 @@ Notable changes to the sticker scanner. Newest first. No formal releases yet (de
   durante a colheita de novos glifos.
 
 ### Changed
+- **Benchmark Pixel Android passa a proteger contra overfitting por split.** O relatório agora
+  mostra recall, misses, falsos positivos e dívida de correção separados em treino/validação/teste,
+  e o gate do dataset manual combinado trava os acertos atuais de validação (`15/22`) e teste
+  (`15/24`) além do recall total e de `0` falso positivo.
 - **Confusões de alta confiança passam a refletir os crops Pixel revisados.** Com dígitos idênticos
   e candidato único, o Android agora aceita pares observados no dataset manual (`C→G`, `I→U`,
   `M→A`, `W→A`, além dos pares anteriores) para recuperar casos como `ECY 4`→`EGY4`,

@@ -27,8 +27,8 @@
 - razão no-frame sem detecção (boxes=0): 1
 - razão sem texto no crop (box com 0 ink): 59
 - razão sem match apesar de OCR: 156
-- mediana detecção/ocr (ms): 17.00 / 14.00
-- p95 detecção/ocr (ms): 27.00 / 36.00
+- mediana detecção/ocr (ms): 22.00 / 18.00
+- p95 detecção/ocr (ms): 28.00 / 44.00
 - média boxes: 2.28
 - média crops: 1.32
 - total crops OCR: 491
@@ -366,18 +366,18 @@
 - pixel-live-20260617-090351__frame-85: boxes=0 crops=0 reads=-
 
 ## Piores latências
-1. live-user-20260616-201108__frame-9 det=43ms ocr=107ms boxes=4/1 crops=3 respostas=-
-2. live-setup-20260616-201017__frame-3 det=39ms ocr=66ms boxes=4/1 crops=2 respostas=NED12
-3. live-user-20260616-201108__frame-11 det=48ms ocr=50ms boxes=2/0 crops=0 respostas=-
-4. live-user-20260616-201108__frame-10 det=47ms ocr=42ms boxes=2/1 crops=2 respostas=-
-5. live-user-20260616-201108__frame-7 det=23ms ocr=54ms boxes=2/0 crops=0 respostas=-
-6. live-user-20260616-201108__frame-34 det=27ms ocr=50ms boxes=4/1 crops=3 respostas=-
-7. live-user-20260616-201108__frame-39 det=35ms ocr=39ms boxes=2/1 crops=2 respostas=-
-8. live-user-20260616-201108__frame-23 det=20ms ocr=48ms boxes=4/0 crops=2 respostas=-
-9. live-user-20260616-201108__frame-43 det=30ms ocr=38ms boxes=2/0 crops=0 respostas=-
-10. live-user-20260616-201108__frame-41 det=33ms ocr=32ms boxes=2/1 crops=1 respostas=-
-11. live-user-20260616-201108__frame-13 det=32ms ocr=31ms boxes=2/1 crops=2 respostas=-
-12. live-user-20260616-201108__frame-17 det=27ms ocr=36ms boxes=2/0 crops=0 respostas=-
+1. live-setup-20260616-201017__frame-3 det=41ms ocr=75ms boxes=4/1 crops=2 respostas=NED12
+2. live-user-20260616-201108__frame-7 det=43ms ocr=61ms boxes=2/0 crops=0 respostas=-
+3. live-user-20260616-201108__frame-9 det=27ms ocr=71ms boxes=4/1 crops=3 respostas=-
+4. pixel-live-20260617-090351__frame-155 det=23ms ocr=57ms boxes=2/0 crops=4 respostas=-
+5. live-user-20260616-201108__frame-4 det=45ms ocr=34ms boxes=2/1 crops=2 respostas=-
+6. live-user-full-20260616-201728__frame-362 det=29ms ocr=49ms boxes=3/0 crops=0 respostas=-
+7. pixel-live-20260617-090351__frame-318 det=24ms ocr=54ms boxes=3/1 crops=4 respostas=-
+8. live-user-full-20260616-201728__frame-501 det=23ms ocr=54ms boxes=5/1 crops=3 respostas=-
+9. live-user-full-20260616-201728__frame-527 det=27ms ocr=50ms boxes=3/0 crops=0 respostas=-
+10. live-user-20260616-201108__frame-5 det=36ms ocr=39ms boxes=2/0 crops=0 respostas=-
+11. pixel-live-20260617-090351__frame-157 det=27ms ocr=47ms boxes=2/1 crops=4 respostas=-
+12. live-user-20260616-201108__frame-23 det=21ms ocr=52ms boxes=4/0 crops=2 respostas=-
 
 ## Maior trabalho OCR
 1. live-user-20260617-011113__frame-32 crops=6 boxes=3/0 respostas=- leituras=EGV 5 | EGV 5 | EG XX (0%) | EG XX (0%) | OBM X (0%) | EEN X (0%)
@@ -395,14 +395,12 @@
 
 ## Falsos positivos
 - sem falsos positivos
+
 ## Split
-- treino: 293
-- validação: 32
-- teste: 48
+- treino (train): positivos=127/170 recall=74.71% miss=43 negativos=123 fp=0 exata/correção/confusão=53/5/69 dívida=74
+- validação (val): positivos=15/22 recall=68.18% miss=7 negativos=10 fp=0 exata/correção/confusão=8/0/7 dívida=7
+- teste (test): positivos=15/24 recall=62.50% miss=9 negativos=24 fp=0 exata/correção/confusão=7/1/7 dívida=8
 - total com resultado: 373
-- train -> tp=127 miss=43 fp=0
-- val -> tp=15 miss=7 fp=0
-- test -> tp=15 miss=9 fp=0
 - unresolved: 59
 - sem leitura mas com ocr: 35
 - sem leitura e sem ocr: 24

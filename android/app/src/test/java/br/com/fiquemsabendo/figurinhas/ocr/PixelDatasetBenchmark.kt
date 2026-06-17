@@ -55,6 +55,8 @@ class PixelDatasetBenchmark {
     private val baselineMaxCropsPerFrame = 6
     private val baselineMinExactHits = 68
     private val baselineMaxCorrectionDependentHits = 89
+    private val baselineMinValidationHits = 15
+    private val baselineMinTestHits = 15
     private val usefulFramesPerDifficultCode = 3
     private val watchedDifficultCodes = listOf("MEX15", "IRQ20", "TUN10")
 
@@ -905,19 +907,32 @@ class PixelDatasetBenchmark {
                 lines += "- ${it.frameId}: resolvido=${it.resolvedCodes.joinToString(", ")} esperado=${it.expected.ifBlank { "-" }} leituras=$readText"
             }
         }
+        lines += ""
         lines += "## Split"
-        lines += "- treino: ${bySplit["train"]?.size ?: 0}"
-        lines += "- validação: ${bySplit["val"]?.size ?: 0}"
-        lines += "- teste: ${bySplit["test"]?.size ?: 0}"
-        lines += "- total com resultado: ${results.size}"
-        for (name in arrayOf("train", "val", "test")) {
+        val splitLabels = arrayOf(
+            "train" to "treino",
+            "val" to "validação",
+            "test" to "teste",
+        )
+        for ((name, label) in splitLabels) {
             val splitRows = bySplit[name].orEmpty()
             val positives = splitRows.filter { it.expected != notStickerLabel }
-            val tp = positives.count { it.hasExpected }
+            val negatives = splitRows.filter { it.expected == notStickerLabel }
+            val splitHits = positives.filter { it.hasExpected }
+            val tp = splitHits.size
+            val miss = positives.size - tp
             val fp = splitRows.count { it.hasFalsePositive }
-            val miss = positives.count { !it.hasExpected }
-            lines += "- $name -> tp=$tp miss=$miss fp=$fp"
+            val exact = splitHits.count { it.expectedHitPath == ExpectedHitPath.EXACT }
+            val standard = splitHits.count { it.expectedHitPath == ExpectedHitPath.STANDARD_CORRECTION }
+            val confusion = splitHits.count { it.expectedHitPath == ExpectedHitPath.HIGH_CONFUSION }
+            val debt = splitHits.count {
+                it.expectedHitPath == ExpectedHitPath.STANDARD_CORRECTION ||
+                    it.expectedHitPath == ExpectedHitPath.HIGH_CONFUSION
+            }
+            val recall = if (positives.isEmpty()) 0.0 else tp * 100.0 / positives.size
+            lines += "- $label ($name): positivos=$tp/${positives.size} recall=${String.format(Locale.US, "%.2f", recall)}% miss=$miss negativos=${negatives.size} fp=$fp exata/correção/confusão=$exact/$standard/$confusion dívida=$debt"
         }
+        lines += "- total com resultado: ${results.size}"
         lines += "- unresolved: ${unresolved.size}"
         if (unresolved.isNotEmpty()) {
             lines += "- sem leitura mas com ocr: ${unresolved.count { it.reads.isNotEmpty() }}"
@@ -981,6 +996,16 @@ class PixelDatasetBenchmark {
                 assertTrue(
                     correctionDependentHits.size <= baselineMaxCorrectionDependentHits,
                     "baseline Pixel benchmark correction debt regressed: correction-dependent=${correctionDependentHits.size} maximum=$baselineMaxCorrectionDependentHits",
+                )
+                val validationHits = bySplit["val"].orEmpty().count { it.expected != notStickerLabel && it.hasExpected }
+                assertTrue(
+                    validationHits >= baselineMinValidationHits,
+                    "baseline Pixel benchmark validation split regressed: val hits=$validationHits minimum=$baselineMinValidationHits",
+                )
+                val testHits = bySplit["test"].orEmpty().count { it.expected != notStickerLabel && it.hasExpected }
+                assertTrue(
+                    testHits >= baselineMinTestHits,
+                    "baseline Pixel benchmark test split regressed: test hits=$testHits minimum=$baselineMinTestHits",
                 )
             }
             assertTrue(wrongHoldCommits.isEmpty(), "baseline Pixel benchmark produced wrong hold commits: $wrongHoldCommits")
