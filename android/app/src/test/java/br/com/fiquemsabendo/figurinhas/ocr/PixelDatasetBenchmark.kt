@@ -6,6 +6,7 @@ import br.com.fiquemsabendo.figurinhas.domain.Confirmer
 import br.com.fiquemsabendo.figurinhas.domain.MatchStatus
 import br.com.fiquemsabendo.figurinhas.domain.bestHighConfidenceConfusionMatchFromText
 import br.com.fiquemsabendo.figurinhas.domain.bestMatchFromText
+import br.com.fiquemsabendo.figurinhas.scan.burstReadEvidenceMatches
 import java.io.BufferedReader
 import java.io.File
 import java.io.FileInputStream
@@ -119,6 +120,7 @@ class PixelDatasetBenchmark {
         val split: String,
         val hasFalsePositive: Boolean,
         val resolvedCodes: List<String>,
+        val streamEvidenceCodes: List<String>,
         val detectionMs: Long,
         val ocrMs: Long,
         val boxes: Int,
@@ -140,6 +142,14 @@ class PixelDatasetBenchmark {
         val manualFrames: Int,
         val hits: Int,
         val confirmed: Boolean,
+        val wrongCommits: Set<String>,
+    )
+
+    private data class NegativeHoldResult(
+        val sourceDir: String,
+        val startFrame: Int,
+        val endFrame: Int,
+        val manualFrames: Int,
         val wrongCommits: Set<String>,
     )
 
@@ -487,6 +497,9 @@ class PixelDatasetBenchmark {
 
             val resolved = outcome.resolved.mapNotNull { it.entry?.code }.distinct()
             val reads = outcome.reads
+            val streamEvidenceCodes = burstReadEvidenceMatches(reads, checklist)
+                .mapNotNull { it.entry?.code }
+                .distinct()
             val target = if (row.isScored && row.targetLabel.isNotBlank()) row.targetLabel else ""
             val shouldScore = row.isScoredFrame
             val hasExpected = shouldScore && row.isPositiveTarget && resolved.contains(target)
@@ -530,6 +543,7 @@ class PixelDatasetBenchmark {
                     hasFalsePositive = hasFalsePositive,
                     verified = shouldScore,
                     resolvedCodes = resolved,
+                    streamEvidenceCodes = streamEvidenceCodes,
                     detectionMs = detectionNs / 1_000_000L,
                     ocrMs = ocrNs / 1_000_000L,
                     boxes = outcome.boxes,
@@ -576,7 +590,7 @@ class PixelDatasetBenchmark {
             val wrongCommits = linkedSetOf<String>()
             var confirmed = false
             for (frame in group) {
-                val newlyCommitted = confirmer.add(frame.resolvedCodes)
+                val newlyCommitted = confirmer.add((frame.resolvedCodes + frame.streamEvidenceCodes).distinct())
                 if (newlyCommitted.contains(expected)) confirmed = true
                 wrongCommits += newlyCommitted.filter { it != expected }
             }
@@ -588,6 +602,45 @@ class PixelDatasetBenchmark {
                 manualFrames = group.size,
                 hits = group.count { it.hasExpected },
                 confirmed = confirmed,
+                wrongCommits = wrongCommits,
+            )
+        }
+    }
+
+    private fun negativeHoldResults(scoredResults: List<FrameResult>): List<NegativeHoldResult> {
+        val negatives = scoredResults
+            .filter { it.expected == notStickerLabel }
+            .sortedWith(compareBy<FrameResult> { it.sourceDir }.thenBy { it.frameNumber }.thenBy { it.frameId })
+        if (negatives.isEmpty()) return emptyList()
+
+        val groups = ArrayList<List<FrameResult>>()
+        var current = ArrayList<FrameResult>()
+        for (result in negatives) {
+            val previous = current.lastOrNull()
+            val sameHold = previous != null &&
+                previous.sourceDir == result.sourceDir &&
+                previous.frameNumber >= 0 &&
+                result.frameNumber >= 0 &&
+                result.frameNumber - previous.frameNumber <= 3
+            if (!sameHold) {
+                if (current.isNotEmpty()) groups.add(current)
+                current = ArrayList()
+            }
+            current.add(result)
+        }
+        if (current.isNotEmpty()) groups.add(current)
+
+        return groups.map { group ->
+            val confirmer = Confirmer(Config.Match.CONFIRMATIONS)
+            val wrongCommits = linkedSetOf<String>()
+            for (frame in group) {
+                wrongCommits += confirmer.add((frame.resolvedCodes + frame.streamEvidenceCodes).distinct())
+            }
+            NegativeHoldResult(
+                sourceDir = group.first().sourceDir,
+                startFrame = group.first().frameNumber,
+                endFrame = group.last().frameNumber,
+                manualFrames = group.size,
                 wrongCommits = wrongCommits,
             )
         }
@@ -717,10 +770,12 @@ class PixelDatasetBenchmark {
                 it.expectedHitPath == ExpectedHitPath.HIGH_CONFUSION
         }
         val positiveHolds = positiveHoldResults(scoredResults)
+        val negativeHolds = negativeHoldResults(scoredResults)
         val confirmableHolds = positiveHolds.filter { it.manualFrames >= Config.Match.CONFIRMATIONS }
         val confirmedHolds = confirmableHolds.count { it.confirmed }
         val missedHolds = confirmableHolds.filter { !it.confirmed }
         val wrongHoldCommits = positiveHolds.flatMap { it.wrongCommits }.distinct()
+        val negativeHoldCommits = negativeHolds.flatMap { it.wrongCommits }.distinct()
 
         val lines = ArrayList<String>(260)
         lines += "# Benchmark Pixel com GT manual"
@@ -766,6 +821,7 @@ class PixelDatasetBenchmark {
         lines += "- seguradas avaliáveis sem confirmação: ${missedHolds.size}"
         lines += "- seguradas com frames manuais insuficientes: ${positiveHolds.size - confirmableHolds.size}"
         lines += "- commits errados em seguradas positivas: ${wrongHoldCommits.size}"
+        lines += "- commits em seguradas sem sticker: ${negativeHoldCommits.size}"
         val negativeFalsePositiveRate = if (negativeRows > 0) {
             String.format(Locale.US, "%.2f", falsePositives * 100.0 / negativeRows)
         } else {
@@ -797,6 +853,27 @@ class PixelDatasetBenchmark {
             missedHolds.forEach { hold ->
                 val wrong = if (hold.wrongCommits.isEmpty()) "-" else hold.wrongCommits.joinToString(", ")
                 lines += "- ${hold.expected} em ${hold.sourceDir} frames ${hold.startFrame}-${hold.endFrame}: acertos=${hold.hits}/${hold.manualFrames} commits_errados=$wrong"
+            }
+        }
+        lines += ""
+
+        lines += "## Seguradas positivas com commit errado"
+        val positiveHoldsWithWrongCommit = positiveHolds.filter { it.wrongCommits.isNotEmpty() }
+        if (positiveHoldsWithWrongCommit.isEmpty()) {
+            lines += "- nenhuma"
+        } else {
+            positiveHoldsWithWrongCommit.forEach { hold ->
+                lines += "- esperado=${hold.expected} em ${hold.sourceDir} frames ${hold.startFrame}-${hold.endFrame}: commits=${hold.wrongCommits.joinToString(", ")}"
+            }
+        }
+        lines += ""
+
+        lines += "## Seguradas sem sticker com commit"
+        if (negativeHoldCommits.isEmpty()) {
+            lines += "- nenhuma"
+        } else {
+            negativeHolds.filter { it.wrongCommits.isNotEmpty() }.forEach { hold ->
+                lines += "- ${hold.sourceDir} frames ${hold.startFrame}-${hold.endFrame}: commits=${hold.wrongCommits.joinToString(", ")}"
             }
         }
         lines += ""
@@ -1009,6 +1086,7 @@ class PixelDatasetBenchmark {
                 )
             }
             assertTrue(wrongHoldCommits.isEmpty(), "baseline Pixel benchmark produced wrong hold commits: $wrongHoldCommits")
+            assertTrue(negativeHoldCommits.isEmpty(), "baseline Pixel benchmark produced not-sticker hold commits: $negativeHoldCommits")
             if (isDefaultDataset()) {
                 assertTrue(
                     results.isEmpty() || totalCrops.toDouble() / results.size <= baselineMaxAverageCrops,

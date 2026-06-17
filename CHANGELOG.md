@@ -117,6 +117,12 @@ Notable changes to the sticker scanner. Newest first. No formal releases yet (de
   durante a colheita de novos glifos.
 
 ### Changed
+- **Scanner Android considera leituras exatas repetidas ao longo do burst.** Leituras brutas de
+  baixa confiança só contam quando já são um código real do checklist e aparecem em frames
+  suficientes para passar pelo confirmer; `00`, aliases e correções continuam fora desse caminho.
+  O benchmark agora valida commits errados em seguradas positivas e commits em seguradas sem
+  sticker. Uma tentativa mais agressiva por codebook foi rejeitada porque gerava commit errado no
+  GT manual.
 - **Debug Android passa a mostrar candidatos de cápsula por varredura horizontal.** O detector agora
   marca caixas vindas de uma busca direta por bandas horizontais no retículo; no modo debug elas
   aparecem em magenta no overlay e entram nos dumps de crops. O caminho de OCR ignora essas caixas

@@ -360,7 +360,7 @@ class ScanViewModel(
         val t0 = System.nanoTime()
         val outcome = recognizeFrameInOrder(engine, frame, checklist, stopOnFirstCode = true)
         val lastMs = (System.nanoTime() - t0) / 1_000_000
-        val commit = ctrl.commitFromFrame(outcome.resolved, nowMs)
+        val commit = ctrl.commitFromFrame(outcome.resolved, nowMs, reads = outcome.reads)
 
         if (commit.toCommit.isNotEmpty()) {
             _guidance.value = null

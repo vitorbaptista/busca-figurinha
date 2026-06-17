@@ -92,9 +92,14 @@ class ScanController(
      *     re-triggering → drop it. A second code confirmed LATER IN THE SAME burst is genuinely
      *     co-present (committedThisBurst short-circuits the gate), so it posts.
      */
-    fun commitFromFrame(resolved: List<MatchResult>, nowMs: Long): CommitResult {
-        val newly = confirmer.add(resolved.map { it.entry!!.code }).toHashSet()
-        var toCommit = resolved.filter { it.entry!!.code in newly }
+    fun commitFromFrame(
+        resolved: List<MatchResult>,
+        nowMs: Long,
+        reads: List<String> = emptyList(),
+    ): CommitResult {
+        val frameMatches = mergeFrameMatches(resolved, burstReadEvidenceMatches(reads, checklist))
+        val newly = confirmer.add(frameMatches.map { it.entry!!.code }).toHashSet()
+        var toCommit = frameMatches.filter { it.entry!!.code in newly }
         val stopBurst = confirmer.committedCount() > 0 && newly.isEmpty()
 
         if (toCommit.isNotEmpty()) {
@@ -107,6 +112,24 @@ class ScanController(
             }
         }
         return CommitResult(toCommit, stopBurst)
+    }
+
+    private fun mergeFrameMatches(
+        resolved: List<MatchResult>,
+        streamEvidence: List<MatchResult>,
+    ): List<MatchResult> {
+        if (streamEvidence.isEmpty()) return resolved
+        val out = ArrayList<MatchResult>(resolved.size + streamEvidence.size)
+        val seen = HashSet<String>()
+        for (match in resolved) {
+            val code = match.entry?.code ?: continue
+            if (seen.add(code)) out.add(match)
+        }
+        for (match in streamEvidence) {
+            val code = match.entry?.code ?: continue
+            if (seen.add(code)) out.add(match)
+        }
+        return out
     }
 
     /**

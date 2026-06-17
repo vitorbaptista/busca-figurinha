@@ -53,6 +53,49 @@ class ScanControllerTest {
         assertTrue(frame3.stopBurst, "committed and nothing new this frame → stop")
     }
 
+    @Test fun commitFromFrame_commits_repeated_exact_raw_reads_across_burst_frames() {
+        val (ctrl, _) = controller()
+        ctrl.onBurstStart()
+
+        val frame1 = ctrl.commitFromFrame(emptyList(), nowMs = 10_000L, reads = listOf("MEX 15 (62%)"))
+        assertTrue(frame1.toCommit.isEmpty(), "one low-confidence exact read still needs agreement")
+
+        val frame2 = ctrl.commitFromFrame(emptyList(), nowMs = 10_030L, reads = listOf("MEX15 (58%)"))
+        assertEquals(listOf("MEX15"), frame2.toCommit.map { it.entry!!.code })
+    }
+
+    @Test fun commitFromFrame_ignores_single_exact_raw_read() {
+        val (ctrl, _) = controller()
+        ctrl.onBurstStart()
+
+        ctrl.commitFromFrame(emptyList(), nowMs = 10_000L, reads = listOf("TUN10 (55%)"))
+        val emptyFrame = ctrl.commitFromFrame(emptyList(), nowMs = 10_030L, reads = emptyList())
+
+        assertTrue(emptyFrame.toCommit.isEmpty(), "raw evidence must repeat in another frame")
+        assertFalse(ctrl.burstCommitted)
+    }
+
+    @Test fun commitFromFrame_does_not_commit_low_confidence_logo_reads() {
+        val (ctrl, _) = controller()
+        ctrl.onBurstStart()
+
+        ctrl.commitFromFrame(emptyList(), nowMs = 10_000L, reads = listOf("00 (68%)"))
+        val second = ctrl.commitFromFrame(emptyList(), nowMs = 10_030L, reads = listOf("00 (69%)"))
+
+        assertTrue(second.toCommit.isEmpty(), "the recurring logo-like 00 read is not a sticker commit")
+    }
+
+    @Test fun commitFromFrame_raw_read_evidence_resets_each_burst() {
+        val (ctrl, _) = controller()
+        ctrl.onBurstStart()
+        ctrl.commitFromFrame(emptyList(), nowMs = 10_000L, reads = listOf("IRQ20 (62%)"))
+
+        ctrl.onBurstStart()
+        val afterReset = ctrl.commitFromFrame(emptyList(), nowMs = 10_300L, reads = listOf("IRQ20 (62%)"))
+
+        assertTrue(afterReset.toCommit.isEmpty(), "a new burst must not inherit raw-read evidence")
+    }
+
     // ---------- commitFromFrame: commit cooldown across bursts ----------
 
     @Test fun commitFromFrame_cooldown_gates_a_fresh_burst_too_soon() {
