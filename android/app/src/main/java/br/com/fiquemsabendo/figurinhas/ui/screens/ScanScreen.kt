@@ -86,6 +86,7 @@ import br.com.fiquemsabendo.figurinhas.data.SettingsRepository
 import br.com.fiquemsabendo.figurinhas.domain.ScanOutcome
 import br.com.fiquemsabendo.figurinhas.i18n.Pt
 import br.com.fiquemsabendo.figurinhas.ocr.CapturePhase
+import br.com.fiquemsabendo.figurinhas.scan.DebugCropBox
 import br.com.fiquemsabendo.figurinhas.scan.DebugInfo
 import br.com.fiquemsabendo.figurinhas.scan.ScanFeedback
 import br.com.fiquemsabendo.figurinhas.scan.ScanItem
@@ -222,6 +223,7 @@ fun ScanScreen(
             CameraScanContent(
                 previewView = previewView,
                 frameAspect = frameAspect,
+                debugCropBoxes = if (debugEnabled) debug.cropBoxes else emptyList(),
                 ocrReady = ocrReady,
                 facing = facing,
                 idleHintVisible = display == null,
@@ -491,6 +493,7 @@ private fun openAppSettings(context: Context) {
 private fun CameraScanContent(
     previewView: PreviewView,
     frameAspect: Float,
+    debugCropBoxes: List<DebugCropBox>,
     ocrReady: Boolean,
     facing: CameraFacing,
     idleHintVisible: Boolean,
@@ -518,6 +521,13 @@ private fun CameraScanContent(
         // The reticle = the OCR target box: it's drawn at EXACTLY the detection ROI (mapped onto the
         // FIT_CENTER preview), so whatever the user places inside the box is precisely what's scanned.
         ScanReticle(frameAspect = frameAspect, modifier = Modifier.fillMaxSize())
+        if (debugCropBoxes.isNotEmpty()) {
+            ScanDebugCropOverlay(
+                frameAspect = frameAspect,
+                cropBoxes = debugCropBoxes,
+                modifier = Modifier.fillMaxSize(),
+            )
+        }
 
         // Idle hint: tell the user to show the back of the sticker (only when nothing is flashing).
         if (ocrReady && idleHintVisible) {
@@ -587,31 +597,19 @@ private fun CameraScanContent(
 @Composable
 private fun ScanReticle(frameAspect: Float, modifier: Modifier = Modifier) {
     Canvas(modifier = modifier) {
-        val cw = size.width
-        val ch = size.height
-        val aspect = frameAspect.coerceAtLeast(0.01f)
-        // FIT_CENTER: scale the frame to fit (cw,ch) preserving aspect, centered → the displayed rect.
-        val dispW: Float
-        val dispH: Float
-        if (cw / aspect <= ch) {
-            dispW = cw; dispH = cw / aspect
-        } else {
-            dispH = ch; dispW = ch * aspect
-        }
-        val offX = (cw - dispW) / 2f
-        val offY = (ch - dispH) / 2f
+        val displayedFrame = displayedFrameRect(size, frameAspect)
         // The ROI box within the displayed frame (same fractions findCodeBoxes uses).
-        val bx = offX + Config.Detect.ROI_LEFT.toFloat() * dispW
-        val by = offY + Config.Detect.ROI_TOP.toFloat() * dispH
-        val bw = (Config.Detect.ROI_RIGHT - Config.Detect.ROI_LEFT).toFloat() * dispW
-        val bh = (Config.Detect.ROI_BOTTOM - Config.Detect.ROI_TOP).toFloat() * dispH
+        val bx = displayedFrame.left + Config.Detect.ROI_LEFT.toFloat() * displayedFrame.width
+        val by = displayedFrame.top + Config.Detect.ROI_TOP.toFloat() * displayedFrame.height
+        val bw = (Config.Detect.ROI_RIGHT - Config.Detect.ROI_LEFT).toFloat() * displayedFrame.width
+        val bh = (Config.Detect.ROI_BOTTOM - Config.Detect.ROI_TOP).toFloat() * displayedFrame.height
         val radius = CornerRadius(18.dp.toPx(), 18.dp.toPx())
 
         // Fill-light mask: the whole surface MINUS the rounded box, drawn solid white via an even-odd
         // path so the box stays a clear window onto the camera while everything around it lights up.
         val mask = Path().apply {
             fillType = PathFillType.EvenOdd
-            addRect(Rect(0f, 0f, cw, ch))
+            addRect(Rect(0f, 0f, size.width, size.height))
             addRoundRect(RoundRect(bx, by, bx + bw, by + bh, radius))
         }
         drawPath(mask, Color.White)
@@ -625,6 +623,54 @@ private fun ScanReticle(frameAspect: Float, modifier: Modifier = Modifier) {
             style = Stroke(width = 2.dp.toPx()),
         )
     }
+}
+
+@Composable
+private fun ScanDebugCropOverlay(
+    frameAspect: Float,
+    cropBoxes: List<DebugCropBox>,
+    modifier: Modifier = Modifier,
+) {
+    Canvas(modifier = modifier) {
+        val displayedFrame = displayedFrameRect(size, frameAspect)
+        val colors = listOf(
+            Color(0xFF00E676),
+            Color(0xFFFFC107),
+            Color(0xFF40C4FF),
+            Color(0xFFFF4081),
+        )
+        cropBoxes.forEachIndexed { index, box ->
+            val left = displayedFrame.left + box.left * displayedFrame.width
+            val top = displayedFrame.top + box.top * displayedFrame.height
+            val right = displayedFrame.left + box.right * displayedFrame.width
+            val bottom = displayedFrame.top + box.bottom * displayedFrame.height
+            if (right <= left || bottom <= top) return@forEachIndexed
+            drawRoundRect(
+                color = colors[index % colors.size],
+                topLeft = Offset(left, top),
+                size = Size(right - left, bottom - top),
+                cornerRadius = CornerRadius(8.dp.toPx(), 8.dp.toPx()),
+                style = Stroke(width = 3.dp.toPx()),
+            )
+        }
+    }
+}
+
+private fun displayedFrameRect(size: Size, frameAspect: Float): Rect {
+    val aspect = frameAspect.coerceAtLeast(0.01f)
+    val displayWidth: Float
+    val displayHeight: Float
+    // FIT_CENTER: scale the frame to fit preserving aspect, then center it.
+    if (size.width / aspect <= size.height) {
+        displayWidth = size.width
+        displayHeight = size.width / aspect
+    } else {
+        displayHeight = size.height
+        displayWidth = size.height * aspect
+    }
+    val left = (size.width - displayWidth) / 2f
+    val top = (size.height - displayHeight) / 2f
+    return Rect(left, top, left + displayWidth, top + displayHeight)
 }
 
 // ---------- Top bar ----------

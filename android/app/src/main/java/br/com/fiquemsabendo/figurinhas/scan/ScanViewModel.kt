@@ -363,6 +363,7 @@ class ScanViewModel(
             resolved = outcome.resolved.mapNotNull { it.entry?.code },
             committed = commit.toCommit.mapNotNull { it.entry?.code },
             crops = outcome.crops,
+            cropBoxes = if (settings.settings.value.debug) debugCropBoxes(frame) else emptyList(),
             lastMs = lastMs,
             ocrFps = ocrMeter.tick(SystemClock.uptimeMillis()),
         )
@@ -406,6 +407,23 @@ class ScanViewModel(
             val dir = debugCapture.dump(label, frame, crops)
             _debug.value = _debug.value.copy(lastDumpDir = dir)
         }
+    }
+
+    private fun debugCropBoxes(frame: GrayImage): List<DebugCropBox> {
+        if (frame.width <= 0 || frame.height <= 0) return emptyList()
+        return findCodeBoxes(frame, Roi.CONFIG)
+            .take(4)
+            .map { box ->
+                val padX = box.w * DEBUG_CROP_PAD_FRAC
+                val padY = box.h * DEBUG_CROP_PAD_FRAC
+                DebugCropBox(
+                    left = ((box.x - padX) / frame.width).toFloat().coerceIn(0f, 1f),
+                    top = ((box.y - padY) / frame.height).toFloat().coerceIn(0f, 1f),
+                    right = ((box.x + box.w + padX) / frame.width).toFloat().coerceIn(0f, 1f),
+                    bottom = ((box.y + box.h + padY) / frame.height).toFloat().coerceIn(0f, 1f),
+                    score = box.score,
+                )
+            }
     }
 
     /** Fold one batch's feedback into the running counters + recent strip and emit the one-shot
@@ -500,6 +518,9 @@ class ScanViewModel(
 
         /** How many recent chips to keep (mirrors ScanScreen's slice(0, 12)). */
         private const val RECENT_MAX = 12
+
+        /** Mirrors Locate.cropRegion's padFrac so the overlay shows the actual OCR crop extent. */
+        private const val DEBUG_CROP_PAD_FRAC = 0.18
 
         /** Atlas asset shipped under app/src/main/assets/. */
         private const val ATLAS_ASSET = "glyph_atlas.bin"
