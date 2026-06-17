@@ -6,6 +6,10 @@ Notable changes to the sticker scanner. Newest first. No formal releases yet (de
 ## 2026-06-17 — Android: baseline Pixel combinado
 
 ### Fixed
+- **Matcher Android recupera `GER4` quando o Pixel lê `TIIII 4` em alta confiança.** O alias exato
+  é restrito ao raw verificado no CSV manual e preserva o número da figurinha. O baseline combinado
+  sobe para `157/216` positivos (`72,69%` recall), com `68` leituras exatas, `89/157` acertos
+  dependentes de correção textual, `0/157` falsos positivos e `0` commits errados.
 - **OCR Android recupera `EGY5` em shapes Pixel `SDY 5` e `FGY 5` sem passar pelo matcher.** O
   resgate fica preso ao shape completo `EGY5`, exige o `5` final separado por margem positiva e
   emite `EGY 5` direto, evitando aumentar a dívida de correção textual. O baseline combinado sobe

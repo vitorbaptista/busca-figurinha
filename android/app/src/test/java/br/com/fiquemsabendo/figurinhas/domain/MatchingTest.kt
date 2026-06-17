@@ -179,7 +179,9 @@ class MatchingTest {
         assertEquals("CUW4", bestHighConfidenceExactAliasMatchFromText("DXW 4", checklist)?.entry?.code)
         assertEquals("CUW4", bestHighConfidenceExactAliasMatchFromText("DAV 4", checklist)?.entry?.code)
         assertEquals("PAN1", bestHighConfidenceExactAliasMatchFromText("IUM 1", checklist)?.entry?.code)
+        assertEquals("GER4", bestHighConfidenceExactAliasMatchFromText("TIIII 4", checklist)?.entry?.code)
         assertNull(bestHighConfidenceExactAliasMatchFromText("DXW 5", checklist))
+        assertNull(bestHighConfidenceExactAliasMatchFromText("TIIII 5", checklist))
     }
     @Test fun high_confidence_confusion_recovers_verified_pixel_shapes() {
         val verifiedPixelShapes = linkedMapOf(

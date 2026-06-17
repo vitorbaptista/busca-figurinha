@@ -89,6 +89,7 @@ private val HIGH_CONF_EXACT_ALIASES = mapOf(
     "OWJ10" to "IRN10",
     "EX14" to "SUI14",
     "MB1" to "ALG1",
+    "TIIII4" to "GER4",
     "WIU8" to "AUT8",
     "WX14" to "SUI14",
     "NO2" to "AUS2",
