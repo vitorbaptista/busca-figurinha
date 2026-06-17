@@ -28,6 +28,10 @@ Notable changes to the sticker scanner. Newest first. No formal releases yet (de
   local sem regredir os testes de ouro de `SWE8` nem aumentar falsos positivos.
 
 ### Fixed
+- **OCR Android recupera `RSA17` e `CIV4` no dataset manual.** O reconhecedor agora tenta dividir
+  dois componentes colados em crops de 5 caracteres que viraram 3 blocos, e trata um `O` sem furo
+  como `C` apenas na corrida de letras. Com a restauração curta de letra fina (`CV4` → `CIV4`), o
+  baseline manual sobe para `24/35` positivos com `0/11` falsos positivos.
 - **Burst vazio não trava mais o scanner Android.** Quando a figurinha fica parada mas o OCR não
   confirma nenhum código, o app agora rearma a captura e tenta de novo no mesmo alvo em vez de
   entrar em `LOCKED` e mostrar falsamente "lido ✓ — troque a figurinha". O `LOCKED` fica reservado

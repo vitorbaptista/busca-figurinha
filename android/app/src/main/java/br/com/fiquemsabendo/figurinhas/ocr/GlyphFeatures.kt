@@ -534,30 +534,41 @@ fun extractGlyphs(img: GrayImage): List<GlyphBox> {
 }
 
 internal fun extractGlyphsWithForcedSplit(img: GrayImage, splitIndex: Int): List<GlyphBox> {
+    return extractGlyphsWithForcedSplits(img, setOf(splitIndex))
+}
+
+internal fun extractGlyphsWithForcedSplits(img: GrayImage, splitIndices: Set<Int>): List<GlyphBox> {
     val w = img.width
     val h = img.height
     if (w == 0) return emptyList()
     val mask = grayToInkMask(img)
-    val boxes = segmentBoxes(mask, w, h).toMutableList()
-    if (splitIndex !in boxes.indices) return emptyList()
+    val boxes = segmentBoxes(mask, w, h)
+    if (splitIndices.isEmpty() || splitIndices.any { it !in boxes.indices }) return emptyList()
 
     val heights = boxes.map { it.y1 - it.y0 + 1 }.sorted()
     val medH = heights[heights.size shr 1].let { if (it != 0) it else 1 }
-    val target = boxes[splitIndex]
-    val targetW = target.x1 - target.x0 + 1
-    val targetH = target.y1 - target.y0 + 1
-    val tallness = max(targetH.toFloat(), medH * 0.85f)
-    if (targetW < tallness * SHORT_CODE_MIDDLE_MERGE_W_RATIO || targetW >= tallness * MERGE_W_RATIO) {
-        return emptyList()
-    }
 
-    val split = ArrayList<Box>()
-    splitWideForced(mask, w, target, medH, split)
-    if (split.size != 2) return emptyList()
-    boxes.removeAt(splitIndex)
-    boxes.addAll(splitIndex, split)
-    boxes.sortBy { it.x0 }
-    return glyphBoxesFrom(mask, w, boxes)
+    val out = ArrayList<Box>(boxes.size + splitIndices.size)
+    for (i in boxes.indices) {
+        val box = boxes[i]
+        if (i !in splitIndices) {
+            out.add(box)
+            continue
+        }
+        val targetW = box.x1 - box.x0 + 1
+        val targetH = box.y1 - box.y0 + 1
+        val tallness = max(targetH.toFloat(), medH * 0.85f)
+        if (targetW < tallness * SHORT_CODE_MIDDLE_MERGE_W_RATIO || targetW >= tallness * MERGE_W_RATIO) {
+            return emptyList()
+        }
+
+        val split = ArrayList<Box>()
+        splitWideForced(mask, w, box, medH, split)
+        if (split.size != 2) return emptyList()
+        out.addAll(split)
+    }
+    out.sortBy { it.x0 }
+    return glyphBoxesFrom(mask, w, out)
 }
 
 private fun glyphBoxesFrom(mask: ByteArray, w: Int, boxes: List<Box>): List<GlyphBox> {

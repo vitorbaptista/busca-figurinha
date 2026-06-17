@@ -20,8 +20,9 @@ fun extractCodes(text: String): List<String> {
     return seen.toList()
 }
 
-/** Tokens shorter than this are too ambiguous to auto-correct; only exact matches accepted. */
+/** Tokens shorter than this are too ambiguous for general edit-distance auto-correction. */
 private const val MIN_CORRECT_LEN = 4
+private const val MIN_THIN_RESTORE_LEN = 3
 
 /** Thin vertical-stroke letters the OCR reliably DROPS (never a bold letter). */
 private val DROPPABLE_LETTERS = setOf('I', 'J', 'L', 'T')
@@ -42,7 +43,7 @@ fun matchCode(raw: String, list: Checklist, maxDistance: Int = Config.Match.MAX_
     list.byCode[normalized]?.let {
         return MatchResult(normalized, MatchStatus.EXACT, it, 0)
     }
-    if (normalized.length < MIN_CORRECT_LEN) {
+    if (normalized.length < MIN_THIN_RESTORE_LEN) {
         return MatchResult(normalized, MatchStatus.UNKNOWN, null, -1)
     }
 
@@ -61,8 +62,10 @@ fun matchCode(raw: String, list: Checklist, maxDistance: Int = Config.Match.MAX_
         val code = entry.code
         when {
             code.length == normalized.length -> {
-                val d = levenshtein(normalized, code)
-                if (d <= maxDistance) consider(entry, d)
+                if (normalized.length >= MIN_CORRECT_LEN) {
+                    val d = levenshtein(normalized, code)
+                    if (d <= maxDistance) consider(entry, d)
+                }
             }
             code.length == normalized.length + 1 -> {
                 val dropped = singleRemovedChar(code, normalized)

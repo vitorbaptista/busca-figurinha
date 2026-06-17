@@ -86,7 +86,9 @@ class MatchingTest {
     }
     @Test fun match_restores_thin_letter_only_when_unambiguous() {
         assertEquals("CIV12", matchCode("CV12", checklist).entry?.code)
+        assertEquals("CIV4", matchCode("CV4", checklist).entry?.code)
         assertEquals(MatchStatus.UNKNOWN, matchCode("C1V12", checklist).status)
+        assertEquals(MatchStatus.UNKNOWN, matchCode("C1V4", checklist).status)
         val onlyBold = makeChecklist(listOf("CPV12"))
         assertEquals(MatchStatus.UNKNOWN, matchCode("CV12", onlyBold).status)
     }

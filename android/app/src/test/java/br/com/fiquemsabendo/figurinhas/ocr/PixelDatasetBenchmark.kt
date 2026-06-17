@@ -37,7 +37,7 @@ class PixelDatasetBenchmark {
     private val datasetName = "swe8-live-20260616-v1"
     private val verificationFileName = "ground_truth_verification.csv"
     private val notStickerLabel = "not_sticker"
-    private val baselineMinRecallPercent = 62.8
+    private val baselineMinRecallPercent = 68.5
 
     private data class ManifestRow(
         val frameId: String,

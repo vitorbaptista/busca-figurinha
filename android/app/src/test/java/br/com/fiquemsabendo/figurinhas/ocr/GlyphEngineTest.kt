@@ -152,6 +152,25 @@ class GlyphEngineTest {
         assertFalse(reject)
     }
 
+    @Test fun assemble_coerces_counterless_letter_O_to_C() {
+        val counterlessO = Classified(
+            label = 'O',
+            score = 0.82,
+            bestLetter = LabelScore('O', 0.82),
+            bestDigit = LabelScore('0', 0.78),
+            secondDigitScore = 0.70,
+            holes = 0,
+        )
+        val list = listOf(
+            counterlessO,
+            classifiedLetter('V', 0.94),
+            classifiedDigit('4', 0.98),
+        )
+        val (text, _, reject) = assemble(list)
+        assertEquals("CV 4", text)
+        assertFalse(reject)
+    }
+
     @Test fun assemble_rejects_an_ambiguous_digit_below_the_margin() {
         // A digit whose runner-up is within DIGIT_MARGIN and which is below DIGIT_STRONG ->
         // not decisive -> whole-crop reject.

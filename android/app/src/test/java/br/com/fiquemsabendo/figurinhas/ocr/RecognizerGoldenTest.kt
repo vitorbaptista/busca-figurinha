@@ -168,6 +168,22 @@ class RecognizerGoldenTest {
         assertEquals("NED12", match?.entry?.code, "read=${read.text} conf=${read.confidence} ${glyphDebug(crop, atlas)}")
     }
 
+    @Test fun prepared_pixel_RSA17_crop_reads_the_code() {
+        val crop = loadFrame("/stickers/RSA17_pixel_live_crop0.pgm.gz") ?: return
+        val atlas = atlas() ?: return
+        val read = recognizeCrop(crop, atlas)
+        val match = bestMatchFromText(read.text, checklist)
+        assertEquals("RSA17", match?.entry?.code, "read=${read.text} conf=${read.confidence} ${glyphDebug(crop, atlas)}")
+    }
+
+    @Test fun prepared_pixel_CIV4_crop_reads_the_code() {
+        val crop = loadFrame("/stickers/CIV4_pixel_live_crop0.pgm.gz") ?: return
+        val atlas = atlas() ?: return
+        val read = recognizeCrop(crop, atlas)
+        val match = bestMatchFromText(read.text, checklist)
+        assertEquals("CIV4", match?.entry?.code, "read=${read.text} conf=${read.confidence} ${glyphDebug(crop, atlas)}")
+    }
+
     @Test fun live_pixel_newroi_frames_read_SWE8() {
         for (n in 1..2) {
             val (codes, reads) = runLive("/stickers/SWE8_pixel_newroi_frame$n.pgm.gz") ?: return

@@ -47,6 +47,7 @@ private val DIGITS: Set<Char> = "0123456789".toSet()
 private val TWO_LETTER_TWO_DIGIT_RE = Regex("^[A-Z]{2} \\d{2}$")
 private val THREE_LETTER_TWO_DIGIT_RE = Regex("^[A-Z]{3} \\d{2}$")
 private const val MERGED_GLYPH_RESCUE_MIN_CONF = 85.0
+private const val THREE_COMPONENT_RESCUE_MIN_CONF = 85.0
 
 /** A digit is COMMITTED only if it's decisive: either it beats the runner-up digit by at
  *  least DIGIT_MARGIN, OR it's a near-exact template match (≥ DIGIT_STRONG). Otherwise it is
@@ -210,6 +211,10 @@ internal fun assemble(classified: List<Classified>): Triple<String, Double, Bool
                 ch = c.bestLetter.label
                 sc = c.bestLetter.score
             }
+        } else if (ch == 'O' && c.holes == 0) {
+            // Letter-run O should have an enclosed counter. A counterless "O" in these Pixel
+            // crops is usually an open C whose gap blurred shut in the atlas features.
+            ch = 'C'
         }
         // A glyph that doesn't classify confidently in EITHER class is noise → reject.
         if (maxOf(c.bestLetter.score, c.bestDigit.score) < MIN_GLYPH_COS) reject = true
@@ -249,6 +254,16 @@ fun recognizeCrop(crop: GrayImage, atlas: FlatAtlas): OcrResult {
             val splitClassified = splitGlyphs.map { classify(it, atlas) }
             val (splitText, splitConf, splitReject) = assemble(splitClassified)
             if (!splitReject && splitConf >= MERGED_GLYPH_RESCUE_MIN_CONF && THREE_LETTER_TWO_DIGIT_RE.matches(splitText)) {
+                return OcrResult(splitText, splitConf)
+            }
+        }
+    }
+    if (glyphs.size == 3) {
+        val splitGlyphs = extractGlyphsWithForcedSplits(crop, setOf(0, 2))
+        if (splitGlyphs.size == 5) {
+            val splitClassified = splitGlyphs.map { classify(it, atlas) }
+            val (splitText, splitConf, splitReject) = assemble(splitClassified)
+            if (!splitReject && splitConf >= THREE_COMPONENT_RESCUE_MIN_CONF && THREE_LETTER_TWO_DIGIT_RE.matches(splitText)) {
                 return OcrResult(splitText, splitConf)
             }
         }
