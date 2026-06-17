@@ -3,6 +3,30 @@
 Notable changes to the sticker scanner. Newest first. No formal releases yet (deploys on push to
 `main`), so entries are grouped by date. Keep this updated when you ship something notable.
 
+## 2026-06-17 — Android: baseline Pixel combinado
+
+### Fixed
+- **OCR Android melhora no dataset Pixel combinado revisado manualmente.** O atlas real ganhou
+  glifos de treino verificados de `MEX15` e `TUN10`, e o pipeline agora alcança um candidato de
+  pill compacto quando os dois primeiros boxes são fragmentos. O baseline combinado sobe para
+  `73/216` positivos (`33,80%` recall), `19/43` seguradas avaliáveis confirmadas, `0/157` falsos
+  positivos e `0` commits errados, mantendo p95/max de OCR em `4/6` crops.
+- **Matcher Android rejeita restauração perigosa de letra fina na borda.** Leituras como `RN10`
+  deixam de virar `IRN10`; a restauração curta fica restrita a letras finas no interior do prefixo
+  (`CV12` → `CIV12`, `BH12` → `BIH12`). Isso evitou um falso `IRN10` observado em frame de `POR10`
+  durante a colheita de novos glifos.
+
+### Changed
+- **Confusões de alta confiança passam a refletir os crops Pixel revisados.** Com dígitos idênticos
+  e candidato único, o Android agora aceita pares observados no dataset manual (`C→G`, `I→U`,
+  `M→A`, `W→A`, além dos pares anteriores) para recuperar casos como `ECY 4`→`EGY4`,
+  `TIN 10`→`TUN10`, `MIT 4`→`AUT4` e `WIT 8`→`AUT8`, sem relaxar a trava de `0` falso positivo no
+  gate.
+- **Gate Pixel agora usa o dataset combinado como baseline padrão.** O benchmark Android exige
+  `216` positivos e `157` negativos revisados manualmente, recall mínimo de `33,7%`, `19`
+  seguradas confirmadas, pelo menos `51` leituras exatas e no máximo `22` acertos dependentes de
+  correção textual, mantendo `0` falso positivo.
+
 ## 2026-06-17 — Android: resgate estreito no retículo
 
 ### Fixed

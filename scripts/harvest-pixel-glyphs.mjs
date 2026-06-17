@@ -4,7 +4,7 @@
 // browser-canvas based. It appends selected, human-verified crop glyphs to
 // src/ocr/glyphAtlasReal.ts; run scripts/export-atlas.mjs afterwards to refresh Android's
 // glyph_atlas.bin.
-import { spawn } from 'node:child_process';
+import { execFileSync, spawn } from 'node:child_process';
 import { readFileSync, writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { gunzipSync } from 'node:zlib';
@@ -141,6 +141,33 @@ const HARVESTS = [
     label: 'AUS18',
     fixture: resolve('android/app/src/test/resources/stickers/AUS18_pixel_live_crop0.pgm.gz'),
   },
+  {
+    label: 'MEX15',
+    fixture: resolve('captures/datasets/combined-live-20260616-20260617/raw/pixel-live-20260617-090351/debug/frame-240/crop2.png'),
+  },
+  {
+    label: 'MEX15',
+    fixture: resolve('captures/datasets/combined-live-20260616-20260617/raw/pixel-live-20260617-090351/debug/frame-243/crop0.png'),
+    slices: [
+      { label: 'M', x: 123, y: 84, w: 25, h: 47 },
+      { label: 'E', x: 148, y: 84, w: 37, h: 47 },
+      { label: 'X', x: 190, y: 85, w: 26, h: 43 },
+      { label: '1', x: 240, y: 80, w: 26, h: 49 },
+      { label: '5', x: 266, y: 78, w: 43, h: 51 },
+    ],
+  },
+  {
+    label: 'MEX15',
+    fixture: resolve('captures/datasets/combined-live-20260616-20260617/raw/pixel-live-20260617-090351/debug/frame-245/crop0.png'),
+  },
+  {
+    label: 'TUN10',
+    fixture: resolve('captures/datasets/combined-live-20260616-20260617/raw/pixel-live-20260617-090351/debug/frame-227/crop0.png'),
+  },
+  {
+    label: 'TUN10',
+    fixture: resolve('captures/datasets/combined-live-20260616-20260617/raw/pixel-live-20260617-090351/debug/frame-237/crop0.png'),
+  },
 ];
 
 function startServer() {
@@ -198,8 +225,7 @@ ${chunks.join(',\n')}
   writeFileSync(REAL_PATH, out, 'utf8');
 }
 
-function readPgmGz(path) {
-  const bytes = gunzipSync(readFileSync(path));
+function parsePgm(bytes, path) {
   let pos = 0;
   const readToken = () => {
     while (pos < bytes.length) {
@@ -229,6 +255,17 @@ function readPgmGz(path) {
     throw new Error(`${path}: expected ${width * height} pixels, got ${pixels.length}`);
   }
   return { width, height, pixels: Array.from(pixels) };
+}
+
+function readImage(path) {
+  if (path.endsWith('.pgm.gz')) {
+    return parsePgm(gunzipSync(readFileSync(path)), path);
+  }
+  if (path.endsWith('.png')) {
+    const bytes = execFileSync('magick', [path, '-colorspace', 'Gray', '-depth', '8', 'pgm:-']);
+    return parsePgm(bytes, path);
+  }
+  throw new Error(`${path}: unsupported fixture format`);
 }
 
 function removePreviousHarvests(existing) {
@@ -265,7 +302,7 @@ try {
 
   const harvested = [];
   for (const item of HARVESTS) {
-    const image = readPgmGz(item.fixture);
+    const image = readImage(item.fixture);
     const result = await page.evaluate(async ({ image, label, slices }) => {
       const { cropToMask, extractGlyphs, glyphFeature } = await import('/src/ocr/glyphFeatures.ts');
       const canvasFromPixels = (pixels, width, height) => {

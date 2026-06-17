@@ -38,7 +38,7 @@ class PixelDatasetBenchmark {
         File(".").canonicalFile
     }
 
-    private val defaultDatasetName = "swe8-live-20260616-v1"
+    private val defaultDatasetName = "combined-live-20260616-20260617"
     private val datasetArg = (
         System.getProperty("figurinhas.pixelDataset")
             ?: System.getenv("FIGURINHAS_PIXEL_DATASET")
@@ -46,12 +46,15 @@ class PixelDatasetBenchmark {
     ).trim().ifEmpty { defaultDatasetName }
     private val verificationFileName = "ground_truth_verification.csv"
     private val notStickerLabel = "not_sticker"
-    private val baselineMinRecallPercent = 100.0
-    private val baselineMinConfirmedHolds = 11
-    private val baselineMaxAverageCrops = 0.70
-    private val baselineMaxCropsPerFrame = 2
-    private val baselineMinExactHits = 37
-    private val baselineMaxCorrectionDependentHits = 8
+    private val baselineMinPositiveRows = 216
+    private val baselineMinNegativeRows = 157
+    private val baselineMinRecallPercent = 33.7
+    private val baselineMinConfirmedHolds = 19
+    private val baselineMaxAverageCrops = 1.50
+    private val baselineMaxCropsP95 = 4
+    private val baselineMaxCropsPerFrame = 6
+    private val baselineMinExactHits = 51
+    private val baselineMaxCorrectionDependentHits = 22
     private val usefulFramesPerDifficultCode = 3
     private val watchedDifficultCodes = listOf("MEX15", "IRQ20", "TUN10")
 
@@ -897,7 +900,10 @@ class PixelDatasetBenchmark {
         if (falsePositiveRows.isEmpty()) {
             lines += "- sem falsos positivos"
         } else {
-            falsePositiveRows.forEach { lines += "- ${it.frameId}: ${it.resolvedCodes.joinToString(", ")}" }
+            falsePositiveRows.forEach {
+                val readText = if (it.reads.isEmpty()) "-" else it.reads.joinToString(" | ")
+                lines += "- ${it.frameId}: resolvido=${it.resolvedCodes.joinToString(", ")} esperado=${it.expected.ifBlank { "-" }} leituras=$readText"
+            }
         }
         lines += "## Split"
         lines += "- treino: ${bySplit["train"]?.size ?: 0}"
@@ -939,8 +945,14 @@ class PixelDatasetBenchmark {
             assertTrue(verificationSource != null, "baseline Pixel benchmark requires a manually reviewed ground-truth CSV")
             assertTrue(scoringRows.isNotEmpty(), "baseline Pixel benchmark has no manually reviewed frames")
             if (isDefaultDataset()) {
-                assertTrue(positiveRows >= 45, "baseline Pixel benchmark is not using all manually reviewed positive frames: positives=$positiveRows")
-                assertTrue(negativeRows >= 156, "baseline Pixel benchmark is not using all manually reviewed not-sticker frames: negatives=$negativeRows")
+                assertTrue(
+                    positiveRows >= baselineMinPositiveRows,
+                    "baseline Pixel benchmark is not using all manually reviewed positive frames: positives=$positiveRows",
+                )
+                assertTrue(
+                    negativeRows >= baselineMinNegativeRows,
+                    "baseline Pixel benchmark is not using all manually reviewed not-sticker frames: negatives=$negativeRows",
+                )
             }
             assertEquals(0, falsePositives, "baseline Pixel benchmark must keep 0 false positives")
             assertEquals(0, missingPositiveFiles, "baseline Pixel benchmark has verified positives without frame files")
@@ -977,7 +989,7 @@ class PixelDatasetBenchmark {
                     results.isEmpty() || totalCrops.toDouble() / results.size <= baselineMaxAverageCrops,
                     "baseline Pixel benchmark OCR work regressed: total crops=$totalCrops frames=${results.size}",
                 )
-                assertTrue(cropsP95 <= 2, "baseline Pixel benchmark typical OCR work regressed: p95 crops=$cropsP95")
+                assertTrue(cropsP95 <= baselineMaxCropsP95, "baseline Pixel benchmark typical OCR work regressed: p95 crops=$cropsP95")
                 assertTrue(maxCrops <= baselineMaxCropsPerFrame, "baseline Pixel benchmark has a high-work frame: max crops=$maxCrops")
             }
         }

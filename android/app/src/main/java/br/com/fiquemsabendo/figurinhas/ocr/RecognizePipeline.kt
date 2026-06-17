@@ -48,6 +48,7 @@ private const val LIVE_MAX_BOXES_DEFAULT = 2
 // per-frame hot path). ALNUM mirrors the TS /[A-Z0-9]/i (case-insensitive).
 private val WHITESPACE_RE = Regex("\\s+")
 private val ALNUM_RE = Regex("[A-Za-z0-9]")
+private const val HIGH_CONFUSION_MIN_CONF = 90.0
 
 /** The outcome of recognizing one frame (ports the TS RecognizeOutcome). */
 data class RecognizeOutcome(
@@ -128,6 +129,17 @@ private fun isLateWideCodeCandidate(box: CodeBox): Boolean {
         box.w in 110.0..230.0 &&
         box.h in 38.0..84.0 &&
         axisAr in 2.2..3.8
+}
+
+private fun isLateCompactCodeCandidate(box: CodeBox): Boolean {
+    if (box.tilt != null || box.orient != 'h') return false
+    val shortSide = min(box.w, box.h)
+    if (shortSide <= 0) return false
+    val axisAr = max(box.w, box.h) / shortSide
+    return box.score in 0.72..0.83 &&
+        box.w in 70.0..105.0 &&
+        box.h in 22.0..36.0 &&
+        axisAr in 2.4..3.8
 }
 
 private fun isSmallFragmentBeforeLateWide(box: CodeBox): Boolean =
@@ -396,7 +408,7 @@ private fun selectBoxesForOcr(
     if (firstScore != null && firstScore in 0.84..0.92 && selected.any { isLateWideCodeCandidate(it) }) return selected
     val lateWideCandidates = ArrayList<CodeBox>(2)
     for (box in boxesForOcr.drop(maxBoxes)) {
-        if (isLateWideCodeCandidate(box)) lateWideCandidates.add(box)
+        if (isLateWideCodeCandidate(box) || isLateCompactCodeCandidate(box)) lateWideCandidates.add(box)
         if (lateWideCandidates.size >= 2) break
     }
     if (lateWideCandidates.isEmpty()) return selected
@@ -549,7 +561,7 @@ fun recognizeFrameInOrder(
             val normalMatch = bestMatchFromText(text, checklist)
             val m = if (normalMatch?.entry != null) {
                 normalMatch
-            } else if (confidence != null && confidence >= 90.0) {
+            } else if (confidence != null && confidence >= HIGH_CONFUSION_MIN_CONF) {
                 bestHighConfidenceConfusionMatchFromText(text, checklist)
             } else {
                 normalMatch

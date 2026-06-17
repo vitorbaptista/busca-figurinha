@@ -27,19 +27,52 @@ private const val MIN_THIN_RESTORE_LEN = 3
 /** Thin vertical-stroke letters the OCR reliably DROPS (never a bold letter). */
 private val DROPPABLE_LETTERS = setOf('I', 'J', 'L', 'T')
 private val HIGH_CONF_LETTER_CONFUSIONS = setOf(
+    'C' to 'G',
+    'I' to 'M',
+    'I' to 'U',
+    'M' to 'A',
     'N' to 'A',
     'N' to 'M',
+    'W' to 'R',
+    'W' to 'A',
+    'J' to 'Q',
     'J' to 'U',
 )
 private val STRUCTURED_CODE_RE = Regex("^([A-Z]{2,4})(\\d{1,3})$")
+private val SAFE_SAME_LENGTH_CONFUSIONS = setOf(
+    '0' to 'O',
+    'O' to '0',
+)
 
 /** If [longer] becomes [shorter] by removing exactly one char, return it; else null. */
 private fun singleRemovedChar(longer: String, shorter: String): Char? {
+    return singleRemovedCharAt(longer, shorter)?.second
+}
+
+private fun singleRemovedCharAt(longer: String, shorter: String): Pair<Int, Char>? {
     if (longer.length != shorter.length + 1) return null
     var i = 0
     while (i < shorter.length && longer[i] == shorter[i]) i++
     if (longer.substring(i + 1) != shorter.substring(i)) return null
-    return longer[i]
+    return i to longer[i]
+}
+
+private fun isInteriorThinDrop(code: String, normalized: String): Boolean {
+    val removed = singleRemovedCharAt(code, normalized) ?: return false
+    val letters = STRUCTURED_CODE_RE.matchEntire(code)?.groupValues?.get(1) ?: return false
+    return removed.second in DROPPABLE_LETTERS && removed.first > 0 && removed.first < letters.lastIndex
+}
+
+private fun safeSingleSubstitution(raw: String, code: String): Boolean {
+    if (raw.length != code.length) return false
+    var diffIndex = -1
+    for (i in raw.indices) {
+        if (raw[i] == code[i]) continue
+        if (diffIndex != -1) return false
+        diffIndex = i
+    }
+    if (diffIndex == -1) return false
+    return (raw[diffIndex] to code[diffIndex]) in SAFE_SAME_LENGTH_CONFUSIONS
 }
 
 /** Match a single raw token against the checklist (exact, else unique nearest). */
@@ -70,12 +103,11 @@ fun matchCode(raw: String, list: Checklist, maxDistance: Int = Config.Match.MAX_
             code.length == normalized.length -> {
                 if (normalized.length >= MIN_CORRECT_LEN) {
                     val d = levenshtein(normalized, code)
-                    if (d <= maxDistance) consider(entry, d)
+                    if (d <= maxDistance && safeSingleSubstitution(normalized, code)) consider(entry, d)
                 }
             }
             code.length == normalized.length + 1 -> {
-                val dropped = singleRemovedChar(code, normalized)
-                if (dropped != null && dropped in DROPPABLE_LETTERS) consider(entry, 1)
+                if (isInteriorThinDrop(code, normalized)) consider(entry, 1)
             }
             code.length + 1 == normalized.length -> {
                 val added = singleRemovedChar(normalized, code)

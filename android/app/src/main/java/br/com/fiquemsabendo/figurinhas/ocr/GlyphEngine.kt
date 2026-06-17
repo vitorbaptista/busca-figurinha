@@ -61,7 +61,7 @@ private const val NARROW_MIDDLE_RESCUE_MIN_CONF = 85.0
  *  while a softer-but-clear digit wins its class by a wide margin. A genuinely ambiguous
  *  digit satisfies neither and is dropped. */
 private const val DIGIT_MARGIN = 0.045
-private const val DIGIT_STRONG = 0.97
+private const val DIGIT_STRONG = 0.95
 private const val DIGIT_EIGHT_TOPOLOGY_STRONG = 0.88
 private const val DIGIT_ONE_HOLE_TOPOLOGY_STRONG = 0.94
 private const val DIGIT_ONE_HOLE_LETTER_MARGIN = 0.03
@@ -333,9 +333,11 @@ internal fun recognizeCropSpeckTolerant(crop: GrayImage, atlas: FlatAtlas): OcrR
  * workers, no wasm, no network, ideal for the offline low-end target.
  */
 class GlyphRecognizer(private val atlas: FlatAtlas) {
-    fun recognize(crop: GrayImage): OcrResult = recognizeCrop(crop, atlas)
+    fun recognize(crop: GrayImage): OcrResult =
+        recognizeCrop(crop, atlas)
 
-    fun recognizeSpeckTolerant(crop: GrayImage): OcrResult = recognizeCropSpeckTolerant(crop, atlas)
+    fun recognizeSpeckTolerant(crop: GrayImage): OcrResult =
+        recognizeCropSpeckTolerant(crop, atlas)
 
-    fun recognizeMany(crops: List<GrayImage>): List<OcrResult> = crops.map { recognizeCrop(it, atlas) }
+    fun recognizeMany(crops: List<GrayImage>): List<OcrResult> = crops.map { recognize(it) }
 }

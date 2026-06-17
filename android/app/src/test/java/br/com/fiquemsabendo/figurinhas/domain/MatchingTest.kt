@@ -58,44 +58,56 @@ class MatchingTest {
         assertEquals(MatchStatus.EXACT, r.status); assertEquals(0, r.distance)
         assertEquals("CIV12", r.entry?.code); assertEquals("CIV12", r.raw)
     }
-    @Test fun match_one_edit() {
+    @Test fun match_rejects_unsafe_same_length_substitution() {
         val r = matchCode("C1V12", list)
-        assertEquals(MatchStatus.CORRECTED, r.status); assertEquals(1, r.distance)
-        assertEquals("CIV12", r.entry?.code)
+        assertEquals(MatchStatus.UNKNOWN, r.status); assertNull(r.entry); assertEquals(-1, r.distance)
     }
-    @Test fun match_letter_for_digit() {
+    @Test fun match_rejects_unsafe_letter_for_digit() {
         val r = matchCode("EGYA", list) // 'A' read instead of '4'
-        assertEquals(MatchStatus.CORRECTED, r.status); assertEquals("EGY4", r.entry?.code); assertEquals(1, r.distance)
+        assertEquals(MatchStatus.UNKNOWN, r.status); assertNull(r.entry); assertEquals(-1, r.distance)
     }
     @Test fun match_unknown_when_far() {
         val r = matchCode("ZZZ99", list)
         assertEquals(MatchStatus.UNKNOWN, r.status); assertNull(r.entry); assertEquals(-1, r.distance); assertEquals("ZZZ99", r.raw)
     }
     @Test fun match_respects_maxDistance() {
-        assertEquals(MatchStatus.UNKNOWN, matchCode("CXX12", list, 1).status)
-        assertEquals(MatchStatus.CORRECTED, matchCode("CXX12", list, 2).status)
+        val safe = makeChecklist(listOf("OO12"))
+        assertEquals(MatchStatus.UNKNOWN, matchCode("0O12", safe, 0).status)
+        val r = matchCode("0O12", safe, 1)
+        assertEquals(MatchStatus.CORRECTED, r.status); assertEquals("OO12", r.entry?.code); assertEquals(1, r.distance)
     }
-    @Test fun match_prefers_equal_length_on_tie() {
+    @Test fun match_does_not_use_unsafe_equal_length_tie() {
         val tie = makeChecklist(listOf("FWC1", "FWC11"))
-        assertEquals("FWC11", matchCode("FWC12", tie, 1).entry?.code)
+        assertEquals(MatchStatus.UNKNOWN, matchCode("FWC12", tie, 1).status)
     }
     @Test fun match_unique_or_reject() {
-        assertEquals("CIV12", matchCode("GIV12", checklist).entry?.code)
+        assertEquals(MatchStatus.UNKNOWN, matchCode("GIV12", checklist).status)
         assertEquals(MatchStatus.UNKNOWN, matchCode("EGYA", checklist).status)
         assertEquals(MatchStatus.UNKNOWN, matchCode("SE3", checklist).status)
+    }
+    @Test fun match_rejects_known_false_positive_patterns() {
+        val unsafeCorrections = makeChecklist(listOf("HAI2", "RSA6", "EGY5"))
+        assertEquals(MatchStatus.UNKNOWN, matchCode("WAI2", unsafeCorrections).status)
+        assertEquals(MatchStatus.UNKNOWN, matchCode("RSA8", unsafeCorrections).status)
+        assertEquals(MatchStatus.UNKNOWN, matchCode("EGY8", unsafeCorrections).status)
     }
     @Test fun match_restores_thin_letter_only_when_unambiguous() {
         assertEquals("CIV12", matchCode("CV12", checklist).entry?.code)
         assertEquals("CIV4", matchCode("CV4", checklist).entry?.code)
+        assertEquals("BIH12", matchCode("BH12", checklist).entry?.code)
         assertEquals(MatchStatus.UNKNOWN, matchCode("C1V12", checklist).status)
         assertEquals(MatchStatus.UNKNOWN, matchCode("C1V4", checklist).status)
         val onlyBold = makeChecklist(listOf("CPV12"))
         assertEquals(MatchStatus.UNKNOWN, matchCode("CV12", onlyBold).status)
     }
+    @Test fun match_rejects_edge_thin_letter_restoration() {
+        assertEquals(MatchStatus.UNKNOWN, matchCode("RN10", checklist).status)
+        assertEquals(MatchStatus.UNKNOWN, matchCode("AU4", checklist).status)
+    }
     @Test fun match_real_checklist() {
         assertEquals(MatchStatus.EXACT, matchCode("CIV12", checklist).status)
         assertEquals(MatchStatus.EXACT, matchCode("00", checklist).status)
-        assertEquals("CIV12", matchCode("GIV12", checklist).entry?.code)
+        assertEquals(MatchStatus.UNKNOWN, matchCode("GIV12", checklist).status)
         assertEquals(MatchStatus.UNKNOWN, matchCode("C1V12", checklist).status)
     }
 
@@ -105,9 +117,9 @@ class MatchingTest {
         val r = bestMatchFromText("garbage CIV12 EGY4", checklist)
         assertEquals(MatchStatus.EXACT, r?.status); assertEquals("CIV12", r?.entry?.code)
     }
-    @Test fun best_falls_back_to_correction() {
+    @Test fun best_falls_back_to_conservative_thin_correction() {
         val l = makeChecklist(listOf("CIV12"))
-        val r = bestMatchFromText("noise CIW12 more", l)
+        val r = bestMatchFromText("noise CV12 more", l)
         assertEquals(MatchStatus.CORRECTED, r?.status); assertEquals("CIV12", r?.entry?.code)
     }
     @Test fun best_unknown_first_token() {
@@ -126,15 +138,42 @@ class MatchingTest {
         assertNull(bestMatchFromText("NJT 4", checklist)?.entry)
     }
     @Test fun high_confidence_confusion_recovers_verified_merged_m_shape() {
-        val r = bestHighConfidenceConfusionMatchFromText("NEX 15", checklist)
-        assertEquals("MEX15", r?.entry?.code)
-        assertEquals(1, r?.distance)
+        val nShape = bestHighConfidenceConfusionMatchFromText("NEX 15", checklist)
+        assertEquals("MEX15", nShape?.entry?.code)
+        assertEquals(1, nShape?.distance)
+        val iShape = bestHighConfidenceConfusionMatchFromText("IEX 15", checklist)
+        assertEquals("MEX15", iShape?.entry?.code)
+        assertEquals(1, iShape?.distance)
         assertNull(bestHighConfidenceConfusionMatchFromText("NEX 16", makeChecklist(listOf("MEX15"))))
+    }
+    @Test fun high_confidence_confusion_recovers_verified_irq20_shape() {
+        val r = bestHighConfidenceConfusionMatchFromText("IWJ 20", checklist)
+        assertEquals("IRQ20", r?.entry?.code)
+        assertEquals(2, r?.distance)
+    }
+    @Test fun high_confidence_confusion_recovers_verified_tun10_shape() {
+        val r = bestHighConfidenceConfusionMatchFromText("TIN 10", checklist)
+        assertEquals("TUN10", r?.entry?.code)
+        assertEquals(1, r?.distance)
+    }
+    @Test fun high_confidence_confusion_recovers_verified_egy4_shape() {
+        val r = bestHighConfidenceConfusionMatchFromText("ECY 4", checklist)
+        assertEquals("EGY4", r?.entry?.code)
+        assertEquals(1, r?.distance)
+    }
+    @Test fun high_confidence_confusion_recovers_verified_aut_shapes() {
+        val mShape = bestHighConfidenceConfusionMatchFromText("MIT 4", checklist)
+        assertEquals("AUT4", mShape?.entry?.code)
+        assertEquals(2, mShape?.distance)
+        val wShape = bestHighConfidenceConfusionMatchFromText("WJT 4", checklist)
+        assertEquals("AUT4", wShape?.entry?.code)
+        assertEquals(2, wShape?.distance)
     }
     @Test fun high_confidence_confusion_rejects_digit_changes_and_unknown_letter_pairs() {
         val onlyAut4 = makeChecklist(listOf("AUT4"))
         assertNull(bestHighConfidenceConfusionMatchFromText("NJT 5", onlyAut4))
         assertNull(bestHighConfidenceConfusionMatchFromText("NRT 4", checklist))
+        assertNull(bestHighConfidenceConfusionMatchFromText("RGA 8", checklist))
     }
 
     // ---- matchAllFromText ----
