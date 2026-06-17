@@ -133,6 +133,9 @@ Notable changes to the sticker scanner. Newest first. No formal releases yet (de
   componentes e o componente do meio tem largura de duas letras próximas, o segmentador divide só
   esse componente. Isso recupera `AUT4` no dataset manual (`30/45`) mantendo `0/156` falsos
   positivos e reduzindo o trabalho total para `164` crops.
+- **Benchmark Pixel usa piso de regressão realista.** O teste Android continua exigindo `0` falso
+  positivo, mas agora trava o recall do dataset manual em pelo menos `66%` em vez de exigir
+  `45/45` enquanto ainda existem misses conhecidos no relatório.
 
 ## 2026-06-15 — Remove "Enviar foto"
 
