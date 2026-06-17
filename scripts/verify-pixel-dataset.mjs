@@ -133,7 +133,7 @@ const html = `<!doctype html>
         </select>
       </div>
       <div>
-        <label for=\"expectedCode\">Ground-truth atual (manifesto)</label>
+        <label for=\"expectedCode\">Rótulo antigo do manifesto (referência)</label>
         <input id=\"expectedCode\" disabled />
       </div>
       <div class=\"row\">
@@ -215,14 +215,14 @@ const html = `<!doctype html>
         if (saved.status === 'not_sticker') {
           verifiedCode.value = '';
         } else {
-          verifiedCode.value = saved.verifiedCode || f.expected;
+          verifiedCode.value = saved.verifiedCode || '';
         }
-        statusSelect.value = saved.status || 'confirmed';
+        statusSelect.value = saved.status || 'uncertain';
         reviewer.value = saved.reviewer || '';
         notes.value = saved.notes || '';
       } else {
-        verifiedCode.value = f.expected;
-        statusSelect.value = 'confirmed';
+        verifiedCode.value = '';
+        statusSelect.value = 'uncertain';
         reviewer.value = '';
         notes.value = '';
       }

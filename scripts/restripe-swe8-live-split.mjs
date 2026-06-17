@@ -4,7 +4,6 @@ import { join, resolve } from 'node:path';
 const datasetRoot = resolve(process.cwd(), process.argv[2] || 'captures/datasets/swe8-live-20260616-v1');
 const manifestPath = join(datasetRoot, 'dataset_manifest.csv');
 const verifyPath = join(datasetRoot, 'ground_truth_verification.csv');
-const preferredVerifyPath = join(process.cwd(), 'ground_truth_verification(2).csv');
 
 function parseCsvLine(line) {
   const out = [];
@@ -66,9 +65,9 @@ function writeCsv(filePath, header, rows) {
   writeFileSync(filePath, `${lines.join('\n')}\n`, 'utf8');
 }
 
-function buildClassLabel(verification, manifestExpected) {
+function buildClassLabel(verification) {
   if (!verification) {
-    return manifestExpected ? manifestExpected.trim() : 'unknown';
+    return 'unknown';
   }
   const status = (verification.status || '').trim();
   const verifiedCode = (verification.verified_code || '').trim();
@@ -114,10 +113,6 @@ if (!existsSync(manifestPath)) {
 }
 if (existsSync(verifyPath)) {
   console.log(`Usando arquivo de validação: ${verifyPath}`);
-} else if (existsSync(preferredVerifyPath)) {
-  const preferredCopied = readFileSync(preferredVerifyPath, 'utf8');
-  writeFileSync(verifyPath, preferredCopied);
-  console.log(`Usando arquivo de validação: ${preferredVerifyPath}`);
 } else {
   throw new Error(`Arquivo de verificação não encontrado: ${verifyPath}`);
 }
@@ -129,9 +124,8 @@ const manifestHeader = manifest.header;
 const frameIdIdx = manifestHeader.indexOf('frame_id');
 const rawPathIdx = manifestHeader.indexOf('raw_frame_path');
 const splitIdx = manifestHeader.indexOf('split');
-const gtIdx = manifestHeader.indexOf('ground_truth_code');
-if (frameIdIdx < 0 || rawPathIdx < 0 || splitIdx < 0 || gtIdx < 0) {
-  throw new Error('Manifesto inválido: cabeçalho sem frame_id, raw_frame_path, split ou ground_truth_code');
+if (frameIdIdx < 0 || rawPathIdx < 0 || splitIdx < 0) {
+  throw new Error('Manifesto inválido: cabeçalho sem frame_id, raw_frame_path ou split');
 }
 
 const verifyIndex = new Map();
@@ -147,8 +141,7 @@ if (rows.length === 0) {
 const groups = new Map();
 for (const row of rows) {
   const frameId = row.frame_id;
-  const groundTruth = row.ground_truth_code || '';
-  const label = keyForClass(buildClassLabel(verifyIndex.get(frameId), groundTruth));
+  const label = keyForClass(buildClassLabel(verifyIndex.get(frameId)));
   if (!groups.has(label)) groups.set(label, []);
   groups.set(label, groups.get(label).concat(row));
 }

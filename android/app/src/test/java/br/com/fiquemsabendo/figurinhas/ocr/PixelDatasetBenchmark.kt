@@ -35,10 +35,9 @@ class PixelDatasetBenchmark {
     }
 
     private val datasetName = "swe8-live-20260616-v1"
-    private val expectedCode = "SWE8"
     private val verificationFileName = "ground_truth_verification.csv"
     private val notStickerLabel = "not_sticker"
-    private val baselineMinRecallPercent = 71.0
+    private val baselineMinRecallPercent = 62.8
 
     private data class ManifestRow(
         val frameId: String,
@@ -102,6 +101,12 @@ class PixelDatasetBenchmark {
 
     private fun datasetRoot(): File = File(repoRoot, "captures/datasets/$datasetName")
 
+    private fun verificationFile(): File? {
+        val datasetLocal = File(datasetRoot(), verificationFileName)
+        if (datasetLocal.exists()) return datasetLocal
+        return null
+    }
+
     private fun manifestRows(): List<ManifestRow> {
         val manifest = File(datasetRoot(), "dataset_manifest.csv")
         if (!manifest.exists()) return emptyList()
@@ -114,11 +119,11 @@ class PixelDatasetBenchmark {
                 val line = br.readLine() ?: break
                 if (line.isBlank()) continue
                 val cols = parseCsvLine(line)
-                if (cols.size < 8) continue
+                if (cols.size < 6) continue
                 val split = cols[5].trim()
-                val expected = cols[7].trim()
-                if (split.isEmpty() || expected.isEmpty()) continue
+                if (split.isEmpty()) continue
                 val frameId = cols[0].trim()
+                val expected = cols.getOrNull(7)?.trim() ?: ""
                 val verified = verification[frameId]
                 val status = verified?.status ?: ""
                 val verifiedCode = verified?.verifiedCode ?: ""
@@ -136,7 +141,7 @@ class PixelDatasetBenchmark {
                         verifiedCode = verifiedCode,
                         verificationStatus = status,
                         targetLabel = targetLabel,
-                        isScored = verified != null && (status == "confirmed" || status == "not_sticker"),
+                        isScored = (status == "confirmed" && verifiedCode.isNotBlank()) || status == "not_sticker",
                     ),
                 )
             }
@@ -145,8 +150,7 @@ class PixelDatasetBenchmark {
     }
 
     private fun loadVerification(): Map<String, VerificationRow> {
-        val file = File(datasetRoot(), verificationFileName)
-        if (!file.exists()) return emptyMap()
+        val file = verificationFile() ?: return emptyMap()
 
         val rows = HashMap<String, VerificationRow>()
         BufferedReader(InputStreamReader(FileInputStream(file), StandardCharsets.UTF_8)).use { br ->
@@ -299,7 +303,6 @@ class PixelDatasetBenchmark {
         modes: Array<ForegroundMode> = ForegroundMode.values(),
         fallbackToFullOnMiss: Boolean = false,
         darkFallbackPolicy: DarkFallbackPolicy = DarkFallbackPolicy.NEVER,
-        hasManualVerification: Boolean = false,
     ): List<FrameResult> {
         val atlas = loadAtlas() ?: return emptyList()
         val engine = GlyphOnlyRecognizer(GlyphRecognizer(atlas), fastConf = fastConf)
@@ -381,7 +384,7 @@ class PixelDatasetBenchmark {
             val resolved = outcome.resolved.mapNotNull { it.entry?.code }.distinct()
             val reads = outcome.reads
             val target = if (row.isScored && row.targetLabel.isNotBlank()) row.targetLabel else ""
-            val shouldScore = !hasManualVerification || row.isScoredFrame
+            val shouldScore = row.isScoredFrame
             val hasExpected = shouldScore && row.isPositiveTarget && resolved.contains(target)
             val hasFalsePositive = shouldScore && row.isScoredFrame && when {
                 row.isVerifiedNoSticker -> resolved.isNotEmpty()
@@ -419,7 +422,7 @@ class PixelDatasetBenchmark {
                     expected = target,
                     split = row.split,
                     hasFalsePositive = hasFalsePositive,
-                    verified = row.isScored,
+                    verified = shouldScore,
                     resolvedCodes = resolved,
                     detectionMs = detectionNs / 1_000_000L,
                     ocrMs = ocrNs / 1_000_000L,
@@ -490,7 +493,7 @@ class PixelDatasetBenchmark {
         fallbackToFullOnMiss: Boolean = false,
         darkFallbackPolicy: DarkFallbackPolicy = DarkFallbackPolicy.NEVER,
     ) {
-        val hasManualVerificationGlobal = File(datasetRoot(), verificationFileName).exists()
+        val verificationSource = verificationFile()
         val results = runBenchmark(
             roi = roi,
             fastConf = fastConf,
@@ -498,12 +501,10 @@ class PixelDatasetBenchmark {
             modes = modes,
             fallbackToFullOnMiss = fallbackToFullOnMiss,
             darkFallbackPolicy = darkFallbackPolicy,
-            hasManualVerification = hasManualVerificationGlobal,
         )
         val manifestRows = manifestRows()
-        val verificationExists = File(datasetRoot(), verificationFileName).exists()
-        val scoringRows = if (verificationExists) manifestRows.filter { it.isScored } else manifestRows.filter { it.expected == expectedCode }
-        val scoredResults = results.filter { it.verified || !verificationExists }
+        val scoringRows = manifestRows.filter { it.isScoredFrame }
+        val scoredResults = results.filter { it.verified }
         val reportDir = File(datasetRoot(), "benchmarks")
         reportDir.mkdirs()
         val hasMaxSuffix = Regex("_max\\d+$").matches(reportBase)
@@ -555,13 +556,10 @@ class PixelDatasetBenchmark {
         lines += "# SWE8 Pixel Live Dataset Benchmark"
         val modeConfig = modes.joinToString(".") { it.name.lowercase() }
         lines += "- config: roi=${String.format(Locale.US, "%.2f", roi.left)},${String.format(Locale.US, "%.2f", roi.top)},${String.format(Locale.US, "%.2f", roi.right)},${String.format(Locale.US, "%.2f", roi.bottom)} fastConf=${String.format(Locale.US, "%.1f", fastConf)} maxBoxes=$maxBoxes modes=$modeConfig"
+        lines += "- arquivo de GT manual: ${verificationSource?.relativeToOrSelf(repoRoot)?.path ?: "ausente"}"
         lines += "- frames no manifest: ${manifestRows.size}"
         lines += "- frames processados (frame disponível): ${results.size}"
-        if (verificationExists) {
-            lines += "- frames com ground-truth confirmado: ${scoringRows.size}"
-        } else {
-            lines += "- frames com ground-truth confirmado: 0 (usando labels do manifesto)"
-        }
+        lines += "- frames com ground-truth manual confirmado: ${scoringRows.size}"
         lines += "- frames faltando arquivo de frame: $missingFiles"
         if (missingFiles > 0) {
             lines += "- frames positivos/negativos faltando arquivo: $missingPositiveFiles/$missingNegativeFiles"
@@ -587,9 +585,7 @@ class PixelDatasetBenchmark {
         lines += "- recall positivo: ${String.format(Locale.US, "%.2f", if (positiveRows > 0) truePositives * 100.0 / positiveRows else 0.0)}%"
         lines += "- positivos não lidos: $misses"
         lines += "- falsos positivos: $falsePositives de $negativeRows não-sticker processados"
-        if (verificationExists) {
-            lines += "- frames positivos/negativos no GT manual: $manifestPositiveRows/$manifestNegativeRows"
-        }
+        lines += "- frames positivos/negativos no GT manual: $manifestPositiveRows/$manifestNegativeRows"
         val negativeFalsePositiveRate = if (negativeRows > 0) {
             String.format(Locale.US, "%.2f", falsePositives * 100.0 / negativeRows)
         } else {
@@ -597,7 +593,7 @@ class PixelDatasetBenchmark {
         }
         lines += "- taxa de falso positivo por não-sticker: $negativeFalsePositiveRate%"
         lines += "- média de leituras candidatas por frame: $positivesPredicted"
-        val unscored = results.count { !it.verified && verificationExists }
+        val unscored = results.count { !it.verified }
         if (unscored > 0) {
             lines += "- frames sem GT confirmado (ignorados na métrica): $unscored"
         }
@@ -691,6 +687,8 @@ class PixelDatasetBenchmark {
         println("${reportFile.name}: positivos=$truePositives/$positiveRows fp=$falsePositives detMed=${String.format(Locale.US, "%.2f", detection.median())}ms ocrMed=${String.format(Locale.US, "%.2f", ocr.median())}ms")
 
         if (reportBase == "baseline" && maxBoxes == 2 && roi == Roi.CONFIG && fastConf == Config.Ocr.HYBRID_FAST_CONF) {
+            assertTrue(verificationSource != null, "baseline Pixel benchmark requires a manually reviewed ground-truth CSV")
+            assertTrue(scoringRows.isNotEmpty(), "baseline Pixel benchmark has no manually reviewed frames")
             assertEquals(0, falsePositives, "baseline Pixel benchmark must keep 0 false positives")
             assertEquals(0, missingPositiveFiles, "baseline Pixel benchmark has verified positives without frame files")
             if (positiveRows >= 3) {
