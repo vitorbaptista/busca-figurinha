@@ -35,10 +35,11 @@ Notable changes to the sticker scanner. Newest first. No formal releases yet (de
 
 ### Changed
 - **Benchmark Pixel usa só códigos revisados manualmente.** O benchmark Android agora usa o
-  `ground_truth_verification.csv` local do dataset, ignora frames sem `confirmed`/`not_sticker` manual e não cai
-  mais para `ground_truth_code` do manifesto. O gate foi recalibrado para o conjunto manual atual
-  (`22/35`, `0/11` falsos positivos), e a ferramenta de anotação deixou de preencher código
-  confirmado automaticamente pelo rótulo antigo.
+  `ground_truth_verification.csv` local do dataset, considera só as linhas do merge manual
+  (`ground_truth_code` vazio + `confirmed`/`not_sticker`) e não cai mais para `ground_truth_code` do
+  manifesto. O gate foi recalibrado para o conjunto manual atual (`22/35`, `0/11` falsos
+  positivos), e a ferramenta de anotação deixou de preencher código confirmado automaticamente pelo
+  rótulo antigo.
 - **Benchmark Pixel escreve o relatório antes de falhar no gate.** Quando o baseline ainda não
   atinge recall total, o arquivo `baseline_max4.md` continua sendo atualizado com os misses e
   falsos positivos antes do `assert`, acelerando a próxima rodada de diagnóstico.

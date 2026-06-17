@@ -65,6 +65,16 @@ class PixelDatasetBenchmark {
         val status: String,
     )
 
+    private data class VerificationCandidate(
+        val frameId: String,
+        val verifiedCode: String,
+        val status: String,
+        val manifestLabel: String,
+    ) {
+        val isManuallyScored: Boolean
+            get() = manifestLabel.isBlank() && ((status == "confirmed" && verifiedCode.isNotBlank()) || status == "not_sticker")
+    }
+
     private enum class FailReason {
         NONE,
         NO_BOXES,
@@ -152,11 +162,12 @@ class PixelDatasetBenchmark {
     private fun loadVerification(): Map<String, VerificationRow> {
         val file = verificationFile() ?: return emptyMap()
 
-        val rows = HashMap<String, VerificationRow>()
+        val candidates = ArrayList<VerificationCandidate>()
         BufferedReader(InputStreamReader(FileInputStream(file), StandardCharsets.UTF_8)).use { br ->
             val header = parseCsvLine(br.readLine().trim())
             val idx = { name: String -> header.indexOf(name) }
             val idxFrame = idx("frame_id")
+            val idxManifestLabel = idx("ground_truth_code")
             val idxCode = idx("verified_code")
             val idxStatus = idx("status")
             if (idxFrame < 0 || idxCode < 0 || idxStatus < 0) return emptyMap()
@@ -167,12 +178,25 @@ class PixelDatasetBenchmark {
                 val cols = parseCsvLine(line)
                 val frameId = cols.getOrNull(idxFrame)?.trim() ?: continue
                 if (frameId.isEmpty()) continue
-                rows[frameId] = VerificationRow(
-                    frameId = frameId,
-                    verifiedCode = cols.getOrNull(idxCode)?.trim() ?: "",
-                    status = cols.getOrNull(idxStatus)?.trim()?.lowercase() ?: "",
+                candidates.add(
+                    VerificationCandidate(
+                        frameId = frameId,
+                        verifiedCode = cols.getOrNull(idxCode)?.trim() ?: "",
+                        status = cols.getOrNull(idxStatus)?.trim()?.lowercase() ?: "",
+                        manifestLabel = if (idxManifestLabel >= 0) cols.getOrNull(idxManifestLabel)?.trim() ?: "" else "",
+                    ),
                 )
             }
+        }
+
+        val manualRows = candidates.filter { it.isManuallyScored }
+        val rows = HashMap<String, VerificationRow>()
+        for (row in manualRows) {
+            rows[row.frameId] = VerificationRow(
+                frameId = row.frameId,
+                verifiedCode = row.verifiedCode,
+                status = row.status,
+            )
         }
         return rows
     }
@@ -557,6 +581,7 @@ class PixelDatasetBenchmark {
         val modeConfig = modes.joinToString(".") { it.name.lowercase() }
         lines += "- config: roi=${String.format(Locale.US, "%.2f", roi.left)},${String.format(Locale.US, "%.2f", roi.top)},${String.format(Locale.US, "%.2f", roi.right)},${String.format(Locale.US, "%.2f", roi.bottom)} fastConf=${String.format(Locale.US, "%.1f", fastConf)} maxBoxes=$maxBoxes modes=$modeConfig"
         lines += "- arquivo de GT manual: ${verificationSource?.relativeToOrSelf(repoRoot)?.path ?: "ausente"}"
+        lines += "- critério de GT manual: somente linhas com ground_truth_code vazio e status confirmed/not_sticker"
         lines += "- frames no manifest: ${manifestRows.size}"
         lines += "- frames processados (frame disponível): ${results.size}"
         lines += "- frames com ground-truth manual confirmado: ${scoringRows.size}"
