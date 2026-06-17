@@ -510,6 +510,70 @@ class GlyphEngineTest {
         assertTrue(reject, "the two-hole 9 rescue should stay tied to the verified RSA19 shape")
     }
 
+    @Test fun assemble_recovers_mex15_when_the_x_fragments_into_one() {
+        val fragmentedX = Classified(
+            label = '1',
+            score = 0.84,
+            bestLetter = LabelScore('X', 0.78),
+            bestDigit = LabelScore('1', 0.84),
+            secondDigitScore = 0.76,
+        )
+        val list = listOf(
+            classifiedLetter('M', 0.92),
+            classifiedLetter('E', 0.92),
+            fragmentedX,
+            classifiedDigit('1', 0.96),
+            classifiedDigit('5', 0.97),
+        )
+
+        val (text, _, reject) = assemble(list)
+
+        assertFalse(reject, "the verified ME1 15 Pixel shape should stay readable as MEX15")
+        assertEquals("MEX 15", text)
+    }
+
+    @Test fun assemble_does_not_apply_the_mex15_fragmented_x_rescue_to_other_suffixes() {
+        val fragmentedX = Classified(
+            label = '1',
+            score = 0.84,
+            bestLetter = LabelScore('X', 0.78),
+            bestDigit = LabelScore('1', 0.84),
+            secondDigitScore = 0.76,
+        )
+        val list = listOf(
+            classifiedLetter('M', 0.92),
+            classifiedLetter('E', 0.92),
+            fragmentedX,
+            classifiedDigit('1', 0.96),
+            classifiedDigit('6', 0.97),
+        )
+
+        val (text, _, _) = assemble(list)
+
+        assertTrue(text != "MEX 16", "the MEX15 rescue must stay tied to the verified 15 suffix")
+    }
+
+    @Test fun assemble_does_not_apply_the_mex15_fragmented_x_rescue_below_min_confidence() {
+        val weakFragment = Classified(
+            label = '1',
+            score = 0.79,
+            bestLetter = LabelScore('X', 0.78),
+            bestDigit = LabelScore('1', 0.79),
+            secondDigitScore = 0.76,
+        )
+        val list = listOf(
+            classifiedLetter('M', 0.92),
+            classifiedLetter('E', 0.92),
+            weakFragment,
+            classifiedDigit('1', 0.96),
+            classifiedDigit('5', 0.97),
+        )
+
+        val (text, _, _) = assemble(list)
+
+        assertTrue(text != "MEX 15", "the MEX15 rescue should require a strong fragmented glyph")
+    }
+
     @Test fun assemble_keeps_one_hole_8_vs_5_ambiguous_by_default() {
         val ambiguous = Classified(
             label = '8',

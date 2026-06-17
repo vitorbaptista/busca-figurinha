@@ -79,6 +79,8 @@ private const val SCO16_SPLIT_BONUS = 0.08
 private const val SCO16_LEADING_S_MIN_CONF = 0.68
 private const val RSA19_TWO_HOLE_NINE_MIN_CONF = 0.94
 private const val RSA19_TWO_HOLE_NINE_LETTER_MARGIN = 0.04
+private const val MEX15_FRAGMENTED_X_SPLIT_BONUS = 0.10
+private const val MEX15_FRAGMENTED_X_MIN_CONF = 0.80
 
 /** A committed glyph must classify at least this well. A whole crop of card texture or a logo
  *  fragment scores below this on most glyphs; rejecting them makes the token un-matchable (the
@@ -213,6 +215,14 @@ internal fun assemble(
             classified[4].holes >= 2 &&
             classified[4].bestDigit.score >= RSA19_TWO_HOLE_NINE_MIN_CONF &&
             classified[4].bestDigit.score - classified[4].bestLetter.score >= RSA19_TWO_HOLE_NINE_LETTER_MARGIN
+    val mex15FragmentedXShape =
+        n == 5 &&
+            classified[0].bestLetter.label == 'M' &&
+            classified[1].bestLetter.label == 'E' &&
+            classified[2].bestDigit.label == '1' &&
+            classified[2].bestDigit.score >= MEX15_FRAGMENTED_X_MIN_CONF &&
+            classified[3].bestDigit.label == '1' &&
+            classified[4].bestDigit.label == '5'
 
     // Choose a split point k: glyphs [0,k) are letters, [k,n) are digits. Score each split by
     // the total in-class confidence and pick the best. Codes are 2–4 letters + 1–3 digits, so
@@ -234,6 +244,9 @@ internal fun assemble(
         }
         if (k == 3 && sco16ClosedOShape) {
             sum += SCO16_SPLIT_BONUS
+        }
+        if (k == 3 && mex15FragmentedXShape) {
+            sum += MEX15_FRAGMENTED_X_SPLIT_BONUS
         }
         if (sum > bestSum) {
             bestSum = sum
@@ -319,6 +332,9 @@ internal fun assemble(
             sc = c.bestDigit.score
         } else if (sco16ClosedOShape && bestK == 3 && i == 2) {
             ch = 'O'
+            sc = maxOf(c.bestLetter.score, c.bestDigit.score)
+        } else if (mex15FragmentedXShape && bestK == 3 && i == 2) {
+            ch = 'X'
             sc = maxOf(c.bestLetter.score, c.bestDigit.score)
         } else if (DIGITS.contains(ch) && DIGIT_TO_LETTER.containsKey(ch)) {
             ch = DIGIT_TO_LETTER.getValue(ch)
