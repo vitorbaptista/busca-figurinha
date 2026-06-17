@@ -43,6 +43,11 @@ const val FEAT_LEN = GRID * GRID + GRID + GRID + ZONE * ZONE + 1
  *  1.25 catches a 2-glyph merge while leaving real single glyphs whole. */
 private const val MERGE_W_RATIO = 1.25f
 
+/** In weak Pixel crops the first two letters of a 3-letter code can bridge into a component that
+ *  is wider than one condensed glyph, but still below the normal "definitely merged" threshold.
+ *  We only use this lower threshold in the narrow 4-component code-shape rescue below. */
+private const val SHORT_CODE_FIRST_MERGE_W_RATIO = 1.10f
+
 /** Estimated single-glyph width as a fraction of the band height — the ideal seam between two
  *  merged glyphs sits ~one of these in from the left. */
 private const val GLYPH_W_FRAC = 0.62f
@@ -192,7 +197,7 @@ private fun segmentBoxes(mask: ByteArray, w: Int, h: Int): List<Box> {
     val out = ArrayList<Box>()
     for (c in wholeGlyphs) splitWide(mask, w, c, medH, out)
     out.sortBy { it.x0 }
-    return out
+    return splitFirstMergedGlyphInShortCode(mask, w, medH, out)
 }
 
 private fun mergeTouchingFragments(boxes: List<Box>, medH: Int): List<Box> {
@@ -282,6 +287,85 @@ private fun splitWide(mask: ByteArray, w: Int, box: Box, medH: Int, out: ArrayLi
         half.y1 = y1
         half.area = area
         splitWide(mask, w, half, medH, out)
+    }
+}
+
+private fun splitFirstMergedGlyphInShortCode(mask: ByteArray, w: Int, medH: Int, boxes: List<Box>): List<Box> {
+    if (boxes.size != 4) return boxes
+    val first = boxes[0]
+    val firstW = first.x1 - first.x0 + 1
+    val firstH = first.y1 - first.y0 + 1
+    val tallness = max(firstH.toFloat(), medH * 0.85f)
+    if (firstW < tallness * SHORT_CODE_FIRST_MERGE_W_RATIO || firstW >= tallness * MERGE_W_RATIO) {
+        return boxes
+    }
+
+    val split = ArrayList<Box>()
+    splitWideForced(mask, w, first, medH, split)
+    if (split.size != 2) return boxes
+
+    val rescued = ArrayList<Box>(5)
+    rescued.addAll(split)
+    for (i in 1 until boxes.size) rescued.add(boxes[i])
+    rescued.sortBy { it.x0 }
+    return rescued
+}
+
+private fun splitWideForced(mask: ByteArray, w: Int, box: Box, medH: Int, out: ArrayList<Box>) {
+    val bw = box.x1 - box.x0 + 1
+    if (bw < 14) {
+        out.add(box)
+        return
+    }
+    val bh = box.y1 - box.y0 + 1
+    val tallness = max(bh.toFloat(), medH * 0.85f)
+    val col = IntArray(bw)
+    for (y in box.y0..box.y1) {
+        val row = y * w
+        for (x in box.x0..box.x1) if (mask[row + x].toInt() == 1) col[x - box.x0]++
+    }
+    val glyphW = max(8f, tallness * GLYPH_W_FRAC)
+    val ideal = min(bw - 4, max(4, round(glyphW).toInt()))
+    val minPart = max(8, round(tallness * 0.32f).toInt())
+    val lo = max(minPart, round(tallness * 0.35f).toInt())
+    val hi = min(bw - minPart, round(tallness * 1.15f).toInt())
+    var cut = -1
+    var cutVal = Int.MAX_VALUE
+    var cutDist = Int.MAX_VALUE
+    for (x in lo..hi) {
+        val dist = kotlin.math.abs(x - ideal)
+        if (col[x] < cutVal || (col[x] == cutVal && dist < cutDist)) {
+            cutVal = col[x]
+            cut = x
+            cutDist = dist
+        }
+    }
+    if (cut < lo) {
+        out.add(box)
+        return
+    }
+
+    val left = Box(box.x0, box.y0, box.x0 + cut - 1, box.y1, 0)
+    val right = Box(box.x0 + cut, box.y0, box.x1, box.y1, 0)
+    for (half in listOf(left, right)) {
+        var y0 = box.y1
+        var y1 = box.y0
+        var area = 0
+        for (y in box.y0..box.y1) {
+            val row = y * w
+            for (x in half.x0..half.x1) {
+                if (mask[row + x].toInt() == 1) {
+                    area++
+                    if (y < y0) y0 = y
+                    if (y > y1) y1 = y
+                }
+            }
+        }
+        if (area < 6) continue
+        half.y0 = y0
+        half.y1 = y1
+        half.area = area
+        out.add(half)
     }
 }
 

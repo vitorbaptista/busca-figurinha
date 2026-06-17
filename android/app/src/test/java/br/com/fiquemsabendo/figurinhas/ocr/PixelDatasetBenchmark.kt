@@ -504,8 +504,9 @@ class PixelDatasetBenchmark {
 
         if (reportBase == "baseline" && maxBoxes == 4 && roi == Roi.CONFIG && fastConf == Config.Ocr.HYBRID_FAST_CONF) {
             assertEquals(0, falsePositives, "baseline Pixel benchmark must keep 0 false positives")
-            assertTrue(
-                truePositives >= 9,
+            assertEquals(
+                positiveRows,
+                truePositives,
                 "baseline Pixel benchmark recall regressed: resolved $truePositives/$positiveRows positives",
             )
         }

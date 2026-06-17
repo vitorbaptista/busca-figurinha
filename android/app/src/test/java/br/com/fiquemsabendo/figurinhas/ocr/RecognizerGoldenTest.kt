@@ -160,6 +160,14 @@ class RecognizerGoldenTest {
         assertEquals("SWE8", match?.entry?.code, "read=${read.text} conf=${read.confidence} ${glyphDebug(crop, atlas)}")
     }
 
+    @Test fun prepared_weak_pixel_NED12_dark_crop_reads_the_code() {
+        val crop = loadFrame("/stickers/NED12_pixel_live_dark_frame3_crop0.pgm.gz") ?: return
+        val atlas = atlas() ?: return
+        val read = recognizeCrop(crop, atlas)
+        val match = bestMatchFromText(read.text, checklist)
+        assertEquals("NED12", match?.entry?.code, "read=${read.text} conf=${read.confidence} ${glyphDebug(crop, atlas)}")
+    }
+
     @Test fun live_pixel_newroi_frames_read_SWE8() {
         for (n in 1..2) {
             val (codes, reads) = runLive("/stickers/SWE8_pixel_newroi_frame$n.pgm.gz") ?: return

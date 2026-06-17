@@ -179,13 +179,18 @@ export function segmentBoxes(
   const out: typeof merged = [];
   for (const c of merged) splitWide(mask, w, c, medH, out);
   out.sort((a, b) => a.x0 - b.x0);
-  return out;
+  return splitFirstMergedGlyphInShortCode(mask, w, medH, out);
 }
 
 /** Width (as a multiple of glyph HEIGHT) above which a box is assumed to hold ≥2 touching
  *  glyphs. A condensed glyph is taller than wide (the widest, M/W, reach ~1.0× the
  *  height); 1.25 catches a 2-glyph merge while leaving real single glyphs whole. */
 const MERGE_W_RATIO = 1.25;
+
+/** In weak Pixel crops the first two letters of a 3-letter code can bridge into a component
+ *  that is wider than one condensed glyph, but still below the normal "definitely merged"
+ *  threshold. This lower threshold is only used in the narrow 4-component code-shape rescue. */
+const SHORT_CODE_FIRST_MERGE_W_RATIO = 1.1;
 
 /** Estimated single-glyph width as a fraction of the band height — the ideal seam between
  *  two merged glyphs sits ~one of these in from the left. */
@@ -256,6 +261,94 @@ function splitWide(
     half.y1 = y1;
     half.area = area;
     splitWide(mask, w, half, medH, out);
+  }
+}
+
+function splitFirstMergedGlyphInShortCode(
+  mask: Uint8Array,
+  w: number,
+  medH: number,
+  boxes: Array<{ x0: number; y0: number; x1: number; y1: number; area: number }>,
+): Array<{ x0: number; y0: number; x1: number; y1: number; area: number }> {
+  if (boxes.length !== 4) return boxes;
+  const first = boxes[0];
+  const firstW = first.x1 - first.x0 + 1;
+  const firstH = first.y1 - first.y0 + 1;
+  const tallness = Math.max(firstH, medH * 0.85);
+  if (firstW < tallness * SHORT_CODE_FIRST_MERGE_W_RATIO || firstW >= tallness * MERGE_W_RATIO) {
+    return boxes;
+  }
+
+  const split: typeof boxes = [];
+  splitWideForced(mask, w, first, medH, split);
+  if (split.length !== 2) return boxes;
+
+  const rescued = [...split, ...boxes.slice(1)];
+  rescued.sort((a, b) => a.x0 - b.x0);
+  return rescued;
+}
+
+function splitWideForced(
+  mask: Uint8Array,
+  w: number,
+  box: { x0: number; y0: number; x1: number; y1: number; area: number },
+  medH: number,
+  out: Array<{ x0: number; y0: number; x1: number; y1: number; area: number }>,
+): void {
+  const bw = box.x1 - box.x0 + 1;
+  if (bw < 14) {
+    out.push(box);
+    return;
+  }
+  const bh = box.y1 - box.y0 + 1;
+  const tallness = Math.max(bh, medH * 0.85);
+  const col = new Int32Array(bw);
+  for (let y = box.y0; y <= box.y1; y++) {
+    const row = y * w;
+    for (let x = box.x0; x <= box.x1; x++) if (mask[row + x] === 1) col[x - box.x0]++;
+  }
+  const glyphW = Math.max(8, tallness * GLYPH_W_FRAC);
+  const ideal = Math.min(bw - 4, Math.max(4, Math.round(glyphW)));
+  const minPart = Math.max(8, Math.round(tallness * 0.32));
+  const lo = Math.max(minPart, Math.round(tallness * 0.35));
+  const hi = Math.min(bw - minPart, Math.round(tallness * 1.15));
+  let cut = -1;
+  let cutVal = Infinity;
+  let cutDist = Infinity;
+  for (let x = lo; x <= hi; x++) {
+    const dist = Math.abs(x - ideal);
+    if (col[x] < cutVal || (col[x] === cutVal && dist < cutDist)) {
+      cutVal = col[x];
+      cut = x;
+      cutDist = dist;
+    }
+  }
+  if (cut < lo) {
+    out.push(box);
+    return;
+  }
+
+  const left = { x0: box.x0, y0: box.y0, x1: box.x0 + cut - 1, y1: box.y1, area: 0 };
+  const right = { x0: box.x0 + cut, y0: box.y0, x1: box.x1, y1: box.y1, area: 0 };
+  for (const half of [left, right]) {
+    let y0 = box.y1;
+    let y1 = box.y0;
+    let area = 0;
+    for (let y = box.y0; y <= box.y1; y++) {
+      const row = y * w;
+      for (let x = half.x0; x <= half.x1; x++) {
+        if (mask[row + x] === 1) {
+          area++;
+          if (y < y0) y0 = y;
+          if (y > y1) y1 = y;
+        }
+      }
+    }
+    if (area < 6) continue;
+    half.y0 = y0;
+    half.y1 = y1;
+    half.area = area;
+    out.push(half);
   }
 }
 

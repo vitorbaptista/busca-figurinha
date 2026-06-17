@@ -36,6 +36,17 @@ const HARVESTS = [
     label: 'SWE8',
     fixture: resolve('android/app/src/test/resources/stickers/SWE8_pixel_live_dark_frame49_crop0.pgm.gz'),
   },
+  {
+    label: 'NED12',
+    fixture: resolve('android/app/src/test/resources/stickers/NED12_pixel_live_dark_frame3_crop0.pgm.gz'),
+    slices: [
+      { label: 'N', x: 89, y: 47, w: 12, h: 34 },
+      { label: 'E', x: 105, y: 42, w: 25, h: 46 },
+      { label: 'D', x: 128, y: 45, w: 29, h: 44 },
+      { label: '1', x: 166, y: 55, w: 22, h: 34 },
+      { label: '2', x: 188, y: 59, w: 29, h: 33 },
+    ],
+  },
 ];
 
 function startServer() {
@@ -161,33 +172,86 @@ try {
   const harvested = [];
   for (const item of HARVESTS) {
     const image = readPgmGz(item.fixture);
-    const result = await page.evaluate(async ({ image, label }) => {
-      const { extractGlyphs } = await import('/src/ocr/glyphFeatures.ts');
-      const canvas = document.createElement('canvas');
-      canvas.width = image.width;
-      canvas.height = image.height;
-      const ctx = canvas.getContext('2d', { willReadFrequently: true });
-      const data = ctx.createImageData(image.width, image.height);
-      for (let i = 0; i < image.pixels.length; i += 1) {
-        const v = image.pixels[i];
-        const off = i * 4;
-        data.data[off] = v;
-        data.data[off + 1] = v;
-        data.data[off + 2] = v;
-        data.data[off + 3] = 255;
+    const result = await page.evaluate(async ({ image, label, slices }) => {
+      const { cropToMask, extractGlyphs, glyphFeature } = await import('/src/ocr/glyphFeatures.ts');
+      const canvasFromPixels = (pixels, width, height) => {
+        const canvas = document.createElement('canvas');
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d', { willReadFrequently: true });
+        const data = ctx.createImageData(width, height);
+        for (let i = 0; i < pixels.length; i += 1) {
+          const v = pixels[i];
+          const off = i * 4;
+          data.data[off] = v;
+          data.data[off + 1] = v;
+          data.data[off + 2] = v;
+          data.data[off + 3] = 255;
+        }
+        ctx.putImageData(data, 0, 0);
+        return canvas;
+      };
+
+      if (slices) {
+        const labels = [];
+        const feats = [];
+        const boxes = [];
+        for (const slice of slices) {
+          const pixels = [];
+          for (let y = 0; y < slice.h; y += 1) {
+            const row = (slice.y + y) * image.width + slice.x;
+            for (let x = 0; x < slice.w; x += 1) pixels.push(image.pixels[row + x]);
+          }
+          const canvas = canvasFromPixels(pixels, slice.w, slice.h);
+          const { mask, w, h } = cropToMask(canvas);
+          let x0 = w;
+          let y0 = h;
+          let x1 = -1;
+          let y1 = -1;
+          let area = 0;
+          for (let yy = 0; yy < h; yy += 1) {
+            const row = yy * w;
+            for (let xx = 0; xx < w; xx += 1) {
+              if (mask[row + xx] !== 1) continue;
+              area += 1;
+              if (xx < x0) x0 = xx;
+              if (yy < y0) y0 = yy;
+              if (xx > x1) x1 = xx;
+              if (yy > y1) y1 = yy;
+            }
+          }
+          if (area < 6 || x1 < x0 || y1 < y0) {
+            return { error: `${slice.label}: expected manual glyph ink, got area ${area}` };
+          }
+          labels.push(slice.label);
+          feats.push(...Array.from(glyphFeature(mask, w, { x0, y0, x1, y1 })));
+          boxes.push({
+            label: slice.label,
+            x: slice.x + x0,
+            y: slice.y + y0,
+            w: x1 - x0 + 1,
+            h: y1 - y0 + 1,
+            ar: (y1 - y0 + 1) / (x1 - x0 + 1),
+          });
+        }
+        return { labels: labels.join(''), feats, boxes };
       }
-      ctx.putImageData(data, 0, 0);
+
+      const canvas = canvasFromPixels(image.pixels, image.width, image.height);
       const glyphs = extractGlyphs(canvas);
       if (glyphs.length !== label.length) {
-        return { error: `${label}: expected ${label.length} glyphs, got ${glyphs.length}` };
+        return {
+          error: `${label}: expected ${label.length} glyphs, got ${glyphs.length}`,
+          boxes: glyphs.map((glyph) => ({ x: glyph.x, y: glyph.y, w: glyph.w, h: glyph.h, ar: glyph.ar })),
+        };
       }
       return {
         labels: label,
         feats: glyphs.flatMap((glyph) => Array.from(glyph.feat)),
         boxes: glyphs.map((glyph) => ({ x: glyph.x, y: glyph.y, w: glyph.w, h: glyph.h, ar: glyph.ar })),
       };
-    }, { image, label: item.label });
-    if (result.error) throw new Error(result.error);
+    }, { image, label: item.label, slices: item.slices });
+    if (result.error) throw new Error(`${result.error}: ${JSON.stringify(result.boxes)}`);
     console.log(`${item.label}: ${JSON.stringify(result.boxes)}`);
     harvested.push(result);
   }
