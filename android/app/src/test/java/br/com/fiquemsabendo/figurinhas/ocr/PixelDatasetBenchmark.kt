@@ -17,8 +17,8 @@ import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
 // Bench the live Android scanner against real captured frames (no Android runtime, host JVM only).
-// This class is intentionally assertion-free by default; it writes a report with metrics so we can
-// compare strategy changes by reading the resulting file.
+// The normal test keeps a small baseline gate; the broader strategy matrix is left as a manual
+// helper so local tuning does not make every unit-test run crawl.
 class PixelDatasetBenchmark {
 
     private val repoRoot: File = run {
@@ -92,6 +92,8 @@ class PixelDatasetBenchmark {
         val boxes: Int,
         val inkBoxes: Int,
         val crops: Int,
+        val darkFallbackAttempted: Boolean,
+        val darkFallbackUsed: Boolean,
         val reason: FailReason,
         val verified: Boolean,
         val diagnostics: List<String>,
@@ -345,6 +347,7 @@ class PixelDatasetBenchmark {
                 DarkFallbackPolicy.ON_MISS_WITHOUT_PRIMARY_READS -> outcome.resolved.isEmpty() && outcome.reads.isEmpty()
                 DarkFallbackPolicy.ON_MISS_WITHOUT_PRIMARY_INK -> outcome.resolved.isEmpty() && inkBoxes == 0
             }
+            var darkFallbackUsed = false
             if (shouldFallbackDark) {
                 val darkBoxes = findCodeBoxes(frame, roi, arrayOf(ForegroundMode.DARK))
                 val darkOutcome = recognizeFrameInOrder(
@@ -356,6 +359,7 @@ class PixelDatasetBenchmark {
                     maxBoxes = maxBoxes,
                 )
                 if (darkOutcome.resolved.isNotEmpty() || darkOutcome.reads.isNotEmpty() || darkOutcome.crops > 0) {
+                    darkFallbackUsed = true
                     outcome = RecognizeOutcome(
                         resolved = darkOutcome.resolved,
                         reads = outcome.reads + darkOutcome.reads.map { "dark:$it" },
@@ -419,6 +423,8 @@ class PixelDatasetBenchmark {
                     boxes = outcome.boxes,
                     inkBoxes = inkBoxes,
                     crops = outcome.crops,
+                    darkFallbackAttempted = shouldFallbackDark,
+                    darkFallbackUsed = darkFallbackUsed,
                     reason = reason,
                     diagnostics = diagnostics,
                 ),
@@ -427,8 +433,14 @@ class PixelDatasetBenchmark {
         return results
     }
 
-    // Tunable matrix over ROI/confidence/box cap for live Pixel tuning.
     @Test fun run_swe8_pixel_dataset_benchmark() {
+        runBenchmarkAndWrite(roi = Roi.CONFIG, fastConf = Config.Ocr.HYBRID_FAST_CONF, maxBoxes = 4, reportBase = "baseline", darkFallbackPolicy = DarkFallbackPolicy.ON_MISS_WITHOUT_PRIMARY_READS)
+    }
+
+    // Tunable matrix over ROI/confidence/box cap for live Pixel tuning. Call manually while
+    // investigating new strategies; keep it outside @Test so CI/local gates stay fast.
+    @Suppress("unused")
+    private fun writeExploratoryStrategyMatrix() {
         runBenchmarkAndWrite(roi = Roi.CONFIG, fastConf = Config.Ocr.HYBRID_FAST_CONF, maxBoxes = 4, reportBase = "baseline", darkFallbackPolicy = DarkFallbackPolicy.ON_MISS_WITHOUT_PRIMARY_READS)
         runBenchmarkAndWrite(roi = Roi(0.18, 0.32, 0.82, 0.58), fastConf = Config.Ocr.HYBRID_FAST_CONF, maxBoxes = 4, reportBase = "roi_wide_mid")
         runBenchmarkAndWrite(roi = Roi(0.18, 0.32, 0.82, 0.58), fastConf = Config.Ocr.HYBRID_FAST_CONF, maxBoxes = 8, reportBase = "roi_wide_mid")
@@ -515,6 +527,15 @@ class PixelDatasetBenchmark {
         val ocr = toLongArray(results) { it.ocrMs }
         val boxes = IntArray(results.size) { i -> results[i].boxes }
         val crops = IntArray(results.size) { i -> results[i].crops }
+        val totalCrops = crops.sum()
+        val maxCrops = crops.maxOrNull() ?: 0
+        val cropsP95 = if (crops.isEmpty()) {
+            0
+        } else {
+            crops.sortedArray()[((crops.size - 1) * 95 / 100).coerceIn(0, crops.size - 1)]
+        }
+        val darkFallbackAttempts = results.count { it.darkFallbackAttempted }
+        val darkFallbackUsed = results.count { it.darkFallbackUsed }
         val reasonNoBoxes = results.count { it.reason == FailReason.NO_BOXES }
         val reasonNoInk = results.count { it.reason == FailReason.BOXES_NO_INK }
         val reasonNoMatch = results.count { it.reason == FailReason.NO_MATCH }
@@ -543,6 +564,9 @@ class PixelDatasetBenchmark {
                 truePositives,
                 "baseline Pixel benchmark recall regressed: resolved $truePositives/$positiveRows positives",
             )
+            assertTrue(totalCrops <= 100, "baseline Pixel benchmark OCR work regressed: total crops=$totalCrops")
+            assertTrue(cropsP95 <= 2, "baseline Pixel benchmark typical OCR work regressed: p95 crops=$cropsP95")
+            assertTrue(maxCrops <= 3, "baseline Pixel benchmark has a high-work frame: max crops=$maxCrops")
         }
 
         val lines = ArrayList<String>(260)
@@ -560,14 +584,20 @@ class PixelDatasetBenchmark {
         if (missingFiles > 0) {
             lines += "- frames positivos/negativos faltando arquivo: $missingPositiveFiles/$missingNegativeFiles"
         }
-        val fallbackLabel = buildString {
-            if (fallbackToFullOnMiss && roi != Roi.FULL) append(" + fallback_full")
-            when (darkFallbackPolicy) {
-                DarkFallbackPolicy.NEVER -> Unit
-                DarkFallbackPolicy.ON_MISS -> append(" + fallback_dark")
-                DarkFallbackPolicy.ON_MISS_WITHOUT_PRIMARY_READS -> append(" + fallback_dark_no_primary_reads")
-                DarkFallbackPolicy.ON_MISS_WITHOUT_PRIMARY_INK -> append(" + fallback_dark_no_primary_ink")
-            }
+        val fallbackParts = ArrayList<String>()
+        if (fallbackToFullOnMiss && roi != Roi.FULL) {
+            fallbackParts += "fallback_full"
+        }
+        when (darkFallbackPolicy) {
+            DarkFallbackPolicy.NEVER -> Unit
+            DarkFallbackPolicy.ON_MISS -> fallbackParts += "fallback_dark"
+            DarkFallbackPolicy.ON_MISS_WITHOUT_PRIMARY_READS -> fallbackParts += "fallback_dark_no_primary_reads"
+            DarkFallbackPolicy.ON_MISS_WITHOUT_PRIMARY_INK -> fallbackParts += "fallback_dark_no_primary_ink"
+        }
+        val fallbackLabel = if (fallbackParts.isEmpty()) {
+            "sem fallback"
+        } else {
+            fallbackParts.joinToString(" + ")
         }
         lines += "- estratégia de busca: $fallbackLabel"
         lines += "- resolvidos positivos: $truePositives/$positiveRows"
@@ -596,7 +626,10 @@ class PixelDatasetBenchmark {
         lines += "- p95 detecção/ocr (ms): ${String.format(Locale.US, "%.2f", p95Det)} / ${String.format(Locale.US, "%.2f", p95Ocr)}"
         lines += "- média boxes: ${String.format(Locale.US, "%.2f", avg(boxes))}"
         lines += "- média crops: ${String.format(Locale.US, "%.2f", avg(crops))}"
+        lines += "- total crops OCR: $totalCrops"
+        lines += "- p95/max crops OCR: $cropsP95/$maxCrops"
         lines += "- média de crops com ink: ${String.format(Locale.US, "%.2f", results.map { it.inkBoxes }.average())}"
+        lines += "- fallback dark tentado/usado: $darkFallbackAttempts/$darkFallbackUsed"
         lines += ""
 
         lines += "## Acertos ($expectedCode)"

@@ -78,6 +78,9 @@ Notable changes to the sticker scanner. Newest first. No formal releases yet (de
   recuperando os crops fracos verificados, mas deixa de rodar quando a primeira passada já viu texto
   e rejeitou como inseguro. No benchmark manual, a baseline mantém `10/10` e `0/145` falsos
   positivos com menos crops médios por frame.
+- **Gate do benchmark Pixel ficou determinístico e mais rápido.** O teste padrão agora valida só a
+  baseline crítica (`10/10`, `0/145`) e mede trabalho de OCR por crops (`total`, `p95` e `max`),
+  deixando a matriz exploratória de ROI/confiança fora da suíte normal para evitar timeouts locais.
 - **ROI Android ficou mais estreita para leitura ao vivo.** A janela agora prioriza a faixa central
   onde o código `SWE 8` foi lido no Pixel, reduzindo fundo analisado e deixando mais claro que a
   figurinha precisa estar perto o suficiente para o código preencher o retículo.
