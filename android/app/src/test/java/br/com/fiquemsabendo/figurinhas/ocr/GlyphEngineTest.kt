@@ -211,6 +211,53 @@ class GlyphEngineTest {
         assertEquals("EGY 4", text)
     }
 
+    @Test fun assemble_keeps_one_hole_8_vs_5_ambiguous_by_default() {
+        val ambiguous = Classified(
+            label = '8',
+            score = 0.94,
+            bestLetter = LabelScore('B', 0.88),
+            bestDigit = LabelScore('8', 0.94),
+            secondDigitScore = 0.923,
+            secondDigitLabel = '5',
+            holes = 1,
+        )
+        val list = listOf(
+            classifiedLetter('M', 0.95),
+            classifiedLetter('E', 0.93),
+            classifiedLetter('X', 0.94),
+            classifiedDigit('1', 0.96),
+            ambiguous,
+        )
+
+        val (_, _, reject) = assemble(list)
+
+        assertTrue(reject, "normal OCR must keep a one-hole 8/5 tie as a miss")
+    }
+
+    @Test fun assemble_one_hole_8_vs_5_rescue_is_opt_in() {
+        val ambiguous = Classified(
+            label = '8',
+            score = 0.94,
+            bestLetter = LabelScore('B', 0.88),
+            bestDigit = LabelScore('8', 0.94),
+            secondDigitScore = 0.923,
+            secondDigitLabel = '5',
+            holes = 1,
+        )
+        val list = listOf(
+            classifiedLetter('M', 0.95),
+            classifiedLetter('E', 0.93),
+            classifiedLetter('X', 0.94),
+            classifiedDigit('1', 0.96),
+            ambiguous,
+        )
+
+        val (text, _, reject) = assemble(list, allowOneHoleFiveRescue = true)
+
+        assertFalse(reject)
+        assertEquals("MEX 15", text)
+    }
+
     @Test fun assemble_accepts_a_strong_one_hole_digit_when_the_letter_score_is_lower() {
         // Pixel crops can make 6/9/0 tie with each other while still showing one enclosed hole
         // and clearly beating the best letter. This should commit; a letter-like tie should not.

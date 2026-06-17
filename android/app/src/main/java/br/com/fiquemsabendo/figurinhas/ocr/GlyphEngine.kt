@@ -85,6 +85,7 @@ internal class Classified(
      *  this is how decisively the digit reading wins. A small margin means a 4-vs-6-style
      *  ambiguity that we must NOT commit (it would be a wrong code). */
     val secondDigitScore: Double,
+    val secondDigitLabel: Char = '?',
     /** Enclosed white holes in the source glyph. Used only to rescue topologically clear 8s. */
     val holes: Int = 0,
 )
@@ -111,6 +112,7 @@ internal fun classify(glyph: GlyphBox, atlas: FlatAtlas): Classified {
     var bd = '?'
     var bds = -1.0
     var bd2 = -1.0 // 2nd-best digit score (different label from bd)
+    var bd2Label = '?'
     var off = 0
     for (t in 0 until count) {
         var s = 0.0
@@ -123,11 +125,15 @@ internal fun classify(glyph: GlyphBox, atlas: FlatAtlas): Classified {
         val lab = labels[t]
         if (isDigit[t]) {
             if (s > bds) {
-                if (bd != lab) bd2 = bds // demote the old best (if a different digit) to 2nd
+                if (bd != lab) {
+                    bd2 = bds // demote the old best (if a different digit) to 2nd
+                    bd2Label = bd
+                }
                 bds = s
                 bd = lab
             } else if (lab != bd && s > bd2) {
                 bd2 = s
+                bd2Label = lab
             }
         } else if (s > bls) {
             bls = s
@@ -140,6 +146,7 @@ internal fun classify(glyph: GlyphBox, atlas: FlatAtlas): Classified {
         bestLetter = LabelScore(bl, bls),
         bestDigit = LabelScore(bd, bds),
         secondDigitScore = bd2,
+        secondDigitLabel = bd2Label,
         holes = glyph.holes,
     )
 }
@@ -154,7 +161,10 @@ internal fun classify(glyph: GlyphBox, atlas: FlatAtlas): Classified {
  *
  * Returns Triple(text, conf, reject). Internal so tests can drive it with hand-built lists.
  */
-internal fun assemble(classified: List<Classified>): Triple<String, Double, Boolean> {
+internal fun assemble(
+    classified: List<Classified>,
+    allowOneHoleFiveRescue: Boolean = false,
+): Triple<String, Double, Boolean> {
     val n = classified.size
     if (n == 0) return Triple("", 0.0, true)
 
@@ -196,7 +206,7 @@ internal fun assemble(classified: List<Classified>): Triple<String, Double, Bool
         if (wantDigit) {
             ch = c.bestDigit.label
             sc = c.bestDigit.score
-            val decisive =
+            var decisive =
                 c.bestDigit.score - c.secondDigitScore >= DIGIT_MARGIN ||
                     c.bestDigit.score >= DIGIT_STRONG ||
                     (ch == '8' && c.holes >= 2 && c.bestDigit.score >= DIGIT_EIGHT_TOPOLOGY_STRONG) ||
@@ -206,6 +216,20 @@ internal fun assemble(classified: List<Classified>): Triple<String, Double, Bool
                             c.bestDigit.score >= DIGIT_ONE_HOLE_TOPOLOGY_STRONG &&
                             c.bestDigit.score - c.bestLetter.score >= DIGIT_ONE_HOLE_LETTER_MARGIN
                     )
+            if (
+                allowOneHoleFiveRescue &&
+                !decisive &&
+                ch == '8' &&
+                c.holes == 1 &&
+                c.secondDigitLabel == '5' &&
+                c.bestDigit.score - c.secondDigitScore <= 0.025 &&
+                c.secondDigitScore >= 0.90
+            ) {
+                // Opt-in only for speck-tolerant rescues: a blurred 5 can close into a one-hole 8.
+                ch = '5'
+                sc = c.secondDigitScore
+                decisive = true
+            }
             if (!decisive) reject = true
         } else if (DIGITS.contains(ch) && DIGIT_TO_LETTER.containsKey(ch)) {
             ch = DIGIT_TO_LETTER.getValue(ch)
@@ -244,16 +268,21 @@ internal fun rejectSentinel(text: String): String {
     return if (Regex("[A-Z]").containsMatchIn(s)) s else "X"
 }
 
-private fun recognizeGlyphs(crop: GrayImage, atlas: FlatAtlas, glyphs: List<GlyphBox>): OcrResult {
+private fun recognizeGlyphs(
+    crop: GrayImage,
+    atlas: FlatAtlas,
+    glyphs: List<GlyphBox>,
+    allowOneHoleFiveRescue: Boolean = false,
+): OcrResult {
     // A code is 3–7 glyphs. Too few = noise/blank; too many = legal text the gate missed.
     if (glyphs.size < 2 || glyphs.size > 8) return OcrResult("", 0.0)
     val classified = glyphs.map { classify(it, atlas) }
-    val (text, conf, reject) = assemble(classified)
+    val (text, conf, reject) = assemble(classified, allowOneHoleFiveRescue)
     if (glyphs.size == 3 && !reject && TWO_LETTER_ONE_DIGIT_RE.matches(text)) {
         val splitGlyphs = extractGlyphsWithForcedNarrowSplit(crop, splitIndex = 1)
         if (splitGlyphs.size == 4) {
             val splitClassified = splitGlyphs.map { classify(it, atlas) }
-            val (splitText, splitConf, splitReject) = assemble(splitClassified)
+            val (splitText, splitConf, splitReject) = assemble(splitClassified, allowOneHoleFiveRescue)
             if (!splitReject && splitConf >= NARROW_MIDDLE_RESCUE_MIN_CONF && THREE_LETTER_ONE_DIGIT_RE.matches(splitText)) {
                 return OcrResult(splitText, splitConf)
             }
@@ -263,7 +292,7 @@ private fun recognizeGlyphs(crop: GrayImage, atlas: FlatAtlas, glyphs: List<Glyp
         val splitGlyphs = extractGlyphsWithForcedSplit(crop, splitIndex = 1)
         if (splitGlyphs.size == 5) {
             val splitClassified = splitGlyphs.map { classify(it, atlas) }
-            val (splitText, splitConf, splitReject) = assemble(splitClassified)
+            val (splitText, splitConf, splitReject) = assemble(splitClassified, allowOneHoleFiveRescue)
             if (!splitReject && splitConf >= MERGED_GLYPH_RESCUE_MIN_CONF && THREE_LETTER_TWO_DIGIT_RE.matches(splitText)) {
                 return OcrResult(splitText, splitConf)
             }
@@ -273,7 +302,7 @@ private fun recognizeGlyphs(crop: GrayImage, atlas: FlatAtlas, glyphs: List<Glyp
         val splitGlyphs = extractGlyphsWithForcedSplits(crop, setOf(0, 2))
         if (splitGlyphs.size == 5) {
             val splitClassified = splitGlyphs.map { classify(it, atlas) }
-            val (splitText, splitConf, splitReject) = assemble(splitClassified)
+            val (splitText, splitConf, splitReject) = assemble(splitClassified, allowOneHoleFiveRescue)
             if (!splitReject && splitConf >= THREE_COMPONENT_RESCUE_MIN_CONF && THREE_LETTER_TWO_DIGIT_RE.matches(splitText)) {
                 return OcrResult(splitText, splitConf)
             }
@@ -287,7 +316,7 @@ fun recognizeCrop(crop: GrayImage, atlas: FlatAtlas): OcrResult =
     recognizeGlyphs(crop, atlas, extractGlyphs(crop))
 
 internal fun recognizeCropSpeckTolerant(crop: GrayImage, atlas: FlatAtlas): OcrResult =
-    recognizeGlyphs(crop, atlas, extractGlyphsSpeckTolerant(crop))
+    recognizeGlyphs(crop, atlas, extractGlyphsSpeckTolerant(crop), allowOneHoleFiveRescue = true)
 
 /**
  * The pure-Kotlin glyph OCR engine (the fast-path engine analog of createGlyphOcrEngine).

@@ -138,7 +138,7 @@ private fun selectBoxesForOcr(
     val selected = ArrayList(boxesForOcr.take(maxBoxes))
     if (!allowLateWideCandidates || !stopOnFirstCode || maxBoxes > LIVE_MAX_BOXES_DEFAULT) return selected
     val firstScore = boxesForOcr.firstOrNull()?.score
-    if (firstScore != null && firstScore in 0.84..0.92) return selected
+    if (firstScore != null && firstScore in 0.84..0.92 && selected.any { isLateWideCodeCandidate(it) }) return selected
     for (box in boxesForOcr.drop(maxBoxes)) {
         if (isLateWideCodeCandidate(box)) selected.add(box)
         if (selected.size >= LIVE_MAX_BOXES_DEFAULT + 2) break

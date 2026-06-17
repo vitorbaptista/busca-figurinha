@@ -32,6 +32,12 @@ Notable changes to the sticker scanner. Newest first. No formal releases yet (de
   local sem regredir os testes de ouro de `SWE8` nem aumentar falsos positivos.
 
 ### Fixed
+- **OCR Android confirma a segurada difícil de `MEX15`.** O rescue speck-tolerant agora rastreia o
+  segundo melhor dígito e, apenas nesse caminho opt-in para candidatos largos/fracos, aceita o caso
+  estreito em que um `5` borrado parece `8` com um único furo e margem mínima. A seleção de boxes
+  também passa a alcançar o candidato largo quando os dois primeiros são fragmentos pequenos. No
+  benchmark Pixel com CSV manual, o baseline sobe para `38/45` positivos (`84,44%` recall), `9/11`
+  seguradas avaliáveis confirmadas e `0/156` falsos positivos.
 - **OCR Android recupera um crop fraco de `MEX15` sem falso positivo.** O pipeline agora tenta um
   rescue speck-tolerant apenas em candidatos largos/tardios e só aceita a leitura se ela fechar na
   lista de códigos por match conservador ou confusão de alta confiança com dígitos idênticos. O
