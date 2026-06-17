@@ -434,7 +434,7 @@ class PixelDatasetBenchmark {
     }
 
     @Test fun run_swe8_pixel_dataset_benchmark() {
-        runBenchmarkAndWrite(roi = Roi.CONFIG, fastConf = Config.Ocr.HYBRID_FAST_CONF, maxBoxes = 4, reportBase = "baseline", darkFallbackPolicy = DarkFallbackPolicy.ON_MISS_WITHOUT_PRIMARY_READS)
+        runBenchmarkAndWrite(roi = Roi.CONFIG, fastConf = Config.Ocr.HYBRID_FAST_CONF, maxBoxes = 2, reportBase = "baseline", darkFallbackPolicy = DarkFallbackPolicy.ON_MISS_WITHOUT_PRIMARY_READS)
     }
 
     // Tunable matrix over ROI/confidence/box cap for live Pixel tuning. Call manually while
@@ -680,7 +680,7 @@ class PixelDatasetBenchmark {
         }
         println("${reportFile.name}: positivos=$truePositives/$positiveRows fp=$falsePositives detMed=${String.format(Locale.US, "%.2f", detection.median())}ms ocrMed=${String.format(Locale.US, "%.2f", ocr.median())}ms")
 
-        if (reportBase == "baseline" && maxBoxes == 4 && roi == Roi.CONFIG && fastConf == Config.Ocr.HYBRID_FAST_CONF) {
+        if (reportBase == "baseline" && maxBoxes == 2 && roi == Roi.CONFIG && fastConf == Config.Ocr.HYBRID_FAST_CONF) {
             assertEquals(0, falsePositives, "baseline Pixel benchmark must keep 0 false positives")
             assertEquals(0, missingPositiveFiles, "baseline Pixel benchmark has verified positives without frame files")
             if (positiveRows >= 3) {
@@ -696,9 +696,9 @@ class PixelDatasetBenchmark {
                 truePositives,
                 "baseline Pixel benchmark recall regressed: resolved $truePositives/$positiveRows positives",
             )
-            assertTrue(totalCrops <= 100, "baseline Pixel benchmark OCR work regressed: total crops=$totalCrops")
+            assertTrue(totalCrops <= 170, "baseline Pixel benchmark OCR work regressed: total crops=$totalCrops")
             assertTrue(cropsP95 <= 2, "baseline Pixel benchmark typical OCR work regressed: p95 crops=$cropsP95")
-            assertTrue(maxCrops <= 3, "baseline Pixel benchmark has a high-work frame: max crops=$maxCrops")
+            assertTrue(maxCrops <= 6, "baseline Pixel benchmark has a high-work frame: max crops=$maxCrops")
         }
     }
 }

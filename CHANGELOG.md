@@ -126,6 +126,9 @@ Notable changes to the sticker scanner. Newest first. No formal releases yet (de
   mais ou menos horizontal, o detector mantém o melhor candidato mas remove caixas secundárias com
   proporção visual menor que `1.8`, reduzindo ruído no overlay/benchmark sem mudar o recall
   (`29/45`) nem os falsos positivos (`0/156`).
+- **Scanner Android limita OCR aos 2 melhores boxes.** No dataset manual, `maxBoxes=2` manteve o
+  mesmo recall (`29/45`) e `0/156` falsos positivos de `maxBoxes=4`, reduzindo o trabalho de OCR de
+  `193` para `165` crops e o p95 de crops de `3` para `2`.
 
 ## 2026-06-15 — Remove "Enviar foto"
 

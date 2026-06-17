@@ -35,10 +35,11 @@ import kotlin.math.roundToInt
 /** Cap on boxes OCR'd per frame. findCodeBoxes sorts best-first, and the real code pill is
  *  usually box[0] (or a near-duplicate re-segmentation in the next slot). Lower boxes are
  *  weaker — partial pills on far/tilted stickers, plus card noise — so each extra box trades
- *  latency for a bit more recall. 4 is the measured knee: blank-crop skipping (cropHasOcrInk)
- *  means most of these 4 cost nothing on frames that hold no readable pill, while the lower
- *  boxes recover the far/small pills box[0] alone misses. (Mirrors src/ocr/recognize.ts.) */
+ *  latency for a bit more recall. Static/multi-sticker recall keeps 4 boxes. The live path below
+ *  uses 2 boxes after ROI tightening and dark fallback: same verified live recall and 0 false
+ *  positives as 4 boxes, less OCR on late noisy candidates. */
 private const val MAX_BOXES_DEFAULT = 4
+private const val LIVE_MAX_BOXES_DEFAULT = 2
 
 // Hoisted out of the per-crop handle() so they compile once, not per OCR'd crop (this is the
 // per-frame hot path). ALNUM mirrors the TS /[A-Z0-9]/i (case-insensitive).
@@ -291,6 +292,8 @@ fun recognizeFrameInOrder(
     maxBoxes: Int = MAX_BOXES_DEFAULT,
 ): RecognizeOutcome {
     val boxes = findCodeBoxes(frame, roi)
+    val effectiveMaxBoxes =
+        if (stopOnFirstCode && maxBoxes == MAX_BOXES_DEFAULT) LIVE_MAX_BOXES_DEFAULT else maxBoxes
     val primary = recognizeFrameInOrder(
         engine = engine,
         frame = frame,
@@ -298,7 +301,7 @@ fun recognizeFrameInOrder(
         boxes = boxes,
         stopOnFirstCode = stopOnFirstCode,
         onDetected = onDetected,
-        maxBoxes = maxBoxes,
+        maxBoxes = effectiveMaxBoxes,
     )
     if (!stopOnFirstCode || primary.resolved.isNotEmpty()) return primary
 
@@ -315,7 +318,7 @@ fun recognizeFrameInOrder(
         checklist = checklist,
         boxes = darkBoxes,
         stopOnFirstCode = true,
-        maxBoxes = maxBoxes,
+        maxBoxes = effectiveMaxBoxes,
     )
     if (dark.resolved.isEmpty() && dark.reads.isEmpty() && dark.crops == 0) return primary
     return RecognizeOutcome(
