@@ -72,6 +72,13 @@ class PixelDatasetBenchmark {
         NO_MATCH,
     }
 
+    private enum class DarkFallbackPolicy {
+        NEVER,
+        ON_MISS,
+        ON_MISS_WITHOUT_PRIMARY_READS,
+        ON_MISS_WITHOUT_PRIMARY_INK,
+    }
+
     private data class FrameResult(
         val frameId: String,
         val reads: List<String>,
@@ -288,7 +295,7 @@ class PixelDatasetBenchmark {
         maxBoxes: Int = 4,
         modes: Array<ForegroundMode> = ForegroundMode.values(),
         fallbackToFullOnMiss: Boolean = false,
-        fallbackDarkOnMiss: Boolean = false,
+        darkFallbackPolicy: DarkFallbackPolicy = DarkFallbackPolicy.NEVER,
         hasManualVerification: Boolean = false,
     ): List<FrameResult> {
         val atlas = loadAtlas() ?: return emptyList()
@@ -332,7 +339,13 @@ class PixelDatasetBenchmark {
                     detectionNs = System.nanoTime() - detectStart
                 },
             )
-            if (fallbackDarkOnMiss && outcome.resolved.isEmpty()) {
+            val shouldFallbackDark = when (darkFallbackPolicy) {
+                DarkFallbackPolicy.NEVER -> false
+                DarkFallbackPolicy.ON_MISS -> outcome.resolved.isEmpty()
+                DarkFallbackPolicy.ON_MISS_WITHOUT_PRIMARY_READS -> outcome.resolved.isEmpty() && outcome.reads.isEmpty()
+                DarkFallbackPolicy.ON_MISS_WITHOUT_PRIMARY_INK -> outcome.resolved.isEmpty() && inkBoxes == 0
+            }
+            if (shouldFallbackDark) {
                 val darkBoxes = findCodeBoxes(frame, roi, arrayOf(ForegroundMode.DARK))
                 val darkOutcome = recognizeFrameInOrder(
                     engine = engine,
@@ -416,7 +429,7 @@ class PixelDatasetBenchmark {
 
     // Tunable matrix over ROI/confidence/box cap for live Pixel tuning.
     @Test fun run_swe8_pixel_dataset_benchmark() {
-        runBenchmarkAndWrite(roi = Roi.CONFIG, fastConf = Config.Ocr.HYBRID_FAST_CONF, maxBoxes = 4, reportBase = "baseline", fallbackDarkOnMiss = true)
+        runBenchmarkAndWrite(roi = Roi.CONFIG, fastConf = Config.Ocr.HYBRID_FAST_CONF, maxBoxes = 4, reportBase = "baseline", darkFallbackPolicy = DarkFallbackPolicy.ON_MISS_WITHOUT_PRIMARY_READS)
         runBenchmarkAndWrite(roi = Roi(0.18, 0.32, 0.82, 0.58), fastConf = Config.Ocr.HYBRID_FAST_CONF, maxBoxes = 4, reportBase = "roi_wide_mid")
         runBenchmarkAndWrite(roi = Roi(0.18, 0.32, 0.82, 0.58), fastConf = Config.Ocr.HYBRID_FAST_CONF, maxBoxes = 8, reportBase = "roi_wide_mid")
         runBenchmarkAndWrite(roi = Roi(0.18, 0.32, 0.82, 0.58), fastConf = Config.Ocr.HYBRID_FAST_CONF, maxBoxes = 12, reportBase = "roi_wide_mid")
@@ -460,7 +473,7 @@ class PixelDatasetBenchmark {
         reportBase: String,
         modes: Array<ForegroundMode> = ForegroundMode.values(),
         fallbackToFullOnMiss: Boolean = false,
-        fallbackDarkOnMiss: Boolean = false,
+        darkFallbackPolicy: DarkFallbackPolicy = DarkFallbackPolicy.NEVER,
     ) {
         val hasManualVerificationGlobal = File(datasetRoot(), verificationFileName).exists()
         val results = runBenchmark(
@@ -469,7 +482,7 @@ class PixelDatasetBenchmark {
             maxBoxes = maxBoxes,
             modes = modes,
             fallbackToFullOnMiss = fallbackToFullOnMiss,
-            fallbackDarkOnMiss = fallbackDarkOnMiss,
+            darkFallbackPolicy = darkFallbackPolicy,
             hasManualVerification = hasManualVerificationGlobal,
         )
         val manifestRows = manifestRows()
@@ -549,7 +562,12 @@ class PixelDatasetBenchmark {
         }
         val fallbackLabel = buildString {
             if (fallbackToFullOnMiss && roi != Roi.FULL) append(" + fallback_full")
-            if (fallbackDarkOnMiss) append(" + fallback_dark")
+            when (darkFallbackPolicy) {
+                DarkFallbackPolicy.NEVER -> Unit
+                DarkFallbackPolicy.ON_MISS -> append(" + fallback_dark")
+                DarkFallbackPolicy.ON_MISS_WITHOUT_PRIMARY_READS -> append(" + fallback_dark_no_primary_reads")
+                DarkFallbackPolicy.ON_MISS_WITHOUT_PRIMARY_INK -> append(" + fallback_dark_no_primary_ink")
+            }
         }
         lines += "- estratégia de busca: $fallbackLabel"
         lines += "- resolvidos positivos: $truePositives/$positiveRows"

@@ -283,7 +283,10 @@ fun recognizeFrameInOrder(
 
     // The mixed dark+light detector can let a light-mode false candidate suppress a weak real
     // dark pill. A dark-only retry runs only after a miss, so it can recover weak real backs
-    // without changing the normal fast path or committing any one-off non-code read.
+    // without changing the normal fast path or committing any one-off non-code read. If the primary
+    // pass already produced OCR text, the useful pill was reached and rejected as unsafe; retrying
+    // dark-only mostly burns time on no-sticker frames, so keep the retry for true no-text misses.
+    if (primary.reads.isNotEmpty()) return primary
     val darkBoxes = findCodeBoxes(frame, roi, arrayOf(ForegroundMode.DARK))
     val dark = recognizeFrameInOrder(
         engine = engine,

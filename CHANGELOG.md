@@ -74,6 +74,10 @@ Notable changes to the sticker scanner. Newest first. No formal releases yet (de
 - **Sondagem de cena parada ficou mais barata.** A verificação que arma burst quando o app abre com
   a figurinha já parada agora usa apenas o detector `DARK`; o OCR final continua com a estratégia
   completa e o benchmark garante que a sondagem encontra caixa em todos os positivos processáveis.
+- **Fallback `DARK` pós-miss roda só em miss sem texto.** A segunda busca escura continua
+  recuperando os crops fracos verificados, mas deixa de rodar quando a primeira passada já viu texto
+  e rejeitou como inseguro. No benchmark manual, a baseline mantém `10/10` e `0/145` falsos
+  positivos com menos crops médios por frame.
 - **ROI Android ficou mais estreita para leitura ao vivo.** A janela agora prioriza a faixa central
   onde o código `SWE 8` foi lido no Pixel, reduzindo fundo analisado e deixando mais claro que a
   figurinha precisa estar perto o suficiente para o código preencher o retículo.
