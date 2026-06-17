@@ -6,6 +6,11 @@ Notable changes to the sticker scanner. Newest first. No formal releases yet (de
 ## 2026-06-17 — Android: baseline Pixel combinado
 
 ### Fixed
+- **OCR Android recupera `RSA13` e `QAT17` em shapes Pixel verificados sem ampliar correção textual.**
+  O classificador agora mantém `RSA13` quando o `3` vence mas fica empatado com outro dígito no
+  shape completo `RSA 13`, e recupera `QAT17` quando o `Q` abre como `D` no shape `DAT 17`. O
+  baseline combinado sobe para `147/216` positivos (`68,06%` recall), `62` leituras exatas,
+  `41/43` seguradas avaliáveis confirmadas, `0/157` falsos positivos e `0` commits errados.
 - **OCR Android recupera `MEX15` quando o `X` fragmenta como `1` em crop Pixel.** O resgate fica
   preso ao shape completo `ME1 15`, exige confiança mínima no glifo fragmentado e não abre correção
   para outros sufixos. O baseline combinado sobe para `145/216` positivos (`67,13%` recall), `60`

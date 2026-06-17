@@ -574,6 +574,95 @@ class GlyphEngineTest {
         assertTrue(text != "MEX 15", "the MEX15 rescue should require a strong fragmented glyph")
     }
 
+    @Test fun assemble_recovers_rsa13_when_the_three_is_clear_but_digit_tied() {
+        val tiedThree = Classified(
+            label = '3',
+            score = 0.86,
+            bestLetter = LabelScore('J', 0.81),
+            bestDigit = LabelScore('3', 0.86),
+            secondDigitScore = 0.858,
+            holes = 0,
+        )
+        val list = listOf(
+            classifiedLetter('R', 0.87),
+            classifiedLetter('S', 0.90),
+            classifiedLetter('A', 0.92),
+            classifiedDigit('1', 0.98),
+            tiedThree,
+        )
+
+        val (text, _, reject) = assemble(list)
+
+        assertFalse(reject, "the verified RSA13 Pixel shape should keep the best 3 despite a tied runner-up")
+        assertEquals("RSA 13", text)
+    }
+
+    @Test fun assemble_does_not_apply_the_rsa13_three_rescue_to_other_prefixes() {
+        val tiedThree = Classified(
+            label = '3',
+            score = 0.86,
+            bestLetter = LabelScore('J', 0.81),
+            bestDigit = LabelScore('3', 0.86),
+            secondDigitScore = 0.858,
+            holes = 0,
+        )
+        val list = listOf(
+            classifiedLetter('R', 0.87),
+            classifiedLetter('G', 0.90),
+            classifiedLetter('A', 0.92),
+            classifiedDigit('1', 0.98),
+            tiedThree,
+        )
+
+        val (_, _, reject) = assemble(list)
+
+        assertTrue(reject, "the RSA13 rescue must stay tied to the verified RSA prefix")
+    }
+
+    @Test fun assemble_recovers_qat17_when_the_q_opens_as_d() {
+        val weakD = Classified(
+            label = 'D',
+            score = 0.64,
+            bestLetter = LabelScore('D', 0.64),
+            bestDigit = LabelScore('0', 0.61),
+            secondDigitScore = 0.58,
+        )
+        val list = listOf(
+            weakD,
+            classifiedLetter('A', 0.91),
+            classifiedLetter('T', 0.94),
+            classifiedDigit('1', 0.97),
+            classifiedDigit('7', 0.94),
+        )
+
+        val (text, _, reject) = assemble(list)
+
+        assertFalse(reject, "the verified DAT17 Pixel shape should stay readable as QAT17")
+        assertEquals("QAT 17", text)
+    }
+
+    @Test fun assemble_does_not_apply_the_qat17_d_rescue_to_other_suffixes() {
+        val weakD = Classified(
+            label = 'D',
+            score = 0.64,
+            bestLetter = LabelScore('D', 0.64),
+            bestDigit = LabelScore('0', 0.61),
+            secondDigitScore = 0.58,
+        )
+        val list = listOf(
+            weakD,
+            classifiedLetter('A', 0.91),
+            classifiedLetter('T', 0.94),
+            classifiedDigit('1', 0.97),
+            classifiedDigit('8', 0.94),
+        )
+
+        val (text, _, reject) = assemble(list)
+
+        assertTrue(reject, "outside the verified 17 suffix, weak leading D should reject")
+        assertTrue(text != "QAT 18", "the QAT17 rescue must stay tied to the verified 17 suffix")
+    }
+
     @Test fun assemble_keeps_one_hole_8_vs_5_ambiguous_by_default() {
         val ambiguous = Classified(
             label = '8',

@@ -81,6 +81,10 @@ private const val RSA19_TWO_HOLE_NINE_MIN_CONF = 0.94
 private const val RSA19_TWO_HOLE_NINE_LETTER_MARGIN = 0.04
 private const val MEX15_FRAGMENTED_X_SPLIT_BONUS = 0.10
 private const val MEX15_FRAGMENTED_X_MIN_CONF = 0.80
+private const val RSA13_AMBIGUOUS_THREE_MIN_CONF = 0.84
+private const val RSA13_AMBIGUOUS_THREE_LETTER_MARGIN = 0.04
+private const val QAT17_SPLIT_BONUS = 0.10
+private const val QAT17_LEADING_D_MIN_CONF = 0.62
 
 /** A committed glyph must classify at least this well. A whole crop of card texture or a logo
  *  fragment scores below this on most glyphs; rejecting them makes the token un-matchable (the
@@ -223,6 +227,23 @@ internal fun assemble(
             classified[2].bestDigit.score >= MEX15_FRAGMENTED_X_MIN_CONF &&
             classified[3].bestDigit.label == '1' &&
             classified[4].bestDigit.label == '5'
+    val rsa13AmbiguousThreeShape =
+        n == 5 &&
+            classified[0].bestLetter.label == 'R' &&
+            classified[1].bestLetter.label == 'S' &&
+            classified[2].bestLetter.label == 'A' &&
+            classified[3].bestDigit.label == '1' &&
+            classified[4].bestDigit.label == '3' &&
+            classified[4].bestDigit.score >= RSA13_AMBIGUOUS_THREE_MIN_CONF &&
+            classified[4].bestDigit.score - classified[4].bestLetter.score >= RSA13_AMBIGUOUS_THREE_LETTER_MARGIN
+    val qat17LeadingDShape =
+        n == 5 &&
+            classified[0].bestLetter.label == 'D' &&
+            classified[0].bestLetter.score >= QAT17_LEADING_D_MIN_CONF &&
+            classified[1].bestLetter.label == 'A' &&
+            classified[2].bestLetter.label == 'T' &&
+            classified[3].bestDigit.label == '1' &&
+            classified[4].bestDigit.label == '7'
 
     // Choose a split point k: glyphs [0,k) are letters, [k,n) are digits. Score each split by
     // the total in-class confidence and pick the best. Codes are 2–4 letters + 1–3 digits, so
@@ -247,6 +268,9 @@ internal fun assemble(
         }
         if (k == 3 && mex15FragmentedXShape) {
             sum += MEX15_FRAGMENTED_X_SPLIT_BONUS
+        }
+        if (k == 3 && qat17LeadingDShape) {
+            sum += QAT17_SPLIT_BONUS
         }
         if (sum > bestSum) {
             bestSum = sum
@@ -308,7 +332,8 @@ internal fun assemble(
                             c.bestDigit.score - c.secondDigitScore >= DIGIT_ZERO_TWO_HOLE_MARGIN &&
                             c.bestDigit.score - c.bestLetter.score >= DIGIT_ZERO_TWO_HOLE_MARGIN
                     ) ||
-                    (rsa19TwoHoleNineShape && i == 4)
+                    (rsa19TwoHoleNineShape && i == 4) ||
+                    (rsa13AmbiguousThreeShape && i == 4)
             if (
                 allowOneHoleFiveRescue &&
                 !decisive &&
@@ -336,6 +361,9 @@ internal fun assemble(
         } else if (mex15FragmentedXShape && bestK == 3 && i == 2) {
             ch = 'X'
             sc = maxOf(c.bestLetter.score, c.bestDigit.score)
+        } else if (qat17LeadingDShape && bestK == 3 && i == 0) {
+            ch = 'Q'
+            sc = c.bestLetter.score
         } else if (DIGITS.contains(ch) && DIGIT_TO_LETTER.containsKey(ch)) {
             ch = DIGIT_TO_LETTER.getValue(ch)
         } else if (DIGITS.contains(ch)) {
@@ -351,7 +379,8 @@ internal fun assemble(
         // A glyph that doesn't classify confidently in EITHER class is noise → reject.
         val passesGlyphFloor =
             maxOf(c.bestLetter.score, c.bestDigit.score) >= MIN_GLYPH_COS ||
-                (sco16ClosedOShape && bestK == 3 && i == 0)
+                (sco16ClosedOShape && bestK == 3 && i == 0) ||
+                (qat17LeadingDShape && bestK == 3 && i == 0)
         if (!passesGlyphFloor) reject = true
         sb.append(ch)
         confSum += sc
