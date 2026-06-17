@@ -26,6 +26,11 @@ private const val MIN_THIN_RESTORE_LEN = 3
 
 /** Thin vertical-stroke letters the OCR reliably DROPS (never a bold letter). */
 private val DROPPABLE_LETTERS = setOf('I', 'J', 'L', 'T')
+private val HIGH_CONF_LETTER_CONFUSIONS = setOf(
+    'N' to 'A',
+    'J' to 'U',
+)
+private val STRUCTURED_CODE_RE = Regex("^([A-Z]{2,4})(\\d{1,3})$")
 
 /** If [longer] becomes [shorter] by removing exactly one char, return it; else null. */
 private fun singleRemovedChar(longer: String, shorter: String): Char? {
@@ -100,6 +105,58 @@ fun bestMatchFromText(text: String, list: Checklist, maxDistance: Int = Config.M
         else if (result.status == MatchStatus.CORRECTED && result.distance < b.distance) best = result
     }
     return best
+}
+
+fun bestHighConfidenceConfusionMatchFromText(text: String, list: Checklist): MatchResult? {
+    val codes = extractCodes(text)
+    if (codes.isEmpty()) return null
+    var bestEntry: ChecklistEntry? = null
+    var bestRaw = ""
+    var bestDistance = Int.MAX_VALUE
+    var tieAtBest = 0
+
+    for (raw in codes) {
+        val normalized = normalizeCode(raw)
+        val rawMatch = STRUCTURED_CODE_RE.matchEntire(normalized) ?: continue
+        val rawLetters = rawMatch.groupValues[1]
+        val rawDigits = rawMatch.groupValues[2]
+        for (entry in list.entries) {
+            val entryMatch = STRUCTURED_CODE_RE.matchEntire(entry.code) ?: continue
+            val entryLetters = entryMatch.groupValues[1]
+            val entryDigits = entryMatch.groupValues[2]
+            if (rawDigits != entryDigits || rawLetters.length != entryLetters.length) continue
+
+            var distance = 0
+            var ok = true
+            for (i in rawLetters.indices) {
+                val got = rawLetters[i]
+                val expected = entryLetters[i]
+                if (got == expected) continue
+                if ((got to expected) !in HIGH_CONF_LETTER_CONFUSIONS) {
+                    ok = false
+                    break
+                }
+                distance++
+            }
+            if (!ok || distance != 2) continue
+
+            if (distance < bestDistance) {
+                bestEntry = entry
+                bestRaw = normalized
+                bestDistance = distance
+                tieAtBest = 1
+            } else if (distance == bestDistance) {
+                tieAtBest++
+            }
+        }
+    }
+
+    val entry = bestEntry
+    return if (entry != null && tieAtBest == 1) {
+        MatchResult(bestRaw, MatchStatus.CORRECTED, entry, bestDistance)
+    } else {
+        null
+    }
 }
 
 /** Match a block where each line is one located code-box crop (one result per unique entry). */

@@ -538,6 +538,18 @@ internal fun extractGlyphsWithForcedSplit(img: GrayImage, splitIndex: Int): List
 }
 
 internal fun extractGlyphsWithForcedSplits(img: GrayImage, splitIndices: Set<Int>): List<GlyphBox> {
+    return extractGlyphsWithForcedSplits(img, splitIndices, SHORT_CODE_MIDDLE_MERGE_W_RATIO)
+}
+
+internal fun extractGlyphsWithForcedNarrowSplit(img: GrayImage, splitIndex: Int): List<GlyphBox> {
+    return extractGlyphsWithForcedSplits(img, setOf(splitIndex), 0.78f)
+}
+
+private fun extractGlyphsWithForcedSplits(
+    img: GrayImage,
+    splitIndices: Set<Int>,
+    minWidthRatio: Float,
+): List<GlyphBox> {
     val w = img.width
     val h = img.height
     if (w == 0) return emptyList()
@@ -558,7 +570,7 @@ internal fun extractGlyphsWithForcedSplits(img: GrayImage, splitIndices: Set<Int
         val targetW = box.x1 - box.x0 + 1
         val targetH = box.y1 - box.y0 + 1
         val tallness = max(targetH.toFloat(), medH * 0.85f)
-        if (targetW < tallness * SHORT_CODE_MIDDLE_MERGE_W_RATIO || targetW >= tallness * MERGE_W_RATIO) {
+        if (targetW < tallness * minWidthRatio || targetW >= tallness * MERGE_W_RATIO) {
             return emptyList()
         }
 

@@ -27,6 +27,7 @@ package br.com.fiquemsabendo.figurinhas.ocr
 import br.com.fiquemsabendo.figurinhas.Config
 import br.com.fiquemsabendo.figurinhas.domain.Checklist
 import br.com.fiquemsabendo.figurinhas.domain.MatchResult
+import br.com.fiquemsabendo.figurinhas.domain.bestHighConfidenceConfusionMatchFromText
 import br.com.fiquemsabendo.figurinhas.domain.bestMatchFromText
 import kotlin.math.max
 import kotlin.math.min
@@ -223,10 +224,17 @@ fun recognizeFrameInOrder(
         // Handle one OCR result: record the read, snap it to a checklist code (or not), and mark
         // the box done when it resolved OR read to nothing legible (so its flip is skipped).
         // Returns true when this crop resolved a code.
-        fun handle(job: Job, text: String): Boolean {
+        fun handle(job: Job, text: String, confidence: Double? = null): Boolean {
             val clean = text.replace(WHITESPACE_RE, " ").trim()
             if (clean.isNotEmpty()) reads.add(clean)
-            val m = bestMatchFromText(text, checklist)
+            val normalMatch = bestMatchFromText(text, checklist)
+            val m = if (normalMatch?.entry != null) {
+                normalMatch
+            } else if (confidence != null && confidence >= 90.0) {
+                bestHighConfidenceConfusionMatchFromText(text, checklist)
+            } else {
+                normalMatch
+            }
             if (m?.entry != null) {
                 job.p.done = true // this box resolved — its flip round is skipped
                 if (seen.add(m.entry.code)) resolved.add(m)
@@ -264,7 +272,7 @@ fun recognizeFrameInOrder(
                 if (r.confidence >= gate) {
                     // Confident glyph read: it either snaps to a code (resolve, done) or is a
                     // confident NON-code (logo fragment) we trust enough to NOT re-check slow.
-                    if (handle(job, r.text)) {
+                    if (handle(job, r.text, r.confidence)) {
                         resolvedThisRound = true
                         break
                     }

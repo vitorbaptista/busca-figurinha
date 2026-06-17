@@ -1,6 +1,7 @@
 package br.com.fiquemsabendo.figurinhas.ocr
 
 import br.com.fiquemsabendo.figurinhas.data.checklist
+import br.com.fiquemsabendo.figurinhas.domain.bestHighConfidenceConfusionMatchFromText
 import br.com.fiquemsabendo.figurinhas.domain.bestMatchFromText
 import java.io.File
 import java.util.zip.GZIPInputStream
@@ -182,6 +183,19 @@ class RecognizerGoldenTest {
         val read = recognizeCrop(crop, atlas)
         val match = bestMatchFromText(read.text, checklist)
         assertEquals("CIV4", match?.entry?.code, "read=${read.text} conf=${read.confidence} ${glyphDebug(crop, atlas)}")
+    }
+
+    @Test fun prepared_pixel_AUT4_with_merged_middle_crop_reads_the_code() {
+        val crop = loadFrame("/stickers/AUT4_pixel_live_frame27_crop0.pgm.gz") ?: return
+        val atlas = atlas() ?: return
+        val read = recognizeCrop(crop, atlas)
+        val normalMatch = bestMatchFromText(read.text, checklist)
+        val match = if (normalMatch?.entry != null) {
+            normalMatch
+        } else {
+            bestHighConfidenceConfusionMatchFromText(read.text, checklist)
+        }
+        assertEquals("AUT4", match?.entry?.code, "read=${read.text} conf=${read.confidence} ${glyphDebug(crop, atlas)}")
     }
 
     @Test fun live_pixel_newroi_frames_read_SWE8() {

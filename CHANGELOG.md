@@ -32,6 +32,11 @@ Notable changes to the sticker scanner. Newest first. No formal releases yet (de
   local sem regredir os testes de ouro de `SWE8` nem aumentar falsos positivos.
 
 ### Fixed
+- **OCR Android recupera leituras confiantes com confusões conhecidas.** O pipeline agora usa a
+  lista fechada de códigos apenas para leituras de glyph com alta confiança, dígitos idênticos e
+  pares de letras observados (`N→A`, `J→U`) com candidato único. Isso recupera `AUT4` em crop real
+  com `U/T` colados e melhora o benchmark Pixel manual para `36/45` positivos, `8/11` seguradas
+  avaliáveis e `0/156` falsos positivos.
 - **OCR Android recupera `RSA17` e `CIV4` no dataset manual.** O reconhecedor agora tenta dividir
   dois componentes colados em crops de 5 caracteres que viraram 3 blocos, e trata um `O` sem furo
   como `C` apenas na corrida de letras. Com a restauração curta de letra fina (`CV4` → `CIV4`), o

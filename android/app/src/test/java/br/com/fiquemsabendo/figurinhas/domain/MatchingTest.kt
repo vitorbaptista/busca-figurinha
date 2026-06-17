@@ -119,6 +119,17 @@ class MatchingTest {
         val r = bestMatchFromText("FIFA WORLD CUP 2026\nCIV 12\n© Panini", checklist)
         assertEquals("CIV12", r?.entry?.code)
     }
+    @Test fun high_confidence_confusion_recovers_only_known_letter_confusions_with_exact_digits() {
+        val r = bestHighConfidenceConfusionMatchFromText("NJT 4", checklist)
+        assertEquals("AUT4", r?.entry?.code)
+        assertEquals(2, r?.distance)
+        assertNull(bestMatchFromText("NJT 4", checklist)?.entry)
+    }
+    @Test fun high_confidence_confusion_rejects_digit_changes_and_unknown_letter_pairs() {
+        val onlyAut4 = makeChecklist(listOf("AUT4"))
+        assertNull(bestHighConfidenceConfusionMatchFromText("NJT 5", onlyAut4))
+        assertNull(bestHighConfidenceConfusionMatchFromText("NRT 4", checklist))
+    }
 
     // ---- matchAllFromText ----
     @Test fun all_resolves_each_distinct() {
