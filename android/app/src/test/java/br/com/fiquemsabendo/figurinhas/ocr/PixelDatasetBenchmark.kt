@@ -358,6 +358,8 @@ class PixelDatasetBenchmark {
                     boxes = darkBoxes,
                     stopOnFirstCode = true,
                     maxBoxes = maxBoxes,
+                    allowLateWideCandidates = false,
+                    allowHighResRetry = false,
                 )
                 if (darkOutcome.resolved.isNotEmpty() || darkOutcome.reads.isNotEmpty() || darkOutcome.crops > 0) {
                     darkFallbackUsed = true
@@ -393,7 +395,7 @@ class PixelDatasetBenchmark {
                 else -> FailReason.NO_MATCH
             }
             val diagnostics = if (row.isPositiveTarget && !hasExpected) {
-                boxesToRun.flatMapIndexed { boxIndex, box ->
+                boxes.take(10).flatMapIndexed { boxIndex, box ->
                     val src = codeCropSource(frame, box)
                     (0 until min(src.count, 2)).map { cropIndex ->
                         val crop = src.build(cropIndex)
@@ -612,7 +614,7 @@ class PixelDatasetBenchmark {
         lines += "- fallback dark tentado/usado: $darkFallbackAttempts/$darkFallbackUsed"
         lines += ""
 
-        lines += "## Acertos ($expectedCode)"
+        lines += "## Acertos (GT manual)"
         if (hits.isEmpty()) {
             lines += "- nenhum"
         } else {
@@ -636,6 +638,13 @@ class PixelDatasetBenchmark {
         sortedWorst.forEachIndexed { index, result ->
             val resolved = if (result.resolvedCodes.isEmpty()) "-" else result.resolvedCodes.joinToString(", ")
             lines += "${index + 1}. ${result.frameId} det=${result.detectionMs}ms ocr=${result.ocrMs}ms boxes=${result.boxes}/${result.inkBoxes} crops=${result.crops} respostas=$resolved"
+        }
+        lines += ""
+        lines += "## Maior trabalho OCR"
+        results.sortedByDescending { it.crops }.take(12).forEachIndexed { index, result ->
+            val resolved = if (result.resolvedCodes.isEmpty()) "-" else result.resolvedCodes.joinToString(", ")
+            val readText = if (result.reads.isEmpty()) "-" else result.reads.joinToString(" | ")
+            lines += "${index + 1}. ${result.frameId} crops=${result.crops} boxes=${result.boxes}/${result.inkBoxes} respostas=$resolved leituras=$readText"
         }
         lines += ""
         lines += "## Falsos positivos"

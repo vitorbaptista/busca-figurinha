@@ -44,6 +44,9 @@ class FlatAtlas(
 private val DIGIT_TO_LETTER: Map<Char, Char> =
     mapOf('0' to 'O', '1' to 'I', '2' to 'Z', '5' to 'S', '8' to 'B', '6' to 'G')
 private val DIGITS: Set<Char> = "0123456789".toSet()
+private val TWO_LETTER_TWO_DIGIT_RE = Regex("^[A-Z]{2} \\d{2}$")
+private val THREE_LETTER_TWO_DIGIT_RE = Regex("^[A-Z]{3} \\d{2}$")
+private const val MERGED_GLYPH_RESCUE_MIN_CONF = 85.0
 
 /** A digit is COMMITTED only if it's decisive: either it beats the runner-up digit by at
  *  least DIGIT_MARGIN, OR it's a near-exact template match (≥ DIGIT_STRONG). Otherwise it is
@@ -240,6 +243,16 @@ fun recognizeCrop(crop: GrayImage, atlas: FlatAtlas): OcrResult {
     if (glyphs.size < 2 || glyphs.size > 8) return OcrResult("", 0.0)
     val classified = glyphs.map { classify(it, atlas) }
     val (text, conf, reject) = assemble(classified)
+    if (!reject && glyphs.size == 4 && TWO_LETTER_TWO_DIGIT_RE.matches(text)) {
+        val splitGlyphs = extractGlyphsWithForcedSplit(crop, splitIndex = 1)
+        if (splitGlyphs.size == 5) {
+            val splitClassified = splitGlyphs.map { classify(it, atlas) }
+            val (splitText, splitConf, splitReject) = assemble(splitClassified)
+            if (!splitReject && splitConf >= MERGED_GLYPH_RESCUE_MIN_CONF && THREE_LETTER_TWO_DIGIT_RE.matches(splitText)) {
+                return OcrResult(splitText, splitConf)
+            }
+        }
+    }
     return if (reject) OcrResult(rejectSentinel(text), 0.0) else OcrResult(text, conf)
 }
 

@@ -58,6 +58,17 @@ class RecognizePipelineTest {
         return GlyphOnlyRecognizer(GlyphRecognizer(atlas))
     }
 
+    private class EmptyFastEngine : FrameRecognizer {
+        override fun recognizeFast(crops: List<GrayImage>): List<OcrResult> =
+            crops.map { OcrResult("", 0.0) }
+
+        override fun recognizeSlow(crops: List<GrayImage>): List<OcrResult>? = null
+
+        override val fastConf: Double = Config.Ocr.HYBRID_FAST_CONF
+
+        override val hasSlowFallback: Boolean = false
+    }
+
     /** Paint a dark pill (x0..x1, y0..y1) with a few LIGHT vertical "glyph" bars knocked out of
      *  it into an existing card frame's pixel array. prepForOcr inverts the light text to ink, so
      *  a pill WITH bars survives the cropHasOcrInk gate and dispatches an OCR job (a solid bar with
@@ -192,5 +203,33 @@ class RecognizePipelineTest {
 
         assertTrue(out.crops <= 8, "MAX_BOXES caps the OCR work; expected <= 8 crops, got ${out.crops}")
         assertTrue(out.resolved.isEmpty(), "synthetic bars resolve no real code")
+    }
+
+    @Test fun blank_fast_read_without_slow_fallback_skips_flip_and_retry_rounds() {
+        val frame = inkedPillFrame(220, 160, 50, 60, 169, 99)
+        val box = CodeBox(
+            x = 50.0,
+            y = 60.0,
+            w = 120.0,
+            h = 40.0,
+            orient = 'h',
+            score = 0.88,
+            tilt = null,
+            pillW = 40.0,
+            fill = 0.72,
+            boost = true,
+        )
+
+        val out = recognizeFrameInOrder(
+            engine = EmptyFastEngine(),
+            frame = frame,
+            checklist = checklist,
+            boxes = listOf(box),
+            stopOnFirstCode = true,
+            maxBoxes = 1,
+        )
+
+        assertEquals(1, out.crops, "empty fast read with no slow fallback should not pay flip/retry rounds")
+        assertTrue(out.resolved.isEmpty())
     }
 }

@@ -108,4 +108,23 @@ class GlyphFeaturesTest {
         assertEquals(4, glyphs.size, "a short-code middle merge must be split into four glyphs")
         assertTrue(glyphs[0].x < glyphs[1].x && glyphs[1].x < glyphs[2].x && glyphs[2].x < glyphs[3].x)
     }
+
+    @Test fun forced_split_rescues_a_borderline_second_component_in_a_five_glyph_code() {
+        // Pixel crops can merge the 2nd+3rd letters of a 3-letter + 2-digit code into one
+        // borderline-wide component. The normal extractor leaves four components; the OCR rescue
+        // can then force-split only the suspicious second component.
+        val img = canvas(
+            130, 40,
+            rect(8, 8, 19, 29),    // first letter
+            rect(34, 8, 59, 29),   // two letters merged, 26 x 22 (< 1.25h, > 1.10h)
+            rect(78, 8, 89, 29),   // first digit
+            rect(104, 8, 116, 29), // second digit
+        )
+
+        assertEquals(4, extractGlyphs(img).size, "normal extraction keeps the borderline merge")
+        val split = extractGlyphsWithForcedSplit(img, splitIndex = 1)
+
+        assertEquals(5, split.size, "forced split should produce the five code glyphs")
+        assertTrue(split.zipWithNext().all { (a, b) -> a.x < b.x }, "split glyphs stay left-to-right")
+    }
 }

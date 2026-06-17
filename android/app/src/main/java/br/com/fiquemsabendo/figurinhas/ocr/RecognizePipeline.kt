@@ -71,6 +71,10 @@ interface FrameRecognizer {
 
     /** The fast read's confidence floor for accepting it without the slow engine. */
     val fastConf: Double
+
+    /** Whether a trained slow fallback exists and should receive unsure fast reads. */
+    val hasSlowFallback: Boolean
+        get() = true
 }
 
 /**
@@ -84,6 +88,8 @@ class GlyphOnlyRecognizer(
     override fun recognizeFast(crops: List<GrayImage>): List<OcrResult> = glyph.recognizeMany(crops)
 
     override fun recognizeSlow(crops: List<GrayImage>): List<OcrResult>? = null
+
+    override val hasSlowFallback: Boolean = false
 }
 
 /** One pending box: a lazy source for its prepared crop variants (upright = index 0, 180°-flip
@@ -104,6 +110,34 @@ private fun clampMaxBoxes(maxBoxes: Int): Int {
     return max(1, min(maxBoxes, 12))
 }
 
+private fun isLateWideCodeCandidate(box: CodeBox): Boolean {
+    if (box.tilt != null || box.orient != 'h') return false
+    val shortSide = min(box.w, box.h)
+    if (shortSide <= 0) return false
+    val axisAr = max(box.w, box.h) / shortSide
+    return box.score in 0.65..0.75 &&
+        box.w >= 110.0 &&
+        box.h >= 38.0 &&
+        axisAr in 2.2..3.8
+}
+
+private fun selectBoxesForOcr(
+    boxes: List<CodeBox>,
+    maxBoxes: Int,
+    stopOnFirstCode: Boolean,
+    allowLateWideCandidates: Boolean,
+): List<CodeBox> {
+    val selected = ArrayList(boxes.take(maxBoxes))
+    if (!allowLateWideCandidates || !stopOnFirstCode || maxBoxes > LIVE_MAX_BOXES_DEFAULT) return selected
+    val firstScore = boxes.firstOrNull()?.score
+    if (firstScore != null && firstScore in 0.84..0.92) return selected
+    for (box in boxes.drop(maxBoxes)) {
+        if (isLateWideCodeCandidate(box)) selected.add(box)
+        if (selected.size >= LIVE_MAX_BOXES_DEFAULT + 2) break
+    }
+    return selected
+}
+
 /**
  * Recognize a frame with precomputed candidate boxes.
  *
@@ -118,9 +152,11 @@ fun recognizeFrameInOrder(
     stopOnFirstCode: Boolean,
     onDetected: (() -> Unit)? = null,
     maxBoxes: Int = MAX_BOXES_DEFAULT,
+    allowLateWideCandidates: Boolean = true,
+    allowHighResRetry: Boolean = true,
 ): RecognizeOutcome {
     val effectiveMax = clampMaxBoxes(maxBoxes)
-    val selected = boxes.take(effectiveMax)
+    val selected = selectBoxesForOcr(boxes, effectiveMax, stopOnFirstCode, allowLateWideCandidates)
     onDetected?.invoke()
 
     val resolved = ArrayList<MatchResult>()
@@ -130,7 +166,7 @@ fun recognizeFrameInOrder(
 
     // A lazy crop source per box — the RAW crops are extracted now (cheap), but each variant's
     // expensive prep (prepForOcr) is deferred to the round that actually uses it.
-    val retrySmallCrops = stopOnFirstCode
+    val retrySmallCrops = stopOnFirstCode && allowHighResRetry
     val pending = selected.mapIndexed { index, box ->
         val src = codeCropSource(frame, box)
         val retrySrc =
@@ -236,7 +272,11 @@ fun recognizeFrameInOrder(
                     // Soft/rejected/blank: the slow engine might still read it — defer to phase 2.
                     val clean = r.text.replace(WHITESPACE_RE, " ").trim()
                     if (clean.isNotEmpty()) reads.add("$clean (${r.confidence.roundToInt()}%)")
-                    unsure.add(job)
+                    if (clean.isEmpty() && !engine.hasSlowFallback && (round == 0 || round == 2)) {
+                        job.p.done = true
+                    } else {
+                        unsure.add(job)
+                    }
                 }
             }
             // Phase 2: only if NOTHING resolved, pay the slow engine on the unsure crops in score
@@ -319,6 +359,8 @@ fun recognizeFrameInOrder(
         boxes = darkBoxes,
         stopOnFirstCode = true,
         maxBoxes = effectiveMaxBoxes,
+        allowLateWideCandidates = false,
+        allowHighResRetry = false,
     )
     if (dark.resolved.isEmpty() && dark.reads.isEmpty() && dark.crops == 0) return primary
     return RecognizeOutcome(

@@ -136,6 +136,14 @@ Notable changes to the sticker scanner. Newest first. No formal releases yet (de
 - **Benchmark Pixel usa piso de regressão realista.** O teste Android continua exigindo `0` falso
   positivo, mas agora trava o recall do dataset manual em pelo menos `66%` em vez de exigir
   `45/45` enquanto ainda existem misses conhecidos no relatório.
+- **OCR Android recupera `NZL18` sem aumentar falsos positivos.** O reconhecedor agora tenta dividir
+  um segundo componente colado quando uma leitura de 4 glifos parece `2 letras + 2 dígitos`, e o
+  pipeline só consulta boxes largos/tardios muito plausíveis. No dataset manual, o benchmark sobe
+  para `32/45` positivos com `0/156` falsos positivos; o trabalho cai para `146` crops no total e
+  p95/max de `2/4`.
+- **Crops vazios param cedo quando não há fallback treinado.** Enquanto o fallback slow continua
+  ausente, um fast-read vazio não paga flip/retry inútil. Isso preserva a política de não usar
+  Tesseract sem treino e reduz trabalho em misses sem ampliar o matching.
 
 ## 2026-06-15 — Remove "Enviar foto"
 
