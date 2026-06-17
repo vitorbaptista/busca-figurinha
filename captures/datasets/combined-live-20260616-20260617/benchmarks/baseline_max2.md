@@ -8,12 +8,12 @@
 - frames com ground-truth manual confirmado: 373
 - frames faltando arquivo de frame: 0
 - estratégia de busca: fallback_dark_no_primary_reads
-- resolvidos positivos: 147/216
+- resolvidos positivos: 148/216
 - precisão positiva: 100.00%
-- recall positivo: 68.06%
-- acertos por leitura exata/correção/confusão conhecida: 62/6/79
-- acertos dependentes de correção textual: 85/147
-- positivos não lidos: 69
+- recall positivo: 68.52%
+- acertos por leitura exata/correção/confusão conhecida: 63/6/79
+- acertos dependentes de correção textual: 85/148
+- positivos não lidos: 68
 - falsos positivos: 0 de 157 não-sticker processados
 - frames positivos/negativos no GT manual: 216/157
 - seguradas positivas manuais: 54
@@ -23,15 +23,15 @@
 - seguradas com frames manuais insuficientes: 11
 - commits errados em seguradas positivas: 0
 - taxa de falso positivo por não-sticker: 0.00%
-- média de leituras candidatas por frame: 147
+- média de leituras candidatas por frame: 148
 - razão no-frame sem detecção (boxes=0): 1
 - razão sem texto no crop (box com 0 ink): 60
-- razão sem match apesar de OCR: 165
+- razão sem match apesar de OCR: 164
 - mediana detecção/ocr (ms): 13.00 / 10.00
-- p95 detecção/ocr (ms): 17.00 / 26.00
+- p95 detecção/ocr (ms): 16.00 / 26.00
 - média boxes: 2.22
 - média crops: 1.36
-- total crops OCR: 507
+- total crops OCR: 506
 - p95/max crops OCR: 3/6
 - média de crops com ink: 0.83
 - fallback dark tentado/usado: 134/44
@@ -148,6 +148,7 @@
 - pixel-live-20260617-090351__frame-231: TUN10
 - pixel-live-20260617-090351__frame-232: TUN10
 - pixel-live-20260617-090351__frame-237: TUN10
+- pixel-live-20260617-090351__frame-238: TUN10
 - pixel-live-20260617-090351__frame-240: MEX15
 - pixel-live-20260617-090351__frame-243: MEX15
 - pixel-live-20260617-090351__frame-245: MEX15
@@ -222,7 +223,7 @@
 - SCO16: acertos=2/6 leitura_exata=1 correção=1 confusão=0 splits=test:1, train:4, val:1 crops_média=2.00 crops_max=4
 - SUI14: acertos=2/2 leitura_exata=0 correção=0 confusão=2 splits=train:2 crops_média=1.00 crops_max=1
 - SWE8: acertos=10/10 leitura_exata=8 correção=0 confusão=2 splits=test:1, train:8, val:1 crops_média=1.10 crops_max=2
-- TUN10: acertos=5/12 leitura_exata=1 correção=0 confusão=4 splits=test:1, train:10, val:1 crops_média=1.75 crops_max=4
+- TUN10: acertos=6/12 leitura_exata=2 correção=0 confusão=4 splits=test:1, train:10, val:1 crops_média=1.67 crops_max=4
 
 ## Acertos dependentes de correção textual
 - live-user-20260617-011113__frame-27: esperado=AUT4 via confusão conhecida leituras=NJT 4
@@ -330,7 +331,7 @@
 - live-user-20260616-201108__frame-45: boxes=2 crops=0 reads=-
 - live-user-20260616-201108__frame-53: boxes=1 crops=0 reads=-
 - ... e mais 44 itens
-### NO_MATCH (165)
+### NO_MATCH (164)
 - live-user-20260616-201108__frame-4: boxes=2 crops=2 reads=MTF (0%) | NK X (0%)
 - live-user-20260616-201108__frame-6: boxes=2 crops=2 reads=N XX (0%) | XXX (0%)
 - live-user-20260616-201108__frame-8: boxes=2 crops=2 reads=IMB XXX (0%) | PUW XX (0%)
@@ -347,23 +348,23 @@
 - live-user-20260616-201108__frame-24: boxes=2 crops=2 reads=FE (0%) | VN (0%)
 - live-user-20260616-201108__frame-25: boxes=2 crops=2 reads=IEEBEE (0%) | EVWWENE (0%)
 - live-user-20260616-201108__frame-26: boxes=2 crops=1 reads=-
-- ... e mais 149 itens
+- ... e mais 148 itens
 ### NO_BOXES (1)
 - pixel-live-20260617-090351__frame-85: boxes=0 crops=0 reads=-
 
 ## Piores latências
-1. live-setup-20260616-201017__frame-3 det=22ms ocr=38ms boxes=4/1 crops=2 respostas=NED12
-2. live-user-20260616-201108__frame-9 det=17ms ocr=40ms boxes=4/1 crops=3 respostas=-
-3. pixel-live-20260617-090351__frame-318 det=16ms ocr=37ms boxes=3/1 crops=4 respostas=-
-4. live-user-full-20260616-201728__frame-362 det=18ms ocr=30ms boxes=3/0 crops=0 respostas=-
-5. live-user-20260616-201108__frame-11 det=21ms ocr=26ms boxes=2/0 crops=0 respostas=-
-6. live-user-20260616-201108__frame-7 det=20ms ocr=26ms boxes=2/0 crops=0 respostas=-
-7. pixel-live-20260617-090351__frame-155 det=13ms ocr=31ms boxes=2/0 crops=4 respostas=-
-8. pixel-live-20260617-090351__frame-323 det=18ms ocr=26ms boxes=2/0 crops=0 respostas=-
-9. live-user-full-20260616-201728__frame-448 det=15ms ocr=28ms boxes=4/1 crops=3 respostas=-
-10. live-user-full-20260616-201728__frame-464 det=14ms ocr=29ms boxes=4/1 crops=3 respostas=-
-11. pixel-live-20260617-090351__frame-319 det=16ms ocr=27ms boxes=2/1 crops=4 respostas=-
-12. live-user-20260616-201108__frame-23 det=12ms ocr=30ms boxes=4/0 crops=2 respostas=-
+1. live-setup-20260616-201017__frame-3 det=23ms ocr=42ms boxes=4/1 crops=2 respostas=NED12
+2. live-user-20260616-201108__frame-9 det=16ms ocr=36ms boxes=4/1 crops=3 respostas=-
+3. live-user-20260616-201108__frame-7 det=18ms ocr=30ms boxes=2/0 crops=0 respostas=-
+4. live-setup-20260616-201017__frame-4 det=27ms ocr=20ms boxes=2/1 crops=1 respostas=SWE8
+5. live-user-20260616-201108__frame-11 det=20ms ocr=26ms boxes=2/0 crops=0 respostas=-
+6. pixel-live-20260617-090351__frame-155 det=13ms ocr=32ms boxes=2/0 crops=4 respostas=-
+7. pixel-live-20260617-090351__frame-318 det=14ms ocr=31ms boxes=3/1 crops=4 respostas=-
+8. live-user-20260616-201108__frame-23 det=12ms ocr=31ms boxes=4/0 crops=2 respostas=-
+9. live-user-full-20260616-201728__frame-484 det=14ms ocr=29ms boxes=4/0 crops=2 respostas=-
+10. pixel-live-20260617-090351__frame-122 det=15ms ocr=28ms boxes=2/2 crops=6 respostas=-
+11. live-user-20260616-201108__frame-5 det=19ms ocr=23ms boxes=2/0 crops=0 respostas=-
+12. live-user-full-20260616-201728__frame-464 det=14ms ocr=28ms boxes=4/1 crops=3 respostas=-
 
 ## Maior trabalho OCR
 1. live-user-20260617-011113__frame-32 crops=6 boxes=3/0 respostas=- leituras=EGV 5 | EGV 5 | EG XX (0%) | EG XX (0%) | OBM X (0%) | EEN X (0%)
@@ -386,11 +387,11 @@
 - validação: 32
 - teste: 48
 - total com resultado: 373
-- train -> tp=118 miss=52 fp=0
+- train -> tp=119 miss=51 fp=0
 - val -> tp=15 miss=7 fp=0
 - test -> tp=14 miss=10 fp=0
-- unresolved: 69
-- sem leitura mas com ocr: 44
+- unresolved: 68
+- sem leitura mas com ocr: 43
 - sem leitura e sem ocr: 25
 
 ## Diagnóstico dos positivos não resolvidos
@@ -837,17 +838,6 @@
 - box=6 x=102.9 y=324.9 w=156.4 h=46.2 score=0.632 tilt=- crop=1 ink=false read=/0.0 glyphs=
 - box=7 x=248.7 y=317.8 w=92.4 h=21.3 score=0.525 tilt=- crop=0 ink=false read=/0.0 glyphs=
 - box=7 x=248.7 y=317.8 w=92.4 h=21.3 score=0.525 tilt=- crop=1 ink=false read=/0.0 glyphs=
-### pixel-live-20260617-090351__frame-238 esperado=TUN10
-- box=0 x=143.8 y=341.8 w=92.4 h=29.3 score=0.785 tilt=-0.6 crop=0 ink=false read=/0.0 glyphs=
-- box=0 x=143.8 y=341.8 w=92.4 h=29.3 score=0.785 tilt=-0.6 crop=1 ink=false read=/0.0 glyphs=
-- box=1 x=228.2 y=275.1 w=81.8 h=45.3 score=0.752 tilt=9.7 crop=0 ink=true read=TUI XX/0.0 glyphs=x=84 9x23 ar=2.56 holes=0 best=T:0.76 L=T:0.76 D=1:0.69 D2=0.68 | x=95 15x25 ar=1.67 holes=0 best=U:0.79 L=U:0.79 D=6:0.70 D2=0.69 | x=121 5x12 ar=2.40 holes=0 best=I:0.68 L=I:0.68 D=1:0.63 D2=0.60 | x=137 12x25 ar=2.08 holes=0 best=1:0.88 L=J:0.81 D=1:0.88 D2=0.79 | x=153 19x24 ar=1.26 holes=1 best=Q:0.94 L=Q:0.94 D=0:0.93 D2=0.90
-- box=1 x=228.2 y=275.1 w=81.8 h=45.3 score=0.752 tilt=9.7 crop=1 ink=true read=QTNQ X/0.0 glyphs=x=92 19x24 ar=1.26 holes=1 best=Q:0.94 L=Q:0.94 D=0:0.93 D2=0.91 | x=115 12x25 ar=2.08 holes=0 best=T:0.84 L=T:0.84 D=1:0.75 D2=0.71 | x=138 5x12 ar=2.40 holes=0 best=N:0.68 L=N:0.68 D=1:0.61 D2=0.57 | x=154 15x25 ar=1.67 holes=0 best=Q:0.77 L=Q:0.77 D=7:0.73 D2=0.70 | x=171 9x23 ar=2.56 holes=0 best=1:0.77 L=I:0.74 D=1:0.77 D2=0.71
-- box=2 x=142.9 y=298.2 w=27.6 h=10.7 score=0.676 tilt=- crop=0 ink=true read=/0.0 glyphs=x=82 32x29 ar=0.91 holes=0 best=0:0.89 L=W:0.87 D=0:0.89 D2=0.85
-- box=2 x=142.9 y=298.2 w=27.6 h=10.7 score=0.676 tilt=- crop=1 ink=true read=/0.0 glyphs=x=161 32x29 ar=0.91 holes=0 best=0:0.87 L=N:0.86 D=0:0.87 D2=0.86
-- box=3 x=284.2 y=324.0 w=22.2 h=47.1 score=0.573 tilt=- crop=0 ink=false read=/0.0 glyphs=
-- box=3 x=284.2 y=324.0 w=22.2 h=47.1 score=0.573 tilt=- crop=1 ink=false read=/0.0 glyphs=
-- box=4 x=174.0 y=299.1 w=43.6 h=9.8 score=0.417 tilt=- crop=0 ink=true read=/0.0 glyphs=x=167 25x24 ar=0.96 holes=0 best=0:0.94 L=W:0.87 D=0:0.94 D2=0.93
-- box=4 x=174.0 y=299.1 w=43.6 h=9.8 score=0.417 tilt=- crop=1 ink=true read=/0.0 glyphs=x=251 25x24 ar=0.96 holes=0 best=0:0.93 L=W:0.86 D=0:0.93 D2=0.92
 ### pixel-live-20260617-090351__frame-242 esperado=MEX15
 - box=0 x=235.3 y=267.1 w=86.2 h=33.8 score=0.939 tilt=3.6 crop=0 ink=true read=NO XX/0.0 glyphs=x=124 11x24 ar=2.18 holes=0 best=N:0.89 L=N:0.89 D=1:0.84 D2=0.82 | x=135 10x14 ar=1.40 holes=0 best=0:0.81 L=Q:0.79 D=0:0.81 D2=0.79 | x=148 14x20 ar=1.43 holes=0 best=8:0.93 L=R:0.88 D=8:0.93 D2=0.90 | x=192 21x37 ar=1.76 holes=0 best=X:0.85 L=X:0.85 D=1:0.80 D2=0.66
 - box=0 x=235.3 y=267.1 w=86.2 h=33.8 score=0.939 tilt=3.6 crop=1 ink=true read=XB XX/0.0 glyphs=x=229 21x37 ar=1.76 holes=0 best=X:0.81 L=X:0.81 D=1:0.81 D2=0.69 | x=280 14x20 ar=1.43 holes=0 best=8:0.88 L=W:0.88 D=8:0.88 D2=0.87 | x=297 10x14 ar=1.40 holes=0 best=0:0.84 L=W:0.77 D=0:0.84 D2=0.81 | x=307 11x24 ar=2.18 holes=0 best=4:0.86 L=M:0.86 D=4:0.86 D2=0.85

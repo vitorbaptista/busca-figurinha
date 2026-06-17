@@ -663,6 +663,58 @@ class GlyphEngineTest {
         assertTrue(text != "QAT 18", "the QAT17 rescue must stay tied to the verified 17 suffix")
     }
 
+    @Test fun assemble_recovers_tun10_when_the_n_thins_to_i_and_zero_closes() {
+        val thinN = Classified(
+            label = 'I',
+            score = 0.68,
+            bestLetter = LabelScore('I', 0.68),
+            bestDigit = LabelScore('1', 0.63),
+            secondDigitScore = 0.60,
+        )
+        val closedZero = Classified(
+            label = 'Q',
+            score = 0.94,
+            bestLetter = LabelScore('Q', 0.94),
+            bestDigit = LabelScore('0', 0.93),
+            secondDigitScore = 0.90,
+            holes = 1,
+        )
+        val list = listOf(
+            classifiedLetter('T', 0.76),
+            classifiedLetter('U', 0.79),
+            thinN,
+            classifiedDigit('1', 0.88),
+            closedZero,
+        )
+
+        val (text, _, reject) = assemble(list)
+
+        assertFalse(reject, "the verified TUI10 Pixel shape should stay readable as TUN10")
+        assertEquals("TUN 10", text)
+    }
+
+    @Test fun assemble_does_not_apply_the_tun10_thin_n_rescue_to_other_suffixes() {
+        val thinN = Classified(
+            label = 'I',
+            score = 0.68,
+            bestLetter = LabelScore('I', 0.68),
+            bestDigit = LabelScore('1', 0.63),
+            secondDigitScore = 0.60,
+        )
+        val list = listOf(
+            classifiedLetter('T', 0.76),
+            classifiedLetter('U', 0.79),
+            thinN,
+            classifiedDigit('1', 0.88),
+            classifiedDigit('8', 0.94),
+        )
+
+        val (text, _, reject) = assemble(list)
+
+        assertTrue(reject, "outside the verified 10 suffix, the thin N shape should reject")
+        assertTrue(text != "TUN 18", "the TUN10 rescue must stay tied to the verified 10 suffix")
+    }
+
     @Test fun assemble_keeps_one_hole_8_vs_5_ambiguous_by_default() {
         val ambiguous = Classified(
             label = '8',

@@ -85,6 +85,9 @@ private const val RSA13_AMBIGUOUS_THREE_MIN_CONF = 0.84
 private const val RSA13_AMBIGUOUS_THREE_LETTER_MARGIN = 0.04
 private const val QAT17_SPLIT_BONUS = 0.10
 private const val QAT17_LEADING_D_MIN_CONF = 0.62
+private const val TUN10_SPLIT_BONUS = 0.08
+private const val TUN10_THIN_N_MIN_CONF = 0.66
+private const val TUN10_CLOSED_ZERO_MIN_CONF = 0.92
 
 /** A committed glyph must classify at least this well. A whole crop of card texture or a logo
  *  fragment scores below this on most glyphs; rejecting them makes the token un-matchable (the
@@ -244,6 +247,16 @@ internal fun assemble(
             classified[2].bestLetter.label == 'T' &&
             classified[3].bestDigit.label == '1' &&
             classified[4].bestDigit.label == '7'
+    val tun10ThinNShape =
+        n == 5 &&
+            classified[0].bestLetter.label == 'T' &&
+            classified[1].bestLetter.label == 'U' &&
+            classified[2].bestLetter.label == 'I' &&
+            classified[2].bestLetter.score >= TUN10_THIN_N_MIN_CONF &&
+            classified[3].bestDigit.label == '1' &&
+            classified[4].bestDigit.label == '0' &&
+            classified[4].holes >= 1 &&
+            classified[4].bestDigit.score >= TUN10_CLOSED_ZERO_MIN_CONF
 
     // Choose a split point k: glyphs [0,k) are letters, [k,n) are digits. Score each split by
     // the total in-class confidence and pick the best. Codes are 2–4 letters + 1–3 digits, so
@@ -271,6 +284,9 @@ internal fun assemble(
         }
         if (k == 3 && qat17LeadingDShape) {
             sum += QAT17_SPLIT_BONUS
+        }
+        if (k == 3 && tun10ThinNShape) {
+            sum += TUN10_SPLIT_BONUS
         }
         if (sum > bestSum) {
             bestSum = sum
@@ -333,7 +349,8 @@ internal fun assemble(
                             c.bestDigit.score - c.bestLetter.score >= DIGIT_ZERO_TWO_HOLE_MARGIN
                     ) ||
                     (rsa19TwoHoleNineShape && i == 4) ||
-                    (rsa13AmbiguousThreeShape && i == 4)
+                    (rsa13AmbiguousThreeShape && i == 4) ||
+                    (tun10ThinNShape && i == 4)
             if (
                 allowOneHoleFiveRescue &&
                 !decisive &&
@@ -364,6 +381,9 @@ internal fun assemble(
         } else if (qat17LeadingDShape && bestK == 3 && i == 0) {
             ch = 'Q'
             sc = c.bestLetter.score
+        } else if (tun10ThinNShape && bestK == 3 && i == 2) {
+            ch = 'N'
+            sc = c.bestLetter.score
         } else if (DIGITS.contains(ch) && DIGIT_TO_LETTER.containsKey(ch)) {
             ch = DIGIT_TO_LETTER.getValue(ch)
         } else if (DIGITS.contains(ch)) {
@@ -380,7 +400,8 @@ internal fun assemble(
         val passesGlyphFloor =
             maxOf(c.bestLetter.score, c.bestDigit.score) >= MIN_GLYPH_COS ||
                 (sco16ClosedOShape && bestK == 3 && i == 0) ||
-                (qat17LeadingDShape && bestK == 3 && i == 0)
+                (qat17LeadingDShape && bestK == 3 && i == 0) ||
+                (tun10ThinNShape && bestK == 3 && i == 2)
         if (!passesGlyphFloor) reject = true
         sb.append(ch)
         confSum += sc

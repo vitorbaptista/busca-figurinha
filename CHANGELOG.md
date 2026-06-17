@@ -6,6 +6,11 @@ Notable changes to the sticker scanner. Newest first. No formal releases yet (de
 ## 2026-06-17 — Android: baseline Pixel combinado
 
 ### Fixed
+- **OCR Android recupera `TUN10` quando o `N` afina como `I` e o `0` fecha como `Q`.** O resgate
+  fica preso ao shape completo `TUI 10`, exige score mínimo no `N` afinado e topologia de um furo
+  no zero final. O baseline combinado sobe para `148/216` positivos (`68,52%` recall), `63`
+  leituras exatas, `41/43` seguradas avaliáveis confirmadas, `0/157` falsos positivos e `0`
+  commits errados.
 - **OCR Android recupera `RSA13` e `QAT17` em shapes Pixel verificados sem ampliar correção textual.**
   O classificador agora mantém `RSA13` quando o `3` vence mas fica empatado com outro dígito no
   shape completo `RSA 13`, e recupera `QAT17` quando o `Q` abre como `D` no shape `DAT 17`. O
