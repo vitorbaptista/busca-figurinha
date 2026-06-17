@@ -55,7 +55,7 @@ frame_id,ground_truth_code,verified_code,crop_count,status,reviewer,split,source
 "live-user-20260616-201108__frame-52","SWE8","","6","not_sticker","","train","live-user-20260616-201108","52","","2026-06-17T00:14:56.344Z"
 "live-user-20260616-201108__frame-53","SWE8","","6","not_sticker","","train","live-user-20260616-201108","53","","2026-06-17T00:14:56.895Z"
 "live-user-20260616-201108__frame-54","SWE8","","6","not_sticker","","train","live-user-20260616-201108","54","","2026-06-17T00:14:57.444Z"
-"live-user-full-20260616-201728__frame-345","SWE8","SWE8","0","confirmed","","val","live-user-full-20260616-201728","345","","2026-06-17T00:15:03.318Z"
+"live-user-full-20260616-201728__frame-345","SWE8","","0","missing_frame","","val","live-user-full-20260616-201728","345","Diretorio sem frame.pgm.gz; excluido das metricas ate haver imagem verificavel","2026-06-17T00:15:03.318Z"
 "live-user-full-20260616-201728__frame-346","SWE8","","4","not_sticker","","test","live-user-full-20260616-201728","346","","2026-06-17T00:15:04.458Z"
 "live-user-full-20260616-201728__frame-347","SWE8","","6","not_sticker","","test","live-user-full-20260616-201728","347","","2026-06-17T00:15:05.046Z"
 "live-user-full-20260616-201728__frame-350","SWE8","","4","not_sticker","","train","live-user-full-20260616-201728","350","","2026-06-17T00:15:05.614Z"

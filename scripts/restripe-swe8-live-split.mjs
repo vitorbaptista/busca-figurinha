@@ -85,6 +85,10 @@ function keyForClass(className) {
   return className || 'unknown';
 }
 
+function isPositiveClass(className) {
+  return className !== 'not_sticker' && className !== 'unknown';
+}
+
 function stableShuffle(items, seed) {
   const shuffled = [...items];
   let hash = 2166136261;
@@ -108,11 +112,13 @@ function stableShuffle(items, seed) {
 if (!existsSync(manifestPath)) {
   throw new Error(`Manifesto não encontrado: ${manifestPath}`);
 }
-if (existsSync(preferredVerifyPath)) {
+if (existsSync(verifyPath)) {
+  console.log(`Usando arquivo de validação: ${verifyPath}`);
+} else if (existsSync(preferredVerifyPath)) {
   const preferredCopied = readFileSync(preferredVerifyPath, 'utf8');
   writeFileSync(verifyPath, preferredCopied);
   console.log(`Usando arquivo de validação: ${preferredVerifyPath}`);
-} else if (!existsSync(verifyPath)) {
+} else {
   throw new Error(`Arquivo de verificação não encontrado: ${verifyPath}`);
 }
 
@@ -195,6 +201,7 @@ for (const className of classOrder) {
       for (let v = 0; v <= n - t; v += 1) {
         const te = n - t - v;
         if (v > remVal || te > remTest) continue;
+        if (isPositiveClass(className) && n >= 3 && (t === 0 || v === 0 || te === 0)) continue;
         const nextTrain = usedTrain + t;
         const nextVal = usedVal + v;
         const candidateKey = `${nextTrain},${nextVal}`;
@@ -251,7 +258,7 @@ for (const [className, rowsOfClass] of groups.entries()) {
   if (!alloc) {
     throw new Error(`Classe sem alocação: ${className}`);
   }
-  const ordered = stableShuffle(rowsOfClass, className).map((r) => ({ ...r }));
+  const ordered = stableShuffle(rowsOfClass, className);
   let trainCount = 0;
   let valCount = 0;
   let testCount = 0;
@@ -280,6 +287,14 @@ for (let idx = 0; idx < manifest.rows.length; idx += 1) {
 }
 
 writeCsv(manifestPath, manifestHeader, rows);
+
+if (verify.header.includes('split')) {
+  const splitByFrameId = new Map(rows.map((row) => [row.frame_id, row.split]));
+  for (const row of verify.rows) {
+    if (splitByFrameId.has(row.frame_id)) row.split = splitByFrameId.get(row.frame_id);
+  }
+  writeCsv(verifyPath, verify.header, verify.rows);
+}
 
 const splitDir = join(datasetRoot, 'splits');
 for (const splitName of ['train', 'val', 'test']) {

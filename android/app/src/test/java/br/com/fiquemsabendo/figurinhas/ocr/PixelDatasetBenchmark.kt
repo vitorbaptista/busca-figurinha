@@ -504,6 +504,15 @@ class PixelDatasetBenchmark {
 
         if (reportBase == "baseline" && maxBoxes == 4 && roi == Roi.CONFIG && fastConf == Config.Ocr.HYBRID_FAST_CONF) {
             assertEquals(0, falsePositives, "baseline Pixel benchmark must keep 0 false positives")
+            assertEquals(0, missingPositiveFiles, "baseline Pixel benchmark has verified positives without frame files")
+            if (positiveRows >= 3) {
+                for (splitName in arrayOf("train", "val", "test")) {
+                    assertTrue(
+                        bySplit[splitName].orEmpty().any { it.expected != notStickerLabel },
+                        "baseline Pixel benchmark split '$splitName' has no verified positives",
+                    )
+                }
+            }
             assertEquals(
                 positiveRows,
                 truePositives,

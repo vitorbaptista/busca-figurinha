@@ -67,6 +67,10 @@ Notable changes to the sticker scanner. Newest first. No formal releases yet (de
   do crop `NED12` validado na revisão manual, e o segmentador agora divide o primeiro par de letras
   coladas só no formato estreito de 4 componentes. O baseline manual passa a exigir `10/10`
   positivos processáveis com `0/145` falsos positivos.
+- **Benchmark manual ficou mais rigoroso com cobertura e split.** O script de estratificação agora
+  aplica a distribuição calculada ao manifesto, sincroniza o `split` no CSV de verificação e não
+  sobrescreve um CSV curado já existente. O gate do baseline falha se houver positivo confirmado sem
+  frame ou se `train`/`val`/`test` ficarem sem positivos quando há amostras suficientes.
 - **ROI Android ficou mais estreita para leitura ao vivo.** A janela agora prioriza a faixa central
   onde o código `SWE 8` foi lido no Pixel, reduzindo fundo analisado e deixando mais claro que a
   figurinha precisa estar perto o suficiente para o código preencher o retículo.
