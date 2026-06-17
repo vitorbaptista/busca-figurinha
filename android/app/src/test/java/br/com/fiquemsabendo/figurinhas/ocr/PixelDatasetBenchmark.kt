@@ -38,7 +38,8 @@ class PixelDatasetBenchmark {
     private val datasetName = "swe8-live-20260616-v1"
     private val verificationFileName = "ground_truth_verification.csv"
     private val notStickerLabel = "not_sticker"
-    private val baselineMinRecallPercent = 68.5
+    private val baselineMinRecallPercent = 91.0
+    private val baselineMinConfirmedHolds = 11
 
     private data class ManifestRow(
         val frameId: String,
@@ -801,6 +802,11 @@ class PixelDatasetBenchmark {
                 recallPercent >= baselineMinRecallPercent,
                 "baseline Pixel benchmark recall regressed: resolved $truePositives/$positiveRows positives (${String.format(Locale.US, "%.2f", recallPercent)}%)",
             )
+            assertTrue(
+                confirmedHolds >= baselineMinConfirmedHolds,
+                "baseline Pixel benchmark hold confirmation regressed: confirmed $confirmedHolds/${confirmableHolds.size} confirmable holds",
+            )
+            assertTrue(wrongHoldCommits.isEmpty(), "baseline Pixel benchmark produced wrong hold commits: $wrongHoldCommits")
             assertTrue(totalCrops <= 150, "baseline Pixel benchmark OCR work regressed: total crops=$totalCrops")
             assertTrue(cropsP95 <= 2, "baseline Pixel benchmark typical OCR work regressed: p95 crops=$cropsP95")
             assertTrue(maxCrops <= 4, "baseline Pixel benchmark has a high-work frame: max crops=$maxCrops")

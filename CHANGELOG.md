@@ -68,6 +68,9 @@ Notable changes to the sticker scanner. Newest first. No formal releases yet (de
   para bursts que realmente commitam um código.
 
 ### Changed
+- **Gate do benchmark Pixel acompanha o baseline manual atual.** O teste Android agora falha se o
+  CSV verificado manualmente cair abaixo de `91%` de recall ou deixar de confirmar `11/11`
+  seguradas avaliáveis, além de manter a trava de `0` falso positivo e o orçamento de crops.
 - **OCR Android ignora fragmentos verticais no caminho live.** Como a captura guiada assume a
   figurinha mais ou menos horizontal, o pipeline agora despacha OCR apenas para boxes horizontais,
   deixando fragmentos verticais de logo/borda fora da leitura. No benchmark Pixel manual, o recall
