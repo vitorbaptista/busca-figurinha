@@ -663,6 +663,66 @@ class GlyphEngineTest {
         assertTrue(text != "QAT 18", "the QAT17 rescue must stay tied to the verified 17 suffix")
     }
 
+    @Test fun assemble_recovers_qat17_when_the_q_closes_as_zero_and_seven_is_soft() {
+        val closedQ = Classified(
+            label = '0',
+            score = 0.89,
+            bestLetter = LabelScore('Q', 0.87),
+            bestDigit = LabelScore('0', 0.89),
+            secondDigitScore = 0.85,
+            holes = 1,
+        )
+        val softSeven = Classified(
+            label = '7',
+            score = 0.89,
+            bestLetter = LabelScore('Z', 0.80),
+            bestDigit = LabelScore('7', 0.89),
+            secondDigitScore = 0.85,
+        )
+        val list = listOf(
+            closedQ,
+            classifiedLetter('A', 0.95),
+            classifiedLetter('T', 0.91),
+            classifiedDigit('1', 0.96, second = 0.86),
+            softSeven,
+        )
+
+        val (text, _, reject) = assemble(list)
+
+        assertFalse(reject, "the verified 0AT17 Pixel shape should stay readable as QAT17")
+        assertEquals("QAT 17", text)
+    }
+
+    @Test fun assemble_does_not_apply_the_qat17_zero_rescue_to_other_suffixes() {
+        val closedQ = Classified(
+            label = '0',
+            score = 0.89,
+            bestLetter = LabelScore('Q', 0.87),
+            bestDigit = LabelScore('0', 0.89),
+            secondDigitScore = 0.85,
+            holes = 1,
+        )
+        val softSeven = Classified(
+            label = '7',
+            score = 0.89,
+            bestLetter = LabelScore('Z', 0.80),
+            bestDigit = LabelScore('7', 0.89),
+            secondDigitScore = 0.85,
+        )
+        val list = listOf(
+            closedQ,
+            classifiedLetter('A', 0.95),
+            classifiedLetter('T', 0.91),
+            classifiedDigit('1', 0.96, second = 0.86),
+            classifiedDigit('8', 0.89, second = 0.85),
+        )
+
+        val (text, _, reject) = assemble(list)
+
+        assertTrue(reject, "outside the verified 17 suffix, closed leading Q should not soften digits")
+        assertTrue(text != "QAT 18", "the QAT17 zero rescue must stay tied to the verified 17 suffix")
+    }
+
     @Test fun assemble_recovers_tun10_when_the_n_thins_to_i_and_zero_closes() {
         val thinN = Classified(
             label = 'I',

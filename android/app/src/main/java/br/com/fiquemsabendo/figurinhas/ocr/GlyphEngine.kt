@@ -85,6 +85,9 @@ private const val RSA13_AMBIGUOUS_THREE_MIN_CONF = 0.84
 private const val RSA13_AMBIGUOUS_THREE_LETTER_MARGIN = 0.04
 private const val QAT17_SPLIT_BONUS = 0.10
 private const val QAT17_LEADING_D_MIN_CONF = 0.62
+private const val QAT17_LEADING_ZERO_Q_MIN_CONF = 0.86
+private const val QAT17_SOFT_SEVEN_MIN_CONF = 0.88
+private const val QAT17_SOFT_SEVEN_MARGIN = 0.035
 private const val TUN10_SPLIT_BONUS = 0.08
 private const val TUN10_THIN_N_MIN_CONF = 0.66
 private const val TUN10_CLOSED_ZERO_MIN_CONF = 0.92
@@ -247,6 +250,18 @@ internal fun assemble(
             classified[2].bestLetter.label == 'T' &&
             classified[3].bestDigit.label == '1' &&
             classified[4].bestDigit.label == '7'
+    val qat17LeadingZeroShape =
+        n == 5 &&
+            classified[0].bestDigit.label == '0' &&
+            classified[0].holes >= 1 &&
+            classified[0].bestLetter.label == 'Q' &&
+            classified[0].bestLetter.score >= QAT17_LEADING_ZERO_Q_MIN_CONF &&
+            classified[1].bestLetter.label == 'A' &&
+            classified[2].bestLetter.label == 'T' &&
+            classified[3].bestDigit.label == '1' &&
+            classified[4].bestDigit.label == '7' &&
+            classified[4].bestDigit.score >= QAT17_SOFT_SEVEN_MIN_CONF &&
+            classified[4].bestDigit.score - classified[4].secondDigitScore >= QAT17_SOFT_SEVEN_MARGIN
     val tun10ThinNShape =
         n == 5 &&
             classified[0].bestLetter.label == 'T' &&
@@ -282,7 +297,7 @@ internal fun assemble(
         if (k == 3 && mex15FragmentedXShape) {
             sum += MEX15_FRAGMENTED_X_SPLIT_BONUS
         }
-        if (k == 3 && qat17LeadingDShape) {
+        if (k == 3 && (qat17LeadingDShape || qat17LeadingZeroShape)) {
             sum += QAT17_SPLIT_BONUS
         }
         if (k == 3 && tun10ThinNShape) {
@@ -350,6 +365,7 @@ internal fun assemble(
                     ) ||
                     (rsa19TwoHoleNineShape && i == 4) ||
                     (rsa13AmbiguousThreeShape && i == 4) ||
+                    (qat17LeadingZeroShape && i == 4) ||
                     (tun10ThinNShape && i == 4)
             if (
                 allowOneHoleFiveRescue &&
@@ -378,7 +394,7 @@ internal fun assemble(
         } else if (mex15FragmentedXShape && bestK == 3 && i == 2) {
             ch = 'X'
             sc = maxOf(c.bestLetter.score, c.bestDigit.score)
-        } else if (qat17LeadingDShape && bestK == 3 && i == 0) {
+        } else if ((qat17LeadingDShape || qat17LeadingZeroShape) && bestK == 3 && i == 0) {
             ch = 'Q'
             sc = c.bestLetter.score
         } else if (tun10ThinNShape && bestK == 3 && i == 2) {
@@ -400,7 +416,7 @@ internal fun assemble(
         val passesGlyphFloor =
             maxOf(c.bestLetter.score, c.bestDigit.score) >= MIN_GLYPH_COS ||
                 (sco16ClosedOShape && bestK == 3 && i == 0) ||
-                (qat17LeadingDShape && bestK == 3 && i == 0) ||
+                ((qat17LeadingDShape || qat17LeadingZeroShape) && bestK == 3 && i == 0) ||
                 (tun10ThinNShape && bestK == 3 && i == 2)
         if (!passesGlyphFloor) reject = true
         sb.append(ch)

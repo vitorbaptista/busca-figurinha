@@ -6,6 +6,11 @@ Notable changes to the sticker scanner. Newest first. No formal releases yet (de
 ## 2026-06-17 — Android: baseline Pixel combinado
 
 ### Fixed
+- **OCR Android recupera `QAT17` quando o `Q` fecha como `0` e o `7` fica levemente macio.** O
+  resgate fica preso ao shape completo `0AT 17`, exige `Q` como melhor letra no primeiro glifo,
+  margem mínima no `7` final e não abre outros sufixos. O baseline combinado sobe para `153/216`
+  positivos (`70,83%` recall), `65` leituras exatas, `41/43` seguradas avaliáveis confirmadas,
+  `0/157` falsos positivos e `0` commits errados.
 - **Matcher Android recupera `PAN1` quando o cabeçalho lê `IUM 1` no Pixel.** O alias exato
   preserva o número e só entra no caminho de alta confiança já existente. O baseline combinado
   sobe para `152/216` positivos (`70,37%` recall), `41/43` seguradas avaliáveis confirmadas,
