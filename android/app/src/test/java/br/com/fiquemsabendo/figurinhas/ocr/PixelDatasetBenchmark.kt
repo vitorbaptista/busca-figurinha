@@ -40,6 +40,7 @@ class PixelDatasetBenchmark {
     private val notStickerLabel = "not_sticker"
     private val baselineMinRecallPercent = 100.0
     private val baselineMinConfirmedHolds = 11
+    private val watchedDifficultCodes = listOf("MEX15", "IRQ20", "TUN10")
 
     private data class ManifestRow(
         val frameId: String,
@@ -623,6 +624,10 @@ class PixelDatasetBenchmark {
         val unresolved = scoredResults.filter { it.expected != notStickerLabel && !it.hasExpected }
         val byReason = scoredResults.filter { it.reason != FailReason.NONE }.groupBy { it.reason }
         val bySplit = scoredResults.groupBy { it.split }
+        val byPositiveCode = scoredResults
+            .filter { it.expected != notStickerLabel }
+            .groupBy { it.expected }
+            .toSortedMap()
         val hits = scoredResults.filter { it.hasExpected }
         val positiveHolds = positiveHoldResults(scoredResults)
         val confirmableHolds = positiveHolds.filter { it.manualFrames >= Config.Match.CONFIRMATIONS }
@@ -711,6 +716,33 @@ class PixelDatasetBenchmark {
             lines += "- nenhum"
         } else {
             hits.forEach { lines += "- ${it.frameId}: ${it.resolvedCodes.joinToString(", ")}" }
+        }
+        lines += ""
+
+        lines += "## Cobertura por código manual"
+        if (byPositiveCode.isEmpty()) {
+            lines += "- nenhum código positivo confirmado"
+        } else {
+            for ((code, entries) in byPositiveCode) {
+                val codeHits = entries.count { it.hasExpected }
+                val splitSummary = entries
+                    .groupingBy { it.split }
+                    .eachCount()
+                    .toSortedMap()
+                    .entries
+                    .joinToString(", ") { "${it.key}:${it.value}" }
+                val avgCropsForCode = entries.map { it.crops }.average()
+                val maxCropsForCode = entries.maxOf { it.crops }
+                lines += "- $code: acertos=$codeHits/${entries.size} splits=$splitSummary crops_média=${String.format(Locale.US, "%.2f", avgCropsForCode)} crops_max=$maxCropsForCode"
+            }
+        }
+        val missingWatchedCodes = watchedDifficultCodes.filter { code -> !byPositiveCode.containsKey(code) }
+        if (missingWatchedCodes.isNotEmpty()) {
+            lines += ""
+            lines += "## Códigos difíceis sem GT manual"
+            missingWatchedCodes.forEach { code ->
+                lines += "- $code: sem frame confirmado no CSV manual; não usar para benchmark até existir captura revisada"
+            }
         }
         lines += ""
 

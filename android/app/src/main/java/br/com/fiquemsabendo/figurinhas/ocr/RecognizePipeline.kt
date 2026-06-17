@@ -130,6 +130,20 @@ private fun isLateWideCodeCandidate(box: CodeBox): Boolean {
         axisAr in 2.2..3.8
 }
 
+private fun isSmallFragmentBeforeLateWide(box: CodeBox): Boolean =
+    box.orient == 'h' &&
+        box.score >= 0.70 &&
+        box.w < 90.0 &&
+        box.h < 32.0
+
+private fun shouldPromoteLateWideCandidate(selected: List<CodeBox>, lateWide: CodeBox): Boolean {
+    if (selected.isEmpty() || !selected.all(::isSmallFragmentBeforeLateWide)) return false
+    val widestFragment = selected.maxOf { it.w }
+    val tallestFragment = selected.maxOf { it.h }
+    return lateWide.w >= widestFragment * 2.1 &&
+        lateWide.h >= tallestFragment * 1.7
+}
+
 private fun syntheticHeaderCandidates(boxes: List<CodeBox>): List<CodeBox> {
     if (boxes.any { it.orient == 'h' && it.score >= 0.70 && it.w >= 90.0 && it.h >= 45.0 }) return emptyList()
     val small = boxes.filter { box ->
@@ -376,8 +390,19 @@ private fun selectBoxesForOcr(
     if (!allowLateWideCandidates || !stopOnFirstCode || maxBoxes > LIVE_MAX_BOXES_DEFAULT) return selected
     val firstScore = boxesForOcr.firstOrNull()?.score
     if (firstScore != null && firstScore in 0.84..0.92 && selected.any { isLateWideCodeCandidate(it) }) return selected
+    val lateWideCandidates = ArrayList<CodeBox>(2)
     for (box in boxesForOcr.drop(maxBoxes)) {
-        if (isLateWideCodeCandidate(box)) selected.add(box)
+        if (isLateWideCodeCandidate(box)) lateWideCandidates.add(box)
+        if (lateWideCandidates.size >= 2) break
+    }
+    if (lateWideCandidates.isEmpty()) return selected
+    val firstLateWide = lateWideCandidates.first()
+    if (shouldPromoteLateWideCandidate(selected, firstLateWide)) {
+        selected.add(0, firstLateWide)
+        lateWideCandidates.removeAt(0)
+    }
+    for (box in lateWideCandidates) {
+        selected.add(box)
         if (selected.size >= LIVE_MAX_BOXES_DEFAULT + 2) break
     }
     return selected

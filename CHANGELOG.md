@@ -15,6 +15,14 @@ Notable changes to the sticker scanner. Newest first. No formal releases yet (de
   falsos positivos, `11/11` seguradas avaliáveis confirmadas e p95/max de OCR em `2/3` crops.
 
 ### Changed
+- **Caminho live prioriza pill largo quando os primeiros candidatos são fragmentos pequenos.** O
+  pipeline continua usando o mesmo conjunto restrito de boxes e o mesmo matcher conservador, mas
+  tenta primeiro o candidato largo quando ele é muito maior que os fragmentos de score alto. Isso
+  tira `MEX15` da lista de maior trabalho, reduz o baseline de `143` para `138` crops OCR totais e
+  mantém `45/45` positivos, `0/156` falsos positivos e p95/max em `2/3` crops.
+- **Relatório Pixel mostra cobertura por código manual.** O benchmark agora lista acertos, splits e
+  orçamento de crops por código confirmado, e marca códigos difíceis sem GT manual; no dataset atual
+  `TUN10` ainda não tem frame revisado e não deve ser usado para validar melhoria.
 - **Gate do benchmark Pixel acompanha o novo baseline manual.** A suíte Android agora falha se o
   recall do CSV verificado manualmente cair abaixo de `100%`, além de manter `0` falso positivo,
   confirmação de seguradas e orçamento de crops.
