@@ -3,6 +3,22 @@
 Notable changes to the sticker scanner. Newest first. No formal releases yet (deploys on push to
 `main`), so entries are grouped by date. Keep this updated when you ship something notable.
 
+## 2026-06-17 — Android: resgate estreito no retículo
+
+### Fixed
+- **OCR Android recupera três crops difíceis sem aumentar falsos positivos.** Quando a detecção
+  normal falha mas deixa uma assinatura geométrica muito específica de pill parcial ou corpo da
+  figurinha no retículo, o pipeline tenta um crop fixo estreito no topo direito da janela. O fallback
+  só aceita match exato ou restauração de letra fina (`CV4` → `CIV4`), recuperando `RSA6`, `CIV4` e
+  `AUS18` no dataset Pixel manual. O baseline sobe para `44/45` positivos (`97,78%` recall),
+  mantendo `0/156` falsos positivos, `11/11` seguradas avaliáveis confirmadas e p95/max de OCR em
+  `2/3` crops.
+
+### Changed
+- **Gate do benchmark Pixel acompanha o novo baseline manual.** A suíte Android agora falha se o
+  recall do CSV verificado manualmente cair abaixo de `97%`, além de manter `0` falso positivo,
+  confirmação de seguradas e orçamento de crops.
+
 ## 2026-06-16 — Android: retry sem falso "lido"
 
 ### Added

@@ -27,6 +27,7 @@ package br.com.fiquemsabendo.figurinhas.ocr
 import br.com.fiquemsabendo.figurinhas.Config
 import br.com.fiquemsabendo.figurinhas.domain.Checklist
 import br.com.fiquemsabendo.figurinhas.domain.MatchResult
+import br.com.fiquemsabendo.figurinhas.domain.MatchStatus
 import br.com.fiquemsabendo.figurinhas.domain.bestHighConfidenceConfusionMatchFromText
 import br.com.fiquemsabendo.figurinhas.domain.bestMatchFromText
 import kotlin.math.abs
@@ -221,6 +222,84 @@ private const val HEADER_RESCUE_RIGHT_ANCHOR = 0.10
 private const val HEADER_RESCUE_TOP_ANCHOR = 0.35
 private const val HEADER_RESCUE_PILL_H = 0.46
 private const val HEADER_RESCUE_SCORE = 0.79
+private const val RETICLE_RESCUE_SCORE = 0.88
+private const val RETICLE_RESCUE_FILL = 0.70
+private const val RETICLE_RESCUE_PILL_H = 0.46
+
+private class ReticleRescueSpec(
+    val x: Double,
+    val y: Double,
+    val w: Double,
+    val h: Double,
+    val boost: Boolean,
+)
+
+private fun thinRestoreOnly(raw: String, code: String): Boolean {
+    if (code.length != raw.length + 1) return false
+    var i = 0
+    while (i < raw.length && code[i] == raw[i]) i++
+    if (code.substring(i + 1) != raw.substring(i)) return false
+    return code[i] in RETICLE_RESCUE_THIN_LETTERS
+}
+
+private fun acceptsReticleRescueMatch(match: MatchResult): Boolean {
+    val entry = match.entry ?: return false
+    return when (match.status) {
+        MatchStatus.EXACT -> true
+        MatchStatus.CORRECTED -> thinRestoreOnly(match.raw, entry.code)
+        MatchStatus.UNKNOWN -> false
+    }
+}
+
+private fun reticleRescueBoxes(frame: GrayImage, boxes: List<CodeBox>): List<CodeBox> {
+    val specs = ArrayList<ReticleRescueSpec>(2)
+    if (boxes.any { isPartialPillReticleRescueGate(frame, it) }) {
+        specs.add(RETICLE_RESCUE_PARTIAL_PILL)
+    }
+    if (boxes.any { isLowerStickerReticleRescueGate(frame, it) }) {
+        specs.add(RETICLE_RESCUE_LOWER_STICKER)
+    }
+    return specs.map { spec ->
+        val w = (frame.width * spec.w).roundToInt().toDouble()
+        val h = (frame.height * spec.h).roundToInt().toDouble()
+        CodeBox(
+            x = (frame.width * spec.x).roundToInt().toDouble(),
+            y = (frame.height * spec.y).roundToInt().toDouble(),
+            w = w,
+            h = h,
+            orient = 'h',
+            score = RETICLE_RESCUE_SCORE,
+            tilt = null,
+            pillW = h * RETICLE_RESCUE_PILL_H,
+            fill = RETICLE_RESCUE_FILL,
+            boost = spec.boost,
+        )
+    }
+}
+
+private fun isPartialPillReticleRescueGate(frame: GrayImage, box: CodeBox): Boolean {
+    if (frame.width <= 0 || frame.height <= 0) return false
+    return box.orient == 'h' &&
+        box.score in 0.88..0.94 &&
+        box.x / frame.width in 0.500..0.573 &&
+        box.y / frame.height in 0.414..0.438 &&
+        box.w / frame.width in 0.167..0.219 &&
+        box.h / frame.height in 0.055..0.075
+}
+
+private fun isLowerStickerReticleRescueGate(frame: GrayImage, box: CodeBox): Boolean {
+    if (frame.width <= 0 || frame.height <= 0) return false
+    return box.orient == 'h' &&
+        box.score in 0.48..0.60 &&
+        box.x / frame.width in 0.167..0.281 &&
+        box.y / frame.height in 0.445..0.523 &&
+        box.w / frame.width in 0.313..0.427 &&
+        box.h / frame.height in 0.062..0.133
+}
+
+private val RETICLE_RESCUE_PARTIAL_PILL = ReticleRescueSpec(0.440, 0.415, 0.200, 0.060, boost = true)
+private val RETICLE_RESCUE_LOWER_STICKER = ReticleRescueSpec(0.460, 0.415, 0.200, 0.095, boost = false)
+private val RETICLE_RESCUE_THIN_LETTERS = setOf('I', 'J', 'L', 'T')
 
 private fun selectBoxesForOcr(
     boxes: List<CodeBox>,
@@ -266,6 +345,7 @@ fun recognizeFrameInOrder(
     maxBoxes: Int = MAX_BOXES_DEFAULT,
     allowLateWideCandidates: Boolean = true,
     allowHighResRetry: Boolean = true,
+    allowReticleRescue: Boolean = true,
 ): RecognizeOutcome {
     val effectiveMax = clampMaxBoxes(maxBoxes)
     val selected = selectBoxesForOcr(boxes, effectiveMax, stopOnFirstCode, allowLateWideCandidates)
@@ -275,6 +355,7 @@ fun recognizeFrameInOrder(
     val seen = HashSet<String>()
     val reads = ArrayList<String>()
     var crops = 0
+    var consideredBoxes = selected.size
 
     // A lazy crop source per box — the RAW crops are extracted now (cheap), but each variant's
     // expensive prep (prepForOcr) is deferred to the round that actually uses it.
@@ -450,10 +531,34 @@ fun recognizeFrameInOrder(
         if (resolvedThisRound && stopOnFirstCode) break // frame resolved — done
     }
 
+    if (allowReticleRescue && allowLateWideCandidates && stopOnFirstCode && resolved.isEmpty()) {
+        for (box in reticleRescueBoxes(frame, boxes)) {
+            val rescue = recognizeFrameInOrder(
+                engine = engine,
+                frame = frame,
+                checklist = checklist,
+                boxes = listOf(box),
+                stopOnFirstCode = true,
+                maxBoxes = 1,
+                allowLateWideCandidates = false,
+                allowHighResRetry = allowHighResRetry,
+                allowReticleRescue = false,
+            )
+            consideredBoxes += rescue.boxes
+            crops += rescue.crops
+            reads.addAll(rescue.reads)
+            val accepted = rescue.resolved.firstOrNull(::acceptsReticleRescueMatch)
+            if (accepted != null) {
+                if (seen.add(accepted.entry!!.code)) resolved.add(accepted)
+                break
+            }
+        }
+    }
+
     return RecognizeOutcome(
         resolved = resolved,
         reads = reads,
-        boxes = selected.size,
+        boxes = consideredBoxes,
         crops = crops,
     )
 }
