@@ -6,6 +6,11 @@ Notable changes to the sticker scanner. Newest first. No formal releases yet (de
 ## 2026-06-17 — Android: baseline Pixel combinado
 
 ### Fixed
+- **Debug Android não empilha mais vários retângulos para a mesma faixa horizontal.** O NMS da
+  varredura horizontal agora também remove duplicatas por cobertura e por mesma banda, e o overlay
+  deduplica os crops já com padding antes de desenhar. O baseline manual combinado permanece em
+  `162/216` positivos (`75,00%` recall), `42/43` seguradas avaliáveis confirmadas, `0/157` falsos
+  positivos e `0` commits errados, com p95/max de OCR ainda em `3/6` crops.
 - **OCR Android tenta uma janela horizontal genérica no retículo quando a detecção só acha fragmentos.**
   O resgate usa o ROI visível, evidência geométrica de pill horizontal e só roda depois de uma
   tentativa primária sem leitura, sem alias novo nem Tesseract. No baseline combinado, sobe para

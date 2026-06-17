@@ -405,7 +405,12 @@ private fun detectHorizontalScanBoxes(
             }
         }
     }
-    return nonMaxSuppress(out.sortedByDescending { it.score }, HSCAN_NMS_IOU).take(HSCAN_MAX_BOXES)
+    return nonMaxSuppress(
+        out.sortedByDescending { it.score },
+        HSCAN_NMS_IOU,
+        HSCAN_NMS_COVERAGE,
+        suppressSameBand = true,
+    ).take(HSCAN_MAX_BOXES)
 }
 
 private fun horizontalScanHeights(frameH: Int): IntArray {
@@ -447,6 +452,8 @@ private const val HSCAN_BASE_SCORE = 0.66
 private const val HSCAN_SCORE_RANGE = 0.05
 private const val HSCAN_BOOST_MIN_FILL = 0.48
 private const val HSCAN_NMS_IOU = 0.35
+private const val HSCAN_NMS_COVERAGE = 0.30
+private const val HSCAN_NMS_CENTER_Y_FRAC = 0.75
 private const val HSCAN_MAX_BOXES = 8
 
 /** Run the full pill-detection pipeline on an image, returning boxes in THAT image's
@@ -1067,13 +1074,22 @@ private fun resizeBilinear(src: GrayImage, dw: Int, dh: Int): GrayImage {
     return GrayImage(dw, dh, out)
 }
 
-/** Greedy non-maximum suppression by intersection-over-union. */
-private fun nonMaxSuppress(boxes: List<CodeBox>, iouThresh: Double): List<CodeBox> {
+/** Greedy non-maximum suppression by intersection-over-union, with optional smaller-box coverage. */
+private fun nonMaxSuppress(
+    boxes: List<CodeBox>,
+    iouThresh: Double,
+    coverageThresh: Double = 1.0,
+    suppressSameBand: Boolean = false,
+): List<CodeBox> {
     val kept = ArrayList<CodeBox>()
     for (b in boxes) {
         var overlaps = false
         for (k in kept) {
-            if (iou(b, k) > iouThresh) {
+            if (
+                iou(b, k) > iouThresh ||
+                overlapCoverage(b, k) > coverageThresh ||
+                (suppressSameBand && sameHorizontalBand(b, k))
+            ) {
                 overlaps = true
                 break
             }
@@ -1091,4 +1107,21 @@ private fun iou(a: CodeBox, b: CodeBox): Double {
     val inter = max(0.0, x2 - x1) * max(0.0, y2 - y1)
     val union = a.w * a.h + b.w * b.h - inter
     return if (union > 0) inter / union else 0.0
+}
+
+private fun overlapCoverage(a: CodeBox, b: CodeBox): Double {
+    val x1 = max(a.x, b.x)
+    val y1 = max(a.y, b.y)
+    val x2 = min(a.x + a.w, b.x + b.w)
+    val y2 = min(a.y + a.h, b.y + b.h)
+    val inter = max(0.0, x2 - x1) * max(0.0, y2 - y1)
+    val smaller = min(a.w * a.h, b.w * b.h)
+    return if (smaller > 0) inter / smaller else 0.0
+}
+
+private fun sameHorizontalBand(a: CodeBox, b: CodeBox): Boolean {
+    val xOverlap = min(a.x + a.w, b.x + b.w) - max(a.x, b.x)
+    if (xOverlap <= 0) return false
+    val centerY = abs((a.y + a.h / 2) - (b.y + b.h / 2))
+    return centerY <= max(a.h, b.h) * HSCAN_NMS_CENTER_Y_FRAC
 }

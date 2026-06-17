@@ -74,6 +74,21 @@ class LocateTest {
         )
     }
 
+    @Test fun horizontal_scan_returns_one_window_for_one_pill_band() {
+        val w = 480
+        val h = 640
+        val img = frame(w, h, rect(170, 250, 309, 289))
+
+        val horizontal = findCodeBoxes(img, Roi.CONFIG)
+            .filter { it.source == CodeBoxSource.HORIZONTAL_SCAN }
+
+        assertEquals(
+            1,
+            horizontal.size,
+            "one pill band should not produce redundant horizontal-scan debug rectangles: $horizontal",
+        )
+    }
+
     @Test fun a_round_blob_is_not_a_pill() {
         // A near-square dark blob (AR ~1) fails the AR>=2.0 gate, so no box (or all-low) survives.
         val w = 600
