@@ -3,6 +3,9 @@ package br.com.fiquemsabendo.figurinhas.ocr
 import br.com.fiquemsabendo.figurinhas.Config
 import br.com.fiquemsabendo.figurinhas.data.checklist
 import br.com.fiquemsabendo.figurinhas.domain.Confirmer
+import br.com.fiquemsabendo.figurinhas.domain.MatchStatus
+import br.com.fiquemsabendo.figurinhas.domain.bestHighConfidenceConfusionMatchFromText
+import br.com.fiquemsabendo.figurinhas.domain.bestMatchFromText
 import java.io.BufferedReader
 import java.io.File
 import java.io.FileInputStream
@@ -85,6 +88,13 @@ class PixelDatasetBenchmark {
         NO_MATCH,
     }
 
+    private enum class ExpectedHitPath {
+        NONE,
+        EXACT,
+        STANDARD_CORRECTION,
+        HIGH_CONFUSION,
+    }
+
     private enum class DarkFallbackPolicy {
         NEVER,
         ON_MISS,
@@ -110,6 +120,7 @@ class PixelDatasetBenchmark {
         val darkFallbackAttempted: Boolean,
         val darkFallbackUsed: Boolean,
         val reason: FailReason,
+        val expectedHitPath: ExpectedHitPath,
         val verified: Boolean,
         val diagnostics: List<String>,
     )
@@ -338,6 +349,50 @@ class PixelDatasetBenchmark {
         return String.format(Locale.US, "%.2f", numerator * 100.0 / denominator)
     }
 
+    private fun ExpectedHitPath.priority(): Int = when (this) {
+        ExpectedHitPath.NONE -> 0
+        ExpectedHitPath.HIGH_CONFUSION -> 1
+        ExpectedHitPath.STANDARD_CORRECTION -> 2
+        ExpectedHitPath.EXACT -> 3
+    }
+
+    private fun hitPathLabel(path: ExpectedHitPath): String = when (path) {
+        ExpectedHitPath.NONE -> "sem acerto"
+        ExpectedHitPath.EXACT -> "leitura exata"
+        ExpectedHitPath.STANDARD_CORRECTION -> "correção conservadora"
+        ExpectedHitPath.HIGH_CONFUSION -> "confusão conhecida"
+    }
+
+    private fun stripReadPrefix(read: String): String =
+        if (read.startsWith("dark:")) read.removePrefix("dark:") else read
+
+    private fun classifyExpectedHit(reads: List<String>, expected: String): ExpectedHitPath {
+        var best = ExpectedHitPath.NONE
+        for (read in reads) {
+            val text = stripReadPrefix(read)
+            val normalMatch = bestMatchFromText(text, checklist)
+            val candidate = when {
+                normalMatch?.entry?.code == expected && normalMatch.status == MatchStatus.EXACT -> {
+                    ExpectedHitPath.EXACT
+                }
+                normalMatch?.entry?.code == expected && normalMatch.status == MatchStatus.CORRECTED -> {
+                    ExpectedHitPath.STANDARD_CORRECTION
+                }
+                normalMatch?.entry == null -> {
+                    val confusionMatch = bestHighConfidenceConfusionMatchFromText(text, checklist)
+                    if (confusionMatch?.entry?.code == expected) {
+                        ExpectedHitPath.HIGH_CONFUSION
+                    } else {
+                        ExpectedHitPath.NONE
+                    }
+                }
+                else -> ExpectedHitPath.NONE
+            }
+            if (candidate.priority() > best.priority()) best = candidate
+        }
+        return best
+    }
+
     private fun runBenchmark(
         roi: Roi = Roi.CONFIG,
         fastConf: Double = Config.Ocr.HYBRID_FAST_CONF,
@@ -476,6 +531,7 @@ class PixelDatasetBenchmark {
                     darkFallbackAttempted = shouldFallbackDark,
                     darkFallbackUsed = darkFallbackUsed,
                     reason = reason,
+                    expectedHitPath = if (hasExpected) classifyExpectedHit(reads, target) else ExpectedHitPath.NONE,
                     diagnostics = diagnostics,
                 ),
             )
@@ -646,6 +702,13 @@ class PixelDatasetBenchmark {
             .groupBy { it.expected }
             .toSortedMap()
         val hits = scoredResults.filter { it.hasExpected }
+        val exactHits = hits.count { it.expectedHitPath == ExpectedHitPath.EXACT }
+        val standardCorrectionHits = hits.count { it.expectedHitPath == ExpectedHitPath.STANDARD_CORRECTION }
+        val highConfusionHits = hits.count { it.expectedHitPath == ExpectedHitPath.HIGH_CONFUSION }
+        val correctionDependentHits = hits.filter {
+            it.expectedHitPath == ExpectedHitPath.STANDARD_CORRECTION ||
+                it.expectedHitPath == ExpectedHitPath.HIGH_CONFUSION
+        }
         val positiveHolds = positiveHoldResults(scoredResults)
         val confirmableHolds = positiveHolds.filter { it.manualFrames >= Config.Match.CONFIRMATIONS }
         val confirmedHolds = confirmableHolds.count { it.confirmed }
@@ -685,6 +748,8 @@ class PixelDatasetBenchmark {
         lines += "- resolvidos positivos: $truePositives/$positiveRows"
         lines += "- precisão positiva: ${String.format(Locale.US, "%.2f", if ((truePositives + falsePositives) > 0) truePositives * 100.0 / (truePositives + falsePositives) else 0.0)}%"
         lines += "- recall positivo: ${String.format(Locale.US, "%.2f", if (positiveRows > 0) truePositives * 100.0 / positiveRows else 0.0)}%"
+        lines += "- acertos por leitura exata/correção/confusão conhecida: $exactHits/$standardCorrectionHits/$highConfusionHits"
+        lines += "- acertos dependentes de correção textual: ${correctionDependentHits.size}/$truePositives"
         lines += "- positivos não lidos: $misses"
         lines += "- falsos positivos: $falsePositives de $negativeRows não-sticker processados"
         lines += "- frames positivos/negativos no GT manual: $manifestPositiveRows/$manifestNegativeRows"
@@ -751,7 +816,10 @@ class PixelDatasetBenchmark {
                     .joinToString(", ") { "${it.key}:${it.value}" }
                 val avgCropsForCode = entries.map { it.crops }.average()
                 val maxCropsForCode = entries.maxOf { it.crops }
-                lines += "- $code: acertos=$codeHits/${entries.size} splits=$splitSummary crops_média=${String.format(Locale.US, "%.2f", avgCropsForCode)} crops_max=$maxCropsForCode"
+                val exactForCode = entries.count { it.hasExpected && it.expectedHitPath == ExpectedHitPath.EXACT }
+                val correctedForCode = entries.count { it.hasExpected && it.expectedHitPath == ExpectedHitPath.STANDARD_CORRECTION }
+                val confusionForCode = entries.count { it.hasExpected && it.expectedHitPath == ExpectedHitPath.HIGH_CONFUSION }
+                lines += "- $code: acertos=$codeHits/${entries.size} leitura_exata=$exactForCode correção=$correctedForCode confusão=$confusionForCode splits=$splitSummary crops_média=${String.format(Locale.US, "%.2f", avgCropsForCode)} crops_max=$maxCropsForCode"
             }
         }
         val missingWatchedCodes = watchedDifficultCodes.filter { code -> !byPositiveCode.containsKey(code) }
@@ -783,6 +851,17 @@ class PixelDatasetBenchmark {
             lines += "## Próximas capturas úteis"
             lines += "- Prioridade: seguradas curtas e horizontais dos códigos difíceis, com debug ligado e validação manual depois."
             lines.addAll(captureSuggestions)
+        }
+        lines += ""
+
+        lines += "## Acertos dependentes de correção textual"
+        if (correctionDependentHits.isEmpty()) {
+            lines += "- nenhum"
+        } else {
+            correctionDependentHits.forEach { entry ->
+                val readText = if (entry.reads.isEmpty()) "-" else entry.reads.joinToString(" | ")
+                lines += "- ${entry.frameId}: esperado=${entry.expected} via ${hitPathLabel(entry.expectedHitPath)} leituras=$readText"
+            }
         }
         lines += ""
 

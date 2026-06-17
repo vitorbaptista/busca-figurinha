@@ -34,6 +34,10 @@ const HARVESTS = [
   },
   {
     label: 'SWE8',
+    fixture: resolve('android/app/src/test/resources/stickers/SWE8_pixel_live_frame4_crop0.pgm.gz'),
+  },
+  {
+    label: 'SWE8',
     fixture: resolve('android/app/src/test/resources/stickers/SWE8_pixel_live_dark_frame49_crop0.pgm.gz'),
   },
   {

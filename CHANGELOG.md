@@ -6,6 +6,11 @@ Notable changes to the sticker scanner. Newest first. No formal releases yet (de
 ## 2026-06-17 — Android: resgate estreito no retículo
 
 ### Fixed
+- **OCR Android lê um `SWE8` real sem depender de correção textual.** O atlas ganhou glifos de um
+  crop Pixel revisado manualmente que antes lia `BWE 8`; o teste de ouro agora exige a leitura crua
+  `SWE 8`. No baseline manual, os acertos por leitura exata sobem de `36/45` para `37/45`, os
+  acertos dependentes de correção caem de `9/45` para `8/45`, e o gate mantém `45/45` positivos,
+  `0/156` falsos positivos e p95/max de OCR em `2/2` crops.
 - **OCR Android recupera todos os positivos do dataset Pixel manual.** Quando a detecção normal
   falha mas deixa uma assinatura geométrica muito específica de pill parcial, corpo da figurinha ou
   cabeçalho cortado no retículo, o pipeline tenta um crop fixo estreito no topo direito da janela.
@@ -15,6 +20,9 @@ Notable changes to the sticker scanner. Newest first. No formal releases yet (de
   falsos positivos, `11/11` seguradas avaliáveis confirmadas e p95/max de OCR em `2/3` crops.
 
 ### Changed
+- **Relatório Pixel separa acertos limpos de acertos corrigidos.** O benchmark agora mostra, por
+  frame e por código manual, quantos acertos vieram de leitura exata, correção conservadora ou
+  confusão conhecida, expondo casos frágeis mesmo quando o recall agregado já está em `100%`.
 - **Caminho live prioriza crops específicos antes de gastar OCR em fragmentos.** O pipeline continua
   usando o mesmo conjunto restrito de boxes e o mesmo matcher conservador, mas tenta primeiro o pill
   largo quando ele é muito maior que os fragmentos de score alto, e antecipa o rescue de cabeçalho
