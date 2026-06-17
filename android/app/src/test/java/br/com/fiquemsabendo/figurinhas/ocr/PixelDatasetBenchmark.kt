@@ -42,6 +42,7 @@ class PixelDatasetBenchmark {
     private val baselineMinConfirmedHolds = 11
     private val baselineMaxAverageCrops = 0.70
     private val baselineMaxCropsPerFrame = 2
+    private val usefulFramesPerDifficultCode = 3
     private val watchedDifficultCodes = listOf("MEX15", "IRQ20", "TUN10")
 
     private data class ManifestRow(
@@ -745,6 +746,28 @@ class PixelDatasetBenchmark {
             missingWatchedCodes.forEach { code ->
                 lines += "- $code: sem frame confirmado no CSV manual; não usar para benchmark até existir captura revisada"
             }
+        }
+        val captureSuggestions = ArrayList<String>()
+        for (code in watchedDifficultCodes) {
+            val entries = byPositiveCode[code].orEmpty()
+            val splitNames = entries.map { it.split }.toSet()
+            when {
+                entries.isEmpty() -> {
+                    captureSuggestions += "- $code: capturar uma segurada com pelo menos $usefulFramesPerDifficultCode frames revisados manualmente"
+                }
+                entries.size < usefulFramesPerDifficultCode -> {
+                    captureSuggestions += "- $code: só ${entries.size}/$usefulFramesPerDifficultCode frames revisados; capturar mais ${usefulFramesPerDifficultCode - entries.size}"
+                }
+                splitNames.size < 2 -> {
+                    captureSuggestions += "- $code: cobertura só em ${splitNames.joinToString(", ")}; capturar variação para validação/teste"
+                }
+            }
+        }
+        if (captureSuggestions.isNotEmpty()) {
+            lines += ""
+            lines += "## Próximas capturas úteis"
+            lines += "- Prioridade: seguradas curtas e horizontais dos códigos difíceis, com debug ligado e validação manual depois."
+            lines.addAll(captureSuggestions)
         }
         lines += ""
 
