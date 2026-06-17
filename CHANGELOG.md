@@ -16,6 +16,9 @@ Notable changes to the sticker scanner. Newest first. No formal releases yet (de
 - **Diagnóstico de misses do benchmark Android mostra geometria das caixas.** O relatório dos
   positivos não lidos agora inclui `x/y/w/h`, score e inclinação de cada box tentado, facilitando
   separar erro de localização de erro de OCR sem depender de inspeção manual solta.
+- **Benchmark Android virou gate contra regressão do baseline manual.** A suíte agora falha se o
+  dataset verificado manualmente produzir qualquer falso positivo ou cair abaixo do patamar atual
+  de `8/10` positivos processáveis no baseline.
 - **Atlas real do OCR ganhou amostras verificadas de `IRQ20` e `SWE8`.** O atlas de glifos agora
   inclui templates colhidos de crops reais confirmados manualmente, recuperando `IRQ20` no benchmark
   local sem regredir os testes de ouro de `SWE8` nem aumentar falsos positivos.

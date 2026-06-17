@@ -13,6 +13,8 @@ import java.util.zip.GZIPInputStream
 import kotlin.math.max
 import kotlin.math.min
 import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertTrue
 
 // Bench the live Android scanner against real captured frames (no Android runtime, host JVM only).
 // This class is intentionally assertion-free by default; it writes a report with metrics so we can
@@ -477,6 +479,14 @@ class PixelDatasetBenchmark {
         val byReason = scoredResults.filter { it.reason != FailReason.NONE }.groupBy { it.reason }
         val bySplit = scoredResults.groupBy { it.split }
         val hits = scoredResults.filter { it.hasExpected }
+
+        if (reportBase == "baseline" && maxBoxes == 4 && roi == Roi.CONFIG && fastConf == Config.Ocr.HYBRID_FAST_CONF) {
+            assertEquals(0, falsePositives, "baseline Pixel benchmark must keep 0 false positives")
+            assertTrue(
+                truePositives >= 8,
+                "baseline Pixel benchmark recall regressed: resolved $truePositives/$positiveRows positives",
+            )
+        }
 
         val lines = ArrayList<String>(260)
         lines += "# SWE8 Pixel Live Dataset Benchmark"
