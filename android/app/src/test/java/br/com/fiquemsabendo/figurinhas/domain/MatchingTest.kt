@@ -176,14 +176,62 @@ class MatchingTest {
         assertEquals(2, wShape?.distance)
     }
     @Test fun high_confidence_confusion_recovers_verified_pixel_shapes() {
-        assertEquals("RSA17", bestHighConfidenceConfusionMatchFromText("HSA 17", checklist)?.entry?.code)
-        assertEquals("RSA17", bestHighConfidenceConfusionMatchFromText("RSM 17", checklist)?.entry?.code)
-        assertEquals("CIV12", bestHighConfidenceConfusionMatchFromText("CWV 12", checklist)?.entry?.code)
-        assertEquals("CIV4", bestHighConfidenceConfusionMatchFromText("CNV 4", checklist)?.entry?.code)
-        assertEquals("SWE8", bestHighConfidenceConfusionMatchFromText("SWT 8", checklist)?.entry?.code)
-        assertEquals("QAT17", bestHighConfidenceConfusionMatchFromText("OAT 17", checklist)?.entry?.code)
-        assertEquals("CUW4", bestHighConfidenceConfusionMatchFromText("OJW 4", checklist)?.entry?.code)
-        assertEquals("NOR20", bestHighConfidenceConfusionMatchFromText("NEN 20", checklist)?.entry?.code)
+        val verifiedPixelShapes = linkedMapOf(
+            "DUA 19" to "GHA19",
+            "ER 4" to "GER4",
+            "HSA 17" to "RSA17",
+            "RSM 17" to "RSA17",
+            "RGA 17" to "RSA17",
+            "NEN 20" to "NOR20",
+            "EN 20" to "NOR20",
+            "MN 20" to "NOR20",
+            "CWV 12" to "CIV12",
+            "OV 4" to "CIV4",
+            "SXV 4" to "CIV4",
+            "CNV 4" to "CIV4",
+            "NB 18" to "NZL18",
+            "NO 2" to "AUS2",
+            "WAI 2" to "AUS2",
+            "WIU 8" to "AUT8",
+            "NGA 6" to "RSA6",
+            "NEA 6" to "RSA6",
+            "FGA 19" to "RSA19",
+            "GIE 8" to "SWE8",
+            "SWT 8" to "SWE8",
+            "EX 14" to "SUI14",
+            "WX 14" to "SUI14",
+            "UJMJ 10" to "TUN10",
+            "IL 10" to "TUN10",
+            "EG 1" to "ALG1",
+            "MB 1" to "ALG1",
+            "3AT 17" to "QAT17",
+            "OAT 17" to "QAT17",
+            "SOT 17" to "QAT17",
+            "TOT 17" to "QAT17",
+            "COT 17" to "QAT17",
+            "SBT 17" to "QAT17",
+            "SWJ 10" to "IRN10",
+            "OWJ 10" to "IRN10",
+            "MN 10" to "IRN10",
+            "GN 10" to "IRN10",
+            "ON 15" to "IRN15",
+            "SVU 15" to "IRN15",
+            "MN 15" to "IRN15",
+            "DH 12" to "BIH12",
+            "RH 12" to "BIH12",
+            "SOU 12" to "BIH12",
+            "OJW 4" to "CUW4",
+            "DAY 4" to "CUW4",
+            "OAV 4" to "CUW4",
+            "BN 10" to "POR10",
+            "TXN 10" to "POR10",
+            "IWJ 20" to "IRQ20",
+            "SE 20" to "IRQ20",
+            "SXJ 20" to "IRQ20",
+        )
+        for ((read, expected) in verifiedPixelShapes) {
+            assertEquals(expected, bestHighConfidenceConfusionMatchFromText(read, checklist)?.entry?.code, read)
+        }
     }
     @Test fun high_confidence_confusion_rejects_digit_changes_and_unknown_letter_pairs() {
         val onlyAut4 = makeChecklist(listOf("AUT4"))
@@ -192,6 +240,7 @@ class MatchingTest {
         assertNull(bestHighConfidenceConfusionMatchFromText("RGA 8", checklist))
         assertNull(bestHighConfidenceConfusionMatchFromText("SXJ 18", makeChecklist(listOf("IRQ18"))))
         assertNull(bestHighConfidenceConfusionMatchFromText("SWJ 10", makeChecklist(listOf("IRQ10"))))
+        assertNull(bestHighConfidenceConfusionMatchFromText("WO 20", checklist))
     }
 
     // ---- matchAllFromText ----

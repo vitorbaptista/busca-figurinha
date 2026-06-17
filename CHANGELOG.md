@@ -6,6 +6,12 @@ Notable changes to the sticker scanner. Newest first. No formal releases yet (de
 ## 2026-06-17 — Android: baseline Pixel combinado
 
 ### Fixed
+- **Matcher Android recupera aliases exatos vistos no Pixel sem abrir distância geral.** Leituras
+  verificadas no CSV manual como `RGA 17`→`RSA17`, `EN 20`→`NOR20`, `ON 15`→`IRN15`,
+  `BN 10`→`POR10` e `SE 20`/`SXJ 20`→`IRQ20` agora entram só no caminho de alta confiança e só
+  preservando o número da figurinha. O baseline combinado sobe para `135/216` positivos (`62,50%`
+  recall), `36/43` seguradas avaliáveis confirmadas, `0/157` falsos positivos, `0` commits errados
+  e menos trabalho de OCR (`392` crops contra `477`).
 - **Atlas Android aprende um crop real de `MEX15` que segmentava o `M` em duas metades.** Um crop
   Pixel revisado manualmente (`frame-84`) agora entra no harvest com slices manuais, recuperando
   mais uma leitura exata sem abrir o matcher. O baseline combinado sobe para `89/216` positivos

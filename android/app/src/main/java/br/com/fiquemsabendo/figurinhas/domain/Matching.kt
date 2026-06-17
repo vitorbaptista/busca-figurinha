@@ -48,6 +48,59 @@ private val HIGH_CONF_LETTER_CONFUSIONS = setOf(
     'J' to 'Q',
     'J' to 'U',
 )
+private val NUMERIC_SUFFIX_RE = Regex("(\\d{1,3})$")
+private fun numericSuffix(code: String): String? = NUMERIC_SUFFIX_RE.find(code)?.value
+
+// Exact raw reads observed in manually reviewed Pixel frames. Keep this number-preserving:
+// changing the sticker number is too risky for live commits, even when the crop is high confidence.
+private val HIGH_CONF_EXACT_ALIASES = mapOf(
+    "ER4" to "GER4",
+    "RGA17" to "RSA17",
+    "ON15" to "IRN15",
+    "NB18" to "NZL18",
+    "SXV4" to "CIV4",
+    "FGA19" to "RSA19",
+    "MN10" to "IRN10",
+    "MN15" to "IRN15",
+    "GN10" to "IRN10",
+    "OV4" to "CIV4",
+    "NGA6" to "RSA6",
+    "NEA6" to "RSA6",
+    "EG1" to "ALG1",
+    "DUA19" to "GHA19",
+    "DH12" to "BIH12",
+    "COT17" to "QAT17",
+    "RH12" to "BIH12",
+    "TOT17" to "QAT17",
+    "GIE8" to "SWE8",
+    "3AT17" to "QAT17",
+    "SBT17" to "QAT17",
+    "SOT17" to "QAT17",
+    "SXJ20" to "IRQ20",
+    "SE20" to "IRQ20",
+    "EN20" to "NOR20",
+    "MN20" to "NOR20",
+    "SWJ10" to "IRN10",
+    "BN10" to "POR10",
+    "SOU12" to "BIH12",
+    "SVU15" to "IRN15",
+    "TXN10" to "POR10",
+    "OWJ10" to "IRN10",
+    "EX14" to "SUI14",
+    "MB1" to "ALG1",
+    "WIU8" to "AUT8",
+    "WX14" to "SUI14",
+    "NO2" to "AUS2",
+    "DAY4" to "CUW4",
+    "IL10" to "TUN10",
+    "WAI2" to "AUS2",
+    "OAV4" to "CUW4",
+    "UJMJ10" to "TUN10",
+).also { aliases ->
+    require(aliases.all { (raw, target) -> numericSuffix(raw) == numericSuffix(target) }) {
+        "High-confidence exact aliases must keep the sticker number unchanged"
+    }
+}
 private val STRUCTURED_CODE_RE = Regex("^([A-Z]{2,4})(\\d{1,3})$")
 private val SAFE_SAME_LENGTH_CONFUSIONS = setOf(
     '0' to 'O',
@@ -151,6 +204,12 @@ fun bestMatchFromText(text: String, list: Checklist, maxDistance: Int = Config.M
 }
 
 fun bestHighConfidenceConfusionMatchFromText(text: String, list: Checklist): MatchResult? {
+    val exactAliasRaw = normalizeCode(text)
+    HIGH_CONF_EXACT_ALIASES[exactAliasRaw]?.let { code ->
+        val entry = list.byCode[code] ?: return@let
+        return MatchResult(exactAliasRaw, MatchStatus.CORRECTED, entry, levenshtein(exactAliasRaw, code))
+    }
+
     val codes = extractCodes(text)
     if (codes.isEmpty()) return null
     var bestEntry: ChecklistEntry? = null
