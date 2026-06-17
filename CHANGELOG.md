@@ -13,6 +13,9 @@ Notable changes to the sticker scanner. Newest first. No formal releases yet (de
   passou a capturar `boxes`, `inkBoxes` e razões de falha (sem caixa, sem tinta, sem match), além
   de ignorar a chamada de fallback não treinada de Tesseract (`recognizeSlow = null`) e manter o mesmo
   contrato conservador de `0 falso positivo`.
+- **Atlas real do OCR ganhou amostras verificadas de `IRQ20` e `SWE8`.** O atlas de glifos agora
+  inclui templates colhidos de crops reais confirmados manualmente, recuperando `IRQ20` no benchmark
+  local sem regredir os testes de ouro de `SWE8` nem aumentar falsos positivos.
 
 ### Fixed
 - **Burst vazio não trava mais o scanner Android.** Quando a figurinha fica parada mas o OCR não
@@ -47,6 +50,9 @@ Notable changes to the sticker scanner. Newest first. No formal releases yet (de
 - **ROI Android foi alargada com base no dataset manual.** O retículo passou para uma janela central
   maior (`0.18,0.32,0.82,0.58`), recuperando mais um positivo processável no benchmark local
   (`7/10`, ainda com `0/145` falsos positivos) sem cair para a busca em frame inteiro.
+- **Benchmark manual subiu para `8/10` positivos processáveis com `0/145` falsos positivos.** A
+  melhoria veio do atlas real de `IRQ20` balanceado por `SWE8`; os misses restantes (`NED12` e um
+  `SWE8` muito fraco) continuam tratados como misses, não como leitura arriscada.
 - **ROI Android ficou mais estreita para leitura ao vivo.** A janela agora prioriza a faixa central
   onde o código `SWE 8` foi lido no Pixel, reduzindo fundo analisado e deixando mais claro que a
   figurinha precisa estar perto o suficiente para o código preencher o retículo.
