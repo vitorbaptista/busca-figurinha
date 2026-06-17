@@ -138,7 +138,7 @@ private fun isLateCompactCodeCandidate(box: CodeBox): Boolean {
     val shortSide = min(box.w, box.h)
     if (shortSide <= 0) return false
     val axisAr = max(box.w, box.h) / shortSide
-    return box.score in 0.72..0.83 &&
+    return box.score in 0.69..0.83 &&
         box.w in 70.0..105.0 &&
         box.h in 22.0..36.0 &&
         axisAr in 2.4..3.8

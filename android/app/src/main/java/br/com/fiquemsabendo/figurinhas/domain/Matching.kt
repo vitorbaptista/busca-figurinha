@@ -78,6 +78,7 @@ private val HIGH_CONF_EXACT_ALIASES = mapOf(
     "SOT17" to "QAT17",
     "SXJ20" to "IRQ20",
     "SE20" to "IRQ20",
+    "WO20" to "IRQ20",
     "EN20" to "NOR20",
     "MN20" to "NOR20",
     "SWJ10" to "IRN10",

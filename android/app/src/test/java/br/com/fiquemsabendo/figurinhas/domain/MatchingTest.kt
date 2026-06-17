@@ -235,6 +235,7 @@ class MatchingTest {
             "IWJ 20" to "IRQ20",
             "SE 20" to "IRQ20",
             "SXJ 20" to "IRQ20",
+            "WO 20" to "IRQ20",
         )
         for ((read, expected) in verifiedPixelShapes) {
             assertEquals(expected, bestHighConfidenceConfusionMatchFromText(read, checklist)?.entry?.code, read)
@@ -247,7 +248,6 @@ class MatchingTest {
         assertNull(bestHighConfidenceConfusionMatchFromText("RGA 8", checklist))
         assertNull(bestHighConfidenceConfusionMatchFromText("SXJ 18", makeChecklist(listOf("IRQ18"))))
         assertNull(bestHighConfidenceConfusionMatchFromText("SWJ 10", makeChecklist(listOf("IRQ10"))))
-        assertNull(bestHighConfidenceConfusionMatchFromText("WO 20", checklist))
     }
 
     // ---- matchAllFromText ----
