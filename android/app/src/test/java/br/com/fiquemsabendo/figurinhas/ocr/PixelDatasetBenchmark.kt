@@ -548,27 +548,6 @@ class PixelDatasetBenchmark {
         val bySplit = scoredResults.groupBy { it.split }
         val hits = scoredResults.filter { it.hasExpected }
 
-        if (reportBase == "baseline" && maxBoxes == 4 && roi == Roi.CONFIG && fastConf == Config.Ocr.HYBRID_FAST_CONF) {
-            assertEquals(0, falsePositives, "baseline Pixel benchmark must keep 0 false positives")
-            assertEquals(0, missingPositiveFiles, "baseline Pixel benchmark has verified positives without frame files")
-            if (positiveRows >= 3) {
-                for (splitName in arrayOf("train", "val", "test")) {
-                    assertTrue(
-                        bySplit[splitName].orEmpty().any { it.expected != notStickerLabel },
-                        "baseline Pixel benchmark split '$splitName' has no verified positives",
-                    )
-                }
-            }
-            assertEquals(
-                positiveRows,
-                truePositives,
-                "baseline Pixel benchmark recall regressed: resolved $truePositives/$positiveRows positives",
-            )
-            assertTrue(totalCrops <= 100, "baseline Pixel benchmark OCR work regressed: total crops=$totalCrops")
-            assertTrue(cropsP95 <= 2, "baseline Pixel benchmark typical OCR work regressed: p95 crops=$cropsP95")
-            assertTrue(maxCrops <= 3, "baseline Pixel benchmark has a high-work frame: max crops=$maxCrops")
-        }
-
         val lines = ArrayList<String>(260)
         lines += "# SWE8 Pixel Live Dataset Benchmark"
         val modeConfig = modes.joinToString(".") { it.name.lowercase() }
@@ -700,5 +679,26 @@ class PixelDatasetBenchmark {
             writer.write(lines.joinToString(System.lineSeparator()))
         }
         println("${reportFile.name}: positivos=$truePositives/$positiveRows fp=$falsePositives detMed=${String.format(Locale.US, "%.2f", detection.median())}ms ocrMed=${String.format(Locale.US, "%.2f", ocr.median())}ms")
+
+        if (reportBase == "baseline" && maxBoxes == 4 && roi == Roi.CONFIG && fastConf == Config.Ocr.HYBRID_FAST_CONF) {
+            assertEquals(0, falsePositives, "baseline Pixel benchmark must keep 0 false positives")
+            assertEquals(0, missingPositiveFiles, "baseline Pixel benchmark has verified positives without frame files")
+            if (positiveRows >= 3) {
+                for (splitName in arrayOf("train", "val", "test")) {
+                    assertTrue(
+                        bySplit[splitName].orEmpty().any { it.expected != notStickerLabel },
+                        "baseline Pixel benchmark split '$splitName' has no verified positives",
+                    )
+                }
+            }
+            assertEquals(
+                positiveRows,
+                truePositives,
+                "baseline Pixel benchmark recall regressed: resolved $truePositives/$positiveRows positives",
+            )
+            assertTrue(totalCrops <= 100, "baseline Pixel benchmark OCR work regressed: total crops=$totalCrops")
+            assertTrue(cropsP95 <= 2, "baseline Pixel benchmark typical OCR work regressed: p95 crops=$cropsP95")
+            assertTrue(maxCrops <= 3, "baseline Pixel benchmark has a high-work frame: max crops=$maxCrops")
+        }
     }
 }

@@ -525,6 +525,7 @@ private fun CameraScanContent(
             ScanDebugCropOverlay(
                 frameAspect = frameAspect,
                 cropBoxes = debugCropBoxes,
+                mirrorX = facing == CameraFacing.FRONT,
                 modifier = Modifier.fillMaxSize(),
             )
         }
@@ -629,6 +630,7 @@ private fun ScanReticle(frameAspect: Float, modifier: Modifier = Modifier) {
 private fun ScanDebugCropOverlay(
     frameAspect: Float,
     cropBoxes: List<DebugCropBox>,
+    mirrorX: Boolean,
     modifier: Modifier = Modifier,
 ) {
     Canvas(modifier = modifier) {
@@ -640,9 +642,11 @@ private fun ScanDebugCropOverlay(
             Color(0xFFFF4081),
         )
         cropBoxes.forEachIndexed { index, box ->
-            val left = displayedFrame.left + box.left * displayedFrame.width
+            val frameLeft = if (mirrorX) 1f - box.right else box.left
+            val frameRight = if (mirrorX) 1f - box.left else box.right
+            val left = displayedFrame.left + frameLeft * displayedFrame.width
             val top = displayedFrame.top + box.top * displayedFrame.height
-            val right = displayedFrame.left + box.right * displayedFrame.width
+            val right = displayedFrame.left + frameRight * displayedFrame.width
             val bottom = displayedFrame.top + box.bottom * displayedFrame.height
             if (right <= left || bottom <= top) return@forEachIndexed
             drawRoundRect(

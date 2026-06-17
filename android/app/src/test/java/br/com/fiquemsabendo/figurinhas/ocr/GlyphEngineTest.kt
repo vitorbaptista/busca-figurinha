@@ -59,13 +59,14 @@ class GlyphEngineTest {
         )
 
     /** A confident, DECISIVE digit: bestDigit beats secondDigit by >> DIGIT_MARGIN. */
-    private fun classifiedDigit(label: Char, score: Double, second: Double = 0.10): Classified =
+    private fun classifiedDigit(label: Char, score: Double, second: Double = 0.10, holes: Int = 0): Classified =
         Classified(
             label = label,
             score = score,
             bestLetter = LabelScore('O', 0.30),
             bestDigit = LabelScore(label, score),
             secondDigitScore = second,
+            holes = holes,
         )
 
     // ---- classify -----------------------------------------------------------------------
@@ -189,6 +190,28 @@ class GlyphEngineTest {
         val (text, _, reject) = assemble(list)
         assertFalse(reject, "a near-exact digit (>= DIGIT_STRONG) must commit despite a close runner-up")
         assertEquals("EGY 4", text)
+    }
+
+    @Test fun assemble_accepts_a_strong_one_hole_digit_when_the_letter_score_is_lower() {
+        // Pixel crops can make 6/9/0 tie with each other while still showing one enclosed hole
+        // and clearly beating the best letter. This should commit; a letter-like tie should not.
+        val strongOneHole = Classified(
+            label = '6',
+            score = 0.94,
+            bestLetter = LabelScore('B', 0.90),
+            bestDigit = LabelScore('6', 0.94),
+            secondDigitScore = 0.94,
+            holes = 1,
+        )
+        val list = listOf(
+            classifiedLetter('R', 0.95),
+            classifiedLetter('S', 0.93),
+            classifiedLetter('A', 0.94),
+            strongOneHole,
+        )
+        val (text, _, reject) = assemble(list)
+        assertFalse(reject, "a strong one-hole digit with lower letter score should commit")
+        assertEquals("RSA 6", text)
     }
 
     @Test fun assemble_rejects_a_low_cosine_glyph() {

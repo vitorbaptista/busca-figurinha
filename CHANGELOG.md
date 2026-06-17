@@ -6,6 +6,10 @@ Notable changes to the sticker scanner. Newest first. No formal releases yet (de
 ## 2026-06-16 — Android: retry sem falso "lido"
 
 ### Added
+- **Atlas real do OCR ganhou crops verificados do Pixel mais recente.** O harvest agora inclui
+  amostras manuais de `RSA19`, `AUT4`, `RSA17`, `PAN1`, `GHA19`, `CIV12`, `RSA6`, `AUT8`, `AUS2`,
+  `NZL18`, `CIV4` e `AUS18`, sempre a partir de frames revisados manualmente. No dataset atual,
+  isso elevou o baseline de `15/45` para `26/45` positivos sem falso positivo.
 - **Fixture real do Pixel para SWE 8.** O teste de ouro Android agora inclui quadros capturados no
   Pixel em modo debug e valida a ROI/fill-light reais: quadros próximos precisam ler `SWE 8`, e
   todos precisam manter 0 falso positivo.
@@ -30,6 +34,9 @@ Notable changes to the sticker scanner. Newest first. No formal releases yet (de
   para bursts que realmente commitam um código.
 
 ### Changed
+- **Benchmark Pixel escreve o relatório antes de falhar no gate.** Quando o baseline ainda não
+  atinge recall total, o arquivo `baseline_max4.md` continua sendo atualizado com os misses e
+  falsos positivos antes do `assert`, acelerando a próxima rodada de diagnóstico.
 - **Validação manual do dataset por frame foi padronizada.** Adicionado o gerador
   `scripts/verify-pixel-dataset.mjs`, que cria uma página local (`manual_verify.html`) para revisão
   frame a frame do dataset do Pixel antes de rodar benchmark. O fluxo salva `ground_truth_verification.csv`
@@ -104,6 +111,13 @@ Notable changes to the sticker scanner. Newest first. No formal releases yet (de
   sempre pedir um valor fixo. Câmeras de foco fixo continuam sem trava manual.
 - **Backup Android preserva o modo debug.** Exportar/importar agora mantém o ajuste `debug`, e
   backups antigos sem esse campo continuam importando com debug desligado.
+- **Dígitos de um furo usam topologia com margem contra letras.** O OCR Android agora aceita um
+  `6/9/0` ambíguo entre dígitos quando há exatamente um furo, score forte e a melhor letra fica
+  abaixo por margem mínima. Isso recupera `RSA6` no benchmark (`27/45`) mantendo `0/156` falsos
+  positivos.
+- **Overlay de crops do debug acompanha o espelho da câmera frontal.** As caixas coloridas agora
+  são espelhadas no preview frontal, alinhando o diagnóstico visual ao que o usuário vê sem alterar
+  os frames reais usados pelo OCR.
 
 ## 2026-06-15 — Remove "Enviar foto"
 

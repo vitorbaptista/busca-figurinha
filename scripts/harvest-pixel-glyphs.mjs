@@ -47,6 +47,74 @@ const HARVESTS = [
       { label: '2', x: 188, y: 59, w: 29, h: 33 },
     ],
   },
+  {
+    label: 'RSA19',
+    fixture: resolve('android/app/src/test/resources/stickers/RSA19_pixel_live_crop0.pgm.gz'),
+    slices: [
+      { label: 'R', x: 149, y: 69, w: 36, h: 59 },
+      { label: 'S', x: 188, y: 67, w: 38, h: 62 },
+      { label: 'A', x: 226, y: 67, w: 38, h: 62 },
+      { label: '1', x: 280, y: 68, w: 39, h: 60 },
+      { label: '9', x: 319, y: 67, w: 50, h: 62 },
+    ],
+  },
+  {
+    label: 'AUT4',
+    fixture: resolve('android/app/src/test/resources/stickers/AUT4_pixel_live_crop0.pgm.gz'),
+    slices: [
+      { label: 'A', x: 144, y: 66, w: 34, h: 53 },
+      { label: 'U', x: 179, y: 68, w: 33, h: 54 },
+      { label: 'T', x: 212, y: 68, w: 32, h: 54 },
+      { label: '4', x: 263, y: 73, w: 45, h: 55 },
+    ],
+  },
+  {
+    label: 'RSA17',
+    fixture: resolve('android/app/src/test/resources/stickers/RSA17_pixel_live_crop0.pgm.gz'),
+    slices: [
+      { label: 'R', x: 80, y: 53, w: 37, h: 31 },
+      { label: 'S', x: 95, y: 51, w: 22, h: 33 },
+      { label: 'A', x: 117, y: 51, w: 21, h: 30 },
+      { label: '1', x: 142, y: 45, w: 18, h: 32 },
+      { label: '7', x: 160, y: 45, w: 21, h: 32 },
+    ],
+  },
+  {
+    label: 'PAN1',
+    fixture: resolve('android/app/src/test/resources/stickers/PAN1_pixel_live_crop0.pgm.gz'),
+  },
+  {
+    label: 'GHA19',
+    fixture: resolve('android/app/src/test/resources/stickers/GHA19_pixel_live_crop0.pgm.gz'),
+  },
+  {
+    label: 'CIV12',
+    fixture: resolve('android/app/src/test/resources/stickers/CIV12_pixel_live_frame59_crop0.pgm.gz'),
+  },
+  {
+    label: 'RSA6',
+    fixture: resolve('android/app/src/test/resources/stickers/RSA6_pixel_live_crop0.pgm.gz'),
+  },
+  {
+    label: 'AUT8',
+    fixture: resolve('android/app/src/test/resources/stickers/AUT8_pixel_live_crop0.pgm.gz'),
+  },
+  {
+    label: 'AUS2',
+    fixture: resolve('android/app/src/test/resources/stickers/AUS2_pixel_live_crop0.pgm.gz'),
+  },
+  {
+    label: 'NZL18',
+    fixture: resolve('android/app/src/test/resources/stickers/NZL18_pixel_live_crop0.pgm.gz'),
+  },
+  {
+    label: 'CIV4',
+    fixture: resolve('android/app/src/test/resources/stickers/CIV4_pixel_live_crop0.pgm.gz'),
+  },
+  {
+    label: 'AUS18',
+    fixture: resolve('android/app/src/test/resources/stickers/AUS18_pixel_live_crop0.pgm.gz'),
+  },
 ];
 
 function startServer() {

@@ -56,6 +56,8 @@ private val DIGITS: Set<Char> = "0123456789".toSet()
 private const val DIGIT_MARGIN = 0.05
 private const val DIGIT_STRONG = 0.97
 private const val DIGIT_EIGHT_TOPOLOGY_STRONG = 0.88
+private const val DIGIT_ONE_HOLE_TOPOLOGY_STRONG = 0.94
+private const val DIGIT_ONE_HOLE_LETTER_MARGIN = 0.03
 
 /** A committed glyph must classify at least this well. A whole crop of card texture or a logo
  *  fragment scores below this on most glyphs; rejecting them makes the token un-matchable (the
@@ -190,7 +192,13 @@ internal fun assemble(classified: List<Classified>): Triple<String, Double, Bool
             val decisive =
                 c.bestDigit.score - c.secondDigitScore >= DIGIT_MARGIN ||
                     c.bestDigit.score >= DIGIT_STRONG ||
-                    (ch == '8' && c.holes >= 2 && c.bestDigit.score >= DIGIT_EIGHT_TOPOLOGY_STRONG)
+                    (ch == '8' && c.holes >= 2 && c.bestDigit.score >= DIGIT_EIGHT_TOPOLOGY_STRONG) ||
+                    (
+                        ch in "069" &&
+                            c.holes == 1 &&
+                            c.bestDigit.score >= DIGIT_ONE_HOLE_TOPOLOGY_STRONG &&
+                            c.bestDigit.score - c.bestLetter.score >= DIGIT_ONE_HOLE_LETTER_MARGIN
+                    )
             if (!decisive) reject = true
         } else if (DIGITS.contains(ch) && DIGIT_TO_LETTER.containsKey(ch)) {
             ch = DIGIT_TO_LETTER.getValue(ch)
