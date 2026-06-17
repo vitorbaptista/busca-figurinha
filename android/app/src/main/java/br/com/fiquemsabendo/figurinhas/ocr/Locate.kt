@@ -145,6 +145,11 @@ private val DET_BG_RADII = doubleArrayOf(0.045, 0.025)
 /** How much darker than its local background a pixel must be to count as pill foreground. */
 private const val FG_DELTA = 12
 
+enum class ForegroundMode {
+    DARK,
+    LIGHT,
+}
+
 /** Run the connected-component pill search at one background radius, appending every
  *  box that passes the geometry gate to `out`. Split out so findCodeBoxes can run it at
  *  several radii (small + large pills need different local-threshold scales). */
@@ -154,12 +159,18 @@ private fun collectBoxes(
     dh: Int,
     scale: Double,
     radius: Int,
+    mode: ForegroundMode,
     out: MutableList<CodeBox>,
 ) {
     val n = dw * dh
     val bg = boxBlur(gray, dw, dh, radius)
     val fg = ByteArray(n)
-    for (i in 0 until n) fg[i] = if (gray[i] < bg[i] - FG_DELTA) 1 else 0
+    for (i in 0 until n) {
+        fg[i] = when (mode) {
+            ForegroundMode.DARK -> if (gray[i] < bg[i] - FG_DELTA) 1 else 0
+            ForegroundMode.LIGHT -> if (gray[i] > bg[i] + FG_DELTA) 1 else 0
+        }
+    }
 
     val labels = IntArray(n) { -1 }
     val stack = IntArray(n)
@@ -247,7 +258,11 @@ data class Roi(val left: Double, val top: Double, val right: Double, val bottom:
  *  FIFA logo / header / legal text out of the crops, AND lines up with the on-screen reticle so the
  *  user can place the code precisely where it's read. Roi.FULL (default for benches) detects the
  *  whole frame, byte-identical to the previous behaviour (no sub-image, no offset). */
-fun findCodeBoxes(frame: GrayImage, roi: Roi = Roi.CONFIG): List<CodeBox> {
+fun findCodeBoxes(
+    frame: GrayImage,
+    roi: Roi = Roi.CONFIG,
+    modes: Array<ForegroundMode> = ForegroundMode.values(),
+): List<CodeBox> {
     val fw = frame.width
     val fh = frame.height
     if (fw == 0 || fh == 0) return emptyList()
@@ -268,7 +283,7 @@ fun findCodeBoxes(frame: GrayImage, roi: Roi = Roi.CONFIG): List<CodeBox> {
     // would upscale it to a mis-calibrated, larger raster that fails the size gates. Passing the
     // full-frame long side makes the sub-rect's raster exactly that slice of the full-frame raster:
     // same pixel density, same gates, just fewer rows/cols → genuinely cheaper detection.
-    val boxes = detectBoxes(sub, max(fw, fh))
+    val boxes = detectBoxes(sub, max(fw, fh), modes)
     // Boxes come back in SUB-RECT coordinates; offset BOTH x and y back into full-frame space (the
     // moment-derived tilt and pillW are translation-invariant, so they carry over unchanged).
     return boxes.map { it.copy(x = it.x + x0, y = it.y + y0) }
@@ -280,7 +295,7 @@ fun findCodeBoxes(frame: GrayImage, roi: Roi = Roi.CONFIG): List<CodeBox> {
  *  computed against — the band passes the FULL frame's long side so its detection raster,
  *  radii and size gates stay identical to a full-frame pass (only the row count shrinks).
  *  Defaults to the image's own max dimension (the full-frame call). */
-private fun detectBoxes(frame: GrayImage, scaleLong: Int? = null): List<CodeBox> {
+private fun detectBoxes(frame: GrayImage, scaleLong: Int? = null, modes: Array<ForegroundMode> = ForegroundMode.values()): List<CodeBox> {
     val fw = frame.width
     val fh = frame.height
     if (fw == 0 || fh == 0) return emptyList()
@@ -312,11 +327,14 @@ private fun detectBoxes(frame: GrayImage, scaleLong: Int? = null): List<CodeBox>
     // detection image is tiny, so the cost is negligible.
     var kept = ArrayList<CodeBox>()
     for (rFrac in DET_BG_RADII) {
-        val pass = ArrayList<CodeBox>()
-        collectBoxes(gray, dw, dh, scale, max(5, Math.round(DET_LONG * rFrac).toInt()), pass)
-        pass.sortByDescending { it.score }
-        for (b in nonMaxSuppress(pass, 0.3)) {
-            if (kept.all { k -> iou(b, k) <= 0.3 }) kept.add(b)
+        val radius = max(5, Math.round(DET_LONG * rFrac).toInt())
+        for (mode in modes) {
+            val pass = ArrayList<CodeBox>()
+            collectBoxes(gray, dw, dh, scale, radius, mode, pass)
+            pass.sortByDescending { it.score }
+            for (b in nonMaxSuppress(pass, 0.3)) {
+                if (kept.all { k -> iou(b, k) <= 0.3 }) kept.add(b)
+            }
         }
     }
     kept.sortByDescending { it.score }

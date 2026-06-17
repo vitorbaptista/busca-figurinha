@@ -10,12 +10,12 @@ package br.com.fiquemsabendo.figurinhas.ocr
 //     OCR time and never resolves a code.
 //   • We OCR in ROUNDS: round 0 is every box's UPRIGHT crop, round 1 the 180° FLIP crops of
 //     the boxes that didn't resolve. Between rounds we stop early once a code resolves. The
-//     prominent pill is box[0] and reads upright on round 0, so a clean frame finishes after a
+//     prominent pill is box[0] and reads upright on round 0, so a clean frame costs one
 //     single round of a few crops — the flip round (and the flips of resolved boxes) never run.
 //
 // The matcher (bestMatchFromText) stays the conservative one — it never invents a code — so
 // doing less OCR can only ever skip work, never manufacture a false positive.
-//
+
 // KOTLIN ADAPTATION OF THE OCR ENGINE SEAM. The TS OcrEngine had OPTIONAL recognizeFast /
 // recognizeSlow / fastConf. Here FrameRecognizer always has recognizeFast (the glyph fast
 // path) and a recognizeSlow that may return null when no accurate fallback is wired yet (the
@@ -28,6 +28,8 @@ import br.com.fiquemsabendo.figurinhas.Config
 import br.com.fiquemsabendo.figurinhas.domain.Checklist
 import br.com.fiquemsabendo.figurinhas.domain.MatchResult
 import br.com.fiquemsabendo.figurinhas.domain.bestMatchFromText
+import kotlin.math.max
+import kotlin.math.min
 import kotlin.math.roundToInt
 
 /** Cap on boxes OCR'd per frame. findCodeBoxes sorts best-first, and the real code pill is
@@ -36,7 +38,7 @@ import kotlin.math.roundToInt
  *  latency for a bit more recall. 4 is the measured knee: blank-crop skipping (cropHasOcrInk)
  *  means most of these 4 cost nothing on frames that hold no readable pill, while the lower
  *  boxes recover the far/small pills box[0] alone misses. (Mirrors src/ocr/recognize.ts.) */
-private const val MAX_BOXES = 4
+private const val MAX_BOXES_DEFAULT = 4
 
 // Hoisted out of the per-crop handle() so they compile once, not per OCR'd crop (this is the
 // per-frame hot path). ALNUM mirrors the TS /[A-Z0-9]/i (case-insensitive).
@@ -49,6 +51,8 @@ data class RecognizeOutcome(
     val resolved: List<MatchResult>,
     /** The raw OCR texts that actually ran, for debug/log lines. */
     val reads: List<String>,
+    /** Number of boxes actually considered for OCR (after maxBoxes cap). */
+    val boxes: Int,
     /** Number of crops actually sent to OCR (the latency-relevant work). */
     val crops: Int,
 )
@@ -81,7 +85,7 @@ class GlyphOnlyRecognizer(
     override fun recognizeSlow(crops: List<GrayImage>): List<OcrResult>? = null
 }
 
-/** One pending box: a lazy source for its prepared crop variants (upright = index 0, 180° flip
+/** One pending box: a lazy source for its prepared crop variants (upright = index 0, 180°-flip
  *  = index 1), a memo of the ones built so far, and whether it has already resolved a code (so
  *  its flip round is skipped). The flip's prep is only built if round 0 reaches it. */
 private class Pending(
@@ -93,26 +97,27 @@ private class Pending(
 /** One OCR job: the box it belongs to and the prepared crop to read. */
 private class Job(val p: Pending, val crop: GrayImage)
 
+private fun clampMaxBoxes(maxBoxes: Int): Int {
+    return max(1, min(maxBoxes, 12))
+}
+
 /**
- * Recognize a frame by OCR'ing located crops best-first, in rounds (upright then flip), stopping
- * as soon as a code resolves. Faithful port of src/ocr/recognize.ts: recognizeFrameInOrder.
+ * Recognize a frame with precomputed candidate boxes.
  *
- * @param stopOnFirstCode  true for the live burst and the latency bench: stop the whole frame at
- *   the first resolved code (the prominent pill is box[0], so the frame resolves on round 0).
- *   false for the multi-sticker static recall, which wants every distinct code in one frame but
- *   STILL skips the flip of any box that already resolved upright.
- * @param onDetected  called the instant detection (findCodeBoxes) finishes — lets the latency
- *   bench split detection time from OCR time without forking the measured code path.
+ * Public benchmark and tuning paths call this entry when they already ran detection; the live path
+ * keeps using the simpler overload that owns detection.
  */
 fun recognizeFrameInOrder(
     engine: FrameRecognizer,
     frame: GrayImage,
     checklist: Checklist,
+    boxes: List<CodeBox>,
     stopOnFirstCode: Boolean,
-    roi: Roi = Roi.CONFIG,
     onDetected: (() -> Unit)? = null,
+    maxBoxes: Int = MAX_BOXES_DEFAULT,
 ): RecognizeOutcome {
-    val boxes = findCodeBoxes(frame, roi).take(MAX_BOXES)
+    val effectiveMax = clampMaxBoxes(maxBoxes)
+    val selected = boxes.take(effectiveMax)
     onDetected?.invoke()
 
     val resolved = ArrayList<MatchResult>()
@@ -122,7 +127,7 @@ fun recognizeFrameInOrder(
 
     // A lazy crop source per box — the RAW crops are extracted now (cheap), but each variant's
     // expensive prep (prepForOcr) is deferred to the round that actually uses it.
-    val pending = boxes.map { box ->
+    val pending = selected.map { box ->
         val src = codeCropSource(frame, box)
         Pending(src = src, built = arrayOfNulls(src.count), done = false)
     }
@@ -237,5 +242,41 @@ fun recognizeFrameInOrder(
         if (resolvedThisRound && stopOnFirstCode) break // frame resolved — done
     }
 
-    return RecognizeOutcome(resolved, reads, crops)
+    return RecognizeOutcome(
+        resolved = resolved,
+        reads = reads,
+        boxes = selected.size,
+        crops = crops,
+    )
+}
+
+/**
+ * Recognize a frame by OCR'ing located crops best-first, in rounds (upright then flip), stopping
+ * as soon as a code resolves. Faithful port of src/ocr/recognize.ts: recognizeFrameInOrder.
+ *
+ * @param stopOnFirstCode  true for the live burst and the latency bench: stop the whole frame at
+ *   the first resolved code (the prominent pill is box[0], so the frame resolves on round 0).
+ *   false for the static multi-frame recall path, which wants every distinct code in one frame.
+ * @param onDetected  called the instant detection (findCodeBoxes) finishes — lets the latency
+ *   bench split detection time from OCR time without forking the measured code path.
+ */
+fun recognizeFrameInOrder(
+    engine: FrameRecognizer,
+    frame: GrayImage,
+    checklist: Checklist,
+    stopOnFirstCode: Boolean,
+    roi: Roi = Roi.CONFIG,
+    onDetected: (() -> Unit)? = null,
+    maxBoxes: Int = MAX_BOXES_DEFAULT,
+): RecognizeOutcome {
+    val boxes = findCodeBoxes(frame, roi)
+    return recognizeFrameInOrder(
+        engine = engine,
+        frame = frame,
+        checklist = checklist,
+        boxes = boxes,
+        stopOnFirstCode = stopOnFirstCode,
+        onDetected = onDetected,
+        maxBoxes = maxBoxes,
+    )
 }

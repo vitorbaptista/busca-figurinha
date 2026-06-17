@@ -126,7 +126,13 @@ class RecognizePipelineTest {
     @Test fun onDetected_is_invoked_once_after_detection() {
         val engine = glyphOnlyEngine()
         var calls = 0
-        recognizeFrameInOrder(engine, GrayImage.filled(400, 300, card), checklist, true) { calls++ }
+        recognizeFrameInOrder(
+            engine = engine,
+            frame = GrayImage.filled(400, 300, card),
+            checklist = checklist,
+            stopOnFirstCode = true,
+            onDetected = { calls++ },
+        )
         assertEquals(1, calls, "onDetected fires exactly once, right after findCodeBoxes")
     }
 

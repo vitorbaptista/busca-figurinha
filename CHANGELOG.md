@@ -9,6 +9,10 @@ Notable changes to the sticker scanner. Newest first. No formal releases yet (de
 - **Fixture real do Pixel para SWE 8.** O teste de ouro Android agora inclui quadros capturados no
   Pixel em modo debug e valida a ROI/fill-light reais: quadros próximos precisam ler `SWE 8`, e
   todos precisam manter 0 falso positivo.
+- **Conjunto de benchmark SWE8 no Android estendido para validação local.** O arquivo de benchmark
+  passou a capturar `boxes`, `inkBoxes` e razões de falha (sem caixa, sem tinta, sem match), além
+  de ignorar a chamada de fallback não treinada de Tesseract (`recognizeSlow = null`) e manter o mesmo
+  contrato conservador de `0 falso positivo`.
 
 ### Fixed
 - **Burst vazio não trava mais o scanner Android.** Quando a figurinha fica parada mas o OCR não
@@ -17,9 +21,32 @@ Notable changes to the sticker scanner. Newest first. No formal releases yet (de
   para bursts que realmente commitam um código.
 
 ### Changed
+- **Validação manual do dataset por frame foi padronizada.** Adicionado o gerador
+  `scripts/verify-pixel-dataset.mjs`, que cria uma página local (`manual_verify.html`) para revisão
+  frame a frame do dataset do Pixel antes de rodar benchmark. O fluxo salva `ground_truth_verification.csv`
+  com status (`confirmed` / `uncertain` / etc.) e permite manter 0-falso-positivo sem depender de
+  suposição implícita de `ground_truth_code`.
+- **Detecção para benchmark ficou mais barata por padrão em modo dark.** O teste de benchmark agora compara
+  `baseline`, `baseline_dark` e `baseline_light` no `PixelDatasetBenchmark` com `findCodeBoxes` agora
+  recebendo o modo de primeiro plano; no dataset atual, `DARK` sozinho recupera o mesmo recall de
+  `0 falsos positivos` com latência de detecção menor.
+- **Revisão de dataset ficou mais rápida para “sem sticker”.** A página de revisão agora exibe `crop_count`
+  por frame e adiciona o marcador **Sem sticker visível** com um clique, reduzindo revisão manual com
+  falsos positivos de detecção.
+- **Bench Android agora usa o CSV de verificação opcional.** Quando
+  `ground_truth_verification.csv` estiver presente, `PixelDatasetBenchmark` calcula métricas de precisão
+  e falso positivo apenas sobre frames marcados como `confirmed`; frames sem confirmação não entram no
+  numerador/denominador.
 - **Retículo Android virou janela de captura com fill-light.** A área fora da caixa fica branca para
   iluminar a figurinha, e a ROI foi apertada para uma caixa central menor, alinhada ao que o
   reconhecedor lê.
+- **Split do dataset Pixel foi refeito por estratificação de classe.** A partir de
+  `ground_truth_verification.csv` (com `confirmed`, `not_sticker` e demais classes), a divisão
+  `train/val/test` foi refeita para respeitar melhor a distribuição de labels e manter a consistência
+  de validação de 0 FP (com apenas 11 labels positivas e muito `not_sticker`).
+- **ROI Android foi alargada com base no dataset manual.** O retículo passou para uma janela central
+  maior (`0.18,0.32,0.82,0.58`), recuperando mais um positivo processável no benchmark local
+  (`7/10`, ainda com `0/145` falsos positivos) sem cair para a busca em frame inteiro.
 - **ROI Android ficou mais estreita para leitura ao vivo.** A janela agora prioriza a faixa central
   onde o código `SWE 8` foi lido no Pixel, reduzindo fundo analisado e deixando mais claro que a
   figurinha precisa estar perto o suficiente para o código preencher o retículo.
