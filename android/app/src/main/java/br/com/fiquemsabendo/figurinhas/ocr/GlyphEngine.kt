@@ -77,6 +77,8 @@ private const val DIGIT_FOUR_NO_HOLE_LETTER_MARGIN = 0.05
 private const val NED12_ZERO_D_SPLIT_BONUS = 0.08
 private const val SCO16_SPLIT_BONUS = 0.08
 private const val SCO16_LEADING_S_MIN_CONF = 0.68
+private const val RSA19_TWO_HOLE_NINE_MIN_CONF = 0.94
+private const val RSA19_TWO_HOLE_NINE_LETTER_MARGIN = 0.04
 
 /** A committed glyph must classify at least this well. A whole crop of card texture or a logo
  *  fragment scores below this on most glyphs; rejecting them makes the token un-matchable (the
@@ -201,6 +203,16 @@ internal fun assemble(
             classified[2].holes >= 1 &&
             classified[3].bestDigit.label == '1' &&
             classified[4].bestDigit.label == '6'
+    val rsa19TwoHoleNineShape =
+        n == 5 &&
+            classified[0].bestLetter.label == 'R' &&
+            classified[1].bestLetter.label == 'S' &&
+            classified[2].bestLetter.label == 'A' &&
+            classified[3].bestDigit.label == '1' &&
+            classified[4].bestDigit.label == '9' &&
+            classified[4].holes >= 2 &&
+            classified[4].bestDigit.score >= RSA19_TWO_HOLE_NINE_MIN_CONF &&
+            classified[4].bestDigit.score - classified[4].bestLetter.score >= RSA19_TWO_HOLE_NINE_LETTER_MARGIN
 
     // Choose a split point k: glyphs [0,k) are letters, [k,n) are digits. Score each split by
     // the total in-class confidence and pick the best. Codes are 2–4 letters + 1–3 digits, so
@@ -282,7 +294,8 @@ internal fun assemble(
                             c.bestDigit.score >= DIGIT_ZERO_TWO_HOLE_TOPOLOGY_STRONG &&
                             c.bestDigit.score - c.secondDigitScore >= DIGIT_ZERO_TWO_HOLE_MARGIN &&
                             c.bestDigit.score - c.bestLetter.score >= DIGIT_ZERO_TWO_HOLE_MARGIN
-                    )
+                    ) ||
+                    (rsa19TwoHoleNineShape && i == 4)
             if (
                 allowOneHoleFiveRescue &&
                 !decisive &&

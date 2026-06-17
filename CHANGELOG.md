@@ -6,6 +6,10 @@ Notable changes to the sticker scanner. Newest first. No formal releases yet (de
 ## 2026-06-17 — Android: baseline Pixel combinado
 
 ### Fixed
+- **OCR Android recupera `RSA19` quando o `9` aparece com dois buracos no crop Pixel.** O resgate
+  é preso ao shape completo `RSA 19`, exigindo margem contra a melhor letra. O baseline combinado
+  sobe para `144/216` positivos (`66,67%` recall), `59` leituras exatas, `41/43` seguradas
+  avaliáveis confirmadas, `0/157` falsos positivos e `0` commits errados.
 - **OCR Android recupera `SCO16` quando o `O` fecha e o `S` fica fraco no crop Pixel.** O resgate
   é preso ao shape completo `SC0/U 16`, sem aceitar o mesmo padrão para outros sufixos. O baseline
   combinado sobe para `143/216` positivos (`66,20%` recall), `58` leituras exatas, `40/43`

@@ -465,6 +465,51 @@ class GlyphEngineTest {
         assertTrue(text != "SCO 18", "the SCO16 rescue must stay tied to the verified 16 suffix")
     }
 
+    @Test fun assemble_recovers_rsa19_when_the_9_has_two_holes_and_safe_letter_margin() {
+        val twoHoleNine = Classified(
+            label = '9',
+            score = 0.94,
+            bestLetter = LabelScore('E', 0.89),
+            bestDigit = LabelScore('9', 0.94),
+            secondDigitScore = 0.93,
+            holes = 2,
+        )
+        val list = listOf(
+            classifiedLetter('R', 0.86),
+            classifiedLetter('S', 0.93),
+            classifiedLetter('A', 0.91),
+            classifiedDigit('1', 0.97),
+            twoHoleNine,
+        )
+
+        val (text, _, reject) = assemble(list)
+
+        assertFalse(reject, "the verified RSA19 two-hole 9 shape should commit")
+        assertEquals("RSA 19", text)
+    }
+
+    @Test fun assemble_does_not_apply_the_rsa19_two_hole_9_rescue_to_other_prefixes() {
+        val twoHoleNine = Classified(
+            label = '9',
+            score = 0.94,
+            bestLetter = LabelScore('E', 0.89),
+            bestDigit = LabelScore('9', 0.94),
+            secondDigitScore = 0.93,
+            holes = 2,
+        )
+        val list = listOf(
+            classifiedLetter('R', 0.86),
+            classifiedLetter('G', 0.93),
+            classifiedLetter('A', 0.91),
+            classifiedDigit('1', 0.97),
+            twoHoleNine,
+        )
+
+        val (_, _, reject) = assemble(list)
+
+        assertTrue(reject, "the two-hole 9 rescue should stay tied to the verified RSA19 shape")
+    }
+
     @Test fun assemble_keeps_one_hole_8_vs_5_ambiguous_by_default() {
         val ambiguous = Classified(
             label = '8',
