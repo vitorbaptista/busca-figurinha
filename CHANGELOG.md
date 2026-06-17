@@ -13,6 +13,9 @@ Notable changes to the sticker scanner. Newest first. No formal releases yet (de
   passou a capturar `boxes`, `inkBoxes` e razões de falha (sem caixa, sem tinta, sem match), além
   de ignorar a chamada de fallback não treinada de Tesseract (`recognizeSlow = null`) e manter o mesmo
   contrato conservador de `0 falso positivo`.
+- **Diagnóstico de misses do benchmark Android mostra geometria das caixas.** O relatório dos
+  positivos não lidos agora inclui `x/y/w/h`, score e inclinação de cada box tentado, facilitando
+  separar erro de localização de erro de OCR sem depender de inspeção manual solta.
 - **Atlas real do OCR ganhou amostras verificadas de `IRQ20` e `SWE8`.** O atlas de glifos agora
   inclui templates colhidos de crops reais confirmados manualmente, recuperando `IRQ20` no benchmark
   local sem regredir os testes de ouro de `SWE8` nem aumentar falsos positivos.

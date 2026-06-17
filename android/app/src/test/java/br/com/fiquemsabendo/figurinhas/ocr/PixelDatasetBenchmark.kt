@@ -359,7 +359,10 @@ class PixelDatasetBenchmark {
                         val crop = src.build(cropIndex)
                         val read = recognizeCrop(crop, atlas)
                         val ink = cropHasOcrInk(crop)
-                        "box=$boxIndex crop=$cropIndex ink=$ink read=${read.text}/${String.format(Locale.US, "%.1f", read.confidence)} glyphs=${glyphDebug(crop, atlas)}"
+                        "box=$boxIndex x=${String.format(Locale.US, "%.1f", box.x)} y=${String.format(Locale.US, "%.1f", box.y)} " +
+                            "w=${String.format(Locale.US, "%.1f", box.w)} h=${String.format(Locale.US, "%.1f", box.h)} " +
+                            "score=${String.format(Locale.US, "%.3f", box.score)} tilt=${box.tilt?.let { String.format(Locale.US, "%.1f", it) } ?: "-"} " +
+                            "crop=$cropIndex ink=$ink read=${read.text}/${String.format(Locale.US, "%.1f", read.confidence)} glyphs=${glyphDebug(crop, atlas)}"
                     }
                 }
             } else {
