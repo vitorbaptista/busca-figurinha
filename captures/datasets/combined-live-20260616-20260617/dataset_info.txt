@@ -1,0 +1,11 @@
+created=captures/datasets/combined-live-20260616-20260617
+sources=swe8-live-20260616-v1,pixel-live-20260617-090351
+total_frames=374
+train=294
+val=32
+test=48
+manual_confirmed=216
+manual_not_sticker=157
+status_counts={"not_sticker":157,"confirmed":216,"missing_frame":1}
+manual_labels_only=true
+dataset_ready=true
