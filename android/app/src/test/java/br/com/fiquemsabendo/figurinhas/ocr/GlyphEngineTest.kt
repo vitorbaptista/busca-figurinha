@@ -270,6 +270,51 @@ class GlyphEngineTest {
         assertEquals("EGY 4", text)
     }
 
+    @Test fun assemble_accepts_a_strong_no_hole_3_with_small_safe_margins() {
+        val strongThree = Classified(
+            label = '3',
+            score = 0.85,
+            bestLetter = LabelScore('J', 0.83),
+            bestDigit = LabelScore('3', 0.85),
+            secondDigitScore = 0.844,
+            holes = 0,
+        )
+        val list = listOf(
+            classifiedLetter('R', 0.88),
+            classifiedLetter('S', 0.88),
+            classifiedLetter('A', 0.92),
+            classifiedDigit('1', 0.98),
+            strongThree,
+        )
+
+        val (text, _, reject) = assemble(list)
+
+        assertFalse(reject, "a strong no-hole 3 with small positive margins should commit")
+        assertEquals("RSA 13", text)
+    }
+
+    @Test fun assemble_rejects_a_no_hole_3_without_runner_up_margin() {
+        val tiedThree = Classified(
+            label = '3',
+            score = 0.85,
+            bestLetter = LabelScore('J', 0.83),
+            bestDigit = LabelScore('3', 0.85),
+            secondDigitScore = 0.848,
+            holes = 0,
+        )
+        val list = listOf(
+            classifiedLetter('R', 0.88),
+            classifiedLetter('S', 0.88),
+            classifiedLetter('A', 0.92),
+            classifiedDigit('1', 0.98),
+            tiedThree,
+        )
+
+        val (_, _, reject) = assemble(list)
+
+        assertTrue(reject, "a no-hole 3 still needs separation from the runner-up digit")
+    }
+
     @Test fun assemble_keeps_one_hole_8_vs_5_ambiguous_by_default() {
         val ambiguous = Classified(
             label = '8',

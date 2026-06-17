@@ -61,6 +61,8 @@ data class CodeBox(
      *  the boost rescues a genuinely small/far PILL's thin strokes, but it also sharpens a
      *  hollow stray blob (a "0" ring) into a phantom "00", so it's gated on score AND fill. */
     val boost: Boolean,
+    /** True when the detector found a light capsule, so the printed code itself is dark. */
+    val darkText: Boolean = false,
 )
 
 /** Rotation-invariant shape descriptors of a connected component, from its pixel
@@ -144,6 +146,7 @@ private val DET_BG_RADII = doubleArrayOf(0.045, 0.025)
 
 /** How much darker than its local background a pixel must be to count as pill foreground. */
 private const val FG_DELTA = 12
+private const val LIGHT_CAPSULE_DARK_TEXT_MIN_SCORE = 0.78
 
 enum class ForegroundMode {
     DARK,
@@ -229,6 +232,7 @@ private fun collectBoxes(
                     pillW = shape.short / scale,
                     fill = shape.fill,
                     boost = false, // set in findCodeBoxes (needs score + fill)
+                    darkText = mode == ForegroundMode.LIGHT && scored >= LIGHT_CAPSULE_DARK_TEXT_MIN_SCORE,
                 ),
             )
         }
@@ -562,7 +566,7 @@ fun codeCropCandidates(frame: GrayImage, box: CodeBox, smallTargetHeight: Int = 
     // box.boost (set in findCodeBoxes) gates the taller small-source target: it rescues a
     // far/tiny PILL's thin strokes but sharpens a stray blob's dots into a phantom "00", so
     // only a pill-sized, pill-scored box gets it.
-    return g.crops.map { prepForOcr(it, g.sharpen, box.boost, g.despeckle, smallTargetHeight) }
+    return g.crops.map { prepForOcr(it, g.sharpen, box.boost, g.despeckle, smallTargetHeight, box.darkText) }
 }
 
 /** Lazy form of codeCropCandidates: extracts the RAW crops once (cheap rotations) but DEFERS
@@ -577,7 +581,7 @@ fun codeCropSource(frame: GrayImage, box: CodeBox, smallTargetHeight: Int = TARG
     val g = rawCropGroups(frame, box)
     return CropSource(
         count = g.crops.size,
-        build = { i -> prepForOcr(g.crops[i], g.sharpen, box.boost, g.despeckle, smallTargetHeight) },
+        build = { i -> prepForOcr(g.crops[i], g.sharpen, box.boost, g.despeckle, smallTargetHeight, box.darkText) },
     )
 }
 
@@ -658,17 +662,17 @@ private const val UNSHARP_AMOUNT = 30
 private const val MAX_INK_FRACTION = 0.28
 
 /** Upscale to a good OCR size and binarize to dark-text-on-white with a quiet
- *  border. The code is LIGHT text on a DARK pill, so ink (black) = the light pixels
- *  and the dark pill becomes white. Everything connected to the border (the card
- *  margin around the pill, and any inverted dark-on-light region) is then cleared,
- *  which both isolates the text and turns false-positive boxes (legal text, logos)
- *  into blanks that match nothing. */
+ *  border. Older backs have LIGHT text on a DARK pill; newer backs have DARK text on a
+ *  LIGHT capsule. The detector carries that polarity so ink (black) is always the printed code.
+ *  Everything connected to the border is then cleared, which both isolates the text and turns
+ *  false-positive boxes (legal text, logos) into blanks that match nothing. */
 private fun prepForOcr(
     src: GrayImage,
     sharpen: Boolean,
     boostSmall: Boolean = true,
     despeckle: Boolean = false,
     smallTargetHeight: Int = TARGET_H_SMALL,
+    darkText: Boolean = false,
 ): GrayImage {
     val sh = if (src.height != 0) src.height else 1
     val target = if (boostSmall && sh < SMALL_SRC_H) smallTargetHeight else TARGET_H
@@ -706,9 +710,16 @@ private fun prepForOcr(
     }
     val threshold = otsu(hist, count)
 
-    // Ink (0) = light pixels (the knockout text); dark pill → white (255).
+    // Ink (0) = the printed code. For dark pills that means light knockout pixels; for light
+    // capsules it means dark pixels.
     val bin = IntArray(count)
-    for (p in 0 until count) bin[p] = if (gray[p] > threshold) 0 else 255
+    for (p in 0 until count) {
+        bin[p] = if (darkText) {
+            if (gray[p] < threshold) 0 else 255
+        } else {
+            if (gray[p] > threshold) 0 else 255
+        }
+    }
 
     floodClearFromBorder(bin, cw, ch)
 

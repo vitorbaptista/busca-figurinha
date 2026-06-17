@@ -6,6 +6,12 @@ Notable changes to the sticker scanner. Newest first. No formal releases yet (de
 ## 2026-06-17 — Android: baseline Pixel combinado
 
 ### Fixed
+- **OCR Android lê cápsulas claras com texto escuro no caminho Pixel.** Boxes `LIGHT` fortes agora
+  preservam a polaridade correta no preparo do crop, e o classificador aceita um `3` sem buracos
+  apenas quando score, runner-up e melhor letra mantêm margens positivas. Isso recupera a segurada
+  de `RSA13`: o baseline combinado sobe para `140/216` positivos (`64,81%` recall), `38/43`
+  seguradas avaliáveis confirmadas, `55` leituras exatas, `0/157` falsos positivos e `0` commits
+  errados.
 - **OCR Android aceita `5` forte com topologia de um furo em crops Pixel.** O classificador ainda
   rejeita dígitos ambíguos, mas passa a aceitar um `5` com score alto, um furo e separação contra
   a melhor letra. Isso recupera a segurada de `EGY5` sem falso positivo: o baseline combinado sobe

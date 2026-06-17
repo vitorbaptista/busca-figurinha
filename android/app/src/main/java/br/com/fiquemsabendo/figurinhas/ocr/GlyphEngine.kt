@@ -68,6 +68,9 @@ private const val DIGIT_ONE_HOLE_LETTER_MARGIN = 0.03
 private const val DIGIT_FIVE_ONE_HOLE_TOPOLOGY_STRONG = 0.93
 private const val DIGIT_ZERO_TWO_HOLE_TOPOLOGY_STRONG = 0.91
 private const val DIGIT_ZERO_TWO_HOLE_MARGIN = 0.005
+private const val DIGIT_THREE_NO_HOLE_TOPOLOGY_STRONG = 0.84
+private const val DIGIT_THREE_NO_HOLE_MARGIN = 0.005
+private const val DIGIT_THREE_NO_HOLE_LETTER_MARGIN = 0.01
 
 /** A committed glyph must classify at least this well. A whole crop of card texture or a logo
  *  fragment scores below this on most glyphs; rejecting them makes the token un-matchable (the
@@ -218,6 +221,13 @@ internal fun assemble(
                             c.holes == 1 &&
                             c.bestDigit.score >= DIGIT_ONE_HOLE_TOPOLOGY_STRONG &&
                             c.bestDigit.score - c.bestLetter.score >= DIGIT_ONE_HOLE_LETTER_MARGIN
+                    ) ||
+                    (
+                        ch == '3' &&
+                            c.holes == 0 &&
+                            c.bestDigit.score >= DIGIT_THREE_NO_HOLE_TOPOLOGY_STRONG &&
+                            c.bestDigit.score - c.secondDigitScore >= DIGIT_THREE_NO_HOLE_MARGIN &&
+                            c.bestDigit.score - c.bestLetter.score >= DIGIT_THREE_NO_HOLE_LETTER_MARGIN
                     ) ||
                     (
                         ch == '5' &&
