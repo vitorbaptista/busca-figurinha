@@ -134,11 +134,12 @@ private fun selectBoxesForOcr(
     stopOnFirstCode: Boolean,
     allowLateWideCandidates: Boolean,
 ): List<CodeBox> {
-    val selected = ArrayList(boxes.take(maxBoxes))
+    val boxesForOcr = boxes.filter { it.orient == 'h' }
+    val selected = ArrayList(boxesForOcr.take(maxBoxes))
     if (!allowLateWideCandidates || !stopOnFirstCode || maxBoxes > LIVE_MAX_BOXES_DEFAULT) return selected
-    val firstScore = boxes.firstOrNull()?.score
+    val firstScore = boxesForOcr.firstOrNull()?.score
     if (firstScore != null && firstScore in 0.84..0.92) return selected
-    for (box in boxes.drop(maxBoxes)) {
+    for (box in boxesForOcr.drop(maxBoxes)) {
         if (isLateWideCodeCandidate(box)) selected.add(box)
         if (selected.size >= LIVE_MAX_BOXES_DEFAULT + 2) break
     }

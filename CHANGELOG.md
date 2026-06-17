@@ -52,6 +52,10 @@ Notable changes to the sticker scanner. Newest first. No formal releases yet (de
   para bursts que realmente commitam um código.
 
 ### Changed
+- **OCR Android ignora fragmentos verticais no caminho live.** Como a captura guiada assume a
+  figurinha mais ou menos horizontal, o pipeline agora despacha OCR apenas para boxes horizontais,
+  deixando fragmentos verticais de logo/borda fora da leitura. No benchmark Pixel manual, o recall
+  permanece em `37/45`, com `0/156` falsos positivos, e o trabalho cai de `142` para `139` crops.
 - **Benchmark Pixel usa só códigos revisados manualmente.** O benchmark Android agora usa o
   `ground_truth_verification.csv` local do dataset, considera `verified_code/status` revisados e
   ignora o `ground_truth_code` automático antigo. O baseline atual cobre `45` positivos e `156`

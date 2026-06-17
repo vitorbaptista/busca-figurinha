@@ -232,4 +232,45 @@ class RecognizePipelineTest {
         assertEquals(1, out.crops, "empty fast read with no slow fallback should not pay flip/retry rounds")
         assertTrue(out.resolved.isEmpty())
     }
+
+    @Test fun live_ocr_skips_vertical_candidates_when_user_holds_sticker_horizontal() {
+        val frame = inkedPillFrame(220, 160, 50, 60, 169, 99)
+        val verticalFragment = CodeBox(
+            x = 10.0,
+            y = 10.0,
+            w = 24.0,
+            h = 96.0,
+            orient = 'v',
+            score = 0.90,
+            tilt = null,
+            pillW = 24.0,
+            fill = 0.72,
+            boost = true,
+        )
+        val horizontalPill = CodeBox(
+            x = 50.0,
+            y = 60.0,
+            w = 120.0,
+            h = 40.0,
+            orient = 'h',
+            score = 0.80,
+            tilt = null,
+            pillW = 40.0,
+            fill = 0.72,
+            boost = true,
+        )
+
+        val out = recognizeFrameInOrder(
+            engine = EmptyFastEngine(),
+            frame = frame,
+            checklist = checklist,
+            boxes = listOf(verticalFragment, horizontalPill),
+            stopOnFirstCode = true,
+            maxBoxes = 2,
+        )
+
+        assertEquals(1, out.boxes, "live OCR should ignore vertical fragments before dispatching crops")
+        assertEquals(1, out.crops, "only the horizontal pill should reach OCR")
+        assertTrue(out.resolved.isEmpty())
+    }
 }
