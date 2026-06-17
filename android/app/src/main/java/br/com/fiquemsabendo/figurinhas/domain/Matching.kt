@@ -99,6 +99,7 @@ private val HIGH_CONF_EXACT_ALIASES = mapOf(
     "DXW4" to "CUW4",
     "DAV4" to "CUW4",
     "UJMJ10" to "TUN10",
+    "IUM1" to "PAN1",
 ).also { aliases ->
     require(aliases.all { (raw, target) -> numericSuffix(raw) == numericSuffix(target) }) {
         "High-confidence exact aliases must keep the sticker number unchanged"

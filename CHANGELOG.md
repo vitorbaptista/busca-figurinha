@@ -6,6 +6,10 @@ Notable changes to the sticker scanner. Newest first. No formal releases yet (de
 ## 2026-06-17 — Android: baseline Pixel combinado
 
 ### Fixed
+- **Matcher Android recupera `PAN1` quando o cabeçalho lê `IUM 1` no Pixel.** O alias exato
+  preserva o número e só entra no caminho de alta confiança já existente. O baseline combinado
+  sobe para `152/216` positivos (`70,37%` recall), `41/43` seguradas avaliáveis confirmadas,
+  `0/157` falsos positivos e `0` commits errados.
 - **Scanner Android recupera um `IRQ20` tardio sem aumentar falsos positivos.** A seleção de crops
   agora permite um candidato compacto tardio ligeiramente mais fraco e o matcher aceita o alias
   exato verificado `WO 20`→`IRQ20`, preservando o número. O baseline combinado sobe para `151/216`

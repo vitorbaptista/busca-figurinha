@@ -178,6 +178,7 @@ class MatchingTest {
     @Test fun high_confidence_exact_alias_recovers_verified_cuw4_shapes() {
         assertEquals("CUW4", bestHighConfidenceExactAliasMatchFromText("DXW 4", checklist)?.entry?.code)
         assertEquals("CUW4", bestHighConfidenceExactAliasMatchFromText("DAV 4", checklist)?.entry?.code)
+        assertEquals("PAN1", bestHighConfidenceExactAliasMatchFromText("IUM 1", checklist)?.entry?.code)
         assertNull(bestHighConfidenceExactAliasMatchFromText("DXW 5", checklist))
     }
     @Test fun high_confidence_confusion_recovers_verified_pixel_shapes() {
@@ -230,6 +231,7 @@ class MatchingTest {
             "OAV 4" to "CUW4",
             "DXW 4" to "CUW4",
             "DAV 4" to "CUW4",
+            "IUM 1" to "PAN1",
             "BN 10" to "POR10",
             "TXN 10" to "POR10",
             "IWJ 20" to "IRQ20",
