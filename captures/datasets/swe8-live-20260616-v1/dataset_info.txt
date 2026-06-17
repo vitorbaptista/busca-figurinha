@@ -1,0 +1,6 @@
+created=captures/datasets/swe8-live-20260616-v1
+total_frames=202
+train=157
+val=15
+test=30
+dataset_ready=true
