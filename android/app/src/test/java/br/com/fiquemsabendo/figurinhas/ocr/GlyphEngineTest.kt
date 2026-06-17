@@ -780,6 +780,78 @@ class GlyphEngineTest {
         assertTrue(text != "QAT 18", "the QAT17 zero rescue must stay tied to the verified 17 suffix")
     }
 
+    @Test fun assemble_recovers_egy5_from_verified_sdy5_soft_final_five_shape() {
+        val softFive = Classified(
+            label = '5',
+            score = 0.93,
+            bestLetter = LabelScore('B', 0.88),
+            bestDigit = LabelScore('5', 0.93),
+            secondDigitScore = 0.91,
+            holes = 0,
+        )
+        val list = listOf(
+            classifiedLetter('S', 0.85),
+            classifiedLetter('D', 0.84),
+            classifiedLetter('Y', 0.92),
+            softFive,
+        )
+
+        val (text, _, reject) = assemble(list)
+
+        assertFalse(reject, "the verified SDY5 Pixel shape should stay readable as EGY5")
+        assertEquals("EGY 5", text)
+    }
+
+    @Test fun assemble_recovers_egy5_from_verified_fgy5_soft_final_five_shape() {
+        val sixLikeG = Classified(
+            label = '6',
+            score = 0.88,
+            bestLetter = LabelScore('S', 0.87),
+            bestDigit = LabelScore('6', 0.88),
+            secondDigitScore = 0.86,
+        )
+        val softFive = Classified(
+            label = '5',
+            score = 0.94,
+            bestLetter = LabelScore('S', 0.87),
+            bestDigit = LabelScore('5', 0.94),
+            secondDigitScore = 0.91,
+            holes = 2,
+        )
+        val list = listOf(
+            classifiedLetter('F', 0.79),
+            sixLikeG,
+            classifiedLetter('Y', 0.90),
+            softFive,
+        )
+
+        val (text, _, reject) = assemble(list)
+
+        assertFalse(reject, "the verified FGY5 Pixel shape should stay readable as EGY5")
+        assertEquals("EGY 5", text)
+    }
+
+    @Test fun assemble_rejects_sdy5_when_the_final_five_is_too_tied() {
+        val tiedFive = Classified(
+            label = '5',
+            score = 0.93,
+            bestLetter = LabelScore('B', 0.88),
+            bestDigit = LabelScore('5', 0.93),
+            secondDigitScore = 0.925,
+            holes = 0,
+        )
+        val list = listOf(
+            classifiedLetter('S', 0.85),
+            classifiedLetter('D', 0.84),
+            classifiedLetter('Y', 0.92),
+            tiedFive,
+        )
+
+        val (_, _, reject) = assemble(list)
+
+        assertTrue(reject, "the EGY5 soft-five shape should still reject a tied final 5")
+    }
+
     @Test fun assemble_recovers_tun10_when_the_n_thins_to_i_and_zero_closes() {
         val thinN = Classified(
             label = 'I',

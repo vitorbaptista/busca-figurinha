@@ -6,6 +6,11 @@ Notable changes to the sticker scanner. Newest first. No formal releases yet (de
 ## 2026-06-17 — Android: baseline Pixel combinado
 
 ### Fixed
+- **OCR Android recupera `EGY5` em shapes Pixel `SDY 5` e `FGY 5` sem passar pelo matcher.** O
+  resgate fica preso ao shape completo `EGY5`, exige o `5` final separado por margem positiva e
+  emite `EGY 5` direto, evitando aumentar a dívida de correção textual. O baseline combinado sobe
+  para `156/216` positivos (`72,22%` recall), `68` leituras exatas, `41/43` seguradas avaliáveis
+  confirmadas, `0/157` falsos positivos e `0` commits errados.
 - **Scanner Android alcança um crop fino tardio de `QAT17` sem aumentar trabalho nem falso positivo.**
   A seleção live agora promove um candidato largo e baixo apenas quando os primeiros boxes são
   fragmentos pequenos, e o OCR aceita o shape completo `DAT 17` macio só com sufixo forte. O

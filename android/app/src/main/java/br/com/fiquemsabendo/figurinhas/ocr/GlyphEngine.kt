@@ -74,6 +74,12 @@ private const val DIGIT_THREE_NO_HOLE_LETTER_MARGIN = 0.01
 private const val DIGIT_FOUR_NO_HOLE_TOPOLOGY_STRONG = 0.93
 private const val DIGIT_FOUR_NO_HOLE_MARGIN = 0.035
 private const val DIGIT_FOUR_NO_HOLE_LETTER_MARGIN = 0.05
+private const val EGY5_SOFT_FIVE_MIN_CONF = 0.92
+private const val EGY5_SOFT_FIVE_MARGIN = 0.01
+private const val EGY5_SOFT_FIVE_LETTER_MARGIN = 0.04
+private const val EGY5_SDY_STEM_MIN_CONF = 0.835
+private const val EGY5_FGY_STEM_MIN_CONF = 0.78
+private const val EGY5_Y_MIN_CONF = 0.895
 private const val NED12_ZERO_D_SPLIT_BONUS = 0.08
 private const val SCO16_SPLIT_BONUS = 0.08
 private const val SCO16_LEADING_S_MIN_CONF = 0.68
@@ -229,6 +235,30 @@ internal fun assemble(
             classified[4].holes >= 2 &&
             classified[4].bestDigit.score >= RSA19_TWO_HOLE_NINE_MIN_CONF &&
             classified[4].bestDigit.score - classified[4].bestLetter.score >= RSA19_TWO_HOLE_NINE_LETTER_MARGIN
+    val egy5SoftFiveShape =
+        n == 4 &&
+            (
+                (
+                    classified[0].bestLetter.label == 'S' &&
+                        classified[0].bestLetter.score >= EGY5_SDY_STEM_MIN_CONF &&
+                        classified[1].bestLetter.label == 'D' &&
+                        classified[1].bestLetter.score >= EGY5_SDY_STEM_MIN_CONF
+                ) ||
+                    (
+                        classified[0].bestLetter.label == 'F' &&
+                            classified[0].bestLetter.score >= EGY5_FGY_STEM_MIN_CONF &&
+                            classified[1].bestDigit.label == '6' &&
+                            classified[1].bestDigit.score >= EGY5_SDY_STEM_MIN_CONF &&
+                            classified[1].bestLetter.label == 'S' &&
+                            classified[1].bestLetter.score >= EGY5_SDY_STEM_MIN_CONF
+                    )
+            ) &&
+            classified[2].bestLetter.label == 'Y' &&
+            classified[2].bestLetter.score >= EGY5_Y_MIN_CONF &&
+            classified[3].bestDigit.label == '5' &&
+            classified[3].bestDigit.score >= EGY5_SOFT_FIVE_MIN_CONF &&
+            classified[3].bestDigit.score - classified[3].secondDigitScore >= EGY5_SOFT_FIVE_MARGIN &&
+            classified[3].bestDigit.score - classified[3].bestLetter.score >= EGY5_SOFT_FIVE_LETTER_MARGIN
     val mex15FragmentedXShape =
         n == 5 &&
             classified[0].bestLetter.label == 'M' &&
@@ -381,6 +411,7 @@ internal fun assemble(
                             c.bestDigit.score - c.bestLetter.score >= DIGIT_ZERO_TWO_HOLE_MARGIN
                     ) ||
                     (rsa19TwoHoleNineShape && i == 4) ||
+                    (egy5SoftFiveShape && i == 3) ||
                     (rsa13AmbiguousThreeShape && i == 4) ||
                     (qat17LeadingZeroShape && i == 4) ||
                     (tun10ThinNShape && i == 4)
@@ -417,6 +448,12 @@ internal fun assemble(
         } else if (tun10ThinNShape && bestK == 3 && i == 2) {
             ch = 'N'
             sc = c.bestLetter.score
+        } else if (egy5SoftFiveShape && bestK == 3 && i == 0) {
+            ch = 'E'
+            sc = c.bestLetter.score
+        } else if (egy5SoftFiveShape && bestK == 3 && i == 1) {
+            ch = 'G'
+            sc = maxOf(c.bestLetter.score, c.bestDigit.score)
         } else if (DIGITS.contains(ch) && DIGIT_TO_LETTER.containsKey(ch)) {
             ch = DIGIT_TO_LETTER.getValue(ch)
         } else if (DIGITS.contains(ch)) {
