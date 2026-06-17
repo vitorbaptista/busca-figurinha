@@ -663,6 +663,63 @@ class GlyphEngineTest {
         assertTrue(text != "QAT 18", "the QAT17 rescue must stay tied to the verified 17 suffix")
     }
 
+    @Test fun assemble_recovers_qat17_when_the_open_q_is_soft_but_suffix_is_strong() {
+        val softD = Classified(
+            label = 'D',
+            score = 0.55,
+            bestLetter = LabelScore('D', 0.55),
+            bestDigit = LabelScore('0', 0.47),
+            secondDigitScore = 0.45,
+        )
+        val strongSeven = Classified(
+            label = '7',
+            score = 0.88,
+            bestLetter = LabelScore('V', 0.70),
+            bestDigit = LabelScore('7', 0.88),
+            secondDigitScore = 0.76,
+        )
+        val list = listOf(
+            softD,
+            classifiedLetter('A', 0.88),
+            classifiedLetter('T', 0.90),
+            classifiedDigit('1', 0.88, second = 0.71),
+            strongSeven,
+        )
+
+        val (text, _, reject) = assemble(list)
+
+        assertFalse(reject, "the verified soft DAT17 Pixel shape should stay readable as QAT17")
+        assertEquals("QAT 17", text)
+    }
+
+    @Test fun assemble_does_not_apply_the_soft_qat17_d_rescue_when_seven_is_not_separated() {
+        val softD = Classified(
+            label = 'D',
+            score = 0.55,
+            bestLetter = LabelScore('D', 0.55),
+            bestDigit = LabelScore('0', 0.47),
+            secondDigitScore = 0.45,
+        )
+        val tiedSeven = Classified(
+            label = '7',
+            score = 0.88,
+            bestLetter = LabelScore('V', 0.70),
+            bestDigit = LabelScore('7', 0.88),
+            secondDigitScore = 0.84,
+        )
+        val list = listOf(
+            softD,
+            classifiedLetter('A', 0.88),
+            classifiedLetter('T', 0.90),
+            classifiedDigit('1', 0.88, second = 0.71),
+            tiedSeven,
+        )
+
+        val (_, _, reject) = assemble(list)
+
+        assertTrue(reject, "a soft leading D should still reject when the final 7 is not separated")
+    }
+
     @Test fun assemble_recovers_qat17_when_the_q_closes_as_zero_and_seven_is_soft() {
         val closedQ = Classified(
             label = '0',

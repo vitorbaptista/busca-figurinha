@@ -144,6 +144,17 @@ private fun isLateCompactCodeCandidate(box: CodeBox): Boolean {
         axisAr in 2.4..3.8
 }
 
+private fun isLateThinWideCodeCandidate(box: CodeBox): Boolean {
+    if (box.tilt != null || box.orient != 'h') return false
+    val shortSide = min(box.w, box.h)
+    if (shortSide <= 0) return false
+    val axisAr = max(box.w, box.h) / shortSide
+    return box.score in 0.50..0.57 &&
+        box.w in 130.0..170.0 &&
+        box.h in 32.0..42.0 &&
+        axisAr in 3.4..4.6
+}
+
 private fun isSmallFragmentBeforeLateWide(box: CodeBox): Boolean =
     box.orient == 'h' &&
         box.score >= 0.70 &&
@@ -410,7 +421,9 @@ private fun selectBoxesForOcr(
     if (firstScore != null && firstScore in 0.84..0.92 && selected.any { isLateWideCodeCandidate(it) }) return selected
     val lateWideCandidates = ArrayList<CodeBox>(2)
     for (box in boxesForOcr.drop(maxBoxes)) {
-        if (isLateWideCodeCandidate(box) || isLateCompactCodeCandidate(box)) lateWideCandidates.add(box)
+        if (isLateWideCodeCandidate(box) || isLateCompactCodeCandidate(box) || isLateThinWideCodeCandidate(box)) {
+            lateWideCandidates.add(box)
+        }
         if (lateWideCandidates.size >= 2) break
     }
     if (lateWideCandidates.isEmpty()) return selected

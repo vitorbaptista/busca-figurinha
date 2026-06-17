@@ -334,4 +334,31 @@ class RecognizePipelineTest {
         assertEquals(listOf("GHA19"), out.resolved.mapNotNull { it.entry?.code })
         assertEquals(1, out.crops, "compact synthetic candidate should resolve before noisy fragments")
     }
+
+    @Test fun live_ocr_reaches_a_late_thin_wide_candidate_after_small_fragments() {
+        val w = 420
+        val h = 360
+        val px = IntArray(w * h) { card }
+        paintInkedPill(px, w, 176, 250, 322, 286)
+        val frame = GrayImage(w, h, px)
+        val boxes = listOf(
+            CodeBox(350.0, 294.0, 44.0, 17.0, 'h', 0.806, null, 8.7, 0.86, false),
+            CodeBox(86.0, 241.0, 51.0, 16.0, 'h', 0.734, null, 8.8, 0.87, false),
+            CodeBox(151.0, 262.0, 23.0, 9.0, 'h', 0.727, null, 8.7, 0.86, false),
+            CodeBox(176.0, 250.0, 147.0, 36.0, 'h', 0.520, null, 9.0, 0.86, false),
+        )
+
+        val out = recognizeFrameInOrder(
+            engine = EmptyFastEngine(),
+            frame = frame,
+            checklist = checklist,
+            boxes = boxes,
+            stopOnFirstCode = true,
+            maxBoxes = 2,
+        )
+
+        assertEquals(3, out.boxes, "late thin wide candidate should be added after the two fragments")
+        assertEquals(1, out.crops, "the inked late candidate should reach OCR")
+        assertTrue(out.resolved.isEmpty(), "empty OCR engine must not resolve a code")
+    }
 }
