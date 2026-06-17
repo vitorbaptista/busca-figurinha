@@ -125,6 +125,12 @@ class MatchingTest {
         assertEquals(2, r?.distance)
         assertNull(bestMatchFromText("NJT 4", checklist)?.entry)
     }
+    @Test fun high_confidence_confusion_recovers_verified_merged_m_shape() {
+        val r = bestHighConfidenceConfusionMatchFromText("NEX 15", checklist)
+        assertEquals("MEX15", r?.entry?.code)
+        assertEquals(1, r?.distance)
+        assertNull(bestHighConfidenceConfusionMatchFromText("NEX 16", makeChecklist(listOf("MEX15"))))
+    }
     @Test fun high_confidence_confusion_rejects_digit_changes_and_unknown_letter_pairs() {
         val onlyAut4 = makeChecklist(listOf("AUT4"))
         assertNull(bestHighConfidenceConfusionMatchFromText("NJT 5", onlyAut4))

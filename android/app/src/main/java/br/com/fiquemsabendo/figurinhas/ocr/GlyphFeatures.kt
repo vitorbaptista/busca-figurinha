@@ -146,12 +146,28 @@ private fun components(mask: ByteArray, w: Int, h: Int): List<Box> {
  *  4. split boxes much wider than the band height (touching glyphs).
  * Returns boxes WITHOUT features (compute those per kept box, after the band filter).
  */
-private fun segmentBoxes(mask: ByteArray, w: Int, h: Int): List<Box> {
+private fun segmentBoxes(
+    mask: ByteArray,
+    w: Int,
+    h: Int,
+    ignoreTinyForBand: Boolean = false,
+    penalizeCutDistance: Boolean = false,
+): List<Box> {
     val comps = components(mask, w, h)
     if (comps.isEmpty()) return emptyList()
 
-    // Robust text-band height = median component height (the digits/letters dominate).
-    val heights = comps.map { it.y1 - it.y0 + 1 }.sorted()
+    // Robust text-band height = median component height (the digits/letters dominate). The
+    // speck-tolerant rescue ignores components too small to survive the area gate, but the normal
+    // path keeps the long-proven behaviour unchanged.
+    val heights = if (ignoreTinyForBand) {
+        comps
+            .filter { it.area >= 6 }
+            .map { it.y1 - it.y0 + 1 }
+            .ifEmpty { comps.map { it.y1 - it.y0 + 1 } }
+            .sorted()
+    } else {
+        comps.map { it.y1 - it.y0 + 1 }.sorted()
+    }
     val medH = heights[heights.size shr 1].let { if (it != 0) it else 1 }
     // Keep components whose height is a plausible glyph: not a speck, not a giant smear.
     val kept = comps.filter { c ->
@@ -198,7 +214,7 @@ private fun segmentBoxes(mask: ByteArray, w: Int, h: Int): List<Box> {
     // bridged blob, mis-reading as a wide "W"/"M"). Cut at the deepest interior column-ink
     // valley, recursively, until each piece is a plausible single-glyph width.
     val out = ArrayList<Box>()
-    for (c in wholeGlyphs) splitWide(mask, w, c, medH, out)
+    for (c in wholeGlyphs) splitWide(mask, w, c, medH, out, penalizeCutDistance)
     out.sortBy { it.x0 }
     val firstRescued = splitFirstMergedGlyphInShortCode(mask, w, medH, out)
     return splitMiddleMergedGlyphInShortCode(mask, w, medH, firstRescued)
@@ -233,7 +249,14 @@ private fun mergeTouchingFragments(boxes: List<Box>, medH: Int): List<Box> {
  *  WIDTH-DRIVEN: only a box >=MERGE_W_RATIO x as wide as tall is split, and within it the seam
  *  is taken regardless of bridge thickness — touching glyphs in this tight font are joined by a
  *  solid bridge a depth gate would miss. */
-private fun splitWide(mask: ByteArray, w: Int, box: Box, medH: Int, out: ArrayList<Box>) {
+private fun splitWide(
+    mask: ByteArray,
+    w: Int,
+    box: Box,
+    medH: Int,
+    out: ArrayList<Box>,
+    penalizeCutDistance: Boolean = false,
+) {
     val bw = box.x1 - box.x0 + 1
     val bh = box.y1 - box.y0 + 1
     val tallness = max(bh.toFloat(), medH * 0.85f) // band height, robust to a short merged blob
@@ -259,8 +282,9 @@ private fun splitWide(mask: ByteArray, w: Int, box: Box, medH: Int, out: ArrayLi
     var cutDist = Int.MAX_VALUE
     for (x in lo..hi) {
         val dist = kotlin.math.abs(x - ideal)
-        if (col[x] < cutVal || (col[x] == cutVal && dist < cutDist)) {
-            cutVal = col[x]
+        val score = if (penalizeCutDistance) col[x] + dist else col[x]
+        if (score < cutVal || (score == cutVal && dist < cutDist)) {
+            cutVal = score
             cut = x
             cutDist = dist
         }
@@ -290,7 +314,7 @@ private fun splitWide(mask: ByteArray, w: Int, box: Box, medH: Int, out: ArrayLi
         half.y0 = y0
         half.y1 = y1
         half.area = area
-        splitWide(mask, w, half, medH, out)
+        splitWide(mask, w, half, medH, out, penalizeCutDistance)
     }
 }
 
@@ -530,6 +554,15 @@ fun extractGlyphs(img: GrayImage): List<GlyphBox> {
     if (w == 0) return emptyList()
     val mask = grayToInkMask(img)
     val boxes = segmentBoxes(mask, w, h)
+    return glyphBoxesFrom(mask, w, boxes)
+}
+
+internal fun extractGlyphsSpeckTolerant(img: GrayImage): List<GlyphBox> {
+    val w = img.width
+    val h = img.height
+    if (w == 0) return emptyList()
+    val mask = grayToInkMask(img)
+    val boxes = segmentBoxes(mask, w, h, ignoreTinyForBand = true, penalizeCutDistance = true)
     return glyphBoxesFrom(mask, w, boxes)
 }
 

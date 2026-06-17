@@ -244,9 +244,7 @@ internal fun rejectSentinel(text: String): String {
     return if (Regex("[A-Z]").containsMatchIn(s)) s else "X"
 }
 
-/** Recognize a single prepared crop into an OcrResult. */
-fun recognizeCrop(crop: GrayImage, atlas: FlatAtlas): OcrResult {
-    val glyphs = extractGlyphs(crop)
+private fun recognizeGlyphs(crop: GrayImage, atlas: FlatAtlas, glyphs: List<GlyphBox>): OcrResult {
     // A code is 3–7 glyphs. Too few = noise/blank; too many = legal text the gate missed.
     if (glyphs.size < 2 || glyphs.size > 8) return OcrResult("", 0.0)
     val classified = glyphs.map { classify(it, atlas) }
@@ -284,6 +282,13 @@ fun recognizeCrop(crop: GrayImage, atlas: FlatAtlas): OcrResult {
     return if (reject) OcrResult(rejectSentinel(text), 0.0) else OcrResult(text, conf)
 }
 
+/** Recognize a single prepared crop into an OcrResult. */
+fun recognizeCrop(crop: GrayImage, atlas: FlatAtlas): OcrResult =
+    recognizeGlyphs(crop, atlas, extractGlyphs(crop))
+
+internal fun recognizeCropSpeckTolerant(crop: GrayImage, atlas: FlatAtlas): OcrResult =
+    recognizeGlyphs(crop, atlas, extractGlyphsSpeckTolerant(crop))
+
 /**
  * The pure-Kotlin glyph OCR engine (the fast-path engine analog of createGlyphOcrEngine).
  * recognize/recognizeMany run the classifier synchronously over a pre-baked atlas — no
@@ -291,6 +296,8 @@ fun recognizeCrop(crop: GrayImage, atlas: FlatAtlas): OcrResult {
  */
 class GlyphRecognizer(private val atlas: FlatAtlas) {
     fun recognize(crop: GrayImage): OcrResult = recognizeCrop(crop, atlas)
+
+    fun recognizeSpeckTolerant(crop: GrayImage): OcrResult = recognizeCropSpeckTolerant(crop, atlas)
 
     fun recognizeMany(crops: List<GrayImage>): List<OcrResult> = crops.map { recognizeCrop(it, atlas) }
 }

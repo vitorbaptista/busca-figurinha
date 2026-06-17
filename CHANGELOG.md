@@ -32,6 +32,11 @@ Notable changes to the sticker scanner. Newest first. No formal releases yet (de
   local sem regredir os testes de ouro de `SWE8` nem aumentar falsos positivos.
 
 ### Fixed
+- **OCR Android recupera um crop fraco de `MEX15` sem falso positivo.** O pipeline agora tenta um
+  rescue speck-tolerant apenas em candidatos largos/tardios e só aceita a leitura se ela fechar na
+  lista de códigos por match conservador ou confusão de alta confiança com dígitos idênticos. O
+  atlas real ganhou slices verificados de `MEX15`; o benchmark Pixel manual sobe para `37/45`
+  positivos (`82,22%` recall), mantendo `0/156` falsos positivos e p95/max de OCR em `2/4` crops.
 - **OCR Android recupera leituras confiantes com confusões conhecidas.** O pipeline agora usa a
   lista fechada de códigos apenas para leituras de glyph com alta confiança, dígitos idênticos e
   pares de letras observados (`N→A`, `J→U`) com candidato único. Isso recupera `AUT4` em crop real

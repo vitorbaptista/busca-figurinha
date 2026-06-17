@@ -28,6 +28,7 @@ private const val MIN_THIN_RESTORE_LEN = 3
 private val DROPPABLE_LETTERS = setOf('I', 'J', 'L', 'T')
 private val HIGH_CONF_LETTER_CONFUSIONS = setOf(
     'N' to 'A',
+    'N' to 'M',
     'J' to 'U',
 )
 private val STRUCTURED_CODE_RE = Regex("^([A-Z]{2,4})(\\d{1,3})$")
@@ -138,7 +139,7 @@ fun bestHighConfidenceConfusionMatchFromText(text: String, list: Checklist): Mat
                 }
                 distance++
             }
-            if (!ok || distance != 2) continue
+            if (!ok || distance !in 1..2) continue
 
             if (distance < bestDistance) {
                 bestEntry = entry

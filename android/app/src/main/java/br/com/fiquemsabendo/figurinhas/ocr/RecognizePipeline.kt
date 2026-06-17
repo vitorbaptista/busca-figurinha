@@ -67,6 +67,9 @@ interface FrameRecognizer {
     /** Cheap glyph read of each crop (the fast path). Always present. */
     fun recognizeFast(crops: List<GrayImage>): List<OcrResult>
 
+    /** Narrow rescue for weak Pixel crops; null for engines without this glyph-specific path. */
+    fun recognizeSpeckTolerant(crop: GrayImage): OcrResult? = null
+
     /** The accurate fallback ALONE, or null when there is no fallback wired yet (the seam). */
     fun recognizeSlow(crops: List<GrayImage>): List<OcrResult>?
 
@@ -88,6 +91,8 @@ class GlyphOnlyRecognizer(
 ) : FrameRecognizer {
     override fun recognizeFast(crops: List<GrayImage>): List<OcrResult> = glyph.recognizeMany(crops)
 
+    override fun recognizeSpeckTolerant(crop: GrayImage): OcrResult = glyph.recognizeSpeckTolerant(crop)
+
     override fun recognizeSlow(crops: List<GrayImage>): List<OcrResult>? = null
 
     override val hasSlowFallback: Boolean = false
@@ -97,6 +102,7 @@ class GlyphOnlyRecognizer(
  *  = index 1), a memo of the ones built so far, and whether it has already resolved a code (so
  *  its flip round is skipped). The flip's prep is only built if round 0 reaches it. */
 private class Pending(
+    val box: CodeBox,
     val src: CropSource,
     val retrySrc: CropSource?,
     val built: Array<GrayImage?>,
@@ -177,6 +183,7 @@ fun recognizeFrameInOrder(
                 null
             }
         Pending(
+            box = box,
             src = src,
             retrySrc = retrySrc,
             built = arrayOfNulls(src.count),
@@ -253,6 +260,25 @@ fun recognizeFrameInOrder(
             return false
         }
 
+        fun trySpeckTolerantRescue(job: Job): Boolean {
+            if (!isLateWideCodeCandidate(job.p.box)) return false
+            val rescue = engine.recognizeSpeckTolerant(job.crop) ?: return false
+            crops += 1
+            if (rescue.confidence < 90.0) return false
+            val normalMatch = bestMatchFromText(rescue.text, checklist)
+            val m = if (normalMatch?.entry != null) {
+                normalMatch
+            } else {
+                bestHighConfidenceConfusionMatchFromText(rescue.text, checklist)
+            }
+            val entry = m?.entry ?: return false
+            val clean = rescue.text.replace(WHITESPACE_RE, " ").trim()
+            if (clean.isNotEmpty()) reads.add(clean)
+            job.p.done = true
+            if (seen.add(entry.code)) resolved.add(m)
+            return true
+        }
+
         var resolvedThisRound = false
         if (stopOnFirstCode) {
             // TWO-PHASE live/latency path. The expensive engine (Tesseract) dwarfs detection on a
@@ -275,10 +301,17 @@ fun recognizeFrameInOrder(
                     if (handle(job, r.text, r.confidence)) {
                         resolvedThisRound = true
                         break
+                    } else if (trySpeckTolerantRescue(job)) {
+                        resolvedThisRound = true
+                        break
                     }
                 } else {
                     // Soft/rejected/blank: the slow engine might still read it — defer to phase 2.
                     val clean = r.text.replace(WHITESPACE_RE, " ").trim()
+                    if (clean.isEmpty() && trySpeckTolerantRescue(job)) {
+                        resolvedThisRound = true
+                        break
+                    }
                     if (clean.isNotEmpty()) reads.add("$clean (${r.confidence.roundToInt()}%)")
                     if (clean.isEmpty() && !engine.hasSlowFallback && (round == 0 || round == 2)) {
                         job.p.done = true

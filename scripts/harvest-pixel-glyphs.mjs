@@ -48,6 +48,28 @@ const HARVESTS = [
     ],
   },
   {
+    label: 'MEX15',
+    fixture: resolve('android/app/src/test/resources/stickers/MEX15_pixel_live_frame48_crop0.pgm.gz'),
+    slices: [
+      { label: 'M', x: 82, y: 49, w: 28, h: 39 },
+      { label: 'E', x: 106, y: 49, w: 25, h: 39 },
+      { label: 'X', x: 126, y: 49, w: 26, h: 39 },
+      { label: '1', x: 160, y: 42, w: 25, h: 42 },
+      { label: '5', x: 184, y: 42, w: 31, h: 42 },
+    ],
+  },
+  {
+    label: 'MEX15',
+    fixture: resolve('android/app/src/test/resources/stickers/MEX15_pixel_live_frame49_crop0.pgm.gz'),
+    slices: [
+      { label: 'M', x: 88, y: 46, w: 27, h: 44 },
+      { label: 'E', x: 111, y: 46, w: 30, h: 44 },
+      { label: 'X', x: 136, y: 51, w: 30, h: 39 },
+      { label: '1', x: 176, y: 52, w: 25, h: 47 },
+      { label: '5', x: 200, y: 42, w: 36, h: 57 },
+    ],
+  },
+  {
     label: 'RSA19',
     fixture: resolve('android/app/src/test/resources/stickers/RSA19_pixel_live_crop0.pgm.gz'),
     slices: [
