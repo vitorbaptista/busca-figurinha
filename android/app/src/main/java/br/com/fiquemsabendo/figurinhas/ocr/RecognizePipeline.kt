@@ -90,7 +90,9 @@ class GlyphOnlyRecognizer(
  *  its flip round is skipped). The flip's prep is only built if round 0 reaches it. */
 private class Pending(
     val src: CropSource,
+    val retrySrc: CropSource?,
     val built: Array<GrayImage?>,
+    val retryBuilt: Array<GrayImage?>?,
     var done: Boolean,
 )
 
@@ -127,29 +129,49 @@ fun recognizeFrameInOrder(
 
     // A lazy crop source per box — the RAW crops are extracted now (cheap), but each variant's
     // expensive prep (prepForOcr) is deferred to the round that actually uses it.
-    val pending = selected.map { box ->
+    val retrySmallCrops = stopOnFirstCode
+    val pending = selected.mapIndexed { index, box ->
         val src = codeCropSource(frame, box)
-        Pending(src = src, built = arrayOfNulls(src.count), done = false)
+        val retrySrc =
+            if (retrySmallCrops && index == 0 && box.score in 0.84..0.92) {
+                codeCropSource(frame, box, RETRY_TARGET_H_SMALL)
+            } else {
+                null
+            }
+        Pending(
+            src = src,
+            retrySrc = retrySrc,
+            built = arrayOfNulls(src.count),
+            retryBuilt = retrySrc?.let { arrayOfNulls(it.count) },
+            done = false,
+        )
     }
 
-    // Round r OCRs variant index r of every still-pending box.
-    for (round in 0 until 2) {
+    // Round r OCRs variant index r of every still-pending box. Live/latency mode adds a
+    // small-source high-res retry after the normal upright+flip pair, but only for boxes that
+    // still have not resolved; frames that already read correctly never pay the retry cost.
+    val totalRounds = if (retrySmallCrops) 4 else 2
+    for (round in 0 until totalRounds) {
+        val retryRound = round >= 2
+        val variant = round % 2
         val jobs = ArrayList<Job>()
         for (p in pending) {
             if (p.done) continue
-            if (round >= p.src.count) continue
+            val src = if (retryRound) p.retrySrc ?: continue else p.src
+            val built = if (retryRound) p.retryBuilt ?: continue else p.built
+            if (variant >= src.count) continue
             // Prepare (and memoize) only this variant now — the flip is built only if we reach
             // here in round 0, so the common upright-resolves case never pays the flip's prep.
-            var crop = p.built[round]
+            var crop = built[variant]
             if (crop == null) {
-                crop = p.src.build(round)
-                p.built[round] = crop
+                crop = src.build(variant)
+                built[variant] = crop
             }
             // A blank/near-blank prepared crop (empty card, or a dense crop the sparse-ink gate
             // already blanked) can only OCR to nothing — skip the call, save the dispatch.
             if (cropHasOcrInk(crop)) {
                 jobs.add(Job(p, crop))
-            } else if (round == 0) {
+            } else if (round == 0 || round == 2) {
                 // No ink on the upright crop ⇒ the 180° flip is the SAME pixels rotated, so its
                 // ink fraction is identical and it would be skipped too. Mark the box done so we
                 // never build the flip's prep — same OCR set as before, minus the wasted work.
@@ -157,8 +179,7 @@ fun recognizeFrameInOrder(
             }
         }
         if (jobs.isEmpty()) {
-            // Nothing ink-bearing left to OCR this round; the next round only has flips of these
-            // same boxes, so there's no more useful work — stop.
+            if (round + 1 < totalRounds && pending.any { !it.done }) continue
             break
         }
 

@@ -545,12 +545,12 @@ private fun cropCenterStrip(src: GrayImage, pillH: Double): GrayImage {
 /** Build the upright + 180°-flipped OCR crops for a detected box, each prepared
  *  (rotated upright, upscaled, binarized to dark-text-on-white, padded). The two
  *  candidates resolve the 0°/180° (or 90°/270°) ambiguity at OCR time. */
-fun codeCropCandidates(frame: GrayImage, box: CodeBox): List<GrayImage> {
+fun codeCropCandidates(frame: GrayImage, box: CodeBox, smallTargetHeight: Int = TARGET_H_SMALL): List<GrayImage> {
     val g = rawCropGroups(frame, box)
     // box.boost (set in findCodeBoxes) gates the taller small-source target: it rescues a
     // far/tiny PILL's thin strokes but sharpens a stray blob's dots into a phantom "00", so
     // only a pill-sized, pill-scored box gets it.
-    return g.crops.map { prepForOcr(it, g.sharpen, box.boost, g.despeckle) }
+    return g.crops.map { prepForOcr(it, g.sharpen, box.boost, g.despeckle, smallTargetHeight) }
 }
 
 /** Lazy form of codeCropCandidates: extracts the RAW crops once (cheap rotations) but DEFERS
@@ -561,11 +561,11 @@ fun codeCropCandidates(frame: GrayImage, box: CodeBox): List<GrayImage> {
  *  work happens, never WHAT is produced, so recall and the 0-FP guarantee are unaffected. */
 class CropSource(val count: Int, val build: (Int) -> GrayImage)
 
-fun codeCropSource(frame: GrayImage, box: CodeBox): CropSource {
+fun codeCropSource(frame: GrayImage, box: CodeBox, smallTargetHeight: Int = TARGET_H_SMALL): CropSource {
     val g = rawCropGroups(frame, box)
     return CropSource(
         count = g.crops.size,
-        build = { i -> prepForOcr(g.crops[i], g.sharpen, box.boost, g.despeckle) },
+        build = { i -> prepForOcr(g.crops[i], g.sharpen, box.boost, g.despeckle, smallTargetHeight) },
     )
 }
 
@@ -629,6 +629,7 @@ private const val TARGET_H = 96
  *  target and its noise behaviour (a bigger upscale of a noisy close-up manufactured a
  *  false positive). */
 private const val TARGET_H_SMALL = 160
+const val RETRY_TARGET_H_SMALL = 192
 /** Source crops shorter than this (px) are "small" and get TARGET_H_SMALL. Chosen
  *  between the multi-photo pills (raw height ~27–44px) and the close-up pills (~100px+). */
 private const val SMALL_SRC_H = 64
@@ -655,9 +656,10 @@ private fun prepForOcr(
     sharpen: Boolean,
     boostSmall: Boolean = true,
     despeckle: Boolean = false,
+    smallTargetHeight: Int = TARGET_H_SMALL,
 ): GrayImage {
     val sh = if (src.height != 0) src.height else 1
-    val target = if (boostSmall && sh < SMALL_SRC_H) TARGET_H_SMALL else TARGET_H
+    val target = if (boostSmall && sh < SMALL_SRC_H) smallTargetHeight else TARGET_H
     val factor = max(1.0, target.toDouble() / sh)
     val cw = max(1, Math.round(src.width * factor).toInt())
     val ch = max(1, Math.round(src.height * factor).toInt())

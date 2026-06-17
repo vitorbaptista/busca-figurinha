@@ -118,6 +118,10 @@ Notable changes to the sticker scanner. Newest first. No formal releases yet (de
 - **Overlay de crops do debug acompanha o espelho da câmera frontal.** As caixas coloridas agora
   são espelhadas no preview frontal, alinhando o diagnóstico visual ao que o usuário vê sem alterar
   os frames reais usados pelo OCR.
+- **Retry high-res só para crop pequeno e box intermediário.** O Android agora tenta uma segunda
+  preparação a `192px` apenas no box principal com score intermediário (`0.84..0.92`) e só depois da
+  leitura normal falhar. Isso recupera `RSA19` e `AUS18` no dataset manual (`29/45`) mantendo
+  `0/156` falsos positivos e evitando o custo/risco do upscale global.
 
 ## 2026-06-15 — Remove "Enviar foto"
 
