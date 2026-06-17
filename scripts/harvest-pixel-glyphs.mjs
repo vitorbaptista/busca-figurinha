@@ -161,6 +161,17 @@ const HARVESTS = [
     fixture: resolve('captures/datasets/combined-live-20260616-20260617/raw/pixel-live-20260617-090351/debug/frame-245/crop0.png'),
   },
   {
+    label: 'MEX15',
+    fixture: resolve('captures/datasets/combined-live-20260616-20260617/raw/pixel-live-20260617-090351/debug/frame-84/crop0.png'),
+    slices: [
+      { label: 'M', x: 144, y: 70, w: 51, h: 45 },
+      { label: 'E', x: 195, y: 75, w: 28, h: 43 },
+      { label: 'X', x: 234, y: 80, w: 27, h: 38 },
+      { label: '1', x: 290, y: 81, w: 32, h: 46 },
+      { label: '5', x: 322, y: 84, w: 44, h: 46 },
+    ],
+  },
+  {
     label: 'TUN10',
     fixture: resolve('captures/datasets/combined-live-20260616-20260617/raw/pixel-live-20260617-090351/debug/frame-227/crop0.png'),
   },

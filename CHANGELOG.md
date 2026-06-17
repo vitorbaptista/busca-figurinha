@@ -6,6 +6,11 @@ Notable changes to the sticker scanner. Newest first. No formal releases yet (de
 ## 2026-06-17 — Android: baseline Pixel combinado
 
 ### Fixed
+- **Atlas Android aprende um crop real de `MEX15` que segmentava o `M` em duas metades.** Um crop
+  Pixel revisado manualmente (`frame-84`) agora entra no harvest com slices manuais, recuperando
+  mais uma leitura exata sem abrir o matcher. O baseline combinado sobe para `89/216` positivos
+  (`41,20%` recall), `23/43` seguradas avaliáveis confirmadas, `52` leituras exatas, `0/157`
+  falsos positivos e `0` commits errados.
 - **Matcher Android recupera mais leituras Pixel verificadas sem falso positivo.** As confusões de
   alta confiança agora aceitam apenas pares observados no CSV manual, com dígitos idênticos e
   candidato único, cobrindo leituras como `HSA 17`→`RSA17`, `UIN 10`→`TUN10`,
@@ -30,8 +35,8 @@ Notable changes to the sticker scanner. Newest first. No formal releases yet (de
   `TIN 10`→`TUN10`, `MIT 4`→`AUT4` e `WIT 8`→`AUT8`, sem relaxar a trava de `0` falso positivo no
   gate.
 - **Gate Pixel agora usa o dataset combinado como baseline padrão.** O benchmark Android exige
-  `216` positivos e `157` negativos revisados manualmente, recall mínimo de `40,7%`, `22`
-  seguradas confirmadas, pelo menos `51` leituras exatas e no máximo `37` acertos dependentes de
+  `216` positivos e `157` negativos revisados manualmente, recall mínimo de `41,2%`, `23`
+  seguradas confirmadas, pelo menos `52` leituras exatas e no máximo `37` acertos dependentes de
   correção textual, mantendo `0` falso positivo.
 
 ## 2026-06-17 — Android: resgate estreito no retículo

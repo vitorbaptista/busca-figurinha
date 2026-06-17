@@ -8,30 +8,30 @@
 - frames com ground-truth manual confirmado: 373
 - frames faltando arquivo de frame: 0
 - estratégia de busca: fallback_dark_no_primary_reads
-- resolvidos positivos: 88/216
+- resolvidos positivos: 89/216
 - precisão positiva: 100.00%
-- recall positivo: 40.74%
-- acertos por leitura exata/correção/confusão conhecida: 51/6/31
-- acertos dependentes de correção textual: 37/88
-- positivos não lidos: 128
+- recall positivo: 41.20%
+- acertos por leitura exata/correção/confusão conhecida: 52/6/31
+- acertos dependentes de correção textual: 37/89
+- positivos não lidos: 127
 - falsos positivos: 0 de 157 não-sticker processados
 - frames positivos/negativos no GT manual: 216/157
 - seguradas positivas manuais: 54
 - seguradas positivas avaliáveis (>= 2 frames manuais): 43
-- seguradas avaliáveis confirmadas com 2 leituras: 22/43
-- seguradas avaliáveis sem confirmação: 21
+- seguradas avaliáveis confirmadas com 2 leituras: 23/43
+- seguradas avaliáveis sem confirmação: 20
 - seguradas com frames manuais insuficientes: 11
 - commits errados em seguradas positivas: 0
 - taxa de falso positivo por não-sticker: 0.00%
-- média de leituras candidatas por frame: 88
+- média de leituras candidatas por frame: 89
 - razão no-frame sem detecção (boxes=0): 1
 - razão sem texto no crop (box com 0 ink): 131
-- razão sem match apesar de OCR: 153
-- mediana detecção/ocr (ms): 16.00 / 18.00
-- p95 detecção/ocr (ms): 21.00 / 37.00
+- razão sem match apesar de OCR: 152
+- mediana detecção/ocr (ms): 15.00 / 17.00
+- p95 detecção/ocr (ms): 25.00 / 38.00
 - média boxes: 2.29
-- média crops: 1.32
-- total crops OCR: 491
+- média crops: 1.31
+- total crops OCR: 488
 - p95/max crops OCR: 4/6
 - média de crops com ink: 0.54
 - fallback dark tentado/usado: 190/56
@@ -39,7 +39,6 @@
 ## Seguradas positivas avaliáveis sem confirmação
 - RSA13 em pixel-live-20260617-090351 frames 26-35: acertos=0/7 commits_errados=-
 - MEX15 em pixel-live-20260617-090351 frames 72-78: acertos=0/5 commits_errados=-
-- MEX15 em pixel-live-20260617-090351 frames 84-88: acertos=1/4 commits_errados=-
 - GER4 em pixel-live-20260617-090351 frames 117-119: acertos=1/3 commits_errados=-
 - CIV4 em pixel-live-20260617-090351 frames 142-146: acertos=1/5 commits_errados=-
 - NZL18 em pixel-live-20260617-090351 frames 147-150: acertos=1/4 commits_errados=-
@@ -103,6 +102,7 @@
 - live-user-20260617-011113__frame-113: AUS18
 - live-user-20260617-011113__frame-114: AUS18
 - live-user-20260617-011113__frame-115: AUS18
+- pixel-live-20260617-090351__frame-84: MEX15
 - pixel-live-20260617-090351__frame-88: MEX15
 - pixel-live-20260617-090351__frame-97: CIV12
 - pixel-live-20260617-090351__frame-118: GER4
@@ -167,7 +167,7 @@
 - IRN10: acertos=0/5 leitura_exata=0 correção=0 confusão=0 splits=train:4, val:1 crops_média=2.40 crops_max=4
 - IRN15: acertos=0/7 leitura_exata=0 correção=0 confusão=0 splits=test:1, train:6 crops_média=3.57 crops_max=6
 - IRQ20: acertos=2/8 leitura_exata=1 correção=0 confusão=1 splits=test:1, train:6, val:1 crops_média=1.63 crops_max=3
-- MEX15: acertos=6/18 leitura_exata=5 correção=0 confusão=1 splits=test:2, train:14, val:2 crops_média=1.67 crops_max=4
+- MEX15: acertos=7/18 leitura_exata=6 correção=0 confusão=1 splits=test:2, train:14, val:2 crops_média=1.50 crops_max=4
 - MEX19: acertos=5/6 leitura_exata=4 correção=0 confusão=1 splits=train:5, val:1 crops_média=1.33 crops_max=2
 - NED12: acertos=2/5 leitura_exata=2 correção=0 confusão=0 splits=test:1, train:4 crops_média=2.00 crops_max=4
 - NOR20: acertos=4/8 leitura_exata=2 correção=0 confusão=2 splits=test:1, train:7 crops_média=1.38 crops_max=3
@@ -242,43 +242,43 @@
 - live-user-20260616-201108__frame-20: boxes=2 crops=0 reads=-
 - live-user-20260616-201108__frame-21: boxes=2 crops=0 reads=-
 - ... e mais 115 itens
-### NO_MATCH (153)
+### NO_MATCH (152)
 - live-user-20260616-201108__frame-4: boxes=4 crops=2 reads=dark:EEMN XX (0%) | dark:NBN XXX (0%)
 - live-user-20260616-201108__frame-9: boxes=4 crops=2 reads=dark:OENINF (0%) | dark:WONW X (0%)
 - live-user-20260616-201108__frame-15: boxes=4 crops=2 reads=dark:NNOE XXX (0%) | dark:WEPNNE (0%)
-- live-user-20260616-201108__frame-23: boxes=4 crops=2 reads=dark:NNNBN (0%) | dark:NOMFNN (0%)
-- live-user-20260616-201108__frame-25: boxes=4 crops=2 reads=dark:NK XX (0%) | dark:EE XXX (0%)
+- live-user-20260616-201108__frame-23: boxes=4 crops=2 reads=dark:NNNBN (0%) | dark:NOMFMN (0%)
+- live-user-20260616-201108__frame-25: boxes=4 crops=2 reads=dark:NK XX (0%) | dark:EM XXX (0%)
 - live-user-20260616-201108__frame-29: boxes=2 crops=2 reads=XXXXXXXX (0%)
 - live-user-20260616-201108__frame-32: boxes=4 crops=2 reads=dark:OFE XX (0%) | dark:EE XX (0%)
 - live-user-20260616-201108__frame-34: boxes=4 crops=2 reads=dark:XXXXX (0%) | dark:NO XX (0%)
 - live-user-20260616-201108__frame-36: boxes=4 crops=2 reads=dark:OE XX (0%) | dark:MR XX (0%)
-- live-user-20260616-201108__frame-39: boxes=4 crops=2 reads=dark:BIEE (0%) | dark:ENP X (0%)
+- live-user-20260616-201108__frame-39: boxes=4 crops=2 reads=dark:BIEM (0%) | dark:ENP X (0%)
 - live-user-full-20260616-201728__frame-355: boxes=2 crops=2 reads=XXXXX (0%) | NRW X (0%)
 - live-user-full-20260616-201728__frame-378: boxes=4 crops=2 reads=dark:NNNNNE (0%) | dark:NNENHN (0%)
 - live-user-full-20260616-201728__frame-381: boxes=4 crops=2 reads=dark:SNON 0 | dark:XXXXXX (0%)
 - live-user-full-20260616-201728__frame-386: boxes=4 crops=2 reads=dark:OEIR (0%) | dark:EE XX (0%)
 - live-user-full-20260616-201728__frame-387: boxes=4 crops=1 reads=-
 - live-user-full-20260616-201728__frame-388: boxes=4 crops=2 reads=dark:NE 8 | dark:OWNF (0%)
-- ... e mais 137 itens
+- ... e mais 136 itens
 ### NO_BOXES (1)
 - pixel-live-20260617-090351__frame-85: boxes=0 crops=0 reads=-
 
 ## Piores latências
-1. live-user-20260616-201108__frame-4 det=24ms ocr=72ms boxes=4/0 crops=2 respostas=-
-2. live-setup-20260616-201017__frame-3 det=36ms ocr=59ms boxes=4/0 crops=1 respostas=NED12
-3. pixel-live-20260617-090351__frame-209 det=19ms ocr=46ms boxes=2/2 crops=5 respostas=-
-4. live-user-20260616-201108__frame-9 det=20ms ocr=43ms boxes=4/0 crops=2 respostas=-
-5. pixel-live-20260617-090351__frame-316 det=17ms ocr=45ms boxes=2/2 crops=6 respostas=-
-6. live-setup-20260616-201017__frame-2 det=23ms ocr=37ms boxes=2/1 crops=1 respostas=IRQ20
-7. pixel-live-20260617-090351__frame-276 det=17ms ocr=42ms boxes=2/1 crops=6 respostas=-
-8. pixel-live-20260617-090351__frame-297 det=18ms ocr=41ms boxes=2/2 crops=6 respostas=-
-9. live-user-full-20260616-201728__frame-388 det=17ms ocr=41ms boxes=4/0 crops=2 respostas=-
-10. pixel-live-20260617-090351__frame-161 det=16ms ocr=42ms boxes=3/1 crops=4 respostas=-
-11. pixel-live-20260617-090351__frame-318 det=18ms ocr=40ms boxes=3/1 crops=4 respostas=-
-12. live-user-20260616-201108__frame-15 det=21ms ocr=36ms boxes=4/0 crops=2 respostas=-
+1. pixel-live-20260617-090351__frame-307 det=32ms ocr=70ms boxes=2/2 crops=5 respostas=-
+2. pixel-live-20260617-090351__frame-308 det=36ms ocr=59ms boxes=2/1 crops=4 respostas=-
+3. pixel-live-20260617-090351__frame-304 det=31ms ocr=61ms boxes=2/1 crops=4 respostas=-
+4. live-user-20260616-201108__frame-4 det=20ms ocr=70ms boxes=4/0 crops=2 respostas=-
+5. pixel-live-20260617-090351__frame-303 det=26ms ocr=64ms boxes=2/1 crops=4 respostas=-
+6. pixel-live-20260617-090351__frame-316 det=26ms ocr=57ms boxes=2/2 crops=6 respostas=-
+7. pixel-live-20260617-090351__frame-259 det=32ms ocr=46ms boxes=3/1 crops=2 respostas=-
+8. pixel-live-20260617-090351__frame-276 det=21ms ocr=55ms boxes=2/1 crops=6 respostas=-
+9. pixel-live-20260617-090351__frame-318 det=24ms ocr=50ms boxes=3/1 crops=4 respostas=-
+10. pixel-live-20260617-090351__frame-286 det=24ms ocr=48ms boxes=2/1 crops=5 respostas=-
+11. pixel-live-20260617-090351__frame-287 det=22ms ocr=49ms boxes=2/1 crops=6 respostas=-
+12. pixel-live-20260617-090351__frame-297 det=22ms ocr=49ms boxes=2/2 crops=6 respostas=-
 
 ## Maior trabalho OCR
-1. live-user-20260617-011113__frame-32 crops=6 boxes=3/0 respostas=- leituras=EGV 5 | EGV 5 | EG XX (0%) | EG XX (0%) | OBH X (0%) | EEN X (0%)
+1. live-user-20260617-011113__frame-32 crops=6 boxes=3/0 respostas=- leituras=EGV 5 | EGV 5 | EG XX (0%) | EG XX (0%) | OBM X (0%) | EEN X (0%)
 2. pixel-live-20260617-090351__frame-276 crops=6 boxes=2/1 respostas=- leituras=SBT 17 | OM | GAT 17 | ZI XXX (0%) | N X (0%) | II XXX (0%)
 3. pixel-live-20260617-090351__frame-287 crops=6 boxes=2/1 respostas=- leituras=SVU 15 | EFLVRI (0%) | SVU 15 | ETMA X (0%) | NRVYTE (0%) | EIMA X (0%)
 4. pixel-live-20260617-090351__frame-297 crops=6 boxes=2/2 respostas=- leituras=IIBBFRH (0%) | DH 12 | NBI XXX (0%) | JOE XXX (0%) | BIH X (0%) | NMB XXX (0%)
@@ -287,9 +287,9 @@
 7. pixel-live-20260617-090351__frame-286 crops=5 boxes=2/1 respostas=- leituras=ON 15 | ON 15 | EIN X (0%) | ETN X (0%)
 8. pixel-live-20260617-090351__frame-307 crops=5 boxes=2/2 respostas=- leituras=DXW 4 | DXW 4 | EYIG | EW XX (0%)
 9. pixel-live-20260617-090351__frame-75 crops=4 boxes=4/1 respostas=- leituras=dark:PB X (0%) | dark:X XX (0%)
-10. pixel-live-20260617-090351__frame-84 crops=4 boxes=1/1 respostas=- leituras=MLX XX (0%) | MLX XX (0%) | EIX XX (0%) | EIX XX (0%)
-11. pixel-live-20260617-090351__frame-102 crops=4 boxes=2/1 respostas=- leituras=DUA 19 | DM 19 | XXXX (0%) | XXXX (0%)
-12. pixel-live-20260617-090351__frame-149 crops=4 boxes=2/1 respostas=- leituras=NB 18 | NB 18 | BTVN | BTVN
+10. pixel-live-20260617-090351__frame-102 crops=4 boxes=2/1 respostas=- leituras=DUA 19 | DM 19 | XXXX (0%) | XXXX (0%)
+11. pixel-live-20260617-090351__frame-149 crops=4 boxes=2/1 respostas=- leituras=NB 18 | NB 18 | BTVN | BTVN
+12. pixel-live-20260617-090351__frame-155 crops=4 boxes=2/0 respostas=- leituras=MN 8 | NN 8 | BE X (0%) | EO X (0%)
 
 ## Falsos positivos
 - sem falsos positivos
@@ -298,11 +298,11 @@
 - validação: 32
 - teste: 48
 - total com resultado: 373
-- train -> tp=67 miss=103 fp=0
+- train -> tp=68 miss=102 fp=0
 - val -> tp=12 miss=10 fp=0
 - test -> tp=9 miss=15 fp=0
-- unresolved: 128
-- sem leitura mas com ocr: 97
+- unresolved: 127
+- sem leitura mas com ocr: 96
 - sem leitura e sem ocr: 31
 
 ## Diagnóstico dos positivos não resolvidos
@@ -313,7 +313,7 @@
 - box=1 x=295.8 y=324.0 w=8.9 h=26.7 score=0.684 tilt=- crop=1 ink=false read=/0.0 glyphs=
 - box=2 x=295.8 y=261.8 w=16.0 h=62.2 score=0.656 tilt=- crop=0 ink=false read=/0.0 glyphs=
 - box=2 x=295.8 y=261.8 w=16.0 h=62.2 score=0.656 tilt=- crop=1 ink=false read=/0.0 glyphs=
-- box=3 x=131.3 y=250.2 w=50.7 h=16.9 score=0.503 tilt=- crop=0 ink=true read=OBH X/0.0 glyphs=x=26 9x9 ar=1.00 holes=0 best=0:0.53 L=N:0.49 D=0:0.53 D2=0.50 | x=159 8x6 ar=0.75 holes=0 best=8:0.42 L=W:0.42 D=8:0.42 D2=0.41 | x=179 6x4 ar=0.67 holes=0 best=H:0.29 L=H:0.29 D=0:0.27 D2=0.26 | x=227 9x5 ar=0.56 holes=0 best=N:0.43 L=N:0.43 D=0:0.40 D2=0.38
+- box=3 x=131.3 y=250.2 w=50.7 h=16.9 score=0.503 tilt=- crop=0 ink=true read=OBM X/0.0 glyphs=x=26 9x9 ar=1.00 holes=0 best=0:0.53 L=N:0.49 D=0:0.53 D2=0.50 | x=159 8x6 ar=0.75 holes=0 best=8:0.42 L=W:0.42 D=8:0.42 D2=0.41 | x=179 6x4 ar=0.67 holes=0 best=M:0.29 L=M:0.29 D=0:0.27 D2=0.26 | x=227 9x5 ar=0.56 holes=0 best=N:0.43 L=N:0.43 D=0:0.40 D2=0.38
 - box=3 x=131.3 y=250.2 w=50.7 h=16.9 score=0.503 tilt=- crop=1 ink=true read=EEN X/0.0 glyphs=x=84 9x5 ar=0.56 holes=0 best=E:0.45 L=E:0.45 D=0:0.38 D2=0.37 | x=135 6x4 ar=0.67 holes=0 best=E:0.28 L=E:0.28 D=0:0.24 D2=0.23 | x=153 8x6 ar=0.75 holes=0 best=N:0.46 L=N:0.46 D=8:0.43 D2=0.43 | x=285 9x9 ar=1.00 holes=0 best=E:0.50 L=E:0.50 D=0:0.49 D2=0.49
 ### live-user-20260617-011113__frame-38 esperado=RSA17
 - box=0 x=215.8 y=236.0 w=147.6 h=60.4 score=0.824 tilt=6.6 crop=0 ink=true read=RGA 17/94.4 glyphs=x=80 37x31 ar=0.84 holes=2 best=R:1.00 L=R:1.00 D=0:0.74 D2=0.70 | x=117 21x30 ar=1.43 holes=1 best=A:1.00 L=A:1.00 D=4:0.86 D2=0.80 | x=142 39x32 ar=0.82 holes=0 best=0:0.80 L=M:0.78 D=0:0.80 D2=0.77
@@ -387,8 +387,8 @@
 - box=0 x=203.3 y=291.1 w=75.6 h=23.1 score=0.799 tilt=0.2 crop=1 ink=false read=/0.0 glyphs=
 - box=1 x=253.1 y=335.6 w=25.8 h=10.7 score=0.749 tilt=- crop=0 ink=false read=/0.0 glyphs=
 - box=1 x=253.1 y=335.6 w=25.8 h=10.7 score=0.749 tilt=- crop=1 ink=false read=/0.0 glyphs=
-- box=2 x=204.2 y=336.4 w=29.3 h=9.8 score=0.695 tilt=- crop=0 ink=false read=/0.0 glyphs=x=433 11x2 ar=0.18 holes=0 best=H:0.32 L=H:0.32 D=0:0.29 D2=0.28
-- box=2 x=204.2 y=336.4 w=29.3 h=9.8 score=0.695 tilt=- crop=1 ink=false read=/0.0 glyphs=x=45 11x2 ar=0.18 holes=0 best=H:0.34 L=H:0.34 D=0:0.30 D2=0.29
+- box=2 x=204.2 y=336.4 w=29.3 h=9.8 score=0.695 tilt=- crop=0 ink=false read=/0.0 glyphs=x=433 11x2 ar=0.18 holes=0 best=M:0.34 L=M:0.34 D=0:0.29 D2=0.28
+- box=2 x=204.2 y=336.4 w=29.3 h=9.8 score=0.695 tilt=- crop=1 ink=false read=/0.0 glyphs=x=45 11x2 ar=0.18 holes=0 best=M:0.38 L=M:0.38 D=0:0.30 D2=0.29
 - box=3 x=218.4 y=348.0 w=46.2 h=9.8 score=0.438 tilt=- crop=0 ink=false read=/0.0 glyphs=
 - box=3 x=218.4 y=348.0 w=46.2 h=9.8 score=0.438 tilt=- crop=1 ink=false read=/0.0 glyphs=
 - box=4 x=312.7 y=342.7 w=6.2 h=28.4 score=0.396 tilt=- crop=0 ink=false read=/0.0 glyphs=
@@ -423,7 +423,7 @@
 - box=0 x=86.0 y=318.7 w=136.0 h=52.4 score=0.797 tilt=-5.8 crop=0 ink=false read=/0.0 glyphs=
 - box=0 x=86.0 y=318.7 w=136.0 h=52.4 score=0.797 tilt=-5.8 crop=1 ink=false read=/0.0 glyphs=
 - box=1 x=141.1 y=333.8 w=67.6 h=20.4 score=0.735 tilt=-0.6 crop=0 ink=true read=ME XXX/0.0 glyphs=x=103 12x20 ar=1.67 holes=0 best=M:0.91 L=M:0.91 D=8:0.89 D2=0.87 | x=115 34x33 ar=0.97 holes=0 best=E:0.89 L=E:0.89 D=0:0.85 D2=0.81 | x=166 14x27 ar=1.93 holes=0 best=1:0.82 L=M:0.80 D=1:0.82 D2=0.69 | x=202 18x35 ar=1.94 holes=0 best=1:0.95 L=I:0.87 D=1:0.95 D2=0.83 | x=226 29x38 ar=1.31 holes=1 best=5:0.95 L=B:0.91 D=5:0.95 D2=0.94
-- box=1 x=141.1 y=333.8 w=67.6 h=20.4 score=0.735 tilt=-0.6 crop=1 ink=true read=EI XXX/0.0 glyphs=x=92 29x38 ar=1.31 holes=1 best=E:0.93 L=E:0.93 D=9:0.92 D2=0.91 | x=127 18x35 ar=1.94 holes=0 best=1:0.89 L=T:0.87 D=1:0.89 D2=0.76 | x=167 14x27 ar=1.93 holes=0 best=1:0.82 L=M:0.81 D=1:0.82 D2=0.67 | x=198 34x33 ar=0.97 holes=0 best=8:0.82 L=E:0.82 D=8:0.82 D2=0.78 | x=232 12x20 ar=1.67 holes=0 best=8:0.90 L=W:0.86 D=8:0.90 D2=0.87
+- box=1 x=141.1 y=333.8 w=67.6 h=20.4 score=0.735 tilt=-0.6 crop=1 ink=true read=EI XXX/0.0 glyphs=x=92 29x38 ar=1.31 holes=1 best=E:0.93 L=E:0.93 D=9:0.92 D2=0.91 | x=127 18x35 ar=1.94 holes=0 best=1:0.89 L=T:0.87 D=1:0.89 D2=0.76 | x=167 14x27 ar=1.93 holes=0 best=1:0.84 L=M:0.81 D=1:0.84 D2=0.67 | x=198 34x33 ar=0.97 holes=0 best=8:0.82 L=E:0.82 D=8:0.82 D2=0.78 | x=232 12x20 ar=1.67 holes=0 best=8:0.90 L=W:0.86 D=8:0.90 D2=0.87
 - box=2 x=349.1 y=291.1 w=45.3 h=17.8 score=0.656 tilt=- crop=0 ink=false read=/0.0 glyphs=
 - box=2 x=349.1 y=291.1 w=45.3 h=17.8 score=0.656 tilt=- crop=1 ink=false read=/0.0 glyphs=
 ### pixel-live-20260617-090351__frame-75 esperado=MEX15
@@ -433,7 +433,7 @@
 - box=1 x=146.4 y=283.1 w=21.3 h=8.9 score=0.718 tilt=- crop=1 ink=true read=/0.0 glyphs=x=248 44x39 ar=0.89 holes=0 best=8:0.91 L=W:0.87 D=8:0.91 D2=0.90
 - box=2 x=86.0 y=284.9 w=20.4 h=8.0 score=0.693 tilt=- crop=0 ink=false read=/0.0 glyphs=
 - box=2 x=86.0 y=284.9 w=20.4 h=8.0 score=0.693 tilt=- crop=1 ink=false read=/0.0 glyphs=
-- box=3 x=128.7 y=297.3 w=153.8 h=73.8 score=0.457 tilt=8.2 crop=0 ink=false read=IM/0.0 glyphs=x=195 7x10 ar=1.43 holes=0 best=1:0.59 L=I:0.56 D=1:0.59 D2=0.51 | x=202 11x8 ar=0.73 holes=0 best=M:0.48 L=M:0.48 D=0:0.44 D2=0.42
+- box=3 x=128.7 y=297.3 w=153.8 h=73.8 score=0.457 tilt=8.2 crop=0 ink=false read=IM/0.0 glyphs=x=195 7x10 ar=1.43 holes=0 best=1:0.59 L=I:0.56 D=1:0.59 D2=0.51 | x=202 11x8 ar=0.73 holes=0 best=M:0.50 L=M:0.50 D=0:0.44 D2=0.42
 - box=3 x=128.7 y=297.3 w=153.8 h=73.8 score=0.457 tilt=8.2 crop=1 ink=false read=DT/0.0 glyphs=x=44 10x8 ar=0.80 holes=0 best=D:0.46 L=D:0.46 D=0:0.42 D2=0.37 | x=54 8x10 ar=1.25 holes=0 best=T:0.58 L=T:0.58 D=7:0.53 D2=0.50
 - box=4 x=108.2 y=284.0 w=36.4 h=8.0 score=0.445 tilt=- crop=0 ink=true read=BF/0.0 glyphs=x=179 18x23 ar=1.28 holes=0 best=8:0.89 L=W:0.86 D=8:0.89 D2=0.86 | x=360 5x10 ar=2.00 holes=0 best=F:0.55 L=F:0.55 D=8:0.46 D2=0.44
 - box=4 x=108.2 y=284.0 w=36.4 h=8.0 score=0.445 tilt=- crop=1 ink=true read=XX/0.0 glyphs=x=103 5x10 ar=2.00 holes=0 best=1:0.55 L=J:0.52 D=1:0.55 D2=0.51 | x=271 18x23 ar=1.28 holes=0 best=8:0.89 L=W:0.87 D=8:0.89 D2=0.87
@@ -470,9 +470,6 @@
 - box=0 x=274.4 y=301.8 w=22.2 h=44.4 score=0.695 tilt=- crop=1 ink=false read=/0.0 glyphs=
 - box=1 x=349.1 y=291.1 w=45.3 h=17.8 score=0.683 tilt=- crop=0 ink=false read=/0.0 glyphs=
 - box=1 x=349.1 y=291.1 w=45.3 h=17.8 score=0.683 tilt=- crop=1 ink=false read=/0.0 glyphs=
-### pixel-live-20260617-090351__frame-84 esperado=MEX15
-- box=0 x=197.1 y=290.2 w=60.4 h=20.4 score=0.867 tilt=-5.7 crop=0 ink=true read=MLX XX/0.0 glyphs=x=144 51x45 ar=0.88 holes=0 best=M:0.86 L=M:0.86 D=0:0.72 D2=0.67 | x=195 28x43 ar=1.54 holes=0 best=L:0.86 L=L:0.86 D=6:0.75 D2=0.75 | x=234 27x38 ar=1.41 holes=0 best=X:0.90 L=X:0.90 D=1:0.81 D2=0.76 | x=290 32x46 ar=1.44 holes=0 best=1:0.94 L=X:0.84 D=1:0.94 D2=0.78 | x=322 44x46 ar=1.05 holes=0 best=S:0.88 L=S:0.88 D=5:0.88 D2=0.87
-- box=0 x=197.1 y=290.2 w=60.4 h=20.4 score=0.867 tilt=-5.7 crop=1 ink=true read=EIX XX/0.0 glyphs=x=140 41x46 ar=1.12 holes=0 best=E:0.89 L=E:0.89 D=6:0.85 D2=0.85 | x=181 35x46 ar=1.31 holes=0 best=1:0.86 L=X:0.80 D=1:0.86 D2=0.78 | x=245 27x38 ar=1.41 holes=0 best=X:0.86 L=X:0.86 D=4:0.80 D2=0.79 | x=283 27x43 ar=1.59 holes=0 best=5:0.84 L=J:0.75 D=5:0.84 D2=0.83 | x=310 52x45 ar=0.87 holes=0 best=W:0.80 L=W:0.80 D=0:0.72 D2=0.72
 ### pixel-live-20260617-090351__frame-85 esperado=MEX15
 - sem diagnóstico
 ### pixel-live-20260617-090351__frame-86 esperado=MEX15
@@ -505,7 +502,7 @@
 - box=6 x=157.1 y=300.0 w=39.1 h=13.3 score=0.472 tilt=- crop=1 ink=false read=/0.0 glyphs=x=175 13x15 ar=1.15 holes=0 best=W:0.89 L=W:0.89 D=8:0.87 D2=0.85
 ### pixel-live-20260617-090351__frame-106 esperado=GHA19
 - box=0 x=198.9 y=315.1 w=67.6 h=18.7 score=0.754 tilt=- crop=0 ink=true read=GDUA 10/88.3 glyphs=x=170 44x47 ar=1.07 holes=0 best=G:0.88 L=G:0.88 D=0:0.74 D2=0.73 | x=200 40x48 ar=1.20 holes=0 best=D:0.84 L=D:0.84 D=8:0.82 D2=0.82 | x=240 25x47 ar=1.88 holes=0 best=4:0.84 L=U:0.79 D=4:0.84 D2=0.81 | x=265 51x51 ar=1.00 holes=1 best=A:0.91 L=A:0.91 D=5:0.82 D2=0.81 | x=342 42x52 ar=1.24 holes=0 best=1:0.93 L=M:0.86 D=1:0.93 D2=0.84 | x=384 57x53 ar=0.93 holes=2 best=0:0.94 L=E:0.88 D=0:0.94 D2=0.93
-- box=0 x=198.9 y=315.1 w=67.6 h=18.7 score=0.754 tilt=- crop=1 ink=true read=GIVMOU/87.0 glyphs=x=157 56x53 ar=0.95 holes=2 best=6:0.94 L=B:0.88 D=6:0.94 D2=0.94 | x=213 43x52 ar=1.21 holes=0 best=1:0.86 L=Y:0.84 D=1:0.86 D2=0.81 | x=282 50x51 ar=1.02 holes=1 best=V:0.87 L=V:0.87 D=4:0.87 D2=0.82 | x=332 25x47 ar=1.88 holes=0 best=M:0.85 L=M:0.85 D=1:0.81 D2=0.73 | x=357 41x48 ar=1.17 holes=0 best=0:0.83 L=W:0.81 D=0:0.83 D2=0.82 | x=384 44x47 ar=1.07 holes=0 best=U:0.88 L=U:0.88 D=0:0.77 D2=0.73
+- box=0 x=198.9 y=315.1 w=67.6 h=18.7 score=0.754 tilt=- crop=1 ink=true read=GIVMOU/87.0 glyphs=x=157 56x53 ar=0.95 holes=2 best=6:0.94 L=B:0.88 D=6:0.94 D2=0.94 | x=213 43x52 ar=1.21 holes=0 best=1:0.86 L=Y:0.84 D=1:0.86 D2=0.81 | x=282 50x51 ar=1.02 holes=1 best=V:0.87 L=V:0.87 D=4:0.87 D2=0.82 | x=332 25x47 ar=1.88 holes=0 best=M:0.85 L=M:0.85 D=1:0.83 D2=0.73 | x=357 41x48 ar=1.17 holes=0 best=0:0.83 L=W:0.81 D=0:0.83 D2=0.82 | x=384 44x47 ar=1.07 holes=0 best=U:0.88 L=U:0.88 D=0:0.77 D2=0.73
 - box=1 x=134.0 y=349.8 w=76.4 h=21.3 score=0.737 tilt=- crop=0 ink=false read=/0.0 glyphs=
 - box=1 x=134.0 y=349.8 w=76.4 h=21.3 score=0.737 tilt=- crop=1 ink=false read=/0.0 glyphs=
 - box=2 x=134.0 y=326.7 w=20.4 h=7.1 score=0.699 tilt=- crop=0 ink=false read=/0.0 glyphs=
@@ -770,7 +767,7 @@
 - box=3 x=127.8 y=304.4 w=22.2 h=9.8 score=0.743 tilt=- crop=1 ink=true read=/0.0 glyphs=
 - box=4 x=86.0 y=268.0 w=29.3 h=10.7 score=0.687 tilt=- crop=0 ink=false read=/0.0 glyphs=
 - box=4 x=86.0 y=268.0 w=29.3 h=10.7 score=0.687 tilt=- crop=1 ink=false read=/0.0 glyphs=
-- box=5 x=86.0 y=306.2 w=40.0 h=10.7 score=0.381 tilt=- crop=0 ink=true read=XX/0.0 glyphs=x=139 18x18 ar=1.00 holes=0 best=0:0.94 L=W:0.87 D=0:0.94 D2=0.94 | x=293 5x8 ar=1.60 holes=0 best=L:0.37 L=L:0.37 D=8:0.34 D2=0.34
+- box=5 x=86.0 y=306.2 w=40.0 h=10.7 score=0.381 tilt=- crop=0 ink=true read=XX/0.0 glyphs=x=139 18x18 ar=1.00 holes=0 best=0:0.94 L=W:0.87 D=0:0.94 D2=0.94 | x=293 5x8 ar=1.60 holes=0 best=L:0.37 L=L:0.37 D=1:0.35 D2=0.34
 - box=5 x=86.0 y=306.2 w=40.0 h=10.7 score=0.381 tilt=- crop=1 ink=true read=XX/0.0 glyphs=x=86 5x8 ar=1.60 holes=0 best=7:0.46 L=T:0.41 D=7:0.46 D2=0.41 | x=227 18x18 ar=1.00 holes=0 best=0:0.93 L=W:0.87 D=0:0.93 D2=0.92
 ### pixel-live-20260617-090351__frame-172 esperado=RSA6
 - box=0 x=187.3 y=311.6 w=84.4 h=28.4 score=0.908 tilt=0.4 crop=0 ink=true read=NGA 8/91.0 glyphs=x=164 19x50 ar=2.63 holes=0 best=N:0.90 L=N:0.90 D=1:0.74 D2=0.70 | x=183 52x54 ar=1.04 holes=1 best=G:0.83 L=G:0.83 D=6:0.82 D2=0.81 | x=235 36x51 ar=1.42 holes=1 best=A:0.95 L=A:0.95 D=4:0.86 D2=0.84 | x=286 45x56 ar=1.24 holes=2 best=8:0.97 L=O:0.90 D=8:0.97 D2=0.96
@@ -979,7 +976,7 @@
 - box=0 x=123.3 y=323.1 w=102.2 h=48.0 score=0.819 tilt=0.2 crop=0 ink=false read=/0.0 glyphs=
 - box=0 x=123.3 y=323.1 w=102.2 h=48.0 score=0.819 tilt=0.2 crop=1 ink=false read=/0.0 glyphs=
 - box=1 x=213.1 y=260.0 w=104.9 h=35.6 score=0.788 tilt=1.2 crop=0 ink=true read=SXJ 18/88.8 glyphs=x=90 30x32 ar=1.07 holes=0 best=9:0.80 L=S:0.79 D=9:0.80 D2=0.77 | x=120 38x34 ar=0.89 holes=1 best=N:0.75 L=N:0.75 D=0:0.75 D2=0.67 | x=172 21x32 ar=1.52 holes=0 best=1:0.97 L=X:0.86 D=1:0.97 D2=0.83 | x=193 29x34 ar=1.17 holes=2 best=8:0.96 L=B:0.91 D=8:0.96 D2=0.95
-- box=1 x=213.1 y=260.0 w=104.9 h=35.6 score=0.788 tilt=1.2 crop=1 ink=true read=EICK X/0.0 glyphs=x=90 28x34 ar=1.21 holes=2 best=9:0.94 L=E:0.91 D=9:0.94 D2=0.93 | x=118 22x32 ar=1.45 holes=0 best=1:0.89 L=T:0.87 D=1:0.89 D2=0.80 | x=154 13x33 ar=2.54 holes=0 best=C:0.85 L=C:0.85 D=6:0.76 D2=0.72 | x=167 23x34 ar=1.48 holes=0 best=K:0.82 L=K:0.82 D=5:0.74 D2=0.74 | x=190 32x32 ar=1.00 holes=0 best=8:0.78 L=G:0.78 D=8:0.78 D2=0.77
+- box=1 x=213.1 y=260.0 w=104.9 h=35.6 score=0.788 tilt=1.2 crop=1 ink=true read=EICX X/0.0 glyphs=x=90 28x34 ar=1.21 holes=2 best=9:0.94 L=E:0.91 D=9:0.94 D2=0.93 | x=118 22x32 ar=1.45 holes=0 best=1:0.89 L=T:0.87 D=1:0.89 D2=0.80 | x=154 13x33 ar=2.54 holes=0 best=C:0.85 L=C:0.85 D=6:0.76 D2=0.72 | x=167 23x34 ar=1.48 holes=0 best=X:0.82 L=X:0.82 D=5:0.74 D2=0.74 | x=190 32x32 ar=1.00 holes=0 best=8:0.78 L=G:0.78 D=8:0.78 D2=0.77
 - box=2 x=121.6 y=277.8 w=27.6 h=10.7 score=0.782 tilt=4.5 crop=0 ink=true read=/0.0 glyphs=x=120 49x50 ar=1.02 holes=0 best=0:0.92 L=W:0.87 D=0:0.92 D2=0.90
 - box=2 x=121.6 y=277.8 w=27.6 h=10.7 score=0.782 tilt=4.5 crop=1 ink=true read=/0.0 glyphs=x=268 49x50 ar=1.02 holes=0 best=0:0.91 L=E:0.85 D=0:0.91 D2=0.90
 - box=3 x=86.0 y=278.7 w=33.8 h=10.7 score=0.760 tilt=2.1 crop=0 ink=true read=/0.0 glyphs=x=104 35x38 ar=1.09 holes=0 best=8:0.94 L=W:0.89 D=8:0.94 D2=0.92
@@ -1133,7 +1130,7 @@
 - box=4 x=174.0 y=299.1 w=43.6 h=9.8 score=0.417 tilt=- crop=1 ink=true read=/0.0 glyphs=x=251 25x24 ar=0.96 holes=0 best=0:0.93 L=W:0.86 D=0:0.93 D2=0.92
 ### pixel-live-20260617-090351__frame-242 esperado=MEX15
 - box=0 x=235.3 y=267.1 w=86.2 h=33.8 score=0.939 tilt=3.6 crop=0 ink=true read=NO XX/0.0 glyphs=x=124 11x24 ar=2.18 holes=0 best=N:0.89 L=N:0.89 D=1:0.84 D2=0.82 | x=135 10x14 ar=1.40 holes=0 best=0:0.81 L=Q:0.79 D=0:0.81 D2=0.79 | x=148 14x20 ar=1.43 holes=0 best=8:0.93 L=R:0.88 D=8:0.93 D2=0.90 | x=192 21x37 ar=1.76 holes=0 best=X:0.85 L=X:0.85 D=1:0.80 D2=0.66
-- box=0 x=235.3 y=267.1 w=86.2 h=33.8 score=0.939 tilt=3.6 crop=1 ink=true read=XB XX/0.0 glyphs=x=229 21x37 ar=1.76 holes=0 best=X:0.81 L=X:0.81 D=1:0.77 D2=0.69 | x=280 14x20 ar=1.43 holes=0 best=8:0.88 L=W:0.88 D=8:0.88 D2=0.87 | x=297 10x14 ar=1.40 holes=0 best=0:0.84 L=W:0.77 D=0:0.84 D2=0.81 | x=307 11x24 ar=2.18 holes=0 best=4:0.86 L=M:0.86 D=4:0.86 D2=0.85
+- box=0 x=235.3 y=267.1 w=86.2 h=33.8 score=0.939 tilt=3.6 crop=1 ink=true read=XB XX/0.0 glyphs=x=229 21x37 ar=1.76 holes=0 best=X:0.81 L=X:0.81 D=1:0.81 D2=0.69 | x=280 14x20 ar=1.43 holes=0 best=8:0.88 L=W:0.88 D=8:0.88 D2=0.87 | x=297 10x14 ar=1.40 holes=0 best=0:0.84 L=W:0.77 D=0:0.84 D2=0.81 | x=307 11x24 ar=2.18 holes=0 best=4:0.86 L=M:0.86 D=4:0.86 D2=0.85
 - box=1 x=311.8 y=326.7 w=6.2 h=24.9 score=0.681 tilt=- crop=0 ink=false read=/0.0 glyphs=
 - box=1 x=311.8 y=326.7 w=6.2 h=24.9 score=0.681 tilt=- crop=1 ink=false read=/0.0 glyphs=
 - box=2 x=95.8 y=294.7 w=24.0 h=76.4 score=0.647 tilt=- crop=0 ink=false read=/0.0 glyphs=
@@ -1145,10 +1142,10 @@
 - box=5 x=351.8 y=293.8 w=42.7 h=8.9 score=0.465 tilt=- crop=0 ink=false read=/0.0 glyphs=
 - box=5 x=351.8 y=293.8 w=42.7 h=8.9 score=0.465 tilt=- crop=1 ink=false read=/0.0 glyphs=
 ### pixel-live-20260617-090351__frame-244 esperado=MEX15
-- box=0 x=225.6 y=255.6 w=87.1 h=37.3 score=0.953 tilt=2.3 crop=0 ink=true read=MIPLX XX/0.0 glyphs=x=116 9x31 ar=3.44 holes=0 best=M:0.75 L=M:0.75 D=1:0.66 D2=0.54 | x=128 7x13 ar=1.86 holes=0 best=I:0.72 L=I:0.72 D=5:0.69 D2=0.67 | x=138 9x13 ar=1.44 holes=0 best=P:0.70 L=P:0.70 D=8:0.68 D2=0.68 | x=154 12x34 ar=2.83 holes=0 best=L:0.66 L=L:0.66 D=1:0.59 D2=0.59 | x=180 11x20 ar=1.82 holes=0 best=X:0.80 L=X:0.80 D=4:0.76 D2=0.73 | x=215 18x36 ar=2.00 holes=0 best=1:0.94 L=I:0.89 D=1:0.94 D2=0.81 | x=238 28x36 ar=1.29 holes=0 best=5:0.95 L=S:0.89 D=5:0.95 D2=0.88
+- box=0 x=225.6 y=255.6 w=87.1 h=37.3 score=0.953 tilt=2.3 crop=0 ink=true read=MIPEX XX/0.0 glyphs=x=116 9x31 ar=3.44 holes=0 best=M:0.75 L=M:0.75 D=1:0.66 D2=0.54 | x=128 7x13 ar=1.86 holes=0 best=I:0.72 L=I:0.72 D=5:0.69 D2=0.67 | x=138 9x13 ar=1.44 holes=0 best=P:0.70 L=P:0.70 D=8:0.68 D2=0.68 | x=154 12x34 ar=2.83 holes=0 best=E:0.69 L=E:0.69 D=1:0.59 D2=0.59 | x=180 11x20 ar=1.82 holes=0 best=X:0.85 L=X:0.85 D=4:0.76 D2=0.73 | x=215 18x36 ar=2.00 holes=0 best=1:0.94 L=I:0.89 D=1:0.94 D2=0.81 | x=238 28x36 ar=1.29 holes=0 best=5:0.95 L=S:0.89 D=5:0.95 D2=0.88
 - box=0 x=225.6 y=255.6 w=87.1 h=37.3 score=0.953 tilt=2.3 crop=1 ink=true read=EIXJBII/0.0 glyphs=x=139 28x36 ar=1.29 holes=0 best=E:0.90 L=E:0.90 D=9:0.86 D2=0.84 | x=172 18x36 ar=2.00 holes=0 best=I:0.91 L=I:0.91 D=1:0.86 D2=0.70 | x=214 11x20 ar=1.82 holes=0 best=X:0.88 L=X:0.88 D=1:0.77 D2=0.76 | x=239 12x34 ar=2.83 holes=0 best=J:0.73 L=J:0.73 D=1:0.71 D2=0.68 | x=258 9x13 ar=1.44 holes=0 best=8:0.69 L=W:0.68 D=8:0.69 D2=0.68 | x=270 7x13 ar=1.86 holes=0 best=I:0.71 L=I:0.71 D=5:0.69 D2=0.69 | x=280 9x31 ar=3.44 holes=0 best=I:0.75 L=I:0.75 D=1:0.72 D2=0.66
 - box=1 x=287.8 y=298.2 w=14.2 h=40.0 score=0.826 tilt=- crop=0 ink=false read=/0.0 glyphs=x=428 9x24 ar=2.67 holes=0 best=U:0.85 L=U:0.85 D=1:0.82 D2=0.74
-- box=1 x=287.8 y=298.2 w=14.2 h=40.0 score=0.826 tilt=- crop=1 ink=false read=/0.0 glyphs=x=35 9x24 ar=2.67 holes=0 best=M:0.78 L=M:0.78 D=1:0.77 D2=0.65
+- box=1 x=287.8 y=298.2 w=14.2 h=40.0 score=0.826 tilt=- crop=1 ink=false read=/0.0 glyphs=x=35 9x24 ar=2.67 holes=0 best=1:0.78 L=M:0.78 D=1:0.78 D2=0.65
 - box=2 x=271.8 y=297.3 w=31.1 h=73.8 score=0.792 tilt=- crop=0 ink=false read=/0.0 glyphs=
 - box=2 x=271.8 y=297.3 w=31.1 h=73.8 score=0.792 tilt=- crop=1 ink=false read=/0.0 glyphs=
 - box=3 x=150.0 y=266.2 w=23.1 h=9.8 score=0.759 tilt=- crop=0 ink=true read=/0.0 glyphs=x=103 51x41 ar=0.80 holes=0 best=0:0.91 L=W:0.88 D=0:0.91 D2=0.88
@@ -1219,7 +1216,7 @@
 - box=2 x=86.0 y=222.7 w=56.0 h=29.3 score=0.790 tilt=- crop=1 ink=false read=/0.0 glyphs=
 ### pixel-live-20260617-090351__frame-263 esperado=QAT17
 - box=0 x=201.6 y=240.4 w=87.1 h=35.6 score=0.929 tilt=6.2 crop=0 ink=true read=/0.0 glyphs=x=112 6x2 ar=0.33 holes=0 best=E:0.21 L=E:0.21 D=0:0.19 D2=0.19
-- box=0 x=201.6 y=240.4 w=87.1 h=35.6 score=0.929 tilt=6.2 crop=1 ink=true read=/0.0 glyphs=x=303 6x2 ar=0.33 holes=0 best=F:0.21 L=F:0.21 D=9:0.21 D2=0.20
+- box=0 x=201.6 y=240.4 w=87.1 h=35.6 score=0.929 tilt=6.2 crop=1 ink=true read=/0.0 glyphs=x=303 6x2 ar=0.33 holes=0 best=M:0.23 L=M:0.23 D=9:0.21 D2=0.20
 - box=1 x=269.1 y=277.8 w=18.7 h=80.0 score=0.715 tilt=- crop=0 ink=false read=/0.0 glyphs=
 - box=1 x=269.1 y=277.8 w=18.7 h=80.0 score=0.715 tilt=- crop=1 ink=false read=/0.0 glyphs=
 - box=2 x=105.6 y=297.3 w=20.4 h=73.8 score=0.552 tilt=- crop=0 ink=false read=/0.0 glyphs=
@@ -1273,7 +1270,7 @@
 - box=1 x=298.4 y=292.0 w=21.3 h=68.4 score=0.774 tilt=-89.4 crop=1 ink=false read=/0.0 glyphs=
 - box=2 x=330.4 y=347.1 w=8.9 h=24.0 score=0.634 tilt=- crop=0 ink=false read=/0.0 glyphs=
 - box=2 x=330.4 y=347.1 w=8.9 h=24.0 score=0.634 tilt=- crop=1 ink=false read=/0.0 glyphs=
-- box=3 x=330.4 y=247.6 w=64.0 h=123.6 score=0.576 tilt=73.6 crop=0 ink=false read=/0.0 glyphs=x=205 13x26 ar=2.00 holes=0 best=M:0.73 L=M:0.73 D=1:0.71 D2=0.69
+- box=3 x=330.4 y=247.6 w=64.0 h=123.6 score=0.576 tilt=73.6 crop=0 ink=false read=/0.0 glyphs=x=205 13x26 ar=2.00 holes=0 best=M:0.73 L=M:0.73 D=1:0.72 D2=0.69
 - box=3 x=330.4 y=247.6 w=64.0 h=123.6 score=0.576 tilt=73.6 crop=1 ink=false read=/0.0 glyphs=x=67 13x26 ar=2.00 holes=0 best=M:0.77 L=M:0.77 D=1:0.77 D2=0.71
 - box=4 x=153.6 y=271.6 w=29.3 h=8.0 score=0.514 tilt=- crop=0 ink=true read=/0.0 glyphs=x=142 18x20 ar=1.11 holes=0 best=8:0.87 L=W:0.86 D=8:0.87 D2=0.85
 - box=4 x=153.6 y=271.6 w=29.3 h=8.0 score=0.514 tilt=- crop=1 ink=true read=/0.0 glyphs=x=221 18x20 ar=1.11 holes=0 best=8:0.87 L=W:0.85 D=8:0.87 D2=0.84
@@ -1346,7 +1343,7 @@
 - box=5 x=160.7 y=280.4 w=37.3 h=9.8 score=0.434 tilt=- crop=1 ink=true read=/0.0 glyphs=x=211 19x18 ar=0.95 holes=0 best=0:0.93 L=W:0.87 D=0:0.93 D2=0.92
 ### pixel-live-20260617-090351__frame-280 esperado=IRN10
 - box=0 x=220.2 y=264.4 w=88.9 h=31.1 score=0.928 tilt=-0.3 crop=0 ink=true read=OWJ 10/88.9 glyphs=x=143 27x45 ar=1.67 holes=0 best=0:0.84 L=V:0.83 D=0:0.84 D2=0.84 | x=170 54x48 ar=0.89 holes=1 best=N:0.87 L=N:0.87 D=0:0.78 D2=0.75 | x=246 31x50 ar=1.61 holes=0 best=1:0.98 L=I:0.87 D=1:0.98 D2=0.84 | x=277 46x51 ar=1.11 holes=2 best=0:0.97 L=O:0.90 D=0:0.97 D2=0.94
-- box=0 x=220.2 y=264.4 w=88.9 h=31.1 score=0.928 tilt=-0.3 crop=1 ink=true read=OTM X/0.0 glyphs=x=159 45x51 ar=1.13 holes=2 best=0:0.96 L=O:0.91 D=0:0.96 D2=0.93 | x=204 32x50 ar=1.56 holes=0 best=T:0.91 L=T:0.91 D=1:0.90 D2=0.80 | x=258 53x48 ar=0.91 holes=1 best=M:0.82 L=M:0.82 D=0:0.78 D2=0.74 | x=311 28x45 ar=1.61 holes=0 best=8:0.82 L=A:0.82 D=8:0.82 D2=0.81
+- box=0 x=220.2 y=264.4 w=88.9 h=31.1 score=0.928 tilt=-0.3 crop=1 ink=true read=OTM X/0.0 glyphs=x=159 45x51 ar=1.13 holes=2 best=0:0.96 L=O:0.91 D=0:0.96 D2=0.93 | x=204 32x50 ar=1.56 holes=0 best=T:0.91 L=T:0.91 D=1:0.90 D2=0.80 | x=258 53x48 ar=0.91 holes=1 best=M:0.83 L=M:0.83 D=0:0.78 D2=0.74 | x=311 28x45 ar=1.61 holes=0 best=8:0.82 L=A:0.82 D=8:0.82 D2=0.81
 - box=1 x=86.0 y=274.2 w=20.4 h=8.0 score=0.879 tilt=-4.1 crop=0 ink=false read=/0.0 glyphs=
 - box=1 x=86.0 y=274.2 w=20.4 h=8.0 score=0.879 tilt=-4.1 crop=1 ink=false read=/0.0 glyphs=
 - box=2 x=148.2 y=274.2 w=21.3 h=8.9 score=0.774 tilt=- crop=0 ink=true read=/0.0 glyphs=x=101 48x42 ar=0.88 holes=0 best=0:0.91 L=W:0.87 D=0:0.91 D2=0.87
@@ -1361,7 +1358,7 @@
 - box=6 x=171.3 y=274.2 w=40.0 h=9.8 score=0.426 tilt=- crop=1 ink=true read=/0.0 glyphs=x=236 18x19 ar=1.06 holes=0 best=8:0.93 L=W:0.88 D=8:0.93 D2=0.90
 ### pixel-live-20260617-090351__frame-281 esperado=IRN10
 - box=0 x=224.7 y=266.2 w=83.6 h=27.6 score=0.944 tilt=-1.9 crop=0 ink=true read=MN 10/91.9 glyphs=x=158 32x52 ar=1.63 holes=0 best=M:0.85 L=M:0.85 D=8:0.85 D2=0.84 | x=190 60x55 ar=0.92 holes=1 best=N:0.87 L=N:0.87 D=0:0.80 D2=0.79 | x=273 35x55 ar=1.57 holes=0 best=1:0.99 L=G:0.86 D=1:0.99 D2=0.86 | x=308 53x57 ar=1.08 holes=2 best=0:0.97 L=O:0.89 D=0:0.97 D2=0.95
-- box=0 x=224.7 y=266.2 w=83.6 h=27.6 score=0.944 tilt=-1.9 crop=1 ink=true read=OTM X/0.0 glyphs=x=151 52x57 ar=1.10 holes=2 best=0:0.96 L=O:0.89 D=0:0.96 D2=0.94 | x=203 36x55 ar=1.53 holes=0 best=T:0.89 L=T:0.89 D=1:0.89 D2=0.80 | x=262 59x55 ar=0.93 holes=1 best=M:0.85 L=M:0.85 D=0:0.81 D2=0.77 | x=321 33x52 ar=1.58 holes=0 best=X:0.86 L=X:0.86 D=8:0.84 D2=0.82
+- box=0 x=224.7 y=266.2 w=83.6 h=27.6 score=0.944 tilt=-1.9 crop=1 ink=true read=OTM X/0.0 glyphs=x=151 52x57 ar=1.10 holes=2 best=0:0.96 L=O:0.89 D=0:0.96 D2=0.94 | x=203 36x55 ar=1.53 holes=0 best=T:0.89 L=T:0.89 D=1:0.89 D2=0.80 | x=262 59x55 ar=0.93 holes=1 best=M:0.86 L=M:0.86 D=0:0.81 D2=0.77 | x=321 33x52 ar=1.58 holes=0 best=X:0.86 L=X:0.86 D=8:0.84 D2=0.82
 - box=1 x=91.3 y=273.3 w=21.3 h=8.0 score=0.818 tilt=- crop=0 ink=false read=/0.0 glyphs=
 - box=1 x=91.3 y=273.3 w=21.3 h=8.0 score=0.818 tilt=- crop=1 ink=false read=/0.0 glyphs=
 - box=2 x=153.6 y=273.3 w=21.3 h=8.9 score=0.741 tilt=- crop=0 ink=true read=/0.0 glyphs=x=107 46x42 ar=0.91 holes=0 best=0:0.93 L=W:0.90 D=0:0.93 D2=0.90
@@ -1456,7 +1453,7 @@
 - box=2 x=111.8 y=275.1 w=35.6 h=10.7 score=0.492 tilt=- crop=1 ink=false read=/0.0 glyphs=
 ### pixel-live-20260617-090351__frame-293 esperado=IRN15
 - box=0 x=225.6 y=263.6 w=80.9 h=24.9 score=0.937 tilt=0.3 crop=0 ink=true read=MN 15/91.6 glyphs=x=171 35x57 ar=1.63 holes=1 best=M:0.85 L=M:0.85 D=8:0.85 D2=0.85 | x=206 66x54 ar=0.82 holes=0 best=N:0.85 L=N:0.85 D=0:0.77 D2=0.74 | x=300 37x57 ar=1.54 holes=0 best=1:0.99 L=G:0.88 D=1:0.99 D2=0.83 | x=337 51x59 ar=1.16 holes=0 best=5:0.97 L=S:0.87 D=5:0.97 D2=0.91
-- box=0 x=225.6 y=263.6 w=80.9 h=24.9 score=0.937 tilt=0.3 crop=1 ink=true read=EIM X/0.0 glyphs=x=166 47x59 ar=1.26 holes=0 best=E:0.96 L=E:0.96 D=9:0.91 D2=0.89 | x=213 41x57 ar=1.39 holes=0 best=1:0.90 L=T:0.88 D=1:0.90 D2=0.82 | x=282 64x54 ar=0.84 holes=0 best=M:0.83 L=M:0.83 D=0:0.78 D2=0.73 | x=346 37x57 ar=1.54 holes=1 best=A:0.84 L=A:0.84 D=9:0.84 D2=0.84
+- box=0 x=225.6 y=263.6 w=80.9 h=24.9 score=0.937 tilt=0.3 crop=1 ink=true read=EIM X/0.0 glyphs=x=166 47x59 ar=1.26 holes=0 best=E:0.96 L=E:0.96 D=9:0.91 D2=0.89 | x=213 41x57 ar=1.39 holes=0 best=1:0.90 L=T:0.88 D=1:0.90 D2=0.82 | x=282 64x54 ar=0.84 holes=0 best=M:0.85 L=M:0.85 D=0:0.78 D2=0.73 | x=346 37x57 ar=1.54 holes=1 best=A:0.84 L=A:0.84 D=9:0.84 D2=0.84
 - box=1 x=222.0 y=314.2 w=26.7 h=56.9 score=0.844 tilt=- crop=0 ink=false read=/0.0 glyphs=
 - box=1 x=222.0 y=314.2 w=26.7 h=56.9 score=0.844 tilt=- crop=1 ink=false read=/0.0 glyphs=
 - box=2 x=94.0 y=281.3 w=20.4 h=8.9 score=0.767 tilt=- crop=0 ink=false read=/0.0 glyphs=
@@ -1482,7 +1479,7 @@
 - box=5 x=86.0 y=281.3 w=39.1 h=11.6 score=0.582 tilt=- crop=1 ink=false read=/0.0 glyphs=x=222 15x16 ar=1.07 holes=0 best=8:0.93 L=W:0.87 D=8:0.93 D2=0.89
 ### pixel-live-20260617-090351__frame-298 esperado=BIH12
 - box=0 x=209.6 y=273.3 w=96.0 h=31.1 score=0.944 tilt=0.5 crop=0 ink=true read=SO XXX/0.0 glyphs=x=161 19x54 ar=2.84 holes=0 best=S:0.90 L=S:0.90 D=1:0.78 D2=0.69 | x=180 52x54 ar=1.04 holes=2 best=0:0.87 L=W:0.86 D=0:0.87 D2=0.84 | x=232 20x48 ar=2.40 holes=0 best=4:0.79 L=J:0.73 D=4:0.79 D2=0.77 | x=281 35x56 ar=1.60 holes=0 best=1:0.99 L=G:0.87 D=1:0.99 D2=0.80 | x=316 46x57 ar=1.24 holes=0 best=2:0.96 L=Z:0.85 D=2:0.96 D2=0.85
-- box=0 x=209.6 y=273.3 w=96.0 h=31.1 score=0.944 tilt=0.5 crop=1 ink=true read=BIF XX/0.0 glyphs=x=157 45x57 ar=1.27 holes=0 best=8:0.87 L=B:0.85 D=8:0.87 D2=0.86 | x=202 36x56 ar=1.56 holes=0 best=1:0.90 L=T:0.87 D=1:0.90 D2=0.82 | x=267 19x48 ar=2.53 holes=0 best=F:0.81 L=F:0.81 D=1:0.72 D2=0.68 | x=286 55x54 ar=0.98 holes=2 best=0:0.85 L=E:0.85 D=0:0.85 D2=0.85 | x=341 17x54 ar=3.18 holes=0 best=U:0.89 L=U:0.89 D=1:0.85 D2=0.71
+- box=0 x=209.6 y=273.3 w=96.0 h=31.1 score=0.944 tilt=0.5 crop=1 ink=true read=BIE XX/0.0 glyphs=x=157 45x57 ar=1.27 holes=0 best=8:0.87 L=B:0.85 D=8:0.87 D2=0.86 | x=202 36x56 ar=1.56 holes=0 best=1:0.90 L=T:0.87 D=1:0.90 D2=0.82 | x=267 19x48 ar=2.53 holes=0 best=E:0.82 L=E:0.82 D=1:0.73 D2=0.68 | x=286 55x54 ar=0.98 holes=2 best=0:0.85 L=E:0.85 D=0:0.85 D2=0.85 | x=341 17x54 ar=3.18 holes=0 best=U:0.89 L=U:0.89 D=1:0.85 D2=0.71
 - box=1 x=126.0 y=330.2 w=96.0 h=40.9 score=0.939 tilt=-2.9 crop=0 ink=true read=WINM X/0.0 glyphs=x=82 8x9 ar=1.13 holes=0 best=W:0.52 L=W:0.52 D=8:0.52 D2=0.51 | x=90 4x10 ar=2.50 holes=0 best=I:0.60 L=I:0.60 D=1:0.56 D2=0.54 | x=94 13x12 ar=0.92 holes=0 best=N:0.73 L=N:0.73 D=0:0.73 D2=0.73 | x=107 12x11 ar=0.92 holes=0 best=M:0.67 L=M:0.67 D=0:0.63 D2=0.60 | x=119 5x7 ar=1.40 holes=0 best=R:0.40 L=R:0.40 D=8:0.38 D2=0.37
 - box=1 x=126.0 y=330.2 w=96.0 h=40.9 score=0.939 tilt=-2.9 crop=1 ink=true read=IIMORF/0.0 glyphs=x=282 4x7 ar=1.75 holes=0 best=1:0.44 L=J:0.43 D=1:0.44 D2=0.40 | x=286 4x8 ar=2.00 holes=0 best=1:0.49 L=F:0.47 D=1:0.49 D2=0.48 | x=290 5x10 ar=2.00 holes=0 best=M:0.58 L=M:0.58 D=1:0.56 D2=0.55 | x=295 13x12 ar=0.92 holes=0 best=0:0.74 L=N:0.73 D=0:0.74 D2=0.73 | x=308 12x11 ar=0.92 holes=0 best=R:0.70 L=R:0.70 D=0:0.67 D2=0.64 | x=320 4x8 ar=2.00 holes=0 best=F:0.48 L=F:0.48 D=8:0.43 D2=0.43
 - box=2 x=230.9 y=284.0 w=24.9 h=13.3 score=0.827 tilt=- crop=0 ink=false read=/0.0 glyphs=
@@ -1502,7 +1499,7 @@
 - box=2 x=89.6 y=270.7 w=112.0 h=33.8 score=0.565 tilt=- crop=1 ink=false read=/0.0 glyphs=
 ### pixel-live-20260617-090351__frame-302 esperado=BIH12
 - box=0 x=217.6 y=289.3 w=76.4 h=27.6 score=0.948 tilt=0.8 crop=0 ink=true read=SW XXX/0.0 glyphs=x=156 19x54 ar=2.84 holes=0 best=S:0.92 L=S:0.92 D=1:0.78 D2=0.70 | x=175 43x53 ar=1.23 holes=2 best=W:0.88 L=W:0.88 D=0:0.85 D2=0.85 | x=218 21x47 ar=2.24 holes=0 best=4:0.75 L=R:0.69 D=4:0.75 D2=0.73 | x=263 32x53 ar=1.66 holes=0 best=1:0.96 L=G:0.89 D=1:0.96 D2=0.79 | x=295 38x53 ar=1.39 holes=0 best=2:0.96 L=Z:0.86 D=2:0.96 D2=0.83
-- box=0 x=217.6 y=289.3 w=76.4 h=27.6 score=0.948 tilt=0.8 crop=1 ink=true read=BIF X/0.0 glyphs=x=137 37x53 ar=1.43 holes=0 best=8:0.86 L=Z:0.85 D=8:0.86 D2=0.82 | x=174 33x53 ar=1.61 holes=0 best=1:0.90 L=T:0.89 D=1:0.90 D2=0.76 | x=231 19x47 ar=2.47 holes=0 best=F:0.83 L=F:0.83 D=8:0.65 D2=0.65 | x=250 64x54 ar=0.84 holes=4 best=R:0.82 L=R:0.82 D=0:0.79 D2=0.76
+- box=0 x=217.6 y=289.3 w=76.4 h=27.6 score=0.948 tilt=0.8 crop=1 ink=true read=BIF X/0.0 glyphs=x=137 37x53 ar=1.43 holes=0 best=8:0.86 L=Z:0.85 D=8:0.86 D2=0.82 | x=174 33x53 ar=1.61 holes=0 best=1:0.90 L=T:0.89 D=1:0.90 D2=0.76 | x=231 19x47 ar=2.47 holes=0 best=F:0.83 L=F:0.83 D=1:0.67 D2=0.65 | x=250 64x54 ar=0.84 holes=4 best=R:0.82 L=R:0.82 D=0:0.79 D2=0.76
 - box=1 x=86.0 y=272.4 w=25.8 h=8.9 score=0.833 tilt=- crop=0 ink=false read=/0.0 glyphs=
 - box=1 x=86.0 y=272.4 w=25.8 h=8.9 score=0.833 tilt=- crop=1 ink=false read=/0.0 glyphs=
 - box=2 x=139.3 y=340.9 w=90.7 h=30.2 score=0.818 tilt=- crop=0 ink=false read=/0.0 glyphs=
@@ -1517,7 +1514,7 @@
 - box=6 x=164.2 y=292.9 w=46.2 h=18.7 score=0.644 tilt=- crop=1 ink=false read=/0.0 glyphs=x=149 9x10 ar=1.11 holes=0 best=8:0.58 L=W:0.57 D=8:0.58 D2=0.57
 ### pixel-live-20260617-090351__frame-303 esperado=BIH12
 - box=0 x=171.3 y=269.8 w=111.1 h=40.0 score=0.868 tilt=4.5 crop=0 ink=true read=SOU 12/90.3 glyphs=x=148 18x49 ar=2.72 holes=0 best=S:0.88 L=S:0.88 D=1:0.77 D2=0.68 | x=166 48x50 ar=1.04 holes=0 best=0:0.88 L=W:0.88 D=0:0.88 D2=0.86 | x=214 20x42 ar=2.10 holes=0 best=U:0.83 L=U:0.83 D=4:0.81 D2=0.78 | x=256 32x49 ar=1.53 holes=0 best=1:0.98 L=I:0.86 D=1:0.98 D2=0.81 | x=288 41x50 ar=1.22 holes=0 best=2:0.95 L=Z:0.84 D=2:0.95 D2=0.84
-- box=0 x=171.3 y=269.8 w=111.1 h=40.0 score=0.868 tilt=4.5 crop=1 ink=true read=BIMOU/86.8 glyphs=x=145 40x50 ar=1.25 holes=0 best=8:0.86 L=B:0.85 D=8:0.86 D2=0.85 | x=185 33x49 ar=1.48 holes=0 best=1:0.90 L=T:0.88 D=1:0.90 D2=0.80 | x=240 19x42 ar=2.21 holes=0 best=M:0.84 L=M:0.84 D=1:0.76 D2=0.68 | x=259 49x50 ar=1.02 holes=0 best=0:0.88 L=W:0.87 D=0:0.88 D2=0.87 | x=308 18x49 ar=2.72 holes=0 best=U:0.86 L=U:0.86 D=1:0.81 D2=0.75
+- box=0 x=171.3 y=269.8 w=111.1 h=40.0 score=0.868 tilt=4.5 crop=1 ink=true read=BIMOU/86.8 glyphs=x=145 40x50 ar=1.25 holes=0 best=8:0.86 L=B:0.85 D=8:0.86 D2=0.85 | x=185 33x49 ar=1.48 holes=0 best=1:0.90 L=T:0.88 D=1:0.90 D2=0.80 | x=240 19x42 ar=2.21 holes=0 best=M:0.84 L=M:0.84 D=1:0.77 D2=0.68 | x=259 49x50 ar=1.02 holes=0 best=0:0.88 L=W:0.87 D=0:0.88 D2=0.87 | x=308 18x49 ar=2.72 holes=0 best=U:0.86 L=U:0.86 D=1:0.81 D2=0.75
 - box=1 x=86.0 y=301.8 w=185.8 h=69.3 score=0.864 tilt=4.1 crop=0 ink=false read=RM/0.0 glyphs=x=36 6x5 ar=0.83 holes=0 best=R:0.36 L=R:0.36 D=0:0.34 D2=0.34 | x=84 5x4 ar=0.80 holes=0 best=M:0.30 L=M:0.30 D=0:0.30 D2=0.30
 - box=1 x=86.0 y=301.8 w=185.8 h=69.3 score=0.864 tilt=4.1 crop=1 ink=false read=P X/0.0 glyphs=x=199 5x4 ar=0.80 holes=0 best=P:0.30 L=P:0.30 D=0:0.29 D2=0.28 | x=246 6x5 ar=0.83 holes=0 best=8:0.37 L=R:0.36 D=8:0.37 D2=0.36
 - box=2 x=196.2 y=284.0 w=29.3 h=16.0 score=0.800 tilt=- crop=0 ink=false read=/0.0 glyphs=
@@ -1530,7 +1527,7 @@
 - box=5 x=102.0 y=290.2 w=56.9 h=15.1 score=0.350 tilt=- crop=1 ink=false read=/0.0 glyphs=x=226 14x12 ar=0.86 holes=0 best=E:0.77 L=E:0.77 D=8:0.76 D2=0.75
 ### pixel-live-20260617-090351__frame-304 esperado=BIH12
 - box=0 x=180.2 y=269.8 w=108.4 h=39.1 score=0.870 tilt=4.5 crop=0 ink=true read=SO XXX/0.0 glyphs=x=151 18x47 ar=2.61 holes=0 best=S:0.88 L=S:0.88 D=1:0.79 D2=0.73 | x=169 47x48 ar=1.02 holes=1 best=0:0.87 L=W:0.86 D=0:0.87 D2=0.85 | x=216 19x41 ar=2.16 holes=0 best=4:0.80 L=U:0.78 D=4:0.80 D2=0.78 | x=259 29x49 ar=1.69 holes=0 best=1:0.97 L=I:0.85 D=1:0.97 D2=0.82 | x=288 43x50 ar=1.16 holes=0 best=2:0.95 L=Z:0.83 D=2:0.95 D2=0.83
-- box=0 x=180.2 y=269.8 w=108.4 h=39.1 score=0.870 tilt=4.5 crop=1 ink=true read=BIM XX/0.0 glyphs=x=140 42x50 ar=1.19 holes=0 best=B:0.85 L=B:0.85 D=8:0.84 D2=0.82 | x=182 30x49 ar=1.63 holes=0 best=1:0.91 L=T:0.87 D=1:0.91 D2=0.77 | x=236 18x41 ar=2.28 holes=0 best=M:0.81 L=M:0.81 D=1:0.76 D2=0.69 | x=254 51x48 ar=0.94 holes=1 best=0:0.85 L=E:0.85 D=0:0.85 D2=0.84 | x=305 15x47 ar=3.13 holes=0 best=U:0.87 L=U:0.87 D=1:0.83 D2=0.72
+- box=0 x=180.2 y=269.8 w=108.4 h=39.1 score=0.870 tilt=4.5 crop=1 ink=true read=BIE XX/0.0 glyphs=x=140 42x50 ar=1.19 holes=0 best=B:0.85 L=B:0.85 D=8:0.84 D2=0.82 | x=182 30x49 ar=1.63 holes=0 best=1:0.91 L=T:0.87 D=1:0.91 D2=0.77 | x=236 18x41 ar=2.28 holes=0 best=E:0.81 L=E:0.81 D=1:0.77 D2=0.69 | x=254 51x48 ar=0.94 holes=1 best=0:0.85 L=E:0.85 D=0:0.85 D2=0.84 | x=305 15x47 ar=3.13 holes=0 best=U:0.87 L=U:0.87 D=1:0.83 D2=0.72
 - box=1 x=205.1 y=284.9 w=28.4 h=15.1 score=0.788 tilt=- crop=0 ink=false read=/0.0 glyphs=
 - box=1 x=205.1 y=284.9 w=28.4 h=15.1 score=0.788 tilt=- crop=1 ink=false read=/0.0 glyphs=
 - box=2 x=91.3 y=339.1 w=109.3 h=32.0 score=0.693 tilt=- crop=0 ink=false read=/0.0 glyphs=
@@ -1539,7 +1536,7 @@
 - box=3 x=112.7 y=290.2 w=55.1 h=14.2 score=0.369 tilt=- crop=1 ink=false read=/0.0 glyphs=x=223 13x12 ar=0.92 holes=0 best=8:0.72 L=W:0.70 D=8:0.72 D2=0.71
 ### pixel-live-20260617-090351__frame-307 esperado=CUW4
 - box=0 x=214.9 y=241.3 w=106.7 h=37.3 score=0.859 tilt=-3.2 crop=0 ink=true read=DXW 4/82.3 glyphs=x=154 47x50 ar=1.06 holes=1 best=D:0.72 L=D:0.72 D=0:0.66 D2=0.63 | x=201 30x48 ar=1.60 holes=0 best=X:0.76 L=X:0.76 D=7:0.75 D2=0.74 | x=227 42x48 ar=1.14 holes=0 best=W:0.86 L=W:0.86 D=4:0.79 D2=0.76 | x=293 43x50 ar=1.16 holes=0 best=4:0.95 L=G:0.82 D=4:0.95 D2=0.81
-- box=0 x=214.9 y=241.3 w=106.7 h=37.3 score=0.859 tilt=-3.2 crop=1 ink=true read=EYIG/80.5 glyphs=x=154 43x50 ar=1.16 holes=0 best=E:0.94 L=E:0.94 D=8:0.81 D2=0.78 | x=221 42x48 ar=1.14 holes=0 best=Y:0.79 L=Y:0.79 D=0:0.76 D2=0.75 | x=259 29x48 ar=1.66 holes=0 best=1:0.76 L=Z:0.75 D=1:0.76 D2=0.73 | x=288 48x50 ar=1.04 holes=1 best=G:0.73 L=G:0.73 D=0:0.66 D2=0.65
+- box=0 x=214.9 y=241.3 w=106.7 h=37.3 score=0.859 tilt=-3.2 crop=1 ink=true read=EYIG/80.5 glyphs=x=154 43x50 ar=1.16 holes=0 best=E:0.94 L=E:0.94 D=8:0.81 D2=0.78 | x=221 42x48 ar=1.14 holes=0 best=Y:0.79 L=Y:0.79 D=0:0.76 D2=0.75 | x=259 29x48 ar=1.66 holes=0 best=1:0.76 L=Z:0.75 D=1:0.76 D2=0.73 | x=288 48x50 ar=1.04 holes=1 best=G:0.73 L=G:0.73 D=0:0.66 D2=0.66
 - box=1 x=86.0 y=246.7 w=31.1 h=11.6 score=0.790 tilt=- crop=0 ink=true read=/0.0 glyphs=x=63 29x33 ar=1.14 holes=0 best=0:0.91 L=W:0.87 D=0:0.91 D2=0.91
 - box=1 x=86.0 y=246.7 w=31.1 h=11.6 score=0.790 tilt=- crop=1 ink=true read=/0.0 glyphs=x=370 29x33 ar=1.14 holes=0 best=0:0.92 L=W:0.88 D=0:0.92 D2=0.92
 - box=2 x=119.8 y=247.6 w=28.4 h=11.6 score=0.687 tilt=- crop=0 ink=true read=/0.0 glyphs=x=113 54x51 ar=0.94 holes=0 best=0:0.91 L=W:0.88 D=0:0.91 D2=0.89
@@ -1592,7 +1589,7 @@
 - box=0 x=195.3 y=260.9 w=87.1 h=35.6 score=0.944 tilt=-6.0 crop=0 ink=true read=ZE/0.0 glyphs=x=144 22x42 ar=1.91 holes=0 best=3:0.64 L=Z:0.60 D=3:0.64 D2=0.61 | x=176 9x4 ar=0.44 holes=0 best=E:0.39 L=E:0.39 D=0:0.35 D2=0.33
 - box=0 x=195.3 y=260.9 w=87.1 h=35.6 score=0.944 tilt=-6.0 crop=1 ink=true read=N X/0.0 glyphs=x=236 9x4 ar=0.44 holes=0 best=N:0.40 L=N:0.40 D=0:0.36 D2=0.35 | x=255 22x42 ar=1.91 holes=0 best=5:0.61 L=E:0.61 D=5:0.61 D2=0.59
 - box=1 x=105.6 y=260.0 w=29.3 h=10.7 score=0.737 tilt=- crop=0 ink=true read=XX/0.0 glyphs=x=119 13x29 ar=2.23 holes=0 best=4:0.87 L=M:0.79 D=4:0.87 D2=0.85 | x=132 40x37 ar=0.93 holes=0 best=0:0.92 L=E:0.85 D=0:0.92 D2=0.91
-- box=1 x=105.6 y=260.0 w=29.3 h=10.7 score=0.737 tilt=- crop=1 ink=true read=OM/87.8 glyphs=x=287 42x37 ar=0.88 holes=0 best=0:0.92 L=N:0.87 D=0:0.92 D2=0.89 | x=329 11x28 ar=2.55 holes=0 best=M:0.84 L=M:0.84 D=1:0.77 D2=0.71
+- box=1 x=105.6 y=260.0 w=29.3 h=10.7 score=0.737 tilt=- crop=1 ink=true read=OM/87.8 glyphs=x=287 42x37 ar=0.88 holes=0 best=0:0.92 L=N:0.87 D=0:0.92 D2=0.89 | x=329 11x28 ar=2.55 holes=0 best=M:0.84 L=M:0.84 D=1:0.78 D2=0.71
 - box=2 x=257.6 y=301.8 w=23.1 h=69.3 score=0.611 tilt=- crop=0 ink=false read=/0.0 glyphs=
 - box=2 x=257.6 y=301.8 w=23.1 h=69.3 score=0.611 tilt=- crop=1 ink=false read=/0.0 glyphs=
 - box=3 x=86.0 y=286.7 w=174.2 h=84.4 score=0.449 tilt=- crop=0 ink=false read=/0.0 glyphs=x=181 5x3 ar=0.60 holes=0 best=E:0.26 L=E:0.26 D=9:0.24 D2=0.23
@@ -1659,13 +1656,13 @@
 - box=3 x=86.0 y=252.9 w=32.9 h=10.7 score=0.485 tilt=- crop=0 ink=false read=/0.0 glyphs=
 - box=3 x=86.0 y=252.9 w=32.9 h=10.7 score=0.485 tilt=- crop=1 ink=false read=/0.0 glyphs=
 - box=4 x=124.2 y=284.9 w=41.8 h=9.8 score=0.421 tilt=- crop=0 ink=true read=F X/0.0 glyphs=x=252 2x4 ar=2.00 holes=0 best=F:0.26 L=F:0.26 D=8:0.24 D2=0.22 | x=327 2x6 ar=3.00 holes=0 best=1:0.34 L=I:0.34 D=1:0.34 D2=0.30
-- box=4 x=124.2 y=284.9 w=41.8 h=9.8 score=0.421 tilt=- crop=1 ink=true read=F X/0.0 glyphs=x=94 2x6 ar=3.00 holes=0 best=F:0.34 L=F:0.34 D=8:0.29 D2=0.27 | x=169 2x4 ar=2.00 holes=0 best=4:0.28 L=I:0.27 D=4:0.28 D2=0.25
+- box=4 x=124.2 y=284.9 w=41.8 h=9.8 score=0.421 tilt=- crop=1 ink=true read=F X/0.0 glyphs=x=94 2x6 ar=3.00 holes=0 best=F:0.34 L=F:0.34 D=8:0.29 D2=0.28 | x=169 2x4 ar=2.00 holes=0 best=4:0.28 L=I:0.27 D=4:0.28 D2=0.25
 ### pixel-live-20260617-090351__frame-321 esperado=POR10
 - box=0 x=89.6 y=256.4 w=29.3 h=8.0 score=0.752 tilt=- crop=0 ink=false read=/0.0 glyphs=
 - box=0 x=89.6 y=256.4 w=29.3 h=8.0 score=0.752 tilt=- crop=1 ink=false read=/0.0 glyphs=
 - box=1 x=102.9 y=264.4 w=56.0 h=21.3 score=0.720 tilt=- crop=0 ink=false read=E X/0.0 glyphs=x=106 9x5 ar=0.56 holes=0 best=E:0.39 L=E:0.39 D=0:0.37 D2=0.34 | x=183 8x8 ar=1.00 holes=0 best=0:0.49 L=S:0.44 D=0:0.49 D2=0.49
 - box=1 x=102.9 y=264.4 w=56.0 h=21.3 score=0.720 tilt=- crop=1 ink=false read=BH/0.0 glyphs=x=87 8x8 ar=1.00 holes=0 best=8:0.47 L=E:0.44 D=8:0.47 D2=0.46 | x=163 9x5 ar=0.56 holes=0 best=H:0.42 L=H:0.42 D=0:0.37 D2=0.36
-- box=2 x=235.3 y=273.3 w=63.1 h=32.0 score=0.663 tilt=- crop=0 ink=false read=OF/0.0 glyphs=x=118 5x4 ar=0.80 holes=0 best=0:0.31 L=I:0.30 D=0:0.31 D2=0.29 | x=130 2x5 ar=2.50 holes=0 best=F:0.29 L=F:0.29 D=8:0.26 D2=0.26
+- box=2 x=235.3 y=273.3 w=63.1 h=32.0 score=0.663 tilt=- crop=0 ink=false read=OE/0.0 glyphs=x=118 5x4 ar=0.80 holes=0 best=0:0.31 L=I:0.30 D=0:0.31 D2=0.29 | x=130 2x5 ar=2.50 holes=0 best=E:0.29 L=E:0.29 D=8:0.26 D2=0.26
 - box=2 x=235.3 y=273.3 w=63.1 h=32.0 score=0.663 tilt=- crop=1 ink=false read=IP/0.0 glyphs=x=88 2x5 ar=2.50 holes=0 best=I:0.34 L=I:0.34 D=1:0.30 D2=0.29 | x=97 5x4 ar=0.80 holes=0 best=P:0.32 L=P:0.32 D=2:0.27 D2=0.27
 - box=3 x=131.3 y=277.8 w=40.0 h=10.7 score=0.404 tilt=- crop=0 ink=true read=/0.0 glyphs=x=144 19x20 ar=1.05 holes=0 best=W:0.91 L=W:0.91 D=8:0.91 D2=0.91
 - box=3 x=131.3 y=277.8 w=40.0 h=10.7 score=0.404 tilt=- crop=1 ink=true read=/0.0 glyphs=x=221 19x20 ar=1.05 holes=0 best=8:0.93 L=W:0.87 D=8:0.93 D2=0.91
@@ -1701,7 +1698,7 @@
 - box=0 x=86.0 y=316.0 w=121.8 h=55.1 score=0.812 tilt=- crop=0 ink=false read=/0.0 glyphs=
 - box=0 x=86.0 y=316.0 w=121.8 h=55.1 score=0.812 tilt=- crop=1 ink=false read=/0.0 glyphs=
 - box=1 x=195.3 y=249.3 w=105.8 h=35.6 score=0.784 tilt=- crop=0 ink=true read=SE 20/90.7 glyphs=x=97 22x33 ar=1.50 holes=0 best=5:0.87 L=E:0.86 D=5:0.87 D2=0.86 | x=119 36x36 ar=1.00 holes=1 best=E:0.81 L=E:0.81 D=0:0.79 D2=0.77 | x=169 26x35 ar=1.35 holes=0 best=2:0.98 L=E:0.83 D=2:0.98 D2=0.87 | x=195 29x35 ar=1.21 holes=2 best=0:0.97 L=E:0.89 D=0:0.97 D2=0.95
-- box=1 x=195.3 y=249.3 w=105.8 h=35.6 score=0.784 tilt=- crop=1 ink=true read=BBSA X/0.0 glyphs=x=90 28x35 ar=1.25 holes=2 best=8:0.96 L=O:0.90 D=8:0.96 D2=0.95 | x=118 27x35 ar=1.30 holes=0 best=8:0.88 L=B:0.84 D=8:0.88 D2=0.86 | x=159 13x36 ar=2.77 holes=0 best=S:0.86 L=S:0.86 D=1:0.74 D2=0.68 | x=172 22x35 ar=1.59 holes=0 best=A:0.87 L=A:0.87 D=8:0.86 D2=0.84 | x=194 23x33 ar=1.43 holes=0 best=8:0.88 L=A:0.86 D=8:0.88 D2=0.86
+- box=1 x=195.3 y=249.3 w=105.8 h=35.6 score=0.784 tilt=- crop=1 ink=true read=BBSX X/0.0 glyphs=x=90 28x35 ar=1.25 holes=2 best=8:0.96 L=O:0.90 D=8:0.96 D2=0.95 | x=118 27x35 ar=1.30 holes=0 best=8:0.88 L=B:0.84 D=8:0.88 D2=0.86 | x=159 13x36 ar=2.77 holes=0 best=S:0.86 L=S:0.86 D=1:0.74 D2=0.68 | x=172 22x35 ar=1.59 holes=0 best=X:0.90 L=X:0.90 D=8:0.86 D2=0.84 | x=194 23x33 ar=1.43 holes=0 best=8:0.88 L=A:0.86 D=8:0.88 D2=0.86
 - box=2 x=86.0 y=260.0 w=30.2 h=14.2 score=0.666 tilt=- crop=0 ink=true read=/0.0 glyphs=x=43 28x25 ar=0.89 holes=0 best=W:0.90 L=W:0.90 D=0:0.89 D2=0.88
 - box=2 x=86.0 y=260.0 w=30.2 h=14.2 score=0.666 tilt=- crop=1 ink=true read=/0.0 glyphs=x=163 28x25 ar=0.89 holes=0 best=0:0.88 L=M:0.86 D=0:0.88 D2=0.87
 - box=3 x=249.6 y=285.8 w=28.4 h=14.2 score=0.616 tilt=- crop=0 ink=false read=/0.0 glyphs=
