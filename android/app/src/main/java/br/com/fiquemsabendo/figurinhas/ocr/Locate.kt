@@ -364,6 +364,13 @@ private fun detectBoxes(frame: GrayImage, scaleLong: Int? = null, modes: Array<F
     val out = ArrayList<CodeBox>()
     for (b0 in kept) {
         var b = b0
+        // The user-facing scan flow assumes the code pill is roughly horizontal. Keep the best
+        // candidate even if its axis box is square-ish (a real tilted pill can wrap square), but
+        // drop later near-square candidates: they are usually logo/text fragments that clutter the
+        // debug overlay and occasionally reach OCR, while a real secondary horizontal pill is still
+        // visibly elongated.
+        val axisAr = if (b.w >= b.h) b.w / b.h else b.h / b.w
+        if (out.isNotEmpty() && axisAr < MIN_AXIS_PILL_AR) continue
         if (b.tilt != null && isSteepTilt(b.tilt!!)) {
             // A box with a STEEP moment angle is only detectable BECAUSE the detector is rotation-
             // invariant — a flat frame would never surface it (its axis-aligned box is square). In a
@@ -401,6 +408,7 @@ private const val TILT_SCORE_MARGIN = 0.08
  *  near-top boxes a steep tilt creates are small fragments that de-rotate into stray-digit
  *  reads ("7 00" → the "00" logo false positive). */
 private const val PILL_SIZE_RATIO = 0.5
+private const val MIN_AXIS_PILL_AR = 1.8
 
 /** A tilt is "steep" (a true diagonal de-rotation that resamples) when it isn't within
  *  UPRIGHT_DEG of an axis (0° or ±90°). Near-axis crops snap to the cheap right-angle

@@ -122,6 +122,10 @@ Notable changes to the sticker scanner. Newest first. No formal releases yet (de
   preparação a `192px` apenas no box principal com score intermediário (`0.84..0.92`) e só depois da
   leitura normal falhar. Isso recupera `RSA19` e `AUS18` no dataset manual (`29/45`) mantendo
   `0/156` falsos positivos e evitando o custo/risco do upscale global.
+- **Candidatos secundários quase quadrados são descartados.** Como o fluxo real espera a figurinha
+  mais ou menos horizontal, o detector mantém o melhor candidato mas remove caixas secundárias com
+  proporção visual menor que `1.8`, reduzindo ruído no overlay/benchmark sem mudar o recall
+  (`29/45`) nem os falsos positivos (`0/156`).
 
 ## 2026-06-15 — Remove "Enviar foto"
 
