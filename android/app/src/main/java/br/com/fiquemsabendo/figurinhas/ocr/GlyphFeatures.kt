@@ -47,6 +47,9 @@ private const val MERGE_W_RATIO = 1.25f
  *  is wider than one condensed glyph, but still below the normal "definitely merged" threshold.
  *  We only use this lower threshold in the narrow 4-component code-shape rescue below. */
 private const val SHORT_CODE_FIRST_MERGE_W_RATIO = 1.10f
+/** Same conservative borderline-split threshold, but for a 3-component crop whose middle
+ *  component is likely two glued letters (e.g. `AUT4` reading as `AE4`). */
+private const val SHORT_CODE_MIDDLE_MERGE_W_RATIO = 1.10f
 
 /** Estimated single-glyph width as a fraction of the band height — the ideal seam between two
  *  merged glyphs sits ~one of these in from the left. */
@@ -197,7 +200,8 @@ private fun segmentBoxes(mask: ByteArray, w: Int, h: Int): List<Box> {
     val out = ArrayList<Box>()
     for (c in wholeGlyphs) splitWide(mask, w, c, medH, out)
     out.sortBy { it.x0 }
-    return splitFirstMergedGlyphInShortCode(mask, w, medH, out)
+    val firstRescued = splitFirstMergedGlyphInShortCode(mask, w, medH, out)
+    return splitMiddleMergedGlyphInShortCode(mask, w, medH, firstRescued)
 }
 
 private fun mergeTouchingFragments(boxes: List<Box>, medH: Int): List<Box> {
@@ -367,6 +371,28 @@ private fun splitWideForced(mask: ByteArray, w: Int, box: Box, medH: Int, out: A
         half.area = area
         out.add(half)
     }
+}
+
+private fun splitMiddleMergedGlyphInShortCode(mask: ByteArray, w: Int, medH: Int, boxes: List<Box>): List<Box> {
+    if (boxes.size != 3) return boxes
+    val middle = boxes[1]
+    val middleW = middle.x1 - middle.x0 + 1
+    val middleH = middle.y1 - middle.y0 + 1
+    val tallness = max(middleH.toFloat(), medH * 0.85f)
+    if (middleW < tallness * SHORT_CODE_MIDDLE_MERGE_W_RATIO || middleW >= tallness * MERGE_W_RATIO) {
+        return boxes
+    }
+
+    val split = ArrayList<Box>()
+    splitWideForced(mask, w, middle, medH, split)
+    if (split.size != 2) return boxes
+
+    val rescued = ArrayList<Box>(4)
+    rescued.add(boxes[0])
+    rescued.addAll(split)
+    rescued.add(boxes[2])
+    rescued.sortBy { it.x0 }
+    return rescued
 }
 
 /**

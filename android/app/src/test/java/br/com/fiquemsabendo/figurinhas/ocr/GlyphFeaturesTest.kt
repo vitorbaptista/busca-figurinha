@@ -91,4 +91,21 @@ class GlyphFeaturesTest {
         assertEquals(2, glyphs.size, "a wide bridged blob must be split into two glyphs")
         assertTrue(glyphs[0].x < glyphs[1].x, "split halves ordered left-to-right")
     }
+
+    @Test fun short_code_with_merged_middle_component_splits_the_middle_glyph() {
+        // A 3-letter + 1-digit code can arrive as three components when the middle two letters
+        // bridge softly. The middle blob is wide enough to be suspicious but below the global
+        // split threshold, so the short-code rescue should split only that middle component.
+        val img = canvas(
+            100, 36,
+            rect(8, 7, 19, 28),   // first glyph
+            rect(32, 7, 57, 28),  // two middle glyphs merged, 26 x 22 (< 1.25h, > 1.10h)
+            rect(74, 7, 85, 28),  // last glyph
+        )
+
+        val glyphs = extractGlyphs(img)
+
+        assertEquals(4, glyphs.size, "a short-code middle merge must be split into four glyphs")
+        assertTrue(glyphs[0].x < glyphs[1].x && glyphs[1].x < glyphs[2].x && glyphs[2].x < glyphs[3].x)
+    }
 }

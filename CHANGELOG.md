@@ -129,6 +129,10 @@ Notable changes to the sticker scanner. Newest first. No formal releases yet (de
 - **Scanner Android limita OCR aos 2 melhores boxes.** No dataset manual, `maxBoxes=2` manteve o
   mesmo recall (`29/45`) e `0/156` falsos positivos de `maxBoxes=4`, reduzindo o trabalho de OCR de
   `193` para `165` crops e o p95 de crops de `3` para `2`.
+- **OCR Android divide letras centrais grudadas em códigos curtos.** Quando um crop vira três
+  componentes e o componente do meio tem largura de duas letras próximas, o segmentador divide só
+  esse componente. Isso recupera `AUT4` no dataset manual (`30/45`) mantendo `0/156` falsos
+  positivos e reduzindo o trabalho total para `164` crops.
 
 ## 2026-06-15 — Remove "Enviar foto"
 
