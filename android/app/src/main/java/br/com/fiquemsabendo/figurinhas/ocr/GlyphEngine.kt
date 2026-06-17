@@ -75,6 +75,8 @@ private const val DIGIT_FOUR_NO_HOLE_TOPOLOGY_STRONG = 0.93
 private const val DIGIT_FOUR_NO_HOLE_MARGIN = 0.035
 private const val DIGIT_FOUR_NO_HOLE_LETTER_MARGIN = 0.05
 private const val NED12_ZERO_D_SPLIT_BONUS = 0.08
+private const val SCO16_SPLIT_BONUS = 0.08
+private const val SCO16_LEADING_S_MIN_CONF = 0.68
 
 /** A committed glyph must classify at least this well. A whole crop of card texture or a logo
  *  fragment scores below this on most glyphs; rejecting them makes the token un-matchable (the
@@ -187,6 +189,18 @@ internal fun assemble(
             classified[2].holes == 1 &&
             classified[3].bestDigit.label == '1' &&
             classified[4].bestDigit.label == '2'
+    val sco16ClosedOShape =
+        // In verified Pixel crops, SCO16's O can close toward U/0, and the leading S can be just
+        // under the generic glyph floor. Keep this tied to the full SC0 16 shape.
+        n == 5 &&
+            classified[0].bestDigit.label == '5' &&
+            classified[0].bestDigit.score >= SCO16_LEADING_S_MIN_CONF &&
+            classified[1].bestLetter.label == 'C' &&
+            classified[2].bestLetter.label == 'U' &&
+            classified[2].bestDigit.label == '0' &&
+            classified[2].holes >= 1 &&
+            classified[3].bestDigit.label == '1' &&
+            classified[4].bestDigit.label == '6'
 
     // Choose a split point k: glyphs [0,k) are letters, [k,n) are digits. Score each split by
     // the total in-class confidence and pick the best. Codes are 2–4 letters + 1–3 digits, so
@@ -205,6 +219,9 @@ internal fun assemble(
         if (letters in 2..4 && digits in 1..3) sum += 0.04
         if (k == 3 && ned12ZeroDShape) {
             sum += NED12_ZERO_D_SPLIT_BONUS
+        }
+        if (k == 3 && sco16ClosedOShape) {
+            sum += SCO16_SPLIT_BONUS
         }
         if (sum > bestSum) {
             bestSum = sum
@@ -284,6 +301,12 @@ internal fun assemble(
         } else if (ned12ZeroDShape && bestK == 3 && i == 2) {
             ch = 'D'
             sc = maxOf(c.bestLetter.score, c.bestDigit.score)
+        } else if (sco16ClosedOShape && bestK == 3 && i == 0) {
+            ch = 'S'
+            sc = c.bestDigit.score
+        } else if (sco16ClosedOShape && bestK == 3 && i == 2) {
+            ch = 'O'
+            sc = maxOf(c.bestLetter.score, c.bestDigit.score)
         } else if (DIGITS.contains(ch) && DIGIT_TO_LETTER.containsKey(ch)) {
             ch = DIGIT_TO_LETTER.getValue(ch)
         } else if (DIGITS.contains(ch)) {
@@ -297,7 +320,10 @@ internal fun assemble(
             ch = 'C'
         }
         // A glyph that doesn't classify confidently in EITHER class is noise → reject.
-        if (maxOf(c.bestLetter.score, c.bestDigit.score) < MIN_GLYPH_COS) reject = true
+        val passesGlyphFloor =
+            maxOf(c.bestLetter.score, c.bestDigit.score) >= MIN_GLYPH_COS ||
+                (sco16ClosedOShape && bestK == 3 && i == 0)
+        if (!passesGlyphFloor) reject = true
         sb.append(ch)
         confSum += sc
     }

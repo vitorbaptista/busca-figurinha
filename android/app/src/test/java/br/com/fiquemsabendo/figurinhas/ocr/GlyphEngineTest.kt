@@ -403,6 +403,68 @@ class GlyphEngineTest {
         assertTrue(text != "NED 11", "the NED12 rescue must stay tied to the verified 12 suffix")
     }
 
+    @Test fun assemble_recovers_sco16_when_the_o_closes_and_the_s_is_weak() {
+        val weakLeadingS = Classified(
+            label = '5',
+            score = 0.69,
+            bestLetter = LabelScore('Y', 0.67),
+            bestDigit = LabelScore('5', 0.69),
+            secondDigitScore = 0.66,
+            holes = 0,
+        )
+        val closedO = Classified(
+            label = 'U',
+            score = 0.82,
+            bestLetter = LabelScore('U', 0.82),
+            bestDigit = LabelScore('0', 0.80),
+            secondDigitScore = 0.79,
+            holes = 1,
+        )
+        val list = listOf(
+            weakLeadingS,
+            classifiedLetter('C', 0.83),
+            closedO,
+            classifiedDigit('1', 0.94),
+            classifiedDigit('6', 0.97, second = 0.94, holes = 2),
+        )
+
+        val (text, _, reject) = assemble(list)
+
+        assertFalse(reject, "the verified SC0/U 16 shape should stay readable")
+        assertEquals("SCO 16", text)
+    }
+
+    @Test fun assemble_does_not_apply_the_sco16_rescue_to_other_suffixes() {
+        val weakLeadingS = Classified(
+            label = '5',
+            score = 0.69,
+            bestLetter = LabelScore('Y', 0.67),
+            bestDigit = LabelScore('5', 0.69),
+            secondDigitScore = 0.66,
+            holes = 0,
+        )
+        val closedO = Classified(
+            label = 'U',
+            score = 0.82,
+            bestLetter = LabelScore('U', 0.82),
+            bestDigit = LabelScore('0', 0.80),
+            secondDigitScore = 0.79,
+            holes = 1,
+        )
+        val list = listOf(
+            weakLeadingS,
+            classifiedLetter('C', 0.83),
+            closedO,
+            classifiedDigit('1', 0.94),
+            classifiedDigit('8', 0.97, second = 0.94, holes = 2),
+        )
+
+        val (text, _, reject) = assemble(list)
+
+        assertTrue(reject, "outside the verified 16 suffix, the weak leading glyph should reject")
+        assertTrue(text != "SCO 18", "the SCO16 rescue must stay tied to the verified 16 suffix")
+    }
+
     @Test fun assemble_keeps_one_hole_8_vs_5_ambiguous_by_default() {
         val ambiguous = Classified(
             label = '8',
