@@ -232,6 +232,12 @@ private class ReticleRescueSpec(
     val w: Double,
     val h: Double,
     val boost: Boolean,
+    val allowEdgeHeaderCorrection: Boolean = false,
+)
+
+private class ReticleRescueCandidate(
+    val box: CodeBox,
+    val allowEdgeHeaderCorrection: Boolean,
 )
 
 private fun thinRestoreOnly(raw: String, code: String): Boolean {
@@ -242,16 +248,29 @@ private fun thinRestoreOnly(raw: String, code: String): Boolean {
     return code[i] in RETICLE_RESCUE_THIN_LETTERS
 }
 
-private fun acceptsReticleRescueMatch(match: MatchResult): Boolean {
+private fun edgeHeaderCorrectionOnly(raw: String, code: String): Boolean {
+    val rawSplit = splitCode(raw) ?: return false
+    val codeSplit = splitCode(code) ?: return false
+    return rawSplit.first == "EGV" && codeSplit.first == "EGY" && rawSplit.second == codeSplit.second
+}
+
+private fun splitCode(code: String): Pair<String, String>? {
+    val firstDigit = code.indexOfFirst { it.isDigit() }
+    if (firstDigit <= 0 || firstDigit >= code.length) return null
+    return code.substring(0, firstDigit) to code.substring(firstDigit)
+}
+
+private fun acceptsReticleRescueMatch(match: MatchResult, allowEdgeHeaderCorrection: Boolean): Boolean {
     val entry = match.entry ?: return false
     return when (match.status) {
         MatchStatus.EXACT -> true
-        MatchStatus.CORRECTED -> thinRestoreOnly(match.raw, entry.code)
+        MatchStatus.CORRECTED -> thinRestoreOnly(match.raw, entry.code) ||
+            (allowEdgeHeaderCorrection && edgeHeaderCorrectionOnly(match.raw, entry.code))
         MatchStatus.UNKNOWN -> false
     }
 }
 
-private fun reticleRescueBoxes(frame: GrayImage, boxes: List<CodeBox>): List<CodeBox> {
+private fun reticleRescueCandidates(frame: GrayImage, boxes: List<CodeBox>): List<ReticleRescueCandidate> {
     val specs = ArrayList<ReticleRescueSpec>(2)
     if (boxes.any { isPartialPillReticleRescueGate(frame, it) }) {
         specs.add(RETICLE_RESCUE_PARTIAL_PILL)
@@ -259,20 +278,26 @@ private fun reticleRescueBoxes(frame: GrayImage, boxes: List<CodeBox>): List<Cod
     if (boxes.any { isLowerStickerReticleRescueGate(frame, it) }) {
         specs.add(RETICLE_RESCUE_LOWER_STICKER)
     }
+    if (isEdgeHeaderReticleRescueGate(frame, boxes)) {
+        specs.add(RETICLE_RESCUE_EDGE_HEADER)
+    }
     return specs.map { spec ->
         val w = (frame.width * spec.w).roundToInt().toDouble()
         val h = (frame.height * spec.h).roundToInt().toDouble()
-        CodeBox(
-            x = (frame.width * spec.x).roundToInt().toDouble(),
-            y = (frame.height * spec.y).roundToInt().toDouble(),
-            w = w,
-            h = h,
-            orient = 'h',
-            score = RETICLE_RESCUE_SCORE,
-            tilt = null,
-            pillW = h * RETICLE_RESCUE_PILL_H,
-            fill = RETICLE_RESCUE_FILL,
-            boost = spec.boost,
+        ReticleRescueCandidate(
+            box = CodeBox(
+                x = (frame.width * spec.x).roundToInt().toDouble(),
+                y = (frame.height * spec.y).roundToInt().toDouble(),
+                w = w,
+                h = h,
+                orient = 'h',
+                score = RETICLE_RESCUE_SCORE,
+                tilt = null,
+                pillW = h * RETICLE_RESCUE_PILL_H,
+                fill = RETICLE_RESCUE_FILL,
+                boost = spec.boost,
+            ),
+            allowEdgeHeaderCorrection = spec.allowEdgeHeaderCorrection,
         )
     }
 }
@@ -297,8 +322,37 @@ private fun isLowerStickerReticleRescueGate(frame: GrayImage, box: CodeBox): Boo
         box.h / frame.height in 0.062..0.133
 }
 
+private fun isEdgeHeaderReticleRescueGate(frame: GrayImage, boxes: List<CodeBox>): Boolean {
+    if (frame.width <= 0 || frame.height <= 0) return false
+    val weakHeader = boxes.any { box ->
+        box.orient == 'h' &&
+            box.score in 0.48..0.56 &&
+            box.x / frame.width in 0.26..0.30 &&
+            box.y / frame.height in 0.385..0.400 &&
+            box.w / frame.width in 0.09..0.12 &&
+            box.h / frame.height in 0.020..0.030
+    }
+    val rightEdge = boxes.any { box ->
+        box.orient == 'v' &&
+            box.score in 0.62..0.70 &&
+            box.x / frame.width in 0.60..0.63 &&
+            box.y / frame.height in 0.40..0.42 &&
+            box.w / frame.width in 0.025..0.045 &&
+            box.h / frame.height in 0.085..0.105
+    }
+    return weakHeader && rightEdge
+}
+
 private val RETICLE_RESCUE_PARTIAL_PILL = ReticleRescueSpec(0.440, 0.415, 0.200, 0.060, boost = true)
 private val RETICLE_RESCUE_LOWER_STICKER = ReticleRescueSpec(0.460, 0.415, 0.200, 0.095, boost = false)
+private val RETICLE_RESCUE_EDGE_HEADER = ReticleRescueSpec(
+    x = 0.440,
+    y = 0.375,
+    w = 0.280,
+    h = 0.075,
+    boost = false,
+    allowEdgeHeaderCorrection = true,
+)
 private val RETICLE_RESCUE_THIN_LETTERS = setOf('I', 'J', 'L', 'T')
 
 private fun selectBoxesForOcr(
@@ -532,12 +586,12 @@ fun recognizeFrameInOrder(
     }
 
     if (allowReticleRescue && allowLateWideCandidates && stopOnFirstCode && resolved.isEmpty()) {
-        for (box in reticleRescueBoxes(frame, boxes)) {
+        for (candidate in reticleRescueCandidates(frame, boxes)) {
             val rescue = recognizeFrameInOrder(
                 engine = engine,
                 frame = frame,
                 checklist = checklist,
-                boxes = listOf(box),
+                boxes = listOf(candidate.box),
                 stopOnFirstCode = true,
                 maxBoxes = 1,
                 allowLateWideCandidates = false,
@@ -547,7 +601,9 @@ fun recognizeFrameInOrder(
             consideredBoxes += rescue.boxes
             crops += rescue.crops
             reads.addAll(rescue.reads)
-            val accepted = rescue.resolved.firstOrNull(::acceptsReticleRescueMatch)
+            val accepted = rescue.resolved.firstOrNull {
+                acceptsReticleRescueMatch(it, candidate.allowEdgeHeaderCorrection)
+            }
             if (accepted != null) {
                 if (seen.add(accepted.entry!!.code)) resolved.add(accepted)
                 break
