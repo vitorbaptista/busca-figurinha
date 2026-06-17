@@ -140,7 +140,7 @@ Notable changes to the sticker scanner. Newest first. No formal releases yet (de
   um segundo componente colado quando uma leitura de 4 glifos parece `2 letras + 2 dígitos`, e o
   pipeline só consulta boxes largos/tardios muito plausíveis. No dataset manual, o benchmark sobe
   para `32/45` positivos com `0/156` falsos positivos; o trabalho cai para `146` crops no total e
-  p95/max de `2/4`.
+  p95/max de `2/4`, e o gate passa a travar esse piso.
 - **Crops vazios param cedo quando não há fallback treinado.** Enquanto o fallback slow continua
   ausente, um fast-read vazio não paga flip/retry inútil. Isso preserva a política de não usar
   Tesseract sem treino e reduz trabalho em misses sem ampliar o matching.
