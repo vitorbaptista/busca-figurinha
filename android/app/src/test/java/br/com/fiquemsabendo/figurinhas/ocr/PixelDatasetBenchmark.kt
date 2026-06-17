@@ -25,7 +25,7 @@ class PixelDatasetBenchmark {
     private val repoRoot: File = run {
         var dir = File(".").canonicalFile
         while (true) {
-            if (File(dir, "captures/datasets/swe8-live-20260616-v1/dataset_manifest.csv").exists()) {
+            if (File(dir, "package.json").exists() && File(dir, "android/settings.gradle.kts").exists()) {
                 return@run dir
             }
             val parent = dir.parentFile
@@ -35,7 +35,12 @@ class PixelDatasetBenchmark {
         File(".").canonicalFile
     }
 
-    private val datasetName = "swe8-live-20260616-v1"
+    private val defaultDatasetName = "swe8-live-20260616-v1"
+    private val datasetArg = (
+        System.getProperty("figurinhas.pixelDataset")
+            ?: System.getenv("FIGURINHAS_PIXEL_DATASET")
+            ?: defaultDatasetName
+    ).trim().ifEmpty { defaultDatasetName }
     private val verificationFileName = "ground_truth_verification.csv"
     private val notStickerLabel = "not_sticker"
     private val baselineMinRecallPercent = 100.0
@@ -120,7 +125,16 @@ class PixelDatasetBenchmark {
         val wrongCommits: Set<String>,
     )
 
-    private fun datasetRoot(): File = File(repoRoot, "captures/datasets/$datasetName")
+    private fun datasetRoot(): File {
+        val requested = File(datasetArg)
+        return when {
+            requested.isAbsolute -> requested
+            datasetArg.contains("/") || datasetArg.contains(File.separatorChar) -> File(repoRoot, datasetArg)
+            else -> File(repoRoot, "captures/datasets/$datasetArg")
+        }.canonicalFile
+    }
+
+    private fun isDefaultDataset(): Boolean = datasetRoot() == File(repoRoot, "captures/datasets/$defaultDatasetName").canonicalFile
 
     private fun verificationFile(): File? {
         val datasetLocal = File(datasetRoot(), verificationFileName)
@@ -516,7 +530,7 @@ class PixelDatasetBenchmark {
         }
     }
 
-    @Test fun run_swe8_pixel_dataset_benchmark() {
+    @Test fun run_pixel_dataset_benchmark() {
         runBenchmarkAndWrite(roi = Roi.CONFIG, fastConf = Config.Ocr.HYBRID_FAST_CONF, maxBoxes = 2, reportBase = "baseline", darkFallbackPolicy = DarkFallbackPolicy.ON_MISS_WITHOUT_PRIMARY_READS)
     }
 
@@ -639,7 +653,8 @@ class PixelDatasetBenchmark {
         val wrongHoldCommits = positiveHolds.flatMap { it.wrongCommits }.distinct()
 
         val lines = ArrayList<String>(260)
-        lines += "# SWE8 Pixel Live Dataset Benchmark"
+        lines += "# Benchmark Pixel com GT manual"
+        lines += "- dataset: ${datasetRoot().relativeToOrSelf(repoRoot).path}"
         val modeConfig = modes.joinToString(".") { it.name.lowercase() }
         lines += "- config: roi=${String.format(Locale.US, "%.2f", roi.left)},${String.format(Locale.US, "%.2f", roi.top)},${String.format(Locale.US, "%.2f", roi.right)},${String.format(Locale.US, "%.2f", roi.bottom)} fastConf=${String.format(Locale.US, "%.1f", fastConf)} maxBoxes=$maxBoxes modes=$modeConfig"
         lines += "- arquivo de GT manual: ${verificationSource?.relativeToOrSelf(repoRoot)?.path ?: "ausente"}"
@@ -842,11 +857,13 @@ class PixelDatasetBenchmark {
         if (reportBase == "baseline" && maxBoxes == 2 && roi == Roi.CONFIG && fastConf == Config.Ocr.HYBRID_FAST_CONF) {
             assertTrue(verificationSource != null, "baseline Pixel benchmark requires a manually reviewed ground-truth CSV")
             assertTrue(scoringRows.isNotEmpty(), "baseline Pixel benchmark has no manually reviewed frames")
-            assertTrue(positiveRows >= 45, "baseline Pixel benchmark is not using all manually reviewed positive frames: positives=$positiveRows")
-            assertTrue(negativeRows >= 156, "baseline Pixel benchmark is not using all manually reviewed not-sticker frames: negatives=$negativeRows")
+            if (isDefaultDataset()) {
+                assertTrue(positiveRows >= 45, "baseline Pixel benchmark is not using all manually reviewed positive frames: positives=$positiveRows")
+                assertTrue(negativeRows >= 156, "baseline Pixel benchmark is not using all manually reviewed not-sticker frames: negatives=$negativeRows")
+            }
             assertEquals(0, falsePositives, "baseline Pixel benchmark must keep 0 false positives")
             assertEquals(0, missingPositiveFiles, "baseline Pixel benchmark has verified positives without frame files")
-            if (positiveRows >= 3) {
+            if (isDefaultDataset() && positiveRows >= 3) {
                 for (splitName in arrayOf("train", "val", "test")) {
                     assertTrue(
                         bySplit[splitName].orEmpty().any { it.expected != notStickerLabel },
@@ -859,17 +876,21 @@ class PixelDatasetBenchmark {
                 recallPercent >= baselineMinRecallPercent,
                 "baseline Pixel benchmark recall regressed: resolved $truePositives/$positiveRows positives (${String.format(Locale.US, "%.2f", recallPercent)}%)",
             )
-            assertTrue(
-                confirmedHolds >= baselineMinConfirmedHolds,
-                "baseline Pixel benchmark hold confirmation regressed: confirmed $confirmedHolds/${confirmableHolds.size} confirmable holds",
-            )
+            if (isDefaultDataset()) {
+                assertTrue(
+                    confirmedHolds >= baselineMinConfirmedHolds,
+                    "baseline Pixel benchmark hold confirmation regressed: confirmed $confirmedHolds/${confirmableHolds.size} confirmable holds",
+                )
+            }
             assertTrue(wrongHoldCommits.isEmpty(), "baseline Pixel benchmark produced wrong hold commits: $wrongHoldCommits")
-            assertTrue(
-                results.isEmpty() || totalCrops.toDouble() / results.size <= baselineMaxAverageCrops,
-                "baseline Pixel benchmark OCR work regressed: total crops=$totalCrops frames=${results.size}",
-            )
-            assertTrue(cropsP95 <= 2, "baseline Pixel benchmark typical OCR work regressed: p95 crops=$cropsP95")
-            assertTrue(maxCrops <= baselineMaxCropsPerFrame, "baseline Pixel benchmark has a high-work frame: max crops=$maxCrops")
+            if (isDefaultDataset()) {
+                assertTrue(
+                    results.isEmpty() || totalCrops.toDouble() / results.size <= baselineMaxAverageCrops,
+                    "baseline Pixel benchmark OCR work regressed: total crops=$totalCrops frames=${results.size}",
+                )
+                assertTrue(cropsP95 <= 2, "baseline Pixel benchmark typical OCR work regressed: p95 crops=$cropsP95")
+                assertTrue(maxCrops <= baselineMaxCropsPerFrame, "baseline Pixel benchmark has a high-work frame: max crops=$maxCrops")
+            }
         }
     }
 }

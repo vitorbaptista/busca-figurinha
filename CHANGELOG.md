@@ -34,6 +34,9 @@ Notable changes to the sticker scanner. Newest first. No formal releases yet (de
   cobertura só em treino, para evitar otimizar em cima de evidência fraca.
 - **Script rápido mostra lacunas de captura do dataset Pixel.** `npm run pixel:gaps` lê o CSV manual
   e imprime, sem rodar o benchmark Android, quantos frames ainda faltam para os códigos difíceis.
+- **Benchmark Pixel aceita dataset local manual.** `FIGURINHAS_PIXEL_DATASET=... ./gradlew test`
+  roda a mesma avaliação Android contra uma coleta local revisada, mantendo o dataset padrão como gate
+  versionado.
 - **Gate do benchmark Pixel acompanha o novo baseline manual.** A suíte Android agora falha se o
   recall do CSV verificado manualmente cair abaixo de `100%`, além de manter `0` falso positivo,
   confirmação de seguradas e orçamento de crops. O orçamento agora também trava o novo teto local:
