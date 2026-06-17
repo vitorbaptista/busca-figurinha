@@ -273,13 +273,102 @@ private class ReticleRescueSpec(
     val boost: Boolean,
     val allowEdgeHeaderCorrection: Boolean = false,
     val runBeforePrimary: Boolean = false,
+    val requiresNoPrimaryReads: Boolean = false,
+    val allowHighResRetry: Boolean = true,
 )
 
 private class ReticleRescueCandidate(
     val box: CodeBox,
     val allowEdgeHeaderCorrection: Boolean,
     val runBeforePrimary: Boolean,
+    val requiresNoPrimaryReads: Boolean,
+    val allowHighResRetry: Boolean,
 )
+
+private fun specToBox(frame: GrayImage, spec: ReticleRescueSpec): CodeBox {
+    val w = (frame.width * spec.w).roundToInt().toDouble()
+    val h = (frame.height * spec.h).roundToInt().toDouble()
+    return CodeBox(
+        x = (frame.width * spec.x).roundToInt().toDouble(),
+        y = (frame.height * spec.y).roundToInt().toDouble(),
+        w = w,
+        h = h,
+        orient = 'h',
+        score = RETICLE_RESCUE_SCORE,
+        tilt = null,
+        pillW = h * RETICLE_RESCUE_PILL_H,
+        fill = RETICLE_RESCUE_FILL,
+        boost = spec.boost,
+    )
+}
+
+private fun overlapsReticleBand(frame: GrayImage, box: CodeBox): Boolean {
+    if (frame.width <= 0 || frame.height <= 0) return false
+    val roi = Roi.CONFIG
+    val cx = (box.x + box.w / 2) / frame.width
+    val cy = (box.y + box.h / 2) / frame.height
+    return cx in (roi.left - RETICLE_EVIDENCE_MARGIN_X)..(roi.right + RETICLE_EVIDENCE_MARGIN_X) &&
+        cy in (roi.top - RETICLE_EVIDENCE_MARGIN_Y)..(roi.bottom + RETICLE_EVIDENCE_MARGIN_Y)
+}
+
+private fun hasHorizontalPillWindowEvidence(frame: GrayImage, boxes: List<CodeBox>): Boolean {
+    val horizontalEvidence = boxes.any { box ->
+        box.orient == 'h' &&
+            box.score >= RETICLE_WINDOW_MIN_H_SCORE &&
+            overlapsReticleBand(frame, box)
+    }
+    if (horizontalEvidence) return true
+
+    val verticalEdgeEvidence = boxes.any { box ->
+        box.orient == 'v' &&
+            box.score >= RETICLE_WINDOW_MIN_V_SCORE &&
+            box.h >= frame.height * RETICLE_WINDOW_MIN_V_H &&
+            overlapsReticleBand(frame, box)
+    }
+    return verticalEdgeEvidence && boxes.any { box ->
+        box.orient == 'h' &&
+            box.score >= RETICLE_WINDOW_WEAK_H_SCORE &&
+            overlapsReticleBand(frame, box)
+    }
+}
+
+private fun horizontalPillWindowSpecs(frame: GrayImage, boxes: List<CodeBox>): List<ReticleRescueSpec> {
+    if (frame.width <= 0 || frame.height <= 0) return emptyList()
+    if (!hasHorizontalPillWindowEvidence(frame, boxes)) return emptyList()
+
+    val roi = Roi.CONFIG
+    val roiH = roi.bottom - roi.top
+    val cx = (roi.left + roi.right) / 2
+    val cy = (roi.top + roi.bottom) / 2
+    val out = ArrayList<ReticleRescueSpec>(RETICLE_WINDOW_HEIGHTS.size)
+    for (h in RETICLE_WINDOW_HEIGHTS) {
+        val boxH = roiH * h
+        val boxW = (boxH * frame.height * RETICLE_WINDOW_AR / frame.width)
+            .coerceAtMost((roi.right - roi.left) * RETICLE_WINDOW_MAX_ROI_W)
+        out.add(
+            ReticleRescueSpec(
+                x = (cx - boxW / 2).coerceIn(0.0, 1.0 - boxW),
+                y = (cy - boxH / 2).coerceIn(0.0, 1.0 - boxH),
+                w = boxW,
+                h = boxH,
+                boost = true,
+                requiresNoPrimaryReads = true,
+                allowHighResRetry = false,
+            ),
+        )
+    }
+    return out
+}
+
+private fun candidateIou(a: CodeBox, b: CodeBox): Double {
+    val x1 = max(a.x, b.x)
+    val y1 = max(a.y, b.y)
+    val x2 = min(a.x + a.w, b.x + b.w)
+    val y2 = min(a.y + a.h, b.y + b.h)
+    val inter = max(0.0, x2 - x1) * max(0.0, y2 - y1)
+    val union = a.w * a.h + b.w * b.h - inter
+    return if (union > 0) inter / union else 0.0
+}
 
 private fun thinRestoreOnly(raw: String, code: String): Boolean {
     if (code.length != raw.length + 1) return false
@@ -322,26 +411,23 @@ private fun reticleRescueCandidates(frame: GrayImage, boxes: List<CodeBox>): Lis
     if (isEdgeHeaderReticleRescueGate(frame, boxes)) {
         specs.add(RETICLE_RESCUE_EDGE_HEADER)
     }
-    return specs.map { spec ->
-        val w = (frame.width * spec.w).roundToInt().toDouble()
-        val h = (frame.height * spec.h).roundToInt().toDouble()
-        ReticleRescueCandidate(
-            box = CodeBox(
-                x = (frame.width * spec.x).roundToInt().toDouble(),
-                y = (frame.height * spec.y).roundToInt().toDouble(),
-                w = w,
-                h = h,
-                orient = 'h',
-                score = RETICLE_RESCUE_SCORE,
-                tilt = null,
-                pillW = h * RETICLE_RESCUE_PILL_H,
-                fill = RETICLE_RESCUE_FILL,
-                boost = spec.boost,
+    specs.addAll(horizontalPillWindowSpecs(frame, boxes))
+
+    val out = ArrayList<ReticleRescueCandidate>(specs.size)
+    for (spec in specs) {
+        val box = specToBox(frame, spec)
+        if (out.any { candidateIou(it.box, box) >= RETICLE_WINDOW_DUP_IOU }) continue
+        out.add(
+            ReticleRescueCandidate(
+                box = box,
+                allowEdgeHeaderCorrection = spec.allowEdgeHeaderCorrection,
+                runBeforePrimary = spec.runBeforePrimary,
+                requiresNoPrimaryReads = spec.requiresNoPrimaryReads,
+                allowHighResRetry = spec.allowHighResRetry,
             ),
-            allowEdgeHeaderCorrection = spec.allowEdgeHeaderCorrection,
-            runBeforePrimary = spec.runBeforePrimary,
         )
     }
+    return out
 }
 
 private fun isPartialPillReticleRescueGate(frame: GrayImage, box: CodeBox): Boolean {
@@ -397,6 +483,16 @@ private val RETICLE_RESCUE_EDGE_HEADER = ReticleRescueSpec(
     runBeforePrimary = true,
 )
 private val RETICLE_RESCUE_THIN_LETTERS = setOf('I', 'J', 'L', 'T')
+private const val RETICLE_EVIDENCE_MARGIN_X = 0.04
+private const val RETICLE_EVIDENCE_MARGIN_Y = 0.08
+private const val RETICLE_WINDOW_MIN_H_SCORE = 0.64
+private const val RETICLE_WINDOW_MIN_V_SCORE = 0.70
+private const val RETICLE_WINDOW_WEAK_H_SCORE = 0.48
+private const val RETICLE_WINDOW_MIN_V_H = 0.055
+private const val RETICLE_WINDOW_AR = 2.55
+private const val RETICLE_WINDOW_MAX_ROI_W = 0.52
+private const val RETICLE_WINDOW_DUP_IOU = 0.72
+private val RETICLE_WINDOW_HEIGHTS = doubleArrayOf(0.24, 0.30)
 
 private fun selectBoxesForOcr(
     boxes: List<CodeBox>,
@@ -482,7 +578,7 @@ fun recognizeFrameInOrder(
             stopOnFirstCode = true,
             maxBoxes = 1,
             allowLateWideCandidates = false,
-            allowHighResRetry = allowHighResRetry,
+            allowHighResRetry = allowHighResRetry && candidate.allowHighResRetry,
             allowReticleRescue = false,
         )
         consideredBoxes += rescue.boxes
@@ -692,6 +788,7 @@ fun recognizeFrameInOrder(
     if (allowReticleRescue && allowLateWideCandidates && stopOnFirstCode && resolved.isEmpty()) {
         for (candidate in reticleCandidates) {
             if (candidate.runBeforePrimary) continue
+            if (candidate.requiresNoPrimaryReads && reads.isNotEmpty()) continue
             if (runReticleRescue(candidate)) break
         }
     }

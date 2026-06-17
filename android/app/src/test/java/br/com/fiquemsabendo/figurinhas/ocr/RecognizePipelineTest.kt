@@ -278,6 +278,7 @@ class RecognizePipelineTest {
             boxes = listOf(verticalFragment, horizontalPill),
             stopOnFirstCode = true,
             maxBoxes = 2,
+            allowReticleRescue = false,
         )
 
         assertEquals(1, out.boxes, "live OCR should ignore vertical fragments before dispatching crops")
@@ -360,5 +361,37 @@ class RecognizePipelineTest {
         assertEquals(3, out.boxes, "late thin wide candidate should be added after the two fragments")
         assertEquals(1, out.crops, "the inked late candidate should reach OCR")
         assertTrue(out.resolved.isEmpty(), "empty OCR engine must not resolve a code")
+    }
+
+    @Test fun live_ocr_uses_a_general_horizontal_reticle_window_after_fragment_miss() {
+        val w = 480
+        val h = 640
+        val px = IntArray(w * h) { card }
+        paintInkedPill(px, w, 190, 260, 309, 297)
+        val frame = GrayImage(w, h, px)
+        val fragment = CodeBox(
+            x = 90.0,
+            y = 268.0,
+            w = 28.0,
+            h = 10.0,
+            orient = 'h',
+            score = 0.72,
+            tilt = null,
+            pillW = 9.0,
+            fill = 0.86,
+            boost = false,
+        )
+
+        val out = recognizeFrameInOrder(
+            engine = ConstantCodeEngine("NOR 20"),
+            frame = frame,
+            checklist = checklist,
+            boxes = listOf(fragment),
+            stopOnFirstCode = true,
+            maxBoxes = 1,
+        )
+
+        assertEquals(listOf("NOR20"), out.resolved.mapNotNull { it.entry?.code })
+        assertEquals(1, out.crops, "the generic reticle window should be the first inked OCR crop")
     }
 }

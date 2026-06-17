@@ -22,10 +22,9 @@ import br.com.fiquemsabendo.figurinhas.domain.matchCode
 import br.com.fiquemsabendo.figurinhas.ocr.CapturePhase
 import br.com.fiquemsabendo.figurinhas.ocr.CaptureTrigger
 import br.com.fiquemsabendo.figurinhas.ocr.FrameRecognizer
+import br.com.fiquemsabendo.figurinhas.ocr.GrayImage
 import br.com.fiquemsabendo.figurinhas.ocr.GlyphOnlyRecognizer
 import br.com.fiquemsabendo.figurinhas.ocr.GlyphRecognizer
-import br.com.fiquemsabendo.figurinhas.ocr.ForegroundMode
-import br.com.fiquemsabendo.figurinhas.ocr.GrayImage
 import br.com.fiquemsabendo.figurinhas.ocr.codeCropCandidates
 import br.com.fiquemsabendo.figurinhas.ocr.Roi
 import br.com.fiquemsabendo.figurinhas.ocr.findCodeBoxes
@@ -158,6 +157,9 @@ class ScanViewModel(
     private val _phase = MutableStateFlow(CapturePhase.WAITING)
     val phase: StateFlow<CapturePhase> = _phase.asStateFlow()
 
+    private val _guidance = MutableStateFlow<ScanGuidance?>(null)
+    val guidance: StateFlow<ScanGuidance?> = _guidance.asStateFlow()
+
     private val _frameAspect = MutableStateFlow(0.75f)
     /** Display-oriented frame aspect (width/height) so the reticle can map the ROI fractions onto the
      *  FIT_CENTER (letterboxed) preview exactly. Emits once then stays constant (StateFlow dedups). */
@@ -256,6 +258,12 @@ class ScanViewModel(
 
         when {
             phase == CapturePhase.FIRE && !bursting -> {
+                val quality = assessFrameQuality(full)
+                _guidance.value = quality.guidance
+                if (!quality.canCapture) {
+                    trigger.rearmAfterEmptyBurst(now)
+                    return
+                }
                 // A fresh sticker settled: arm a new burst and read THIS frame as its first.
                 // CRITICAL: only on the FIRST FIRE (!bursting). The trigger keeps returning FIRE every
                 // still frame until the burst ends (it doesn't self-lock — fired()/rearm does, at burst
@@ -286,15 +294,19 @@ class ScanViewModel(
         ctrl: ScanController,
     ): Boolean {
         if (recognizer == null) return false
+        var quality: FrameQuality? = null
         val shouldStart = staticSceneProbe.maybeStartBurst(
             diff = diff,
             nowMs = nowMs,
             hasCodeBox = {
-                phase == CapturePhase.WAITING &&
-                    !bursting &&
-                    findCodeBoxes(full, Roi.CONFIG, arrayOf(ForegroundMode.DARK)).isNotEmpty()
+                if (phase == CapturePhase.WAITING && !bursting) {
+                    assessFrameQuality(full).also { quality = it }.canCapture
+                } else {
+                    false
+                }
             },
         )
+        quality?.let { _guidance.value = it.guidance }
         if (!shouldStart) return false
 
         ctrl.onBurstStart()
@@ -349,6 +361,7 @@ class ScanViewModel(
         val commit = ctrl.commitFromFrame(outcome.resolved, nowMs)
 
         if (commit.toCommit.isNotEmpty()) {
+            _guidance.value = null
             val feedback = ctrl.handleMatches(commit.toCommit)
             applyFeedback(feedback)
             // Persist the (now-mutated) session so a process death mid-scan doesn't lose progress.
@@ -390,6 +403,7 @@ class ScanViewModel(
                 // The burst resolved NOTHING. Don't lock (that would falsely report a read and strand
                 // the user on a sticker that just needs a sharper frame) — re-arm so a sticker held
                 // over the box keeps being retried at the recapture cadence.
+                if (_guidance.value == null) _guidance.value = ScanGuidance.HOLD_STILL
                 trigger.rearmAfterEmptyBurst(nowMs)
             }
         }
@@ -462,6 +476,7 @@ class ScanViewModel(
         prevSmall = null
         staticSceneProbe.reset()
         bursting = false
+        _guidance.value = null
         trigger.reset()
     }
 

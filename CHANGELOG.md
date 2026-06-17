@@ -6,6 +6,11 @@ Notable changes to the sticker scanner. Newest first. No formal releases yet (de
 ## 2026-06-17 — Android: baseline Pixel combinado
 
 ### Fixed
+- **OCR Android tenta uma janela horizontal genérica no retículo quando a detecção só acha fragmentos.**
+  O resgate usa o ROI visível, evidência geométrica de pill horizontal e só roda depois de uma
+  tentativa primária sem leitura, sem alias novo nem Tesseract. No baseline combinado, sobe para
+  `162/216` positivos (`75,00%` recall), `42/43` seguradas avaliáveis confirmadas, `0/157` falsos
+  positivos e `0` commits errados, com p95/max de OCR ainda em `3/6` crops.
 - **Matcher Android recupera `GER4` quando o Pixel lê `TIIII 4` em alta confiança.** O alias exato
   é restrito ao raw verificado no CSV manual e preserva o número da figurinha. O baseline combinado
   sobe para `157/216` positivos (`72,69%` recall), com `68` leituras exatas, `89/157` acertos
@@ -112,6 +117,10 @@ Notable changes to the sticker scanner. Newest first. No formal releases yet (de
   durante a colheita de novos glifos.
 
 ### Changed
+- **Scanner Android passa a orientar enquadramento sem bloquear OCR quando há candidato visual.** O
+  live loop agora expõe mensagens como “Aproxime mais o código”, “Centralize o código na caixa” e
+  “Deixe o código reto”, mas ainda deixa o matcher/confirmer tentar a leitura quando há alguma
+  evidência de código no retículo.
 - **Benchmark Pixel Android passa a proteger contra overfitting por split.** O relatório agora
   mostra recall, misses, falsos positivos e dívida de correção separados em treino/validação/teste,
   e o gate do dataset manual combinado trava os acertos atuais de validação (`15/22`) e teste

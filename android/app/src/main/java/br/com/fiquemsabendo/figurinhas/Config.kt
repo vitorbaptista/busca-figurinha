@@ -22,6 +22,28 @@ object Config {
         /** Min ms between two consecutive committed captures (same-sticker re-arm guard). */
         const val MIN_RECAPTURE_MS = 250L
     }
+    object CaptureQuality {
+        /** Quality checks only inspect the first few detector candidates, matching live OCR work. */
+        const val MAX_BOXES = 4
+        /** A code pill shorter than this fraction of the frame's short side is usually too small
+         *  for the glyph matcher on Pixel live frames. The live loop still lets OCR try it, but
+         *  asks the user to move closer. */
+        const val MIN_CODE_LONG_SIDE_FRAME_FRACTION = 0.14
+        /** If the detected pill touches the target-box margin, it is probably partly clipped or
+         *  competing with the white mask edge; ask the user to re-center while OCR keeps trying. */
+        const val ROI_EDGE_MARGIN_FRACTION = 0.045
+        /** Generous center tolerance inside the target box. Edge-touching catches hard clipping;
+         *  this catches the clearly off-center cases that still leave a full component. */
+        const val MAX_CENTER_OFFSET_X_ROI_FRACTION = 0.38
+        const val MAX_CENTER_OFFSET_Y_ROI_FRACTION = 0.40
+        /** User-facing live scan assumes a horizontal code inside the landscape reticle. The OCR
+         *  pipeline can de-rotate, but steep hand tilt softens crops and creates riskier candidates;
+         *  guiding the user to straighten is the safer recall fix. */
+        const val MAX_HORIZONTAL_TILT_DEG = 15.0
+        /** Mean absolute 4-neighbour Laplacian in the detected pill crop. Used as guidance only,
+         *  not as a hard OCR blocker, because a soft frame may still confirm safely. */
+        const val MIN_SHARPNESS = 5.0
+    }
     object Camera {
         /** Digital zoom requested on the front camera. The live SWE8 Pixel dumps showed the scanner
          *  was fast but the printed code pill was too tiny for reliable glyph OCR; zooming the camera

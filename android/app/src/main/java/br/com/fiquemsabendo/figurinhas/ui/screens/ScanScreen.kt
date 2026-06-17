@@ -89,6 +89,7 @@ import br.com.fiquemsabendo.figurinhas.ocr.CapturePhase
 import br.com.fiquemsabendo.figurinhas.scan.DebugCropBox
 import br.com.fiquemsabendo.figurinhas.scan.DebugInfo
 import br.com.fiquemsabendo.figurinhas.scan.ScanFeedback
+import br.com.fiquemsabendo.figurinhas.scan.ScanGuidance
 import br.com.fiquemsabendo.figurinhas.scan.ScanItem
 import br.com.fiquemsabendo.figurinhas.scan.ScanViewModel
 import br.com.fiquemsabendo.figurinhas.ui.components.FlashOverlay
@@ -144,6 +145,7 @@ fun ScanScreen(
     // ---------- ViewModel state ----------
     val ocrReady by viewModel.ocrReady.collectAsStateWithLifecycle()
     val facing by viewModel.facing.collectAsStateWithLifecycle()
+    val guidance by viewModel.guidance.collectAsStateWithLifecycle()
     val counters by viewModel.counters.collectAsStateWithLifecycle()
     val recent by viewModel.recent.collectAsStateWithLifecycle()
     // Debug mode is an OPT-IN Ajustes toggle (persisted), mirroring the PWA's ?debug — so it works on
@@ -226,6 +228,7 @@ fun ScanScreen(
                 debugCropBoxes = if (debugEnabled) debug.cropBoxes else emptyList(),
                 ocrReady = ocrReady,
                 facing = facing,
+                guidance = guidance,
                 idleHintVisible = display == null,
                 onFlip = viewModel::toggleFacing,
                 // TAP-TO-CAPTURE (debug mode only): tapping the preview forces a one-off recognize +
@@ -496,6 +499,7 @@ private fun CameraScanContent(
     debugCropBoxes: List<DebugCropBox>,
     ocrReady: Boolean,
     facing: CameraFacing,
+    guidance: ScanGuidance?,
     idleHintVisible: Boolean,
     onFlip: () -> Unit,
     // Debug-mode tap-to-capture; null while the Ajustes toggle is off so no click handler is attached
@@ -533,7 +537,7 @@ private fun CameraScanContent(
         // Idle hint: tell the user to show the back of the sticker (only when nothing is flashing).
         if (ocrReady && idleHintVisible) {
             Text(
-                text = Pt.Scan.startHint,
+                text = scanGuidanceText(guidance),
                 color = Color.White,
                 fontSize = 18.sp,
                 fontWeight = FontWeight.SemiBold,
@@ -586,6 +590,15 @@ private fun CameraScanContent(
         }
     }
 }
+
+private fun scanGuidanceText(guidance: ScanGuidance?): String =
+    when (guidance) {
+        ScanGuidance.MOVE_CLOSER -> Pt.Scan.moveCloserHint
+        ScanGuidance.CENTER_CODE -> Pt.Scan.centerCodeHint
+        ScanGuidance.STRAIGHTEN_CODE -> Pt.Scan.straightenCodeHint
+        ScanGuidance.HOLD_STILL -> Pt.Scan.holdStillHint
+        null -> Pt.Scan.startHint
+    }
 
 /** The reticle = the OCR target box. We map the Config detection ROI (fractions of the
  *  DISPLAY-oriented frame) onto the FIT_CENTER preview rectangle, so the rounded window the user sees
