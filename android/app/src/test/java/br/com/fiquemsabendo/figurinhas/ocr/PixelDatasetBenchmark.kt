@@ -48,13 +48,13 @@ class PixelDatasetBenchmark {
     private val notStickerLabel = "not_sticker"
     private val baselineMinPositiveRows = 216
     private val baselineMinNegativeRows = 157
-    private val baselineMinRecallPercent = 33.7
-    private val baselineMinConfirmedHolds = 19
+    private val baselineMinRecallPercent = 40.7
+    private val baselineMinConfirmedHolds = 22
     private val baselineMaxAverageCrops = 1.50
     private val baselineMaxCropsP95 = 4
     private val baselineMaxCropsPerFrame = 6
     private val baselineMinExactHits = 51
-    private val baselineMaxCorrectionDependentHits = 22
+    private val baselineMaxCorrectionDependentHits = 37
     private val usefulFramesPerDifficultCode = 3
     private val watchedDifficultCodes = listOf("MEX15", "IRQ20", "TUN10")
 

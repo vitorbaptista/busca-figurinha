@@ -155,11 +155,17 @@ class MatchingTest {
         val r = bestHighConfidenceConfusionMatchFromText("TIN 10", checklist)
         assertEquals("TUN10", r?.entry?.code)
         assertEquals(1, r?.distance)
+        val uShape = bestHighConfidenceConfusionMatchFromText("UIN 10", checklist)
+        assertEquals("TUN10", uShape?.entry?.code)
+        assertEquals(2, uShape?.distance)
     }
     @Test fun high_confidence_confusion_recovers_verified_egy4_shape() {
         val r = bestHighConfidenceConfusionMatchFromText("ECY 4", checklist)
         assertEquals("EGY4", r?.entry?.code)
         assertEquals(1, r?.distance)
+        val fShape = bestHighConfidenceConfusionMatchFromText("FGY 4", checklist)
+        assertEquals("EGY4", fShape?.entry?.code)
+        assertEquals(1, fShape?.distance)
     }
     @Test fun high_confidence_confusion_recovers_verified_aut_shapes() {
         val mShape = bestHighConfidenceConfusionMatchFromText("MIT 4", checklist)
@@ -169,11 +175,23 @@ class MatchingTest {
         assertEquals("AUT4", wShape?.entry?.code)
         assertEquals(2, wShape?.distance)
     }
+    @Test fun high_confidence_confusion_recovers_verified_pixel_shapes() {
+        assertEquals("RSA17", bestHighConfidenceConfusionMatchFromText("HSA 17", checklist)?.entry?.code)
+        assertEquals("RSA17", bestHighConfidenceConfusionMatchFromText("RSM 17", checklist)?.entry?.code)
+        assertEquals("CIV12", bestHighConfidenceConfusionMatchFromText("CWV 12", checklist)?.entry?.code)
+        assertEquals("CIV4", bestHighConfidenceConfusionMatchFromText("CNV 4", checklist)?.entry?.code)
+        assertEquals("SWE8", bestHighConfidenceConfusionMatchFromText("SWT 8", checklist)?.entry?.code)
+        assertEquals("QAT17", bestHighConfidenceConfusionMatchFromText("OAT 17", checklist)?.entry?.code)
+        assertEquals("CUW4", bestHighConfidenceConfusionMatchFromText("OJW 4", checklist)?.entry?.code)
+        assertEquals("NOR20", bestHighConfidenceConfusionMatchFromText("NEN 20", checklist)?.entry?.code)
+    }
     @Test fun high_confidence_confusion_rejects_digit_changes_and_unknown_letter_pairs() {
         val onlyAut4 = makeChecklist(listOf("AUT4"))
         assertNull(bestHighConfidenceConfusionMatchFromText("NJT 5", onlyAut4))
         assertNull(bestHighConfidenceConfusionMatchFromText("NRT 4", checklist))
         assertNull(bestHighConfidenceConfusionMatchFromText("RGA 8", checklist))
+        assertNull(bestHighConfidenceConfusionMatchFromText("SXJ 18", makeChecklist(listOf("IRQ18"))))
+        assertNull(bestHighConfidenceConfusionMatchFromText("SWJ 10", makeChecklist(listOf("IRQ10"))))
     }
 
     // ---- matchAllFromText ----

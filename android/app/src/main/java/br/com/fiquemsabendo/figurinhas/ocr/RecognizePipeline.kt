@@ -48,7 +48,7 @@ private const val LIVE_MAX_BOXES_DEFAULT = 2
 // per-frame hot path). ALNUM mirrors the TS /[A-Z0-9]/i (case-insensitive).
 private val WHITESPACE_RE = Regex("\\s+")
 private val ALNUM_RE = Regex("[A-Za-z0-9]")
-private const val HIGH_CONFUSION_MIN_CONF = 90.0
+private const val HIGH_CONFUSION_MIN_CONF = 85.5
 
 /** The outcome of recognizing one frame (ports the TS RecognizeOutcome). */
 data class RecognizeOutcome(

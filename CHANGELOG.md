@@ -6,6 +6,13 @@ Notable changes to the sticker scanner. Newest first. No formal releases yet (de
 ## 2026-06-17 — Android: baseline Pixel combinado
 
 ### Fixed
+- **Matcher Android recupera mais leituras Pixel verificadas sem falso positivo.** As confusões de
+  alta confiança agora aceitam apenas pares observados no CSV manual, com dígitos idênticos e
+  candidato único, cobrindo leituras como `HSA 17`→`RSA17`, `UIN 10`→`TUN10`,
+  `OAT 17`→`QAT17`, `OJW 4`→`CUW4` e `NEN 20`→`NOR20`. O baseline combinado sobe para `88/216`
+  positivos (`40,74%` recall), `22/43` seguradas avaliáveis confirmadas, `0/157` falsos positivos
+  e `0` commits errados. A tentativa mais agressiva de distância 3 foi rejeitada por gerar
+  `2/157` falsos positivos.
 - **OCR Android melhora no dataset Pixel combinado revisado manualmente.** O atlas real ganhou
   glifos de treino verificados de `MEX15` e `TUN10`, e o pipeline agora alcança um candidato de
   pill compacto quando os dois primeiros boxes são fragmentos. O baseline combinado sobe para
@@ -23,8 +30,8 @@ Notable changes to the sticker scanner. Newest first. No formal releases yet (de
   `TIN 10`→`TUN10`, `MIT 4`→`AUT4` e `WIT 8`→`AUT8`, sem relaxar a trava de `0` falso positivo no
   gate.
 - **Gate Pixel agora usa o dataset combinado como baseline padrão.** O benchmark Android exige
-  `216` positivos e `157` negativos revisados manualmente, recall mínimo de `33,7%`, `19`
-  seguradas confirmadas, pelo menos `51` leituras exatas e no máximo `22` acertos dependentes de
+  `216` positivos e `157` negativos revisados manualmente, recall mínimo de `40,7%`, `22`
+  seguradas confirmadas, pelo menos `51` leituras exatas e no máximo `37` acertos dependentes de
   correção textual, mantendo `0` falso positivo.
 
 ## 2026-06-17 — Android: resgate estreito no retículo

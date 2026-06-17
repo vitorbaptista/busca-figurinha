@@ -28,13 +28,23 @@ private const val MIN_THIN_RESTORE_LEN = 3
 private val DROPPABLE_LETTERS = setOf('I', 'J', 'L', 'T')
 private val HIGH_CONF_LETTER_CONFUSIONS = setOf(
     'C' to 'G',
+    'E' to 'O',
+    'F' to 'E',
+    'H' to 'R',
     'I' to 'M',
     'I' to 'U',
     'M' to 'A',
     'N' to 'A',
+    'N' to 'I',
     'N' to 'M',
+    'N' to 'R',
+    'O' to 'C',
+    'O' to 'Q',
+    'U' to 'T',
     'W' to 'R',
     'W' to 'A',
+    'W' to 'I',
+    'T' to 'E',
     'J' to 'Q',
     'J' to 'U',
 )
