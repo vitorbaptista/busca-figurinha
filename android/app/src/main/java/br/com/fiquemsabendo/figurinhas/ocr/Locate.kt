@@ -512,7 +512,11 @@ private fun rawCropGroups(frame: GrayImage, box: CodeBox): RawCropGroups {
     val nearUpright = abs(deg) < UPRIGHT_DEG
     val nearQuarter = abs(abs(deg) - 90) < UPRIGHT_DEG
     if (nearUpright || nearQuarter) {
-        val base = rotateRightAngle(region, if (nearQuarter) 90 else 0)
+        var base = rotateRightAngle(region, if (nearQuarter) 90 else 0)
+        val axisAr = if (box.w >= box.h) box.w / box.h else box.h / box.w
+        if (nearUpright && axisAr < MIN_AXIS_PILL_AR && box.pillW > 0) {
+            base = cropCenterStrip(base, box.pillW)
+        }
         return RawCropGroups(listOf(base, rotateRightAngle(base, 180)), sharpen = true, despeckle = false)
     }
 

@@ -32,6 +32,11 @@ Notable changes to the sticker scanner. Newest first. No formal releases yet (de
   local sem regredir os testes de ouro de `SWE8` nem aumentar falsos positivos.
 
 ### Fixed
+- **OCR Android recupera um frame real de `NOR20`.** Caixas quase horizontais que embrulham área
+  vertical demais agora recortam a faixa central do pill antes do preparo de OCR, e o classificador
+  aceita um `0` com dois furos apenas quando o dígito ainda vence a melhor letra e o runner-up por
+  margem mínima. No benchmark Pixel com CSV manual, o baseline sobe para `39/45` positivos
+  (`86,67%` recall), ainda com `0/156` falsos positivos e p95/max de OCR em `2/4` crops.
 - **OCR Android confirma a segurada difícil de `MEX15`.** O rescue speck-tolerant agora rastreia o
   segundo melhor dígito e, apenas nesse caminho opt-in para candidatos largos/fracos, aceita o caso
   estreito em que um `5` borrado parece `8` com um único furo e margem mínima. A seleção de boxes

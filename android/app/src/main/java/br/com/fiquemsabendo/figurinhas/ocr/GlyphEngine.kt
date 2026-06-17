@@ -60,11 +60,13 @@ private const val NARROW_MIDDLE_RESCUE_MIN_CONF = 85.0
  *  regimes: a clean close-up digit self-matches an in-font template at ≈1.0 (strong clause),
  *  while a softer-but-clear digit wins its class by a wide margin. A genuinely ambiguous
  *  digit satisfies neither and is dropped. */
-private const val DIGIT_MARGIN = 0.05
+private const val DIGIT_MARGIN = 0.045
 private const val DIGIT_STRONG = 0.97
 private const val DIGIT_EIGHT_TOPOLOGY_STRONG = 0.88
 private const val DIGIT_ONE_HOLE_TOPOLOGY_STRONG = 0.94
 private const val DIGIT_ONE_HOLE_LETTER_MARGIN = 0.03
+private const val DIGIT_ZERO_TWO_HOLE_TOPOLOGY_STRONG = 0.91
+private const val DIGIT_ZERO_TWO_HOLE_MARGIN = 0.005
 
 /** A committed glyph must classify at least this well. A whole crop of card texture or a logo
  *  fragment scores below this on most glyphs; rejecting them makes the token un-matchable (the
@@ -215,6 +217,13 @@ internal fun assemble(
                             c.holes == 1 &&
                             c.bestDigit.score >= DIGIT_ONE_HOLE_TOPOLOGY_STRONG &&
                             c.bestDigit.score - c.bestLetter.score >= DIGIT_ONE_HOLE_LETTER_MARGIN
+                    ) ||
+                    (
+                        ch == '0' &&
+                            c.holes >= 2 &&
+                            c.bestDigit.score >= DIGIT_ZERO_TWO_HOLE_TOPOLOGY_STRONG &&
+                            c.bestDigit.score - c.secondDigitScore >= DIGIT_ZERO_TWO_HOLE_MARGIN &&
+                            c.bestDigit.score - c.bestLetter.score >= DIGIT_ZERO_TWO_HOLE_MARGIN
                     )
             if (
                 allowOneHoleFiveRescue &&

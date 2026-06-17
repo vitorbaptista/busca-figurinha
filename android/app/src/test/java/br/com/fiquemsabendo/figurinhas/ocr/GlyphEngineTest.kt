@@ -179,7 +179,7 @@ class GlyphEngineTest {
             score = 0.80,
             bestLetter = LabelScore('A', 0.72),
             bestDigit = LabelScore('4', 0.80),
-            secondDigitScore = 0.77, // margin 0.03 < DIGIT_MARGIN (0.05), and 0.80 < DIGIT_STRONG
+            secondDigitScore = 0.77, // margin 0.03 < DIGIT_MARGIN, and 0.80 < DIGIT_STRONG
         )
         val list = listOf(
             classifiedLetter('E', 0.95),
@@ -189,6 +189,65 @@ class GlyphEngineTest {
         )
         val (_, _, reject) = assemble(list)
         assertTrue(reject, "a digit within DIGIT_MARGIN and below DIGIT_STRONG must reject")
+    }
+
+    @Test fun assemble_accepts_two_hole_zero_when_zero_still_wins() {
+        val twoHoleZero = Classified(
+            label = '0',
+            score = 0.919959,
+            bestLetter = LabelScore('O', 0.902532),
+            bestDigit = LabelScore('0', 0.919959),
+            secondDigitScore = 0.897755,
+            holes = 2,
+        )
+        val list = listOf(
+            classifiedLetter('N', 0.90),
+            Classified(
+                label = 'O',
+                score = 0.92,
+                bestLetter = LabelScore('O', 0.92),
+                bestDigit = LabelScore('0', 0.84),
+                secondDigitScore = 0.10,
+                holes = 1,
+            ),
+            classifiedLetter('R', 0.91),
+            classifiedDigit('2', 0.932089, second = 0.877189),
+            twoHoleZero,
+        )
+
+        val (text, _, reject) = assemble(list)
+
+        assertFalse(reject)
+        assertEquals("NOR 20", text)
+    }
+
+    @Test fun assemble_rejects_two_hole_zero_without_margin() {
+        val tiedZero = Classified(
+            label = '0',
+            score = 0.919959,
+            bestLetter = LabelScore('O', 0.918000),
+            bestDigit = LabelScore('0', 0.919959),
+            secondDigitScore = 0.918500,
+            holes = 2,
+        )
+        val list = listOf(
+            classifiedLetter('N', 0.90),
+            Classified(
+                label = 'O',
+                score = 0.92,
+                bestLetter = LabelScore('O', 0.92),
+                bestDigit = LabelScore('0', 0.84),
+                secondDigitScore = 0.10,
+                holes = 1,
+            ),
+            classifiedLetter('R', 0.91),
+            classifiedDigit('2', 0.932089, second = 0.877189),
+            tiedZero,
+        )
+
+        val (_, _, reject) = assemble(list)
+
+        assertTrue(reject, "two-hole zero rescue still needs separation from letter and runner-up")
     }
 
     @Test fun assemble_does_not_reject_a_near_exact_digit_even_with_a_close_runner_up() {
