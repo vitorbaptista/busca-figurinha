@@ -288,6 +288,7 @@ class PixelDatasetBenchmark {
         maxBoxes: Int = 4,
         modes: Array<ForegroundMode> = ForegroundMode.values(),
         fallbackToFullOnMiss: Boolean = false,
+        fallbackDarkOnMiss: Boolean = false,
         hasManualVerification: Boolean = false,
     ): List<FrameResult> {
         val atlas = loadAtlas() ?: return emptyList()
@@ -320,7 +321,7 @@ class PixelDatasetBenchmark {
                 cropHasOcrInk(upright)
             }
 
-            val outcome = recognizeFrameInOrder(
+            var outcome = recognizeFrameInOrder(
                 engine = engine,
                 frame = frame,
                 checklist = checklist,
@@ -331,6 +332,25 @@ class PixelDatasetBenchmark {
                     detectionNs = System.nanoTime() - detectStart
                 },
             )
+            if (fallbackDarkOnMiss && outcome.resolved.isEmpty()) {
+                val darkBoxes = findCodeBoxes(frame, roi, arrayOf(ForegroundMode.DARK))
+                val darkOutcome = recognizeFrameInOrder(
+                    engine = engine,
+                    frame = frame,
+                    checklist = checklist,
+                    boxes = darkBoxes,
+                    stopOnFirstCode = true,
+                    maxBoxes = maxBoxes,
+                )
+                if (darkOutcome.resolved.isNotEmpty() || darkOutcome.reads.isNotEmpty() || darkOutcome.crops > 0) {
+                    outcome = RecognizeOutcome(
+                        resolved = darkOutcome.resolved,
+                        reads = outcome.reads + darkOutcome.reads.map { "dark:$it" },
+                        boxes = outcome.boxes + darkOutcome.boxes,
+                        crops = outcome.crops + darkOutcome.crops,
+                    )
+                }
+            }
 
             val totalNs = System.nanoTime() - detectStart
             if (detectionNs == 0L) {
@@ -396,7 +416,7 @@ class PixelDatasetBenchmark {
 
     // Tunable matrix over ROI/confidence/box cap for live Pixel tuning.
     @Test fun run_swe8_pixel_dataset_benchmark() {
-        runBenchmarkAndWrite(roi = Roi.CONFIG, fastConf = Config.Ocr.HYBRID_FAST_CONF, maxBoxes = 4, reportBase = "baseline")
+        runBenchmarkAndWrite(roi = Roi.CONFIG, fastConf = Config.Ocr.HYBRID_FAST_CONF, maxBoxes = 4, reportBase = "baseline", fallbackDarkOnMiss = true)
         runBenchmarkAndWrite(roi = Roi(0.18, 0.32, 0.82, 0.58), fastConf = Config.Ocr.HYBRID_FAST_CONF, maxBoxes = 4, reportBase = "roi_wide_mid")
         runBenchmarkAndWrite(roi = Roi(0.18, 0.32, 0.82, 0.58), fastConf = Config.Ocr.HYBRID_FAST_CONF, maxBoxes = 8, reportBase = "roi_wide_mid")
         runBenchmarkAndWrite(roi = Roi(0.18, 0.32, 0.82, 0.58), fastConf = Config.Ocr.HYBRID_FAST_CONF, maxBoxes = 12, reportBase = "roi_wide_mid")
@@ -428,6 +448,7 @@ class PixelDatasetBenchmark {
         reportBase: String,
         modes: Array<ForegroundMode> = ForegroundMode.values(),
         fallbackToFullOnMiss: Boolean = false,
+        fallbackDarkOnMiss: Boolean = false,
     ) {
         val hasManualVerificationGlobal = File(datasetRoot(), verificationFileName).exists()
         val results = runBenchmark(
@@ -436,6 +457,7 @@ class PixelDatasetBenchmark {
             maxBoxes = maxBoxes,
             modes = modes,
             fallbackToFullOnMiss = fallbackToFullOnMiss,
+            fallbackDarkOnMiss = fallbackDarkOnMiss,
             hasManualVerification = hasManualVerificationGlobal,
         )
         val manifestRows = manifestRows()
@@ -483,7 +505,7 @@ class PixelDatasetBenchmark {
         if (reportBase == "baseline" && maxBoxes == 4 && roi == Roi.CONFIG && fastConf == Config.Ocr.HYBRID_FAST_CONF) {
             assertEquals(0, falsePositives, "baseline Pixel benchmark must keep 0 false positives")
             assertTrue(
-                truePositives >= 8,
+                truePositives >= 9,
                 "baseline Pixel benchmark recall regressed: resolved $truePositives/$positiveRows positives",
             )
         }
@@ -503,7 +525,10 @@ class PixelDatasetBenchmark {
         if (missingFiles > 0) {
             lines += "- frames positivos/negativos faltando arquivo: $missingPositiveFiles/$missingNegativeFiles"
         }
-        val fallbackLabel = if (fallbackToFullOnMiss && roi != Roi.FULL) " + fallback_full" else ""
+        val fallbackLabel = buildString {
+            if (fallbackToFullOnMiss && roi != Roi.FULL) append(" + fallback_full")
+            if (fallbackDarkOnMiss) append(" + fallback_dark")
+        }
         lines += "- estratégia de busca: $fallbackLabel"
         lines += "- resolvidos positivos: $truePositives/$positiveRows"
         lines += "- precisão positiva: ${String.format(Locale.US, "%.2f", if ((truePositives + falsePositives) > 0) truePositives * 100.0 / (truePositives + falsePositives) else 0.0)}%"

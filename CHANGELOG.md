@@ -59,6 +59,10 @@ Notable changes to the sticker scanner. Newest first. No formal releases yet (de
 - **Benchmark manual subiu para `8/10` positivos processáveis com `0/145` falsos positivos.** A
   melhoria veio do atlas real de `IRQ20` balanceado por `SWE8`; os misses restantes (`NED12` e um
   `SWE8` muito fraco) continuam tratados como misses, não como leitura arriscada.
+- **Fallback conservador `DARK` pós-miss recupera `SWE8` fraco.** Quando o pipeline normal não
+  resolve nenhum código, o Android tenta uma segunda detecção só para pill escuro; com um template
+  real do crop fraco de `SWE8`, o benchmark manual sobe para `9/10` positivos processáveis mantendo
+  `0/145` falsos positivos.
 - **ROI Android ficou mais estreita para leitura ao vivo.** A janela agora prioriza a faixa central
   onde o código `SWE 8` foi lido no Pixel, reduzindo fundo analisado e deixando mais claro que a
   figurinha precisa estar perto o suficiente para o código preencher o retículo.

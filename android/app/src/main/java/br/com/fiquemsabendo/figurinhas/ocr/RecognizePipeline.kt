@@ -270,7 +270,7 @@ fun recognizeFrameInOrder(
     maxBoxes: Int = MAX_BOXES_DEFAULT,
 ): RecognizeOutcome {
     val boxes = findCodeBoxes(frame, roi)
-    return recognizeFrameInOrder(
+    val primary = recognizeFrameInOrder(
         engine = engine,
         frame = frame,
         checklist = checklist,
@@ -278,5 +278,26 @@ fun recognizeFrameInOrder(
         stopOnFirstCode = stopOnFirstCode,
         onDetected = onDetected,
         maxBoxes = maxBoxes,
+    )
+    if (!stopOnFirstCode || primary.resolved.isNotEmpty()) return primary
+
+    // The mixed dark+light detector can let a light-mode false candidate suppress a weak real
+    // dark pill. A dark-only retry runs only after a miss, so it can recover weak real backs
+    // without changing the normal fast path or committing any one-off non-code read.
+    val darkBoxes = findCodeBoxes(frame, roi, arrayOf(ForegroundMode.DARK))
+    val dark = recognizeFrameInOrder(
+        engine = engine,
+        frame = frame,
+        checklist = checklist,
+        boxes = darkBoxes,
+        stopOnFirstCode = true,
+        maxBoxes = maxBoxes,
+    )
+    if (dark.resolved.isEmpty() && dark.reads.isEmpty() && dark.crops == 0) return primary
+    return RecognizeOutcome(
+        resolved = dark.resolved,
+        reads = primary.reads + dark.reads,
+        boxes = primary.boxes + dark.boxes,
+        crops = primary.crops + dark.crops,
     )
 }
