@@ -2,6 +2,7 @@ package br.com.fiquemsabendo.figurinhas.ocr
 
 import br.com.fiquemsabendo.figurinhas.Config
 import br.com.fiquemsabendo.figurinhas.data.checklist
+import br.com.fiquemsabendo.figurinhas.domain.Confirmer
 import java.io.BufferedReader
 import java.io.File
 import java.io.FileInputStream
@@ -41,6 +42,8 @@ class PixelDatasetBenchmark {
 
     private data class ManifestRow(
         val frameId: String,
+        val sourceDir: String,
+        val frameNumber: Int,
         val rawFramePath: String,
         val split: String,
         val expected: String,
@@ -81,6 +84,8 @@ class PixelDatasetBenchmark {
 
     private data class FrameResult(
         val frameId: String,
+        val sourceDir: String,
+        val frameNumber: Int,
         val reads: List<String>,
         val hasExpected: Boolean,
         val expected: String,
@@ -97,6 +102,17 @@ class PixelDatasetBenchmark {
         val reason: FailReason,
         val verified: Boolean,
         val diagnostics: List<String>,
+    )
+
+    private data class HoldResult(
+        val expected: String,
+        val sourceDir: String,
+        val startFrame: Int,
+        val endFrame: Int,
+        val manualFrames: Int,
+        val hits: Int,
+        val confirmed: Boolean,
+        val wrongCommits: Set<String>,
     )
 
     private fun datasetRoot(): File = File(repoRoot, "captures/datasets/$datasetName")
@@ -135,6 +151,8 @@ class PixelDatasetBenchmark {
                 rows.add(
                     ManifestRow(
                         frameId = frameId,
+                        sourceDir = cols[1].trim(),
+                        frameNumber = cols.getOrNull(3)?.trim()?.toIntOrNull() ?: -1,
                         rawFramePath = cols[4].trim(),
                         split = split,
                         expected = expected,
@@ -422,6 +440,8 @@ class PixelDatasetBenchmark {
             results.add(
                 FrameResult(
                     frameId = row.frameId,
+                    sourceDir = row.sourceDir,
+                    frameNumber = row.frameNumber,
                     reads = reads,
                     hasExpected = hasExpected,
                     expected = target,
@@ -442,6 +462,53 @@ class PixelDatasetBenchmark {
             )
         }
         return results
+    }
+
+    private fun positiveHoldResults(scoredResults: List<FrameResult>): List<HoldResult> {
+        val positives = scoredResults
+            .filter { it.expected != notStickerLabel }
+            .sortedWith(compareBy<FrameResult> { it.sourceDir }.thenBy { it.frameNumber }.thenBy { it.frameId })
+        if (positives.isEmpty()) return emptyList()
+
+        val groups = ArrayList<List<FrameResult>>()
+        var current = ArrayList<FrameResult>()
+        for (result in positives) {
+            val previous = current.lastOrNull()
+            val sameHold = previous != null &&
+                previous.sourceDir == result.sourceDir &&
+                previous.expected == result.expected &&
+                previous.frameNumber >= 0 &&
+                result.frameNumber >= 0 &&
+                result.frameNumber - previous.frameNumber <= 3
+            if (!sameHold) {
+                if (current.isNotEmpty()) groups.add(current)
+                current = ArrayList()
+            }
+            current.add(result)
+        }
+        if (current.isNotEmpty()) groups.add(current)
+
+        return groups.map { group ->
+            val expected = group.first().expected
+            val confirmer = Confirmer(Config.Match.CONFIRMATIONS)
+            val wrongCommits = linkedSetOf<String>()
+            var confirmed = false
+            for (frame in group) {
+                val newlyCommitted = confirmer.add(frame.resolvedCodes)
+                if (newlyCommitted.contains(expected)) confirmed = true
+                wrongCommits += newlyCommitted.filter { it != expected }
+            }
+            HoldResult(
+                expected = expected,
+                sourceDir = group.first().sourceDir,
+                startFrame = group.first().frameNumber,
+                endFrame = group.last().frameNumber,
+                manualFrames = group.size,
+                hits = group.count { it.hasExpected },
+                confirmed = confirmed,
+                wrongCommits = wrongCommits,
+            )
+        }
     }
 
     @Test fun run_swe8_pixel_dataset_benchmark() {
@@ -556,6 +623,11 @@ class PixelDatasetBenchmark {
         val byReason = scoredResults.filter { it.reason != FailReason.NONE }.groupBy { it.reason }
         val bySplit = scoredResults.groupBy { it.split }
         val hits = scoredResults.filter { it.hasExpected }
+        val positiveHolds = positiveHoldResults(scoredResults)
+        val confirmableHolds = positiveHolds.filter { it.manualFrames >= Config.Match.CONFIRMATIONS }
+        val confirmedHolds = confirmableHolds.count { it.confirmed }
+        val missedHolds = confirmableHolds.filter { !it.confirmed }
+        val wrongHoldCommits = positiveHolds.flatMap { it.wrongCommits }.distinct()
 
         val lines = ArrayList<String>(260)
         lines += "# SWE8 Pixel Live Dataset Benchmark"
@@ -592,6 +664,12 @@ class PixelDatasetBenchmark {
         lines += "- positivos não lidos: $misses"
         lines += "- falsos positivos: $falsePositives de $negativeRows não-sticker processados"
         lines += "- frames positivos/negativos no GT manual: $manifestPositiveRows/$manifestNegativeRows"
+        lines += "- seguradas positivas manuais: ${positiveHolds.size}"
+        lines += "- seguradas positivas avaliáveis (>= ${Config.Match.CONFIRMATIONS} frames manuais): ${confirmableHolds.size}"
+        lines += "- seguradas avaliáveis confirmadas com ${Config.Match.CONFIRMATIONS} leituras: $confirmedHolds/${confirmableHolds.size}"
+        lines += "- seguradas avaliáveis sem confirmação: ${missedHolds.size}"
+        lines += "- seguradas com frames manuais insuficientes: ${positiveHolds.size - confirmableHolds.size}"
+        lines += "- commits errados em seguradas positivas: ${wrongHoldCommits.size}"
         val negativeFalsePositiveRate = if (negativeRows > 0) {
             String.format(Locale.US, "%.2f", falsePositives * 100.0 / negativeRows)
         } else {
@@ -614,6 +692,17 @@ class PixelDatasetBenchmark {
         lines += "- p95/max crops OCR: $cropsP95/$maxCrops"
         lines += "- média de crops com ink: ${String.format(Locale.US, "%.2f", results.map { it.inkBoxes }.average())}"
         lines += "- fallback dark tentado/usado: $darkFallbackAttempts/$darkFallbackUsed"
+        lines += ""
+
+        lines += "## Seguradas positivas avaliáveis sem confirmação"
+        if (missedHolds.isEmpty()) {
+            lines += "- nenhuma"
+        } else {
+            missedHolds.forEach { hold ->
+                val wrong = if (hold.wrongCommits.isEmpty()) "-" else hold.wrongCommits.joinToString(", ")
+                lines += "- ${hold.expected} em ${hold.sourceDir} frames ${hold.startFrame}-${hold.endFrame}: acertos=${hold.hits}/${hold.manualFrames} commits_errados=$wrong"
+            }
+        }
         lines += ""
 
         lines += "## Acertos (GT manual)"

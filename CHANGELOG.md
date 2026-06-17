@@ -6,6 +6,10 @@ Notable changes to the sticker scanner. Newest first. No formal releases yet (de
 ## 2026-06-16 — Android: retry sem falso "lido"
 
 ### Added
+- **Benchmark Pixel mede confirmação por segurada.** Além do recall por frame, o relatório agora
+  agrupa frames manuais por código/origem e simula o mesmo `CONFIRMATIONS=2` do app, separando
+  sequências avaliáveis de exemplos com frames insuficientes. No dataset atual, `7/11` seguradas
+  avaliáveis confirmam sem falso commit; as pendentes são `AUT4`, `MEX15`, `GHA19` e `NOR20`.
 - **Atlas real do OCR ganhou crops verificados do Pixel mais recente.** O harvest agora inclui
   amostras manuais de `RSA19`, `AUT4`, `RSA17`, `PAN1`, `GHA19`, `CIV12`, `RSA6`, `AUT8`, `AUS2`,
   `NZL18`, `CIV4` e `AUS18`, sempre a partir de frames revisados manualmente. No dataset atual,
