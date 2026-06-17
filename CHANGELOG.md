@@ -20,6 +20,10 @@ Notable changes to the sticker scanner. Newest first. No formal releases yet (de
   falsos positivos, `11/11` seguradas avaliáveis confirmadas e p95/max de OCR em `2/3` crops.
 
 ### Changed
+- **Gate Pixel trava regressão de OCR limpo.** Além de `100%` recall e `0` falso positivo, o
+  benchmark Android agora falha se o dataset manual cair abaixo de `37/45` leituras exatas ou subir
+  acima de `8/45` acertos dependentes de correção textual. Isso evita que uma mudança pareça neutra
+  no agregado enquanto aumenta a fragilidade do OCR.
 - **Relatório Pixel separa acertos limpos de acertos corrigidos.** O benchmark agora mostra, por
   frame e por código manual, quantos acertos vieram de leitura exata, correção conservadora ou
   confusão conhecida, expondo casos frágeis mesmo quando o recall agregado já está em `100%`.

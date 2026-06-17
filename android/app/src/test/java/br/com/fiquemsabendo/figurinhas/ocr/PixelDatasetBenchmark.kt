@@ -50,6 +50,8 @@ class PixelDatasetBenchmark {
     private val baselineMinConfirmedHolds = 11
     private val baselineMaxAverageCrops = 0.70
     private val baselineMaxCropsPerFrame = 2
+    private val baselineMinExactHits = 37
+    private val baselineMaxCorrectionDependentHits = 8
     private val usefulFramesPerDifficultCode = 3
     private val watchedDifficultCodes = listOf("MEX15", "IRQ20", "TUN10")
 
@@ -959,6 +961,14 @@ class PixelDatasetBenchmark {
                 assertTrue(
                     confirmedHolds >= baselineMinConfirmedHolds,
                     "baseline Pixel benchmark hold confirmation regressed: confirmed $confirmedHolds/${confirmableHolds.size} confirmable holds",
+                )
+                assertTrue(
+                    exactHits >= baselineMinExactHits,
+                    "baseline Pixel benchmark exact OCR regressed: exact=$exactHits minimum=$baselineMinExactHits",
+                )
+                assertTrue(
+                    correctionDependentHits.size <= baselineMaxCorrectionDependentHits,
+                    "baseline Pixel benchmark correction debt regressed: correction-dependent=${correctionDependentHits.size} maximum=$baselineMaxCorrectionDependentHits",
                 )
             }
             assertTrue(wrongHoldCommits.isEmpty(), "baseline Pixel benchmark produced wrong hold commits: $wrongHoldCommits")
