@@ -69,9 +69,9 @@ class RecognizePipelineTest {
         override val hasSlowFallback: Boolean = false
     }
 
-    private class ConstantNorEngine : FrameRecognizer {
+    private class ConstantCodeEngine(private val text: String) : FrameRecognizer {
         override fun recognizeFast(crops: List<GrayImage>): List<OcrResult> =
-            crops.map { OcrResult("NOR 20", 95.0) }
+            crops.map { OcrResult(text, 95.0) }
 
         override fun recognizeSlow(crops: List<GrayImage>): List<OcrResult>? = null
 
@@ -285,7 +285,7 @@ class RecognizePipelineTest {
         assertTrue(out.resolved.isEmpty())
     }
 
-    @Test fun live_ocr_synthesizes_a_wide_header_candidate_from_small_fragments() {
+    @Test fun live_ocr_synthesizes_header_candidates_from_small_fragments() {
         val w = 420
         val h = 360
         val px = IntArray(w * h) { card }
@@ -298,7 +298,7 @@ class RecognizePipelineTest {
         )
 
         val out = recognizeFrameInOrder(
-            engine = ConstantNorEngine(),
+            engine = ConstantCodeEngine("NOR 20"),
             frame = frame,
             checklist = checklist,
             boxes = fragments,
@@ -307,6 +307,31 @@ class RecognizePipelineTest {
         )
 
         assertEquals(listOf("NOR20"), out.resolved.mapNotNull { it.entry?.code })
-        assertEquals(1, out.crops, "synthetic wide candidate should resolve before fragment crops")
+        assertEquals(1, out.crops, "synthetic header candidate should resolve before fragment crops")
+    }
+
+    @Test fun live_ocr_synthesizes_a_compact_header_candidate_from_sloped_fragments() {
+        val w = 420
+        val h = 360
+        val px = IntArray(w * h) { card }
+        paintInkedPill(px, w, 220, 250, 295, 276)
+        val frame = GrayImage(w, h, px)
+        val fragments = listOf(
+            CodeBox(103.8, 291.1, 21.3, 9.8, 'h', 0.758, 5.3, 8.4, 0.85, false),
+            CodeBox(126.0, 286.7, 34.7, 10.7, 'h', 0.593, null, 8.6, 0.86, false),
+            CodeBox(183.8, 280.4, 35.6, 11.6, 'h', 0.550, null, 8.7, 0.86, false),
+        )
+
+        val out = recognizeFrameInOrder(
+            engine = ConstantCodeEngine("GHA 19"),
+            frame = frame,
+            checklist = checklist,
+            boxes = fragments,
+            stopOnFirstCode = true,
+            maxBoxes = 2,
+        )
+
+        assertEquals(listOf("GHA19"), out.resolved.mapNotNull { it.entry?.code })
+        assertEquals(1, out.crops, "compact synthetic candidate should resolve before noisy fragments")
     }
 }

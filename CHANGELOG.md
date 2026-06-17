@@ -32,6 +32,11 @@ Notable changes to the sticker scanner. Newest first. No formal releases yet (de
   local sem regredir os testes de ouro de `SWE8` nem aumentar falsos positivos.
 
 ### Fixed
+- **OCR Android confirma todas as seguradas avaliáveis do Pixel.** O resgate de cabeçalho agora
+  tenta uma hipótese compacta ancorada nos fragmentos horizontais mais à direita antes da hipótese
+  larga, recuperando o segundo frame de `GHA19` sem abrir o matcher. No benchmark Pixel com CSV
+  manual, o baseline sobe para `41/45` positivos (`91,11%` recall), `11/11` seguradas avaliáveis
+  confirmadas, `0/156` falsos positivos e p95/max de OCR em `2/4` crops.
 - **OCR Android confirma a segurada difícil de `NOR20`.** Além do recorte central para caixas
   largas demais, o caminho live agora sintetiza um candidato largo quando a detecção encontra só
   fragmentos horizontais alinhados do cabeçalho. No benchmark Pixel com CSV manual, o baseline sobe
