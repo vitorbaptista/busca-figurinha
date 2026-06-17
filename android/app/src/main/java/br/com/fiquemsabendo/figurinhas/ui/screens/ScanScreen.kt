@@ -64,6 +64,7 @@ import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.PathFillType
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontFamily
@@ -125,6 +126,7 @@ fun ScanScreen(
 ) {
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
+    val rootView = LocalView.current
 
     // ---------- Camera permission ----------
     // Track grant state in Compose state so the UI flips from the "grant" panel to the camera the
@@ -163,6 +165,14 @@ fun ScanScreen(
         PreviewView(context).apply {
             scaleType = PreviewView.ScaleType.FIT_CENTER // object-fit:contain — keeps the fill-light frame visible
         }
+    }
+
+    // The scanner uses the screen as a fill light. Keep it bright/awake only while this screen is
+    // active, then restore whatever the host view was doing before.
+    DisposableEffect(rootView) {
+        val previous = rootView.keepScreenOn
+        rootView.keepScreenOn = true
+        onDispose { rootView.keepScreenOn = previous }
     }
 
     // Bind/unbind on granted+facing. A facing flip re-runs this effect, which unbinds the old stream

@@ -122,6 +122,9 @@ Notable changes to the sticker scanner. Newest first. No formal releases yet (de
   durante a colheita de novos glifos.
 
 ### Changed
+- **Tela de escaneamento Android não escurece enquanto está aberta.** O scanner agora mantém a tela
+  acordada somente durante o uso da câmera, preservando a luz branca usada como fill-light e
+  restaurando o comportamento normal ao sair da tela.
 - **Scanner Android considera leituras exatas repetidas ao longo do burst.** Leituras brutas de
   baixa confiança só contam quando já são um código real do checklist e aparecem em frames
   suficientes para passar pelo confirmer; `00`, aliases e correções continuam fora desse caminho.
