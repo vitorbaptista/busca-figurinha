@@ -71,6 +71,9 @@ Notable changes to the sticker scanner. Newest first. No formal releases yet (de
   aplica a distribuição calculada ao manifesto, sincroniza o `split` no CSV de verificação e não
   sobrescreve um CSV curado já existente. O gate do baseline falha se houver positivo confirmado sem
   frame ou se `train`/`val`/`test` ficarem sem positivos quando há amostras suficientes.
+- **Sondagem de cena parada ficou mais barata.** A verificação que arma burst quando o app abre com
+  a figurinha já parada agora usa apenas o detector `DARK`; o OCR final continua com a estratégia
+  completa e o benchmark garante que a sondagem encontra caixa em todos os positivos processáveis.
 - **ROI Android ficou mais estreita para leitura ao vivo.** A janela agora prioriza a faixa central
   onde o código `SWE 8` foi lido no Pixel, reduzindo fundo analisado e deixando mais claro que a
   figurinha precisa estar perto o suficiente para o código preencher o retículo.

@@ -441,6 +441,18 @@ class PixelDatasetBenchmark {
         runBenchmarkAndWrite(roi = Roi.FULL, fastConf = 0.0, maxBoxes = 4, reportBase = "full_roi_conf0")
     }
 
+    @Test fun dark_static_probe_finds_every_processable_positive() {
+        val positives = manifestRows().filter { it.isPositiveTarget }
+        assertTrue(positives.isNotEmpty(), "manual Pixel dataset has no verified positives")
+        for (row in positives) {
+            val frameDir = File(datasetRoot(), row.rawFramePath)
+            val frame = loadFrame(frameDir.resolve("frame.pgm.gz"))
+                ?: throw AssertionError("verified positive without frame: ${row.frameId}")
+            val boxes = findCodeBoxes(frame, Roi.CONFIG, arrayOf(ForegroundMode.DARK))
+            assertTrue(boxes.isNotEmpty(), "DARK static-scene probe missed ${row.frameId} (${row.targetLabel})")
+        }
+    }
+
     private fun runBenchmarkAndWrite(
         roi: Roi,
         fastConf: Double,

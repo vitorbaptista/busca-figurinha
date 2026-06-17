@@ -24,6 +24,7 @@ import br.com.fiquemsabendo.figurinhas.ocr.CaptureTrigger
 import br.com.fiquemsabendo.figurinhas.ocr.FrameRecognizer
 import br.com.fiquemsabendo.figurinhas.ocr.GlyphOnlyRecognizer
 import br.com.fiquemsabendo.figurinhas.ocr.GlyphRecognizer
+import br.com.fiquemsabendo.figurinhas.ocr.ForegroundMode
 import br.com.fiquemsabendo.figurinhas.ocr.GrayImage
 import br.com.fiquemsabendo.figurinhas.ocr.codeCropCandidates
 import br.com.fiquemsabendo.figurinhas.ocr.Roi
@@ -291,7 +292,7 @@ class ScanViewModel(
             hasCodeBox = {
                 phase == CapturePhase.WAITING &&
                     !bursting &&
-                    findCodeBoxes(full, Roi.CONFIG).isNotEmpty()
+                    findCodeBoxes(full, Roi.CONFIG, arrayOf(ForegroundMode.DARK)).isNotEmpty()
             },
         )
         if (!shouldStart) return false
