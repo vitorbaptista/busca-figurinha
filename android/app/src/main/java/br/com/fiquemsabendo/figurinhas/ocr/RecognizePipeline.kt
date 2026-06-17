@@ -247,11 +247,13 @@ private class ReticleRescueSpec(
     val h: Double,
     val boost: Boolean,
     val allowEdgeHeaderCorrection: Boolean = false,
+    val runBeforePrimary: Boolean = false,
 )
 
 private class ReticleRescueCandidate(
     val box: CodeBox,
     val allowEdgeHeaderCorrection: Boolean,
+    val runBeforePrimary: Boolean,
 )
 
 private fun thinRestoreOnly(raw: String, code: String): Boolean {
@@ -312,6 +314,7 @@ private fun reticleRescueCandidates(frame: GrayImage, boxes: List<CodeBox>): Lis
                 boost = spec.boost,
             ),
             allowEdgeHeaderCorrection = spec.allowEdgeHeaderCorrection,
+            runBeforePrimary = spec.runBeforePrimary,
         )
     }
 }
@@ -366,6 +369,7 @@ private val RETICLE_RESCUE_EDGE_HEADER = ReticleRescueSpec(
     h = 0.075,
     boost = false,
     allowEdgeHeaderCorrection = true,
+    runBeforePrimary = true,
 )
 private val RETICLE_RESCUE_THIN_LETTERS = setOf('I', 'J', 'L', 'T')
 
@@ -435,6 +439,48 @@ fun recognizeFrameInOrder(
     val reads = ArrayList<String>()
     var crops = 0
     var consideredBoxes = selected.size
+    val reticleCandidates =
+        if (allowReticleRescue && allowLateWideCandidates && stopOnFirstCode) {
+            reticleRescueCandidates(frame, boxes)
+        } else {
+            emptyList()
+        }
+
+    fun runReticleRescue(candidate: ReticleRescueCandidate): Boolean {
+        val rescue = recognizeFrameInOrder(
+            engine = engine,
+            frame = frame,
+            checklist = checklist,
+            boxes = listOf(candidate.box),
+            stopOnFirstCode = true,
+            maxBoxes = 1,
+            allowLateWideCandidates = false,
+            allowHighResRetry = allowHighResRetry,
+            allowReticleRescue = false,
+        )
+        consideredBoxes += rescue.boxes
+        crops += rescue.crops
+        reads.addAll(rescue.reads)
+        val accepted = rescue.resolved.firstOrNull {
+            acceptsReticleRescueMatch(it, candidate.allowEdgeHeaderCorrection)
+        }
+        if (accepted != null) {
+            if (seen.add(accepted.entry!!.code)) resolved.add(accepted)
+            return true
+        }
+        return false
+    }
+
+    for (candidate in reticleCandidates) {
+        if (candidate.runBeforePrimary && runReticleRescue(candidate)) {
+            return RecognizeOutcome(
+                resolved = resolved,
+                reads = reads,
+                boxes = consideredBoxes,
+                crops = crops,
+            )
+        }
+    }
 
     // A lazy crop source per box — the RAW crops are extracted now (cheap), but each variant's
     // expensive prep (prepForOcr) is deferred to the round that actually uses it.
@@ -611,28 +657,9 @@ fun recognizeFrameInOrder(
     }
 
     if (allowReticleRescue && allowLateWideCandidates && stopOnFirstCode && resolved.isEmpty()) {
-        for (candidate in reticleRescueCandidates(frame, boxes)) {
-            val rescue = recognizeFrameInOrder(
-                engine = engine,
-                frame = frame,
-                checklist = checklist,
-                boxes = listOf(candidate.box),
-                stopOnFirstCode = true,
-                maxBoxes = 1,
-                allowLateWideCandidates = false,
-                allowHighResRetry = allowHighResRetry,
-                allowReticleRescue = false,
-            )
-            consideredBoxes += rescue.boxes
-            crops += rescue.crops
-            reads.addAll(rescue.reads)
-            val accepted = rescue.resolved.firstOrNull {
-                acceptsReticleRescueMatch(it, candidate.allowEdgeHeaderCorrection)
-            }
-            if (accepted != null) {
-                if (seen.add(accepted.entry!!.code)) resolved.add(accepted)
-                break
-            }
+        for (candidate in reticleCandidates) {
+            if (candidate.runBeforePrimary) continue
+            if (runReticleRescue(candidate)) break
         }
     }
 
