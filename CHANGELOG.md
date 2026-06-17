@@ -21,6 +21,11 @@ Notable changes to the sticker scanner. Newest first. No formal releases yet (de
   cortado somente no gate específico de `EGY5`. Isso tira `MEX15` e `EGY5` da lista de maior
   trabalho, reduz o baseline de `143` para `136` crops OCR totais e mantém `45/45` positivos,
   `0/156` falsos positivos e p95/max em `2/3` crops.
+- **OCR Android evita rescues largos em corpo de figurinha e tenta retry nítido antes do flip.** O
+  candidato wide agora tem limite superior de tamanho para não tratar o corpo inteiro da figurinha
+  como pill, e o retry de alta resolução roda antes do crop 180° quando a captura está alinhada.
+  Com isso `SWE8` e `AUS18` deixam de pagar 3 crops, o baseline cai para `134` crops totais e o
+  p95/max fica em `2/2`, mantendo `45/45` positivos e `0/156` falsos positivos.
 - **Relatório Pixel mostra cobertura por código manual.** O benchmark agora lista acertos, splits e
   orçamento de crops por código confirmado, e marca códigos difíceis sem GT manual; no dataset atual
   `TUN10` ainda não tem frame revisado e não deve ser usado para validar melhoria.

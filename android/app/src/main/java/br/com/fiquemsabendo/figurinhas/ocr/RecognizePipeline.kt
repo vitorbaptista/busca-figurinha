@@ -125,8 +125,8 @@ private fun isLateWideCodeCandidate(box: CodeBox): Boolean {
     if (shortSide <= 0) return false
     val axisAr = max(box.w, box.h) / shortSide
     return box.score in 0.65..0.75 &&
-        box.w >= 110.0 &&
-        box.h >= 38.0 &&
+        box.w in 110.0..230.0 &&
+        box.h in 38.0..84.0 &&
         axisAr in 2.2..3.8
 }
 
@@ -504,12 +504,13 @@ fun recognizeFrameInOrder(
     }
 
     // Round r OCRs variant index r of every still-pending box. Live/latency mode adds a
-    // small-source high-res retry after the normal upright+flip pair, but only for boxes that
-    // still have not resolved; frames that already read correctly never pay the retry cost.
+    // small-source high-res retry after the normal upright; the flip stays behind that retry
+    // because live Pixel captures are expected to be horizontally aligned and upright. Frames that
+    // already read correctly never pay the retry cost, and 180° fallback remains available.
     val totalRounds = if (retrySmallCrops) 4 else 2
     for (round in 0 until totalRounds) {
-        val retryRound = round >= 2
-        val variant = round % 2
+        val retryRound = retrySmallCrops && round % 2 == 1
+        val variant = if (retrySmallCrops) round / 2 else round
         val jobs = ArrayList<Job>()
         for (p in pending) {
             if (p.done) continue
