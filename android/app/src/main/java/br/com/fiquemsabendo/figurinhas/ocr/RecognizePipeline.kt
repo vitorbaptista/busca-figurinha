@@ -29,6 +29,7 @@ import br.com.fiquemsabendo.figurinhas.domain.Checklist
 import br.com.fiquemsabendo.figurinhas.domain.MatchResult
 import br.com.fiquemsabendo.figurinhas.domain.bestHighConfidenceConfusionMatchFromText
 import br.com.fiquemsabendo.figurinhas.domain.bestMatchFromText
+import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.min
 import kotlin.math.roundToInt
@@ -128,13 +129,86 @@ private fun isLateWideCodeCandidate(box: CodeBox): Boolean {
         axisAr in 2.2..3.8
 }
 
+private fun syntheticRightHeaderCandidate(boxes: List<CodeBox>): CodeBox? {
+    if (boxes.any { it.orient == 'h' && it.score >= 0.70 && it.w >= 90.0 && it.h >= 45.0 }) return null
+    val small = boxes.filter { box ->
+        if (box.orient != 'h') return@filter false
+        val shortSide = min(box.w, box.h)
+        if (shortSide <= 0) return@filter false
+        val axisAr = max(box.w, box.h) / shortSide
+        box.w in 18.0..55.0 &&
+            box.h in 8.0..16.0 &&
+            axisAr >= 2.0 &&
+            box.score in 0.48..0.78
+    }.sortedBy { it.y }
+    if (small.size < 3) return null
+
+    var best: List<CodeBox> = emptyList()
+    for (start in small.indices) {
+        val y0 = small[start].y
+        val row = small.drop(start).takeWhile { abs(it.y - y0) <= HEADER_ROW_Y_TOLERANCE }
+        if (row.size > best.size) best = row
+    }
+    if (best.size < 3) return null
+    val minX = best.minOf { it.x }
+    val maxX = best.maxOf { it.x + it.w }
+    val minY = best.minOf { it.y }
+    val spanX = maxX - minX
+    val avgH = best.sumOf { it.h } / best.size
+    if (spanX !in HEADER_ROW_SPAN_MIN..HEADER_ROW_SPAN_MAX) return null
+    if (avgH !in HEADER_ROW_H_MIN..HEADER_ROW_H_MAX) return null
+
+    val candidateH = (avgH * HEADER_RESCUE_H_MULT).coerceIn(HEADER_RESCUE_H_MIN, HEADER_RESCUE_H_MAX)
+    val candidateW = (spanX * HEADER_RESCUE_W_MULT).coerceIn(HEADER_RESCUE_W_MIN, HEADER_RESCUE_W_MAX)
+    val x = maxX - candidateW * HEADER_RESCUE_RIGHT_ANCHOR
+    val y = minY - candidateH * HEADER_RESCUE_TOP_ANCHOR
+    return CodeBox(
+        x = x,
+        y = y,
+        w = candidateW,
+        h = candidateH,
+        orient = 'h',
+        score = HEADER_RESCUE_SCORE,
+        tilt = 0.0,
+        pillW = candidateH * HEADER_RESCUE_PILL_H,
+        fill = 0.70,
+        boost = false,
+    )
+}
+
+private const val HEADER_ROW_Y_TOLERANCE = 8.0
+private const val HEADER_ROW_SPAN_MIN = 80.0
+private const val HEADER_ROW_SPAN_MAX = 130.0
+private const val HEADER_ROW_H_MIN = 9.0
+private const val HEADER_ROW_H_MAX = 14.0
+private const val HEADER_RESCUE_H_MULT = 6.8
+private const val HEADER_RESCUE_H_MIN = 64.0
+private const val HEADER_RESCUE_H_MAX = 84.0
+private const val HEADER_RESCUE_W_MULT = 1.25
+private const val HEADER_RESCUE_W_MIN = 120.0
+private const val HEADER_RESCUE_W_MAX = 145.0
+private const val HEADER_RESCUE_RIGHT_ANCHOR = 0.10
+private const val HEADER_RESCUE_TOP_ANCHOR = 0.35
+private const val HEADER_RESCUE_PILL_H = 0.46
+private const val HEADER_RESCUE_SCORE = 0.79
+
 private fun selectBoxesForOcr(
     boxes: List<CodeBox>,
     maxBoxes: Int,
     stopOnFirstCode: Boolean,
     allowLateWideCandidates: Boolean,
 ): List<CodeBox> {
-    val boxesForOcr = boxes.filter { it.orient == 'h' }
+    val horizontalBoxes = boxes.filter { it.orient == 'h' }
+    val boxesForOcr = if (stopOnFirstCode) {
+        val headerCandidate = syntheticRightHeaderCandidate(horizontalBoxes)
+        if (headerCandidate == null) {
+            horizontalBoxes
+        } else {
+            (horizontalBoxes + headerCandidate).sortedByDescending { it.score }
+        }
+    } else {
+        horizontalBoxes
+    }
     val selected = ArrayList(boxesForOcr.take(maxBoxes))
     if (!allowLateWideCandidates || !stopOnFirstCode || maxBoxes > LIVE_MAX_BOXES_DEFAULT) return selected
     val firstScore = boxesForOcr.firstOrNull()?.score

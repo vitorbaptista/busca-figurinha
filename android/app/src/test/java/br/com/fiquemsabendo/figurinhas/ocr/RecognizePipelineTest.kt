@@ -69,6 +69,17 @@ class RecognizePipelineTest {
         override val hasSlowFallback: Boolean = false
     }
 
+    private class ConstantNorEngine : FrameRecognizer {
+        override fun recognizeFast(crops: List<GrayImage>): List<OcrResult> =
+            crops.map { OcrResult("NOR 20", 95.0) }
+
+        override fun recognizeSlow(crops: List<GrayImage>): List<OcrResult>? = null
+
+        override val fastConf: Double = Config.Ocr.HYBRID_FAST_CONF
+
+        override val hasSlowFallback: Boolean = false
+    }
+
     /** Paint a dark pill (x0..x1, y0..y1) with a few LIGHT vertical "glyph" bars knocked out of
      *  it into an existing card frame's pixel array. prepForOcr inverts the light text to ink, so
      *  a pill WITH bars survives the cropHasOcrInk gate and dispatches an OCR job (a solid bar with
@@ -272,5 +283,30 @@ class RecognizePipelineTest {
         assertEquals(1, out.boxes, "live OCR should ignore vertical fragments before dispatching crops")
         assertEquals(1, out.crops, "only the horizontal pill should reach OCR")
         assertTrue(out.resolved.isEmpty())
+    }
+
+    @Test fun live_ocr_synthesizes_a_wide_header_candidate_from_small_fragments() {
+        val w = 420
+        val h = 360
+        val px = IntArray(w * h) { card }
+        paintInkedPill(px, w, 245, 250, 325, 275)
+        val frame = GrayImage(w, h, px)
+        val fragments = listOf(
+            CodeBox(126.0, 260.9, 38.2, 11.6, 'h', 0.598, null, 8.8, 0.87, false),
+            CodeBox(166.0, 263.6, 22.2, 10.7, 'h', 0.727, null, 8.7, 0.86, true),
+            CodeBox(190.0, 266.2, 41.8, 12.4, 'h', 0.508, null, 8.7, 0.89, false),
+        )
+
+        val out = recognizeFrameInOrder(
+            engine = ConstantNorEngine(),
+            frame = frame,
+            checklist = checklist,
+            boxes = fragments,
+            stopOnFirstCode = true,
+            maxBoxes = 2,
+        )
+
+        assertEquals(listOf("NOR20"), out.resolved.mapNotNull { it.entry?.code })
+        assertEquals(1, out.crops, "synthetic wide candidate should resolve before fragment crops")
     }
 }
