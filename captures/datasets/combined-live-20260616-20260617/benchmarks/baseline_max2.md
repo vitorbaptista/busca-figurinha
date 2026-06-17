@@ -8,30 +8,30 @@
 - frames com ground-truth manual confirmado: 373
 - frames faltando arquivo de frame: 0
 - estratégia de busca: fallback_dark_no_primary_reads
-- resolvidos positivos: 141/216
+- resolvidos positivos: 142/216
 - precisão positiva: 100.00%
-- recall positivo: 65.28%
-- acertos por leitura exata/correção/confusão conhecida: 56/6/79
-- acertos dependentes de correção textual: 85/141
-- positivos não lidos: 75
+- recall positivo: 65.74%
+- acertos por leitura exata/correção/confusão conhecida: 57/6/79
+- acertos dependentes de correção textual: 85/142
+- positivos não lidos: 74
 - falsos positivos: 0 de 157 não-sticker processados
 - frames positivos/negativos no GT manual: 216/157
 - seguradas positivas manuais: 54
 - seguradas positivas avaliáveis (>= 2 frames manuais): 43
-- seguradas avaliáveis confirmadas com 2 leituras: 38/43
-- seguradas avaliáveis sem confirmação: 5
+- seguradas avaliáveis confirmadas com 2 leituras: 39/43
+- seguradas avaliáveis sem confirmação: 4
 - seguradas com frames manuais insuficientes: 11
 - commits errados em seguradas positivas: 0
 - taxa de falso positivo por não-sticker: 0.00%
-- média de leituras candidatas por frame: 141
+- média de leituras candidatas por frame: 142
 - razão no-frame sem detecção (boxes=0): 1
 - razão sem texto no crop (box com 0 ink): 60
-- razão sem match apesar de OCR: 171
-- mediana detecção/ocr (ms): 14.00 / 12.00
-- p95 detecção/ocr (ms): 19.00 / 29.00
+- razão sem match apesar de OCR: 170
+- mediana detecção/ocr (ms): 12.00 / 10.00
+- p95 detecção/ocr (ms): 16.00 / 25.00
 - média boxes: 2.22
-- média crops: 1.39
-- total crops OCR: 517
+- média crops: 1.38
+- total crops OCR: 516
 - p95/max crops OCR: 3/6
 - média de crops com ink: 0.83
 - fallback dark tentado/usado: 134/44
@@ -39,7 +39,6 @@
 ## Seguradas positivas avaliáveis sem confirmação
 - MEX15 em pixel-live-20260617-090351 frames 72-78: acertos=0/5 commits_errados=-
 - AUS6 em pixel-live-20260617-090351 frames 154-157: acertos=1/4 commits_errados=-
-- NED12 em pixel-live-20260617-090351 frames 186-190: acertos=1/4 commits_errados=-
 - RSA19 em pixel-live-20260617-090351 frames 193-194: acertos=1/2 commits_errados=-
 - SCO16 em pixel-live-20260617-090351 frames 201-206: acertos=1/6 commits_errados=-
 
@@ -127,6 +126,7 @@
 - pixel-live-20260617-090351__frame-180: EGY4
 - pixel-live-20260617-090351__frame-182: EGY4
 - pixel-live-20260617-090351__frame-183: EGY4
+- pixel-live-20260617-090351__frame-186: NED12
 - pixel-live-20260617-090351__frame-187: NED12
 - pixel-live-20260617-090351__frame-194: RSA19
 - pixel-live-20260617-090351__frame-198: SWE8
@@ -206,7 +206,7 @@
 - IRQ20: acertos=4/8 leitura_exata=1 correção=0 confusão=3 splits=test:1, train:6, val:1 crops_média=1.38 crops_max=3
 - MEX15: acertos=7/18 leitura_exata=6 correção=0 confusão=1 splits=test:2, train:14, val:2 crops_média=1.50 crops_max=4
 - MEX19: acertos=5/6 leitura_exata=4 correção=0 confusão=1 splits=train:5, val:1 crops_média=1.33 crops_max=2
-- NED12: acertos=2/5 leitura_exata=2 correção=0 confusão=0 splits=test:1, train:4 crops_média=2.20 crops_max=4
+- NED12: acertos=3/5 leitura_exata=3 correção=0 confusão=0 splits=test:1, train:4 crops_média=2.00 crops_max=4
 - NOR20: acertos=6/8 leitura_exata=2 correção=0 confusão=4 splits=test:1, train:7 crops_média=1.25 crops_max=2
 - NZL18: acertos=6/7 leitura_exata=4 correção=0 confusão=2 splits=test:2, train:4, val:1 crops_média=1.14 crops_max=2
 - PAN1: acertos=3/5 leitura_exata=2 correção=1 confusão=0 splits=train:4, val:1 crops_média=2.40 crops_max=6
@@ -327,7 +327,7 @@
 - live-user-20260616-201108__frame-45: boxes=2 crops=0 reads=-
 - live-user-20260616-201108__frame-53: boxes=1 crops=0 reads=-
 - ... e mais 44 itens
-### NO_MATCH (171)
+### NO_MATCH (170)
 - live-user-20260616-201108__frame-4: boxes=2 crops=2 reads=MTF (0%) | NK X (0%)
 - live-user-20260616-201108__frame-6: boxes=2 crops=2 reads=N XX (0%) | XXX (0%)
 - live-user-20260616-201108__frame-8: boxes=2 crops=2 reads=IMB XXX (0%) | PUW XX (0%)
@@ -344,23 +344,23 @@
 - live-user-20260616-201108__frame-24: boxes=2 crops=2 reads=FE (0%) | VN (0%)
 - live-user-20260616-201108__frame-25: boxes=2 crops=2 reads=IEEBEE (0%) | EVWWENE (0%)
 - live-user-20260616-201108__frame-26: boxes=2 crops=1 reads=-
-- ... e mais 155 itens
+- ... e mais 154 itens
 ### NO_BOXES (1)
 - pixel-live-20260617-090351__frame-85: boxes=0 crops=0 reads=-
 
 ## Piores latências
-1. live-setup-20260616-201017__frame-3 det=24ms ocr=43ms boxes=4/1 crops=2 respostas=NED12
-2. live-user-20260616-201108__frame-7 det=23ms ocr=34ms boxes=2/0 crops=0 respostas=-
-3. live-user-20260616-201108__frame-9 det=17ms ocr=37ms boxes=4/1 crops=3 respostas=-
-4. pixel-live-20260617-090351__frame-155 det=16ms ocr=38ms boxes=2/0 crops=4 respostas=-
-5. pixel-live-20260617-090351__frame-190 det=18ms ocr=36ms boxes=2/1 crops=4 respostas=-
-6. pixel-live-20260617-090351__frame-193 det=16ms ocr=37ms boxes=2/1 crops=4 respostas=-
-7. live-user-full-20260616-201728__frame-407 det=19ms ocr=33ms boxes=4/1 crops=3 respostas=-
-8. pixel-live-20260617-090351__frame-122 det=17ms ocr=35ms boxes=2/2 crops=6 respostas=-
-9. pixel-live-20260617-090351__frame-318 det=17ms ocr=35ms boxes=3/1 crops=4 respostas=-
-10. pixel-live-20260617-090351__frame-157 det=17ms ocr=34ms boxes=2/1 crops=4 respostas=-
-11. pixel-live-20260617-090351__frame-223 det=25ms ocr=25ms boxes=2/1 crops=2 respostas=-
-12. live-setup-20260616-201017__frame-4 det=28ms ocr=21ms boxes=2/1 crops=1 respostas=SWE8
+1. live-setup-20260616-201017__frame-3 det=24ms ocr=39ms boxes=4/1 crops=2 respostas=NED12
+2. live-user-20260616-201108__frame-9 det=16ms ocr=37ms boxes=4/1 crops=3 respostas=-
+3. live-setup-20260616-201017__frame-4 det=27ms ocr=21ms boxes=2/1 crops=1 respostas=SWE8
+4. live-user-20260616-201108__frame-7 det=17ms ocr=31ms boxes=2/0 crops=0 respostas=-
+5. live-user-20260616-201108__frame-11 det=20ms ocr=26ms boxes=2/0 crops=0 respostas=-
+6. pixel-live-20260617-090351__frame-122 det=15ms ocr=31ms boxes=2/2 crops=6 respostas=-
+7. pixel-live-20260617-090351__frame-155 det=15ms ocr=31ms boxes=2/0 crops=4 respostas=-
+8. live-user-20260616-201108__frame-5 det=18ms ocr=27ms boxes=2/0 crops=0 respostas=-
+9. pixel-live-20260617-090351__frame-318 det=14ms ocr=31ms boxes=3/1 crops=4 respostas=-
+10. live-user-20260616-201108__frame-23 det=12ms ocr=30ms boxes=4/0 crops=2 respostas=-
+11. live-user-full-20260616-201728__frame-464 det=14ms ocr=27ms boxes=4/1 crops=3 respostas=-
+12. live-user-full-20260616-201728__frame-362 det=15ms ocr=25ms boxes=3/0 crops=0 respostas=-
 
 ## Maior trabalho OCR
 1. live-user-20260617-011113__frame-32 crops=6 boxes=3/0 respostas=- leituras=EGV 5 | EGV 5 | EG XX (0%) | EG XX (0%) | OBM X (0%) | EEN X (0%)
@@ -383,11 +383,11 @@
 - validação: 32
 - teste: 48
 - total com resultado: 373
-- train -> tp=113 miss=57 fp=0
+- train -> tp=114 miss=56 fp=0
 - val -> tp=14 miss=8 fp=0
 - test -> tp=14 miss=10 fp=0
-- unresolved: 75
-- sem leitura mas com ocr: 50
+- unresolved: 74
+- sem leitura mas com ocr: 49
 - sem leitura e sem ocr: 25
 
 ## Diagnóstico dos positivos não resolvidos
@@ -704,19 +704,6 @@
 - box=5 x=117.1 y=274.2 w=41.8 h=10.7 score=0.444 tilt=- crop=1 ink=true read=/0.0 glyphs=x=89 2x5 ar=2.50 holes=0 best=K:0.30 L=K:0.30 D=4:0.26 D2=0.25
 - box=6 x=87.8 y=260.9 w=36.4 h=8.0 score=0.430 tilt=- crop=0 ink=false read=/0.0 glyphs=
 - box=6 x=87.8 y=260.9 w=36.4 h=8.0 score=0.430 tilt=- crop=1 ink=false read=/0.0 glyphs=
-### pixel-live-20260617-090351__frame-186 esperado=NED12
-- box=0 x=214.9 y=300.9 w=82.7 h=28.4 score=0.940 tilt=1.3 crop=0 ink=true read=NE XXX/0.0 glyphs=x=143 18x47 ar=2.61 holes=0 best=N:0.92 L=N:0.92 D=1:0.79 D2=0.76 | x=161 49x51 ar=1.04 holes=0 best=E:0.92 L=E:0.92 D=5:0.85 D2=0.83 | x=210 38x51 ar=1.34 holes=1 best=0:0.92 L=Q:0.92 D=0:0.92 D2=0.88 | x=272 32x51 ar=1.59 holes=0 best=1:0.98 L=X:0.87 D=1:0.98 D2=0.81 | x=304 43x52 ar=1.21 holes=0 best=2:0.97 L=Z:0.85 D=2:0.97 D2=0.86
-- box=0 x=214.9 y=300.9 w=82.7 h=28.4 score=0.940 tilt=1.3 crop=1 ink=true read=BIQ XX/0.0 glyphs=x=149 41x52 ar=1.27 holes=0 best=8:0.88 L=B:0.84 D=8:0.88 D2=0.86 | x=190 34x51 ar=1.50 holes=0 best=1:0.89 L=T:0.88 D=1:0.89 D2=0.80 | x=248 37x51 ar=1.38 holes=1 best=Q:0.95 L=Q:0.95 D=0:0.91 D2=0.88 | x=285 50x51 ar=1.02 holes=0 best=0:0.84 L=W:0.84 D=0:0.84 D2=0.81 | x=335 18x47 ar=2.61 holes=0 best=4:0.82 L=J:0.81 D=4:0.82 D2=0.79
-- box=1 x=86.0 y=284.9 w=26.7 h=8.9 score=0.712 tilt=- crop=0 ink=false read=/0.0 glyphs=
-- box=1 x=86.0 y=284.9 w=26.7 h=8.9 score=0.712 tilt=- crop=1 ink=false read=/0.0 glyphs=
-- box=2 x=143.8 y=314.2 w=21.3 h=8.0 score=0.697 tilt=- crop=0 ink=true read=/0.0 glyphs=x=124 56x48 ar=0.86 holes=0 best=0:0.92 L=W:0.88 D=0:0.92 D2=0.89
-- box=2 x=143.8 y=314.2 w=21.3 h=8.0 score=0.697 tilt=- crop=1 ink=true read=/0.0 glyphs=x=288 56x48 ar=0.86 holes=0 best=0:0.89 L=E:0.87 D=0:0.89 D2=0.88
-- box=3 x=128.7 y=327.6 w=152.0 h=43.6 score=0.681 tilt=- crop=0 ink=false read=/0.0 glyphs=
-- box=3 x=128.7 y=327.6 w=152.0 h=43.6 score=0.681 tilt=- crop=1 ink=false read=/0.0 glyphs=
-- box=4 x=142.0 y=349.8 w=82.7 h=21.3 score=0.608 tilt=- crop=0 ink=false read=/0.0 glyphs=
-- box=4 x=142.0 y=349.8 w=82.7 h=21.3 score=0.608 tilt=- crop=1 ink=false read=/0.0 glyphs=
-- box=5 x=104.7 y=314.2 w=37.3 h=8.9 score=0.445 tilt=- crop=0 ink=true read=/0.0 glyphs=x=155 17x20 ar=1.18 holes=0 best=0:0.90 L=W:0.88 D=0:0.90 D2=0.89
-- box=5 x=104.7 y=314.2 w=37.3 h=8.9 score=0.445 tilt=- crop=1 ink=true read=/0.0 glyphs=x=237 17x20 ar=1.18 holes=0 best=8:0.88 L=E:0.86 D=8:0.88 D2=0.87
 ### pixel-live-20260617-090351__frame-189 esperado=NED12
 - box=0 x=196.2 y=324.9 w=50.7 h=17.8 score=0.819 tilt=-1.0 crop=0 ink=true read=EO X/0.0 glyphs=x=142 66x56 ar=0.85 holes=1 best=E:0.86 L=E:0.86 D=8:0.76 D2=0.74 | x=207 39x54 ar=1.38 holes=1 best=0:0.85 L=D:0.81 D=0:0.85 D2=0.81 | x=266 71x58 ar=0.82 holes=0 best=0:0.79 L=M:0.77 D=0:0.79 D2=0.77
 - box=0 x=196.2 y=324.9 w=50.7 h=17.8 score=0.819 tilt=-1.0 crop=1 ink=true read=BGN/84.2 glyphs=x=137 71x58 ar=0.82 holes=0 best=8:0.79 L=O:0.76 D=8:0.79 D2=0.78 | x=228 39x54 ar=1.38 holes=1 best=G:0.86 L=G:0.86 D=0:0.84 D2=0.83 | x=266 66x56 ar=0.85 holes=1 best=N:0.87 L=N:0.87 D=0:0.77 D2=0.74

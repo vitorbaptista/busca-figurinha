@@ -6,6 +6,10 @@ Notable changes to the sticker scanner. Newest first. No formal releases yet (de
 ## 2026-06-17 — Android: baseline Pixel combinado
 
 ### Fixed
+- **OCR Android recupera `NED12` quando o `D` fecha como `0` em crop Pixel.** O resgate é preso ao
+  shape completo `NE0 12`, sem abrir o split geral que criava falso positivo. O baseline combinado
+  sobe para `142/216` positivos (`65,74%` recall), `57` leituras exatas, `39/43` seguradas
+  avaliáveis confirmadas, `0/157` falsos positivos e `0` commits errados.
 - **OCR Android aceita `4` forte sem buracos com margem estreita controlada.** O classificador
   continua rejeitando dígitos ambíguos, mas passa a aceitar um `4` limpo quando ele vence o
   runner-up e a melhor letra por margens positivas. Isso recupera um frame de `EGY4` sem falso

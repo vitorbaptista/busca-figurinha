@@ -358,6 +358,51 @@ class GlyphEngineTest {
         assertTrue(reject, "a no-hole 4 still needs separation from the runner-up digit")
     }
 
+    @Test fun assemble_recovers_ned12_when_the_d_closes_into_a_zero_shape() {
+        val zeroShapedD = Classified(
+            label = '0',
+            score = 0.92,
+            bestLetter = LabelScore('Q', 0.92),
+            bestDigit = LabelScore('0', 0.92),
+            secondDigitScore = 0.88,
+            holes = 1,
+        )
+        val list = listOf(
+            classifiedLetter('N', 0.92),
+            classifiedLetter('E', 0.92),
+            zeroShapedD,
+            classifiedDigit('1', 0.98),
+            classifiedDigit('2', 0.97),
+        )
+
+        val (text, _, reject) = assemble(list)
+
+        assertFalse(reject, "the verified NE0 12 shape should remain an exact NED12 read")
+        assertEquals("NED 12", text)
+    }
+
+    @Test fun assemble_does_not_apply_the_ned12_zero_d_rescue_to_other_suffixes() {
+        val zeroShapedD = Classified(
+            label = '0',
+            score = 0.92,
+            bestLetter = LabelScore('Q', 0.92),
+            bestDigit = LabelScore('0', 0.92),
+            secondDigitScore = 0.88,
+            holes = 1,
+        )
+        val list = listOf(
+            classifiedLetter('N', 0.92),
+            classifiedLetter('E', 0.92),
+            zeroShapedD,
+            classifiedDigit('1', 0.98),
+            classifiedDigit('1', 0.97),
+        )
+
+        val (text, _, _) = assemble(list)
+
+        assertTrue(text != "NED 11", "the NED12 rescue must stay tied to the verified 12 suffix")
+    }
+
     @Test fun assemble_keeps_one_hole_8_vs_5_ambiguous_by_default() {
         val ambiguous = Classified(
             label = '8',

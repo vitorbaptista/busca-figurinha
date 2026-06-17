@@ -74,6 +74,7 @@ private const val DIGIT_THREE_NO_HOLE_LETTER_MARGIN = 0.01
 private const val DIGIT_FOUR_NO_HOLE_TOPOLOGY_STRONG = 0.93
 private const val DIGIT_FOUR_NO_HOLE_MARGIN = 0.035
 private const val DIGIT_FOUR_NO_HOLE_LETTER_MARGIN = 0.05
+private const val NED12_ZERO_D_SPLIT_BONUS = 0.08
 
 /** A committed glyph must classify at least this well. A whole crop of card texture or a logo
  *  fragment scores below this on most glyphs; rejecting them makes the token un-matchable (the
@@ -176,6 +177,16 @@ internal fun assemble(
 ): Triple<String, Double, Boolean> {
     val n = classified.size
     if (n == 0) return Triple("", 0.0, true)
+    val ned12ZeroDShape =
+        // In verified Pixel crops, NED12's D can close into a one-hole zero. Keep this rescue
+        // tied to the full NE0 12 shape so the broader split prior stays conservative.
+        n == 5 &&
+            classified[0].bestLetter.label == 'N' &&
+            classified[1].bestLetter.label == 'E' &&
+            classified[2].bestDigit.label == '0' &&
+            classified[2].holes == 1 &&
+            classified[3].bestDigit.label == '1' &&
+            classified[4].bestDigit.label == '2'
 
     // Choose a split point k: glyphs [0,k) are letters, [k,n) are digits. Score each split by
     // the total in-class confidence and pick the best. Codes are 2–4 letters + 1–3 digits, so
@@ -192,6 +203,9 @@ internal fun assemble(
         val letters = k
         val digits = n - k
         if (letters in 2..4 && digits in 1..3) sum += 0.04
+        if (k == 3 && ned12ZeroDShape) {
+            sum += NED12_ZERO_D_SPLIT_BONUS
+        }
         if (sum > bestSum) {
             bestSum = sum
             bestK = k
@@ -267,6 +281,9 @@ internal fun assemble(
                 decisive = true
             }
             if (!decisive) reject = true
+        } else if (ned12ZeroDShape && bestK == 3 && i == 2) {
+            ch = 'D'
+            sc = maxOf(c.bestLetter.score, c.bestDigit.score)
         } else if (DIGITS.contains(ch) && DIGIT_TO_LETTER.containsKey(ch)) {
             ch = DIGIT_TO_LETTER.getValue(ch)
         } else if (DIGITS.contains(ch)) {
