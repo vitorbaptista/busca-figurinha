@@ -86,6 +86,7 @@ import br.com.fiquemsabendo.figurinhas.data.SettingsRepository
 import br.com.fiquemsabendo.figurinhas.domain.ScanOutcome
 import br.com.fiquemsabendo.figurinhas.i18n.Pt
 import br.com.fiquemsabendo.figurinhas.ocr.CapturePhase
+import br.com.fiquemsabendo.figurinhas.ocr.CodeBoxSource
 import br.com.fiquemsabendo.figurinhas.scan.DebugCropBox
 import br.com.fiquemsabendo.figurinhas.scan.DebugInfo
 import br.com.fiquemsabendo.figurinhas.scan.ScanFeedback
@@ -662,8 +663,13 @@ private fun ScanDebugCropOverlay(
             val right = displayedFrame.left + frameRight * displayedFrame.width
             val bottom = displayedFrame.top + box.bottom * displayedFrame.height
             if (right <= left || bottom <= top) return@forEachIndexed
+            val color = if (box.source == CodeBoxSource.HORIZONTAL_SCAN) {
+                Color(0xFFFF00E5)
+            } else {
+                colors[index % colors.size]
+            }
             drawRoundRect(
-                color = colors[index % colors.size],
+                color = color,
                 topLeft = Offset(left, top),
                 size = Size(right - left, bottom - top),
                 cornerRadius = CornerRadius(8.dp.toPx(), 8.dp.toPx()),

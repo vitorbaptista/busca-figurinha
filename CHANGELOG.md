@@ -117,6 +117,11 @@ Notable changes to the sticker scanner. Newest first. No formal releases yet (de
   durante a colheita de novos glifos.
 
 ### Changed
+- **Debug Android passa a mostrar candidatos de cápsula por varredura horizontal.** O detector agora
+  marca caixas vindas de uma busca direta por bandas horizontais no retículo; no modo debug elas
+  aparecem em magenta no overlay e entram nos dumps de crops. O caminho de OCR ignora essas caixas
+  por enquanto, porque usá-las como fallback direto não melhorou o baseline manual sem aumentar
+  trabalho.
 - **Scanner Android passa a orientar enquadramento sem bloquear OCR quando há candidato visual.** O
   live loop agora expõe mensagens como “Aproxime mais o código”, “Centralize o código na caixa” e
   “Deixe o código reto”, mas ainda deixa o matcher/confirmer tentar a leitura quando há alguma

@@ -1,6 +1,7 @@
 package br.com.fiquemsabendo.figurinhas.scan
 
 import br.com.fiquemsabendo.figurinhas.ocr.CapturePhase
+import br.com.fiquemsabendo.figurinhas.ocr.CodeBoxSource
 
 /** Normalized crop rectangle (0..1 in display-oriented frame coordinates) for the debug overlay. */
 data class DebugCropBox(
@@ -9,6 +10,7 @@ data class DebugCropBox(
     val right: Float,
     val bottom: Float,
     val score: Double,
+    val source: CodeBoxSource = CodeBoxSource.COMPONENT,
 )
 
 /** Live debug snapshot the Scan screen renders when the Ajustes debug toggle is on. */

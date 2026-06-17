@@ -61,6 +61,19 @@ class LocateTest {
         assertTrue(boxes.isEmpty(), "a uniform card should yield no boxes, got ${boxes.size}")
     }
 
+    @Test fun roi_detection_includes_horizontal_scan_candidates_for_a_pill_band() {
+        val w = 480
+        val h = 640
+        val img = frame(w, h, rect(170, 250, 309, 289))
+
+        val boxes = findCodeBoxes(img, Roi.CONFIG)
+
+        assertTrue(
+            boxes.any { it.source == CodeBoxSource.HORIZONTAL_SCAN },
+            "debug overlay should receive a horizontal-scan candidate for a reticle pill",
+        )
+    }
+
     @Test fun a_round_blob_is_not_a_pill() {
         // A near-square dark blob (AR ~1) fails the AR>=2.0 gate, so no box (or all-low) survives.
         val w = 600

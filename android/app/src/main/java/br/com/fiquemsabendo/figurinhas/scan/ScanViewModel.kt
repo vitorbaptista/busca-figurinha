@@ -21,6 +21,8 @@ import br.com.fiquemsabendo.figurinhas.data.checklist as defaultChecklist
 import br.com.fiquemsabendo.figurinhas.domain.matchCode
 import br.com.fiquemsabendo.figurinhas.ocr.CapturePhase
 import br.com.fiquemsabendo.figurinhas.ocr.CaptureTrigger
+import br.com.fiquemsabendo.figurinhas.ocr.CodeBox
+import br.com.fiquemsabendo.figurinhas.ocr.CodeBoxSource
 import br.com.fiquemsabendo.figurinhas.ocr.FrameRecognizer
 import br.com.fiquemsabendo.figurinhas.ocr.GrayImage
 import br.com.fiquemsabendo.figurinhas.ocr.GlyphOnlyRecognizer
@@ -416,7 +418,7 @@ class ScanViewModel(
         val label = "frame-${++dumpSeq}"
         viewModelScope.launch(Dispatchers.IO) {
             val crops = findCodeBoxes(frame, Roi.CONFIG)
-                .take(4)
+                .let(::debugCodeBoxes)
                 .flatMap { codeCropCandidates(frame, it) }
             val dir = debugCapture.dump(label, frame, crops)
             _debug.value = _debug.value.copy(lastDumpDir = dir)
@@ -426,7 +428,7 @@ class ScanViewModel(
     private fun debugCropBoxes(frame: GrayImage): List<DebugCropBox> {
         if (frame.width <= 0 || frame.height <= 0) return emptyList()
         return findCodeBoxes(frame, Roi.CONFIG)
-            .take(4)
+            .let(::debugCodeBoxes)
             .map { box ->
                 val padX = box.w * DEBUG_CROP_PAD_FRAC
                 val padY = box.h * DEBUG_CROP_PAD_FRAC
@@ -436,8 +438,15 @@ class ScanViewModel(
                     right = ((box.x + box.w + padX) / frame.width).toFloat().coerceIn(0f, 1f),
                     bottom = ((box.y + box.h + padY) / frame.height).toFloat().coerceIn(0f, 1f),
                     score = box.score,
+                    source = box.source,
                 )
             }
+    }
+
+    private fun debugCodeBoxes(boxes: List<CodeBox>): List<CodeBox> {
+        val component = boxes.filter { it.source != CodeBoxSource.HORIZONTAL_SCAN }.take(DEBUG_COMPONENT_BOXES)
+        val horizontal = boxes.filter { it.source == CodeBoxSource.HORIZONTAL_SCAN }.take(DEBUG_HORIZONTAL_SCAN_BOXES)
+        return (component + horizontal).take(DEBUG_CROP_BOXES)
     }
 
     /** Fold one batch's feedback into the running counters + recent strip and emit the one-shot
@@ -536,6 +545,11 @@ class ScanViewModel(
 
         /** Mirrors Locate.cropRegion's padFrac so the overlay shows the actual OCR crop extent. */
         private const val DEBUG_CROP_PAD_FRAC = 0.18
+
+        /** Include late horizontal-scan candidates, not just the first live OCR boxes. */
+        private const val DEBUG_CROP_BOXES = 8
+        private const val DEBUG_COMPONENT_BOXES = 4
+        private const val DEBUG_HORIZONTAL_SCAN_BOXES = 4
 
         /** Atlas asset shipped under app/src/main/assets/. */
         private const val ATLAS_ASSET = "glyph_atlas.bin"

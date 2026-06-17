@@ -122,6 +122,9 @@ private fun clampMaxBoxes(maxBoxes: Int): Int {
     return max(1, min(maxBoxes, 12))
 }
 
+private fun componentBoxesOnly(boxes: List<CodeBox>): List<CodeBox> =
+    boxes.filter { it.source != CodeBoxSource.HORIZONTAL_SCAN }
+
 private fun isLateWideCodeCandidate(box: CodeBox): Boolean {
     if (box.tilt != null || box.orient != 'h') return false
     val shortSide = min(box.w, box.h)
@@ -554,7 +557,8 @@ fun recognizeFrameInOrder(
     allowReticleRescue: Boolean = true,
 ): RecognizeOutcome {
     val effectiveMax = clampMaxBoxes(maxBoxes)
-    val selected = selectBoxesForOcr(boxes, effectiveMax, stopOnFirstCode, allowLateWideCandidates)
+    val componentBoxes = componentBoxesOnly(boxes)
+    val selected = selectBoxesForOcr(componentBoxes, effectiveMax, stopOnFirstCode, allowLateWideCandidates)
     onDetected?.invoke()
 
     val resolved = ArrayList<MatchResult>()
@@ -564,7 +568,7 @@ fun recognizeFrameInOrder(
     var consideredBoxes = selected.size
     val reticleCandidates =
         if (allowReticleRescue && allowLateWideCandidates && stopOnFirstCode) {
-            reticleRescueCandidates(frame, boxes)
+            reticleRescueCandidates(frame, componentBoxes)
         } else {
             emptyList()
         }
@@ -851,7 +855,9 @@ fun recognizeFrameInOrder(
         allowLateWideCandidates = false,
         allowHighResRetry = false,
     )
-    if (dark.resolved.isEmpty() && dark.reads.isEmpty() && dark.crops == 0) return primary
+    if (dark.resolved.isEmpty() && dark.reads.isEmpty() && dark.crops == 0) {
+        return primary
+    }
     return RecognizeOutcome(
         resolved = dark.resolved,
         reads = primary.reads + dark.reads,

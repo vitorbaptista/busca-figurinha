@@ -63,7 +63,14 @@ data class CodeBox(
     val boost: Boolean,
     /** True when the detector found a light capsule, so the printed code itself is dark. */
     val darkText: Boolean = false,
+    /** Which detector surfaced this candidate; used for conservative OCR/debug behavior. */
+    val source: CodeBoxSource = CodeBoxSource.COMPONENT,
 )
+
+enum class CodeBoxSource {
+    COMPONENT,
+    HORIZONTAL_SCAN,
+}
 
 /** Rotation-invariant shape descriptors of a connected component, from its pixel
  *  moments. Unlike the axis-aligned w×h, these hold at ANY in-plane rotation: a code
@@ -287,11 +294,160 @@ fun findCodeBoxes(
     // would upscale it to a mis-calibrated, larger raster that fails the size gates. Passing the
     // full-frame long side makes the sub-rect's raster exactly that slice of the full-frame raster:
     // same pixel density, same gates, just fewer rows/cols → genuinely cheaper detection.
-    val boxes = detectBoxes(sub, max(fw, fh), modes)
+    val boxes = detectBoxes(sub, max(fw, fh), modes) + detectHorizontalScanBoxes(sub, modes)
     // Boxes come back in SUB-RECT coordinates; offset BOTH x and y back into full-frame space (the
     // moment-derived tilt and pillW are translation-invariant, so they carry over unchanged).
     return boxes.map { it.copy(x = it.x + x0, y = it.y + y0) }
 }
+
+/** Horizontal fallback for the live reticle. The connected-component detector can fragment a real
+ *  pill into small glyph/logo pieces when the capture is soft or the capsule blends into the card.
+ *  This scan looks for whole horizontal dark bands with pill-like aspect and contrast. Candidates
+ *  are appended after normal component boxes and tagged separately; the current OCR path ignores
+ *  them, but debug mode can display and dump them for live tuning. */
+private fun detectHorizontalScanBoxes(
+    frame: GrayImage,
+    modes: Array<ForegroundMode>,
+): List<CodeBox> {
+    if (ForegroundMode.DARK !in modes) return emptyList()
+    val w = frame.width
+    val h = frame.height
+    if (w < HSCAN_MIN_FRAME_W || h < HSCAN_MIN_FRAME_H) return emptyList()
+
+    val pixels = frame.pixels
+    val hist = IntArray(256)
+    for (v in pixels) hist[v.coerceIn(0, 255)]++
+    val threshold = (otsu(hist, pixels.size) + HSCAN_THRESHOLD_BOOST).coerceIn(HSCAN_MIN_THRESHOLD, HSCAN_MAX_THRESHOLD)
+
+    val stride = w + 1
+    val darkIntegral = LongArray(stride * (h + 1))
+    val grayIntegral = LongArray(stride * (h + 1))
+    for (y in 1..h) {
+        var darkRow = 0L
+        var grayRow = 0L
+        val srcRow = (y - 1) * w
+        val dstRow = y * stride
+        val prevRow = (y - 1) * stride
+        for (x in 1..w) {
+            val v = pixels[srcRow + x - 1]
+            if (v < threshold) darkRow += 1L
+            grayRow += v.toLong()
+            darkIntegral[dstRow + x] = darkIntegral[prevRow + x] + darkRow
+            grayIntegral[dstRow + x] = grayIntegral[prevRow + x] + grayRow
+        }
+    }
+
+    fun rectSum(integral: LongArray, x: Int, y: Int, rw: Int, rh: Int): Long {
+        val x2 = x + rw
+        val y2 = y + rh
+        return integral[y2 * stride + x2] -
+            integral[y * stride + x2] -
+            integral[y2 * stride + x] +
+            integral[y * stride + x]
+    }
+
+    val heights = horizontalScanHeights(h)
+    val out = ArrayList<CodeBox>()
+    for (bh in heights) {
+        val stepY = max(HSCAN_MIN_STEP_Y, bh / HSCAN_STEP_Y_DIV)
+        for (ar in HSCAN_ASPECTS) {
+            val bw = round(bh * ar).toInt()
+            if (bw < HSCAN_MIN_W || bw > w * HSCAN_MAX_FRAME_W_FRAC || bw > w) continue
+            val stepX = max(HSCAN_MIN_STEP_X, bw / HSCAN_STEP_X_DIV)
+            var y = 0
+            while (y <= h - bh) {
+                var x = 0
+                while (x <= w - bw) {
+                    val area = bw * bh
+                    val fill = rectSum(darkIntegral, x, y, bw, bh).toDouble() / area
+                    if (fill in HSCAN_MIN_FILL..HSCAN_MAX_FILL) {
+                        val padX = max(HSCAN_MIN_PAD_X, bw / HSCAN_PAD_X_DIV)
+                        val padY = max(HSCAN_MIN_PAD_Y, bh / HSCAN_PAD_Y_DIV)
+                        val ex = max(0, x - padX)
+                        val ey = max(0, y - padY)
+                        val ex2 = min(w, x + bw + padX)
+                        val ey2 = min(h, y + bh + padY)
+                        val expandedArea = (ex2 - ex) * (ey2 - ey)
+                        val borderArea = expandedArea - area
+                        if (borderArea > 0) {
+                            val gray = rectSum(grayIntegral, x, y, bw, bh)
+                            val expandedGray = rectSum(grayIntegral, ex, ey, ex2 - ex, ey2 - ey)
+                            val mean = gray.toDouble() / area
+                            val borderMean = (expandedGray - gray).toDouble() / borderArea
+                            val contrast = borderMean - mean
+                            if (contrast >= HSCAN_MIN_CONTRAST) {
+                                val arScore = 1 - min(1.0, abs(ar - HSCAN_IDEAL_AR) / HSCAN_IDEAL_AR)
+                                val fillScore = 1 - min(1.0, abs(fill - HSCAN_IDEAL_FILL) / HSCAN_FILL_SPAN)
+                                val contrastScore = min(1.0, contrast / HSCAN_STRONG_CONTRAST)
+                                val score = HSCAN_BASE_SCORE +
+                                    HSCAN_SCORE_RANGE * (arScore * 0.34 + fillScore * 0.33 + contrastScore * 0.33)
+                                out.add(
+                                    CodeBox(
+                                        x = x.toDouble(),
+                                        y = y.toDouble(),
+                                        w = bw.toDouble(),
+                                        h = bh.toDouble(),
+                                        orient = 'h',
+                                        score = score,
+                                        tilt = null,
+                                        pillW = bh.toDouble(),
+                                        fill = fill,
+                                        boost = fill >= HSCAN_BOOST_MIN_FILL,
+                                        source = CodeBoxSource.HORIZONTAL_SCAN,
+                                    ),
+                                )
+                            }
+                        }
+                    }
+                    x += stepX
+                }
+                y += stepY
+            }
+        }
+    }
+    return nonMaxSuppress(out.sortedByDescending { it.score }, HSCAN_NMS_IOU).take(HSCAN_MAX_BOXES)
+}
+
+private fun horizontalScanHeights(frameH: Int): IntArray {
+    val out = ArrayList<Int>(4)
+    for (frac in HSCAN_HEIGHT_FRACS) {
+        val h = round(frameH * frac).toInt().coerceIn(HSCAN_MIN_H, HSCAN_MAX_H)
+        if (h <= frameH && h !in out) out.add(h)
+    }
+    return out.toIntArray()
+}
+
+private const val HSCAN_MIN_FRAME_W = 80
+private const val HSCAN_MIN_FRAME_H = 40
+private const val HSCAN_THRESHOLD_BOOST = 34
+private const val HSCAN_MIN_THRESHOLD = 24
+private const val HSCAN_MAX_THRESHOLD = 190
+private val HSCAN_HEIGHT_FRACS = doubleArrayOf(0.20, 0.25, 0.30, 0.35)
+private val HSCAN_ASPECTS = doubleArrayOf(2.45, 2.85, 3.25, 3.65)
+private const val HSCAN_MIN_W = 72
+private const val HSCAN_MIN_H = 24
+private const val HSCAN_MAX_H = 64
+private const val HSCAN_MAX_FRAME_W_FRAC = 0.74
+private const val HSCAN_MIN_STEP_X = 6
+private const val HSCAN_MIN_STEP_Y = 4
+private const val HSCAN_STEP_X_DIV = 12
+private const val HSCAN_STEP_Y_DIV = 7
+private const val HSCAN_MIN_PAD_X = 4
+private const val HSCAN_MIN_PAD_Y = 4
+private const val HSCAN_PAD_X_DIV = 8
+private const val HSCAN_PAD_Y_DIV = 2
+private const val HSCAN_MIN_FILL = 0.38
+private const val HSCAN_MAX_FILL = 0.92
+private const val HSCAN_MIN_CONTRAST = 12.0
+private const val HSCAN_STRONG_CONTRAST = 38.0
+private const val HSCAN_IDEAL_AR = 3.05
+private const val HSCAN_IDEAL_FILL = 0.70
+private const val HSCAN_FILL_SPAN = 0.42
+private const val HSCAN_BASE_SCORE = 0.66
+private const val HSCAN_SCORE_RANGE = 0.05
+private const val HSCAN_BOOST_MIN_FILL = 0.48
+private const val HSCAN_NMS_IOU = 0.35
+private const val HSCAN_MAX_BOXES = 8
 
 /** Run the full pill-detection pipeline on an image, returning boxes in THAT image's
  *  coordinates. findCodeBoxes calls this on either the whole frame or a bottom-band
