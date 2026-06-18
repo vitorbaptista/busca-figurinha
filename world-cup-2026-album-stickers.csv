@@ -1,0 +1,981 @@
+album_order,code,normalized_code,section_code,section_slug,section_name_en,section_name_pt,world_cup_group,number,name,type,is_foil,source_page_url,source_sticker_url
+1,00,00,PANINI,panini,Panini,Especiais,,0,Panini Logo - We Are Panini,special,true,https://scanini.app/teams/panini,https://scanini.app/stickers/panini-logo
+2,FWC 1,FWC1,FWC,world-cup-history,World Cup History,Especiais,,1,Official Emblem,special,true,https://scanini.app/teams/world-cup-history,https://scanini.app/stickers/world-cup-history-1-official-emblem
+3,FWC 2,FWC2,FWC,world-cup-history,World Cup History,Especiais,,2,Official Emblem,special,true,https://scanini.app/teams/world-cup-history,https://scanini.app/stickers/world-cup-history-2-official-emblem
+4,FWC 3,FWC3,FWC,world-cup-history,World Cup History,Especiais,,3,Official Mascots,special,true,https://scanini.app/teams/world-cup-history,https://scanini.app/stickers/world-cup-history-3-official-mascots
+5,FWC 4,FWC4,FWC,world-cup-history,World Cup History,Especiais,,4,Official Slogan,special,true,https://scanini.app/teams/world-cup-history,https://scanini.app/stickers/world-cup-history-4-official-slogan
+6,FWC 5,FWC5,FWC,world-cup-history,World Cup History,Especiais,,5,Official Ball,special,true,https://scanini.app/teams/world-cup-history,https://scanini.app/stickers/world-cup-history-5-official-ball
+7,FWC 6,FWC6,FWC,world-cup-history,World Cup History,Especiais,,6,Canada - Host Countries & Cities,special,true,https://scanini.app/teams/world-cup-history,https://scanini.app/stickers/world-cup-history-6-canada-host-countries-cities
+8,FWC 7,FWC7,FWC,world-cup-history,World Cup History,Especiais,,7,Mexico - Host Countries & Cities,special,true,https://scanini.app/teams/world-cup-history,https://scanini.app/stickers/world-cup-history-7-mexico-host-countries-cities
+9,FWC 8,FWC8,FWC,world-cup-history,World Cup History,Especiais,,8,USA - Host Countries & Cities,special,true,https://scanini.app/teams/world-cup-history,https://scanini.app/stickers/world-cup-history-8-usa-host-countries-cities
+10,FWC 9,FWC9,FWC,world-cup-history,World Cup History,Especiais,,9,Italy 1934 - World Cup History,special,true,https://scanini.app/teams/world-cup-history,https://scanini.app/stickers/world-cup-history-9-italy-1934-world-cup-history
+11,FWC 10,FWC10,FWC,world-cup-history,World Cup History,Especiais,,10,Uruguay 1950 - World Cup History,special,true,https://scanini.app/teams/world-cup-history,https://scanini.app/stickers/world-cup-history-10-uruguay-1950-world-cup-history
+12,FWC 11,FWC11,FWC,world-cup-history,World Cup History,Especiais,,11,West Germany 1954 - World Cup History,special,true,https://scanini.app/teams/world-cup-history,https://scanini.app/stickers/world-cup-history-11-west-germany-1954-world-cup-history
+13,FWC 12,FWC12,FWC,world-cup-history,World Cup History,Especiais,,12,Brazil 1962 - World Cup History,special,true,https://scanini.app/teams/world-cup-history,https://scanini.app/stickers/world-cup-history-12-brazil-1962-world-cup-history
+14,FWC 13,FWC13,FWC,world-cup-history,World Cup History,Especiais,,13,West Germany 1974 - World Cup History,special,true,https://scanini.app/teams/world-cup-history,https://scanini.app/stickers/world-cup-history-13-west-germany-1974-world-cup-history
+15,FWC 14,FWC14,FWC,world-cup-history,World Cup History,Especiais,,14,Argentina 1986 - World Cup History,special,true,https://scanini.app/teams/world-cup-history,https://scanini.app/stickers/world-cup-history-14-argentina-1986-world-cup-history
+16,FWC 15,FWC15,FWC,world-cup-history,World Cup History,Especiais,,15,Brazil 1994 - World Cup History,special,true,https://scanini.app/teams/world-cup-history,https://scanini.app/stickers/world-cup-history-15-brazil-1994-world-cup-history
+17,FWC 16,FWC16,FWC,world-cup-history,World Cup History,Especiais,,16,Brazil 2002 - World Cup History,special,true,https://scanini.app/teams/world-cup-history,https://scanini.app/stickers/world-cup-history-16-brazil-2002-world-cup-history
+18,FWC 17,FWC17,FWC,world-cup-history,World Cup History,Especiais,,17,Italy 2006 - World Cup History,special,true,https://scanini.app/teams/world-cup-history,https://scanini.app/stickers/world-cup-history-17-italy-2006-world-cup-history
+19,FWC 18,FWC18,FWC,world-cup-history,World Cup History,Especiais,,18,Germany 2014 - World Cup History,special,true,https://scanini.app/teams/world-cup-history,https://scanini.app/stickers/world-cup-history-18-germany-2014-world-cup-history
+20,FWC 19,FWC19,FWC,world-cup-history,World Cup History,Especiais,,19,Argentina 2022 - World Cup History,special,true,https://scanini.app/teams/world-cup-history,https://scanini.app/stickers/world-cup-history-19-argentina-2022-world-cup-history
+21,ALG 1,ALG1,ALG,algeria,Algeria,Argélia,J,1,Team Logo,team_logo,true,https://scanini.app/teams/algeria,https://scanini.app/stickers/algeria-1-team-logo
+22,ALG 2,ALG2,ALG,algeria,Algeria,Argélia,J,2,Alexis Guendouz,player,false,https://scanini.app/teams/algeria,https://scanini.app/stickers/algeria-2-alexis-guendouz
+23,ALG 3,ALG3,ALG,algeria,Algeria,Argélia,J,3,Ramy Bensebaini,player,false,https://scanini.app/teams/algeria,https://scanini.app/stickers/algeria-3-ramy-bensebaini
+24,ALG 4,ALG4,ALG,algeria,Algeria,Argélia,J,4,Youcef Atal,player,false,https://scanini.app/teams/algeria,https://scanini.app/stickers/algeria-4-youcef-atal
+25,ALG 5,ALG5,ALG,algeria,Algeria,Argélia,J,5,Rayan Aït-Nouri,player,false,https://scanini.app/teams/algeria,https://scanini.app/stickers/algeria-5-rayan-ait-nouri
+26,ALG 6,ALG6,ALG,algeria,Algeria,Argélia,J,6,Mohamed Amine Tougai,player,false,https://scanini.app/teams/algeria,https://scanini.app/stickers/algeria-6-mohamed-amine-tougai
+27,ALG 7,ALG7,ALG,algeria,Algeria,Argélia,J,7,Aïssa Mandi,player,false,https://scanini.app/teams/algeria,https://scanini.app/stickers/algeria-7-aissa-mandi
+28,ALG 8,ALG8,ALG,algeria,Algeria,Argélia,J,8,Ismael Bennacer,player,false,https://scanini.app/teams/algeria,https://scanini.app/stickers/algeria-8-ismael-bennacer
+29,ALG 9,ALG9,ALG,algeria,Algeria,Argélia,J,9,Houssem Aquar,player,false,https://scanini.app/teams/algeria,https://scanini.app/stickers/algeria-9-houssem-aquar
+30,ALG 10,ALG10,ALG,algeria,Algeria,Argélia,J,10,Hicham Boudaoui,player,false,https://scanini.app/teams/algeria,https://scanini.app/stickers/algeria-10-hicham-boudaoui
+31,ALG 11,ALG11,ALG,algeria,Algeria,Argélia,J,11,Ramiz Zerrouki,player,false,https://scanini.app/teams/algeria,https://scanini.app/stickers/algeria-11-ramiz-zerrouki
+32,ALG 12,ALG12,ALG,algeria,Algeria,Argélia,J,12,Nabil Bentalab,player,false,https://scanini.app/teams/algeria,https://scanini.app/stickers/algeria-12-nabil-bentalab
+33,ALG 13,ALG13,ALG,algeria,Algeria,Argélia,J,13,Team Photo,team_photo,false,https://scanini.app/teams/algeria,https://scanini.app/stickers/algeria-13-team-photo
+34,ALG 14,ALG14,ALG,algeria,Algeria,Argélia,J,14,Farés Chaibi,player,false,https://scanini.app/teams/algeria,https://scanini.app/stickers/algeria-14-fares-chaibi
+35,ALG 15,ALG15,ALG,algeria,Algeria,Argélia,J,15,Riyad Mahrez,player,false,https://scanini.app/teams/algeria,https://scanini.app/stickers/algeria-15-riyad-mahrez
+36,ALG 16,ALG16,ALG,algeria,Algeria,Argélia,J,16,Said Benrahma,player,false,https://scanini.app/teams/algeria,https://scanini.app/stickers/algeria-16-said-benrahma
+37,ALG 17,ALG17,ALG,algeria,Algeria,Argélia,J,17,Anis Hadj Moussa,player,false,https://scanini.app/teams/algeria,https://scanini.app/stickers/algeria-17-anis-hadj-moussa
+38,ALG 18,ALG18,ALG,algeria,Algeria,Argélia,J,18,Amine Gouiri,player,false,https://scanini.app/teams/algeria,https://scanini.app/stickers/algeria-18-amine-gouiri
+39,ALG 19,ALG19,ALG,algeria,Algeria,Argélia,J,19,Baghdad Bounedjah,player,false,https://scanini.app/teams/algeria,https://scanini.app/stickers/algeria-19-baghdad-bounedjah
+40,ALG 20,ALG20,ALG,algeria,Algeria,Argélia,J,20,Mohammed Amoura,player,false,https://scanini.app/teams/algeria,https://scanini.app/stickers/algeria-20-mohammed-amoura
+41,ARG 1,ARG1,ARG,argentina,Argentina,Argentina,J,1,Team Logo,team_logo,true,https://scanini.app/teams/argentina,https://scanini.app/stickers/argentina-1-team-logo
+42,ARG 2,ARG2,ARG,argentina,Argentina,Argentina,J,2,Emiliano Martinez,player,false,https://scanini.app/teams/argentina,https://scanini.app/stickers/argentina-2-emiliano-martinez
+43,ARG 3,ARG3,ARG,argentina,Argentina,Argentina,J,3,Nahuel Molina,player,false,https://scanini.app/teams/argentina,https://scanini.app/stickers/argentina-3-nahuel-molina
+44,ARG 4,ARG4,ARG,argentina,Argentina,Argentina,J,4,Cristian Romero,player,false,https://scanini.app/teams/argentina,https://scanini.app/stickers/argentina-4-cristian-romero
+45,ARG 5,ARG5,ARG,argentina,Argentina,Argentina,J,5,Nicolas Otamendi,player,false,https://scanini.app/teams/argentina,https://scanini.app/stickers/argentina-5-nicolas-otamendi
+46,ARG 6,ARG6,ARG,argentina,Argentina,Argentina,J,6,Nicolas Tagliafico,player,false,https://scanini.app/teams/argentina,https://scanini.app/stickers/argentina-6-nicolas-tagliafico
+47,ARG 7,ARG7,ARG,argentina,Argentina,Argentina,J,7,Leonardo Balerdi,player,false,https://scanini.app/teams/argentina,https://scanini.app/stickers/argentina-7-leonardo-balerdi
+48,ARG 8,ARG8,ARG,argentina,Argentina,Argentina,J,8,Enzo Fernandez,player,false,https://scanini.app/teams/argentina,https://scanini.app/stickers/argentina-8-enzo-fernandez
+49,ARG 9,ARG9,ARG,argentina,Argentina,Argentina,J,9,Alexis Mac Allister,player,false,https://scanini.app/teams/argentina,https://scanini.app/stickers/argentina-9-alexis-mac-allister
+50,ARG 10,ARG10,ARG,argentina,Argentina,Argentina,J,10,Rodrigo De Paul,player,false,https://scanini.app/teams/argentina,https://scanini.app/stickers/argentina-10-rodrigo-de-paul
+51,ARG 11,ARG11,ARG,argentina,Argentina,Argentina,J,11,Exequiel Palacios,player,false,https://scanini.app/teams/argentina,https://scanini.app/stickers/argentina-11-exequiel-palacios
+52,ARG 12,ARG12,ARG,argentina,Argentina,Argentina,J,12,Leandro Paredes,player,false,https://scanini.app/teams/argentina,https://scanini.app/stickers/argentina-12-leandro-paredes
+53,ARG 13,ARG13,ARG,argentina,Argentina,Argentina,J,13,Team Photo,team_photo,false,https://scanini.app/teams/argentina,https://scanini.app/stickers/argentina-13-team-photo
+54,ARG 14,ARG14,ARG,argentina,Argentina,Argentina,J,14,Nico Paz,player,false,https://scanini.app/teams/argentina,https://scanini.app/stickers/argentina-14-nico-paz
+55,ARG 15,ARG15,ARG,argentina,Argentina,Argentina,J,15,Franco Mastantuono,player,false,https://scanini.app/teams/argentina,https://scanini.app/stickers/argentina-15-franco-mastantuono
+56,ARG 16,ARG16,ARG,argentina,Argentina,Argentina,J,16,Nico Gonzalez,player,false,https://scanini.app/teams/argentina,https://scanini.app/stickers/argentina-16-nico-gonzalez
+57,ARG 17,ARG17,ARG,argentina,Argentina,Argentina,J,17,Lionel Messi,player,false,https://scanini.app/teams/argentina,https://scanini.app/stickers/argentina-17-lionel-messi
+58,ARG 18,ARG18,ARG,argentina,Argentina,Argentina,J,18,Lautaro Martinez,player,false,https://scanini.app/teams/argentina,https://scanini.app/stickers/argentina-18-lautaro-martinez
+59,ARG 19,ARG19,ARG,argentina,Argentina,Argentina,J,19,Julian Alvarez,player,false,https://scanini.app/teams/argentina,https://scanini.app/stickers/argentina-19-julian-alvarez
+60,ARG 20,ARG20,ARG,argentina,Argentina,Argentina,J,20,Giuliano Simeone,player,false,https://scanini.app/teams/argentina,https://scanini.app/stickers/argentina-20-giuliano-simeone
+61,AUS 1,AUS1,AUS,australia,Australia,Austrália,D,1,Team Logo,team_logo,true,https://scanini.app/teams/australia,https://scanini.app/stickers/australia-1-team-logo
+62,AUS 2,AUS2,AUS,australia,Australia,Austrália,D,2,Mathew Ryan,player,false,https://scanini.app/teams/australia,https://scanini.app/stickers/australia-2-mathew-ryan
+63,AUS 3,AUS3,AUS,australia,Australia,Austrália,D,3,Joe Gauci,player,false,https://scanini.app/teams/australia,https://scanini.app/stickers/australia-3-joe-gauci
+64,AUS 4,AUS4,AUS,australia,Australia,Austrália,D,4,Harry Souttar,player,false,https://scanini.app/teams/australia,https://scanini.app/stickers/australia-4-harry-souttar
+65,AUS 5,AUS5,AUS,australia,Australia,Austrália,D,5,Alessandro Circati,player,false,https://scanini.app/teams/australia,https://scanini.app/stickers/australia-5-alessandro-circati
+66,AUS 6,AUS6,AUS,australia,Australia,Austrália,D,6,Jordan Bos,player,false,https://scanini.app/teams/australia,https://scanini.app/stickers/australia-6-jordan-bos
+67,AUS 7,AUS7,AUS,australia,Australia,Austrália,D,7,Aziz Behich,player,false,https://scanini.app/teams/australia,https://scanini.app/stickers/australia-7-aziz-behich
+68,AUS 8,AUS8,AUS,australia,Australia,Austrália,D,8,Cameron Burgess,player,false,https://scanini.app/teams/australia,https://scanini.app/stickers/australia-8-cameron-burgess
+69,AUS 9,AUS9,AUS,australia,Australia,Austrália,D,9,Lewis Miller,player,false,https://scanini.app/teams/australia,https://scanini.app/stickers/australia-9-lewis-miller
+70,AUS 10,AUS10,AUS,australia,Australia,Austrália,D,10,Milos Degenek,player,false,https://scanini.app/teams/australia,https://scanini.app/stickers/australia-10-milos-degenek
+71,AUS 11,AUS11,AUS,australia,Australia,Austrália,D,11,Jackson Irvine,player,false,https://scanini.app/teams/australia,https://scanini.app/stickers/australia-11-jackson-irvine
+72,AUS 12,AUS12,AUS,australia,Australia,Austrália,D,12,Riley McGree,player,false,https://scanini.app/teams/australia,https://scanini.app/stickers/australia-12-riley-mcgree
+73,AUS 13,AUS13,AUS,australia,Australia,Austrália,D,13,Team Photo,team_photo,false,https://scanini.app/teams/australia,https://scanini.app/stickers/australia-13-team-photo
+74,AUS 14,AUS14,AUS,australia,Australia,Austrália,D,14,Aiden O'Neill,player,false,https://scanini.app/teams/australia,https://scanini.app/stickers/australia-14-aiden-oneill
+75,AUS 15,AUS15,AUS,australia,Australia,Austrália,D,15,Connor Metcalfe,player,false,https://scanini.app/teams/australia,https://scanini.app/stickers/australia-15-connor-metcalfe
+76,AUS 16,AUS16,AUS,australia,Australia,Austrália,D,16,Patrick Yazbek,player,false,https://scanini.app/teams/australia,https://scanini.app/stickers/australia-16-patrick-yazbek
+77,AUS 17,AUS17,AUS,australia,Australia,Austrália,D,17,Craig Goodwin,player,false,https://scanini.app/teams/australia,https://scanini.app/stickers/australia-17-craig-goodwin
+78,AUS 18,AUS18,AUS,australia,Australia,Austrália,D,18,Kusini Vengi,player,false,https://scanini.app/teams/australia,https://scanini.app/stickers/australia-18-kusini-vengi
+79,AUS 19,AUS19,AUS,australia,Australia,Austrália,D,19,Nestory Irankunda,player,false,https://scanini.app/teams/australia,https://scanini.app/stickers/australia-19-nestory-irankunda
+80,AUS 20,AUS20,AUS,australia,Australia,Austrália,D,20,Mohamed Touré,player,false,https://scanini.app/teams/australia,https://scanini.app/stickers/australia-20-mohamed-toure
+81,AUT 1,AUT1,AUT,austria,Austria,Áustria,J,1,Team Logo,team_logo,true,https://scanini.app/teams/austria,https://scanini.app/stickers/austria-1-team-logo
+82,AUT 2,AUT2,AUT,austria,Austria,Áustria,J,2,Alexander Schlager,player,false,https://scanini.app/teams/austria,https://scanini.app/stickers/austria-2-alexander-schlager
+83,AUT 3,AUT3,AUT,austria,Austria,Áustria,J,3,Patrick Pentz,player,false,https://scanini.app/teams/austria,https://scanini.app/stickers/austria-3-patrick-pentz
+84,AUT 4,AUT4,AUT,austria,Austria,Áustria,J,4,David Alaba,player,false,https://scanini.app/teams/austria,https://scanini.app/stickers/austria-4-david-alaba
+85,AUT 5,AUT5,AUT,austria,Austria,Áustria,J,5,Kevin Danso,player,false,https://scanini.app/teams/austria,https://scanini.app/stickers/austria-5-kevin-danso
+86,AUT 6,AUT6,AUT,austria,Austria,Áustria,J,6,Philipp Lienhart,player,false,https://scanini.app/teams/austria,https://scanini.app/stickers/austria-6-philipp-lienhart
+87,AUT 7,AUT7,AUT,austria,Austria,Áustria,J,7,Stefan Posch,player,false,https://scanini.app/teams/austria,https://scanini.app/stickers/austria-7-stefan-posch
+88,AUT 8,AUT8,AUT,austria,Austria,Áustria,J,8,Phillipp Mwene,player,false,https://scanini.app/teams/austria,https://scanini.app/stickers/austria-8-phillipp-mwene
+89,AUT 9,AUT9,AUT,austria,Austria,Áustria,J,9,Alexander Prass,player,false,https://scanini.app/teams/austria,https://scanini.app/stickers/austria-9-alexander-prass
+90,AUT 10,AUT10,AUT,austria,Austria,Áustria,J,10,Xaver Schlager,player,false,https://scanini.app/teams/austria,https://scanini.app/stickers/austria-10-xaver-schlager
+91,AUT 11,AUT11,AUT,austria,Austria,Áustria,J,11,Marcel Sabitzer,player,false,https://scanini.app/teams/austria,https://scanini.app/stickers/austria-11-marcel-sabitzer
+92,AUT 12,AUT12,AUT,austria,Austria,Áustria,J,12,Konrad Laimer,player,false,https://scanini.app/teams/austria,https://scanini.app/stickers/austria-12-konrad-laimer
+93,AUT 13,AUT13,AUT,austria,Austria,Áustria,J,13,Team Photo,team_photo,false,https://scanini.app/teams/austria,https://scanini.app/stickers/austria-13-team-photo
+94,AUT 14,AUT14,AUT,austria,Austria,Áustria,J,14,Florian Grillitsch,player,false,https://scanini.app/teams/austria,https://scanini.app/stickers/austria-14-florian-grillitsch
+95,AUT 15,AUT15,AUT,austria,Austria,Áustria,J,15,Nicolas Seiwald,player,false,https://scanini.app/teams/austria,https://scanini.app/stickers/austria-15-nicolas-seiwald
+96,AUT 16,AUT16,AUT,austria,Austria,Áustria,J,16,Romano Schmid,player,false,https://scanini.app/teams/austria,https://scanini.app/stickers/austria-16-romano-schmid
+97,AUT 17,AUT17,AUT,austria,Austria,Áustria,J,17,Patrick Wimmer,player,false,https://scanini.app/teams/austria,https://scanini.app/stickers/austria-17-patrick-wimmer
+98,AUT 18,AUT18,AUT,austria,Austria,Áustria,J,18,Christoph Baumgartner,player,false,https://scanini.app/teams/austria,https://scanini.app/stickers/austria-18-christoph-baumgartner
+99,AUT 19,AUT19,AUT,austria,Austria,Áustria,J,19,Michael Gregoritsch,player,false,https://scanini.app/teams/austria,https://scanini.app/stickers/austria-19-michael-gregoritsch
+100,AUT 20,AUT20,AUT,austria,Austria,Áustria,J,20,Marko Arnautović,player,false,https://scanini.app/teams/austria,https://scanini.app/stickers/austria-20-marko-arnautovic
+101,BEL 1,BEL1,BEL,belgium,Belgium,Bélgica,G,1,Team Logo,team_logo,true,https://scanini.app/teams/belgium,https://scanini.app/stickers/belgium-1-team-logo
+102,BEL 2,BEL2,BEL,belgium,Belgium,Bélgica,G,2,Thibaut Courtois,player,false,https://scanini.app/teams/belgium,https://scanini.app/stickers/belgium-2-thibaut-courtois
+103,BEL 3,BEL3,BEL,belgium,Belgium,Bélgica,G,3,Arthur Theate,player,false,https://scanini.app/teams/belgium,https://scanini.app/stickers/belgium-3-arthur-theate
+104,BEL 4,BEL4,BEL,belgium,Belgium,Bélgica,G,4,Timothy Castagne,player,false,https://scanini.app/teams/belgium,https://scanini.app/stickers/belgium-4-timothy-castagne
+105,BEL 5,BEL5,BEL,belgium,Belgium,Bélgica,G,5,Zeno Debast,player,false,https://scanini.app/teams/belgium,https://scanini.app/stickers/belgium-5-zeno-debast
+106,BEL 6,BEL6,BEL,belgium,Belgium,Bélgica,G,6,Brandon Mechele,player,false,https://scanini.app/teams/belgium,https://scanini.app/stickers/belgium-6-brandon-mechele
+107,BEL 7,BEL7,BEL,belgium,Belgium,Bélgica,G,7,Maxim De Cuyper,player,false,https://scanini.app/teams/belgium,https://scanini.app/stickers/belgium-7-maxim-de-cuyper
+108,BEL 8,BEL8,BEL,belgium,Belgium,Bélgica,G,8,Thomas Meunier,player,false,https://scanini.app/teams/belgium,https://scanini.app/stickers/belgium-8-thomas-meunier
+109,BEL 9,BEL9,BEL,belgium,Belgium,Bélgica,G,9,Youri Tielemans,player,false,https://scanini.app/teams/belgium,https://scanini.app/stickers/belgium-9-youri-tielemans
+110,BEL 10,BEL10,BEL,belgium,Belgium,Bélgica,G,10,Amadou Onana,player,false,https://scanini.app/teams/belgium,https://scanini.app/stickers/belgium-10-amadou-onana
+111,BEL 11,BEL11,BEL,belgium,Belgium,Bélgica,G,11,Nicolas Raskin,player,false,https://scanini.app/teams/belgium,https://scanini.app/stickers/belgium-11-nicolas-raskin
+112,BEL 12,BEL12,BEL,belgium,Belgium,Bélgica,G,12,Alexis Saelemaekers,player,false,https://scanini.app/teams/belgium,https://scanini.app/stickers/belgium-12-alexis-saelemaekers
+113,BEL 13,BEL13,BEL,belgium,Belgium,Bélgica,G,13,Team Photo,team_photo,false,https://scanini.app/teams/belgium,https://scanini.app/stickers/belgium-13-team-photo
+114,BEL 14,BEL14,BEL,belgium,Belgium,Bélgica,G,14,Hans Vanaken,player,false,https://scanini.app/teams/belgium,https://scanini.app/stickers/belgium-14-hans-vanaken
+115,BEL 15,BEL15,BEL,belgium,Belgium,Bélgica,G,15,Kevin De Bruyne,player,false,https://scanini.app/teams/belgium,https://scanini.app/stickers/belgium-15-kevin-de-bruyne
+116,BEL 16,BEL16,BEL,belgium,Belgium,Bélgica,G,16,Jérémy Doku,player,false,https://scanini.app/teams/belgium,https://scanini.app/stickers/belgium-16-jeremy-doku
+117,BEL 17,BEL17,BEL,belgium,Belgium,Bélgica,G,17,Charles De Ketelaere,player,false,https://scanini.app/teams/belgium,https://scanini.app/stickers/belgium-17-charles-de-ketelaere
+118,BEL 18,BEL18,BEL,belgium,Belgium,Bélgica,G,18,Leandro Trossard,player,false,https://scanini.app/teams/belgium,https://scanini.app/stickers/belgium-18-leandro-trossard
+119,BEL 19,BEL19,BEL,belgium,Belgium,Bélgica,G,19,Loïs Openda,player,false,https://scanini.app/teams/belgium,https://scanini.app/stickers/belgium-19-lois-openda
+120,BEL 20,BEL20,BEL,belgium,Belgium,Bélgica,G,20,Romelu Lukaku,player,false,https://scanini.app/teams/belgium,https://scanini.app/stickers/belgium-20-romelu-lukaku
+121,BIH 1,BIH1,BIH,bosnia-and-herzegovina,Bosnia and Herzegovina,Bósnia e Herzegovina,B,1,Team Logo,team_logo,true,https://scanini.app/teams/bosnia-and-herzegovina,https://scanini.app/stickers/bosnia-and-herzegovina-1-team-logo
+122,BIH 2,BIH2,BIH,bosnia-and-herzegovina,Bosnia and Herzegovina,Bósnia e Herzegovina,B,2,Nikola Vasilj,player,false,https://scanini.app/teams/bosnia-and-herzegovina,https://scanini.app/stickers/bosnia-and-herzegovina-2-nikola-vasilj
+123,BIH 3,BIH3,BIH,bosnia-and-herzegovina,Bosnia and Herzegovina,Bósnia e Herzegovina,B,3,Amer Dedic,player,false,https://scanini.app/teams/bosnia-and-herzegovina,https://scanini.app/stickers/bosnia-and-herzegovina-3-amer-dedic
+124,BIH 4,BIH4,BIH,bosnia-and-herzegovina,Bosnia and Herzegovina,Bósnia e Herzegovina,B,4,Sead Kolasinac,player,false,https://scanini.app/teams/bosnia-and-herzegovina,https://scanini.app/stickers/bosnia-and-herzegovina-4-sead-kolasinac
+125,BIH 5,BIH5,BIH,bosnia-and-herzegovina,Bosnia and Herzegovina,Bósnia e Herzegovina,B,5,Tarik Muharemovic,player,false,https://scanini.app/teams/bosnia-and-herzegovina,https://scanini.app/stickers/bosnia-and-herzegovina-5-tarik-muharemovic
+126,BIH 6,BIH6,BIH,bosnia-and-herzegovina,Bosnia and Herzegovina,Bósnia e Herzegovina,B,6,Nihad Mujakic,player,false,https://scanini.app/teams/bosnia-and-herzegovina,https://scanini.app/stickers/bosnia-and-herzegovina-6-nihad-mujakic
+127,BIH 7,BIH7,BIH,bosnia-and-herzegovina,Bosnia and Herzegovina,Bósnia e Herzegovina,B,7,Nikola Katic,player,false,https://scanini.app/teams/bosnia-and-herzegovina,https://scanini.app/stickers/bosnia-and-herzegovina-7-nikola-katic
+128,BIH 8,BIH8,BIH,bosnia-and-herzegovina,Bosnia and Herzegovina,Bósnia e Herzegovina,B,8,Amir Hadziahmetovic,player,false,https://scanini.app/teams/bosnia-and-herzegovina,https://scanini.app/stickers/bosnia-and-herzegovina-8-amir-hadziahmetovic
+129,BIH 9,BIH9,BIH,bosnia-and-herzegovina,Bosnia and Herzegovina,Bósnia e Herzegovina,B,9,Benjamin Tahirovic,player,false,https://scanini.app/teams/bosnia-and-herzegovina,https://scanini.app/stickers/bosnia-and-herzegovina-9-benjamin-tahirovic
+130,BIH 10,BIH10,BIH,bosnia-and-herzegovina,Bosnia and Herzegovina,Bósnia e Herzegovina,B,10,Armin Gigovic,player,false,https://scanini.app/teams/bosnia-and-herzegovina,https://scanini.app/stickers/bosnia-and-herzegovina-10-armin-gigovic
+131,BIH 11,BIH11,BIH,bosnia-and-herzegovina,Bosnia and Herzegovina,Bósnia e Herzegovina,B,11,Ivan Sunjic,player,false,https://scanini.app/teams/bosnia-and-herzegovina,https://scanini.app/stickers/bosnia-and-herzegovina-11-ivan-sunjic
+132,BIH 12,BIH12,BIH,bosnia-and-herzegovina,Bosnia and Herzegovina,Bósnia e Herzegovina,B,12,Ivan Basic,player,false,https://scanini.app/teams/bosnia-and-herzegovina,https://scanini.app/stickers/bosnia-and-herzegovina-12-ivan-basic
+133,BIH 13,BIH13,BIH,bosnia-and-herzegovina,Bosnia and Herzegovina,Bósnia e Herzegovina,B,13,Team Photo,team_photo,false,https://scanini.app/teams/bosnia-and-herzegovina,https://scanini.app/stickers/bosnia-and-herzegovina-13-team-photo
+134,BIH 14,BIH14,BIH,bosnia-and-herzegovina,Bosnia and Herzegovina,Bósnia e Herzegovina,B,14,Dzenis Burnic,player,false,https://scanini.app/teams/bosnia-and-herzegovina,https://scanini.app/stickers/bosnia-and-herzegovina-14-dzenis-burnic
+135,BIH 15,BIH15,BIH,bosnia-and-herzegovina,Bosnia and Herzegovina,Bósnia e Herzegovina,B,15,Esmir Bajraktarevic,player,false,https://scanini.app/teams/bosnia-and-herzegovina,https://scanini.app/stickers/bosnia-and-herzegovina-15-esmir-bajraktarevic
+136,BIH 16,BIH16,BIH,bosnia-and-herzegovina,Bosnia and Herzegovina,Bósnia e Herzegovina,B,16,Amar Memic,player,false,https://scanini.app/teams/bosnia-and-herzegovina,https://scanini.app/stickers/bosnia-and-herzegovina-16-amar-memic
+137,BIH 17,BIH17,BIH,bosnia-and-herzegovina,Bosnia and Herzegovina,Bósnia e Herzegovina,B,17,Ermedin Demirovic,player,false,https://scanini.app/teams/bosnia-and-herzegovina,https://scanini.app/stickers/bosnia-and-herzegovina-17-ermedin-demirovic
+138,BIH 18,BIH18,BIH,bosnia-and-herzegovina,Bosnia and Herzegovina,Bósnia e Herzegovina,B,18,Edin Dzeko,player,false,https://scanini.app/teams/bosnia-and-herzegovina,https://scanini.app/stickers/bosnia-and-herzegovina-18-edin-dzeko
+139,BIH 19,BIH19,BIH,bosnia-and-herzegovina,Bosnia and Herzegovina,Bósnia e Herzegovina,B,19,Samed Bazdar,player,false,https://scanini.app/teams/bosnia-and-herzegovina,https://scanini.app/stickers/bosnia-and-herzegovina-19-samed-bazdar
+140,BIH 20,BIH20,BIH,bosnia-and-herzegovina,Bosnia and Herzegovina,Bósnia e Herzegovina,B,20,Haris Tabakovic,player,false,https://scanini.app/teams/bosnia-and-herzegovina,https://scanini.app/stickers/bosnia-and-herzegovina-20-haris-tabakovic
+141,BRA 1,BRA1,BRA,brazil,Brazil,Brasil,C,1,Team Logo,team_logo,true,https://scanini.app/teams/brazil,https://scanini.app/stickers/brazil-1-team-logo
+142,BRA 2,BRA2,BRA,brazil,Brazil,Brasil,C,2,Alisson,player,false,https://scanini.app/teams/brazil,https://scanini.app/stickers/brazil-2-alisson
+143,BRA 3,BRA3,BRA,brazil,Brazil,Brasil,C,3,Bento,player,false,https://scanini.app/teams/brazil,https://scanini.app/stickers/brazil-3-bento
+144,BRA 4,BRA4,BRA,brazil,Brazil,Brasil,C,4,Marquinhos,player,false,https://scanini.app/teams/brazil,https://scanini.app/stickers/brazil-4-marquinhos
+145,BRA 5,BRA5,BRA,brazil,Brazil,Brasil,C,5,Éder Militão,player,false,https://scanini.app/teams/brazil,https://scanini.app/stickers/brazil-5-eder-militao
+146,BRA 6,BRA6,BRA,brazil,Brazil,Brasil,C,6,Gabriel Magalhães,player,false,https://scanini.app/teams/brazil,https://scanini.app/stickers/brazil-6-gabriel-magalhaes
+147,BRA 7,BRA7,BRA,brazil,Brazil,Brasil,C,7,Danilo,player,false,https://scanini.app/teams/brazil,https://scanini.app/stickers/brazil-7-danilo
+148,BRA 8,BRA8,BRA,brazil,Brazil,Brasil,C,8,Wesley,player,false,https://scanini.app/teams/brazil,https://scanini.app/stickers/brazil-8-wesley
+149,BRA 9,BRA9,BRA,brazil,Brazil,Brasil,C,9,Lucas Paquetá,player,false,https://scanini.app/teams/brazil,https://scanini.app/stickers/brazil-9-lucas-paqueta
+150,BRA 10,BRA10,BRA,brazil,Brazil,Brasil,C,10,Casemiro,player,false,https://scanini.app/teams/brazil,https://scanini.app/stickers/brazil-10-casemiro
+151,BRA 11,BRA11,BRA,brazil,Brazil,Brasil,C,11,Bruno Guimarães,player,false,https://scanini.app/teams/brazil,https://scanini.app/stickers/brazil-11-bruno-guimaraes
+152,BRA 12,BRA12,BRA,brazil,Brazil,Brasil,C,12,Luiz Henrique,player,false,https://scanini.app/teams/brazil,https://scanini.app/stickers/brazil-12-luiz-henrique
+153,BRA 13,BRA13,BRA,brazil,Brazil,Brasil,C,13,Team Photo,team_photo,false,https://scanini.app/teams/brazil,https://scanini.app/stickers/brazil-13-team-photo
+154,BRA 14,BRA14,BRA,brazil,Brazil,Brasil,C,14,Vinicius Júnior,player,false,https://scanini.app/teams/brazil,https://scanini.app/stickers/brazil-14-vinicius-junior
+155,BRA 15,BRA15,BRA,brazil,Brazil,Brasil,C,15,Rodrygo,player,false,https://scanini.app/teams/brazil,https://scanini.app/stickers/brazil-15-rodrygo
+156,BRA 16,BRA16,BRA,brazil,Brazil,Brasil,C,16,João Pedro,player,false,https://scanini.app/teams/brazil,https://scanini.app/stickers/brazil-16-joao-pedro
+157,BRA 17,BRA17,BRA,brazil,Brazil,Brasil,C,17,Matheus Cunha,player,false,https://scanini.app/teams/brazil,https://scanini.app/stickers/brazil-17-matheus-cunha
+158,BRA 18,BRA18,BRA,brazil,Brazil,Brasil,C,18,Gabriel Martinelli,player,false,https://scanini.app/teams/brazil,https://scanini.app/stickers/brazil-18-gabriel-martinelli
+159,BRA 19,BRA19,BRA,brazil,Brazil,Brasil,C,19,Raphinha,player,false,https://scanini.app/teams/brazil,https://scanini.app/stickers/brazil-19-raphinha
+160,BRA 20,BRA20,BRA,brazil,Brazil,Brasil,C,20,Estévão,player,false,https://scanini.app/teams/brazil,https://scanini.app/stickers/brazil-20-estevao
+161,CAN 1,CAN1,CAN,canada,Canada,Canadá,B,1,Team Logo,team_logo,true,https://scanini.app/teams/canada,https://scanini.app/stickers/canada-1-team-logo
+162,CAN 2,CAN2,CAN,canada,Canada,Canadá,B,2,Dayne St.Clair,player,false,https://scanini.app/teams/canada,https://scanini.app/stickers/canada-2-dayne-stclair
+163,CAN 3,CAN3,CAN,canada,Canada,Canadá,B,3,Alphonso Davies,player,false,https://scanini.app/teams/canada,https://scanini.app/stickers/canada-3-alphonso-davies
+164,CAN 4,CAN4,CAN,canada,Canada,Canadá,B,4,Alistair Johnston,player,false,https://scanini.app/teams/canada,https://scanini.app/stickers/canada-4-alistair-johnston
+165,CAN 5,CAN5,CAN,canada,Canada,Canadá,B,5,Samuel Adekugbe,player,false,https://scanini.app/teams/canada,https://scanini.app/stickers/canada-5-samuel-adekugbe
+166,CAN 6,CAN6,CAN,canada,Canada,Canadá,B,6,Riche Larvea,player,false,https://scanini.app/teams/canada,https://scanini.app/stickers/canada-6-riche-larvea
+167,CAN 7,CAN7,CAN,canada,Canada,Canadá,B,7,Derek Cornelius,player,false,https://scanini.app/teams/canada,https://scanini.app/stickers/canada-7-derek-cornelius
+168,CAN 8,CAN8,CAN,canada,Canada,Canadá,B,8,Moïse Bombito,player,false,https://scanini.app/teams/canada,https://scanini.app/stickers/canada-8-moise-bombito
+169,CAN 9,CAN9,CAN,canada,Canada,Canadá,B,9,Kamal Miller,player,false,https://scanini.app/teams/canada,https://scanini.app/stickers/canada-9-kamal-miller
+170,CAN 10,CAN10,CAN,canada,Canada,Canadá,B,10,Stephen Eustáquio,player,false,https://scanini.app/teams/canada,https://scanini.app/stickers/canada-10-stephen-eustaquio
+171,CAN 11,CAN11,CAN,canada,Canada,Canadá,B,11,Ismaël Koné,player,false,https://scanini.app/teams/canada,https://scanini.app/stickers/canada-11-ismael-kone
+172,CAN 12,CAN12,CAN,canada,Canada,Canadá,B,12,Jonathan Osorio,player,false,https://scanini.app/teams/canada,https://scanini.app/stickers/canada-12-jonathan-osorio
+173,CAN 13,CAN13,CAN,canada,Canada,Canadá,B,13,Team Photo,team_photo,false,https://scanini.app/teams/canada,https://scanini.app/stickers/canada-13-team-photo
+174,CAN 14,CAN14,CAN,canada,Canada,Canadá,B,14,Jacob Shaffelburg,player,false,https://scanini.app/teams/canada,https://scanini.app/stickers/canada-14-jacob-shaffelburg
+175,CAN 15,CAN15,CAN,canada,Canada,Canadá,B,15,Mathieu Choinière,player,false,https://scanini.app/teams/canada,https://scanini.app/stickers/canada-15-mathieu-choiniere
+176,CAN 16,CAN16,CAN,canada,Canada,Canadá,B,16,Niko Sigur,player,false,https://scanini.app/teams/canada,https://scanini.app/stickers/canada-16-niko-sigur
+177,CAN 17,CAN17,CAN,canada,Canada,Canadá,B,17,Tajon Buchanan,player,false,https://scanini.app/teams/canada,https://scanini.app/stickers/canada-17-tajon-buchanan
+178,CAN 18,CAN18,CAN,canada,Canada,Canadá,B,18,Liam Millar,player,false,https://scanini.app/teams/canada,https://scanini.app/stickers/canada-18-liam-millar
+179,CAN 19,CAN19,CAN,canada,Canada,Canadá,B,19,Cyle Larin,player,false,https://scanini.app/teams/canada,https://scanini.app/stickers/canada-19-cyle-larin
+180,CAN 20,CAN20,CAN,canada,Canada,Canadá,B,20,Jonathan David,player,false,https://scanini.app/teams/canada,https://scanini.app/stickers/canada-20-jonathan-david
+181,CIV 1,CIV1,CIV,cote-divoire,Côte d'Ivoire,Costa do Marfim,E,1,Team Logo,team_logo,true,https://scanini.app/teams/cote-divoire,https://scanini.app/stickers/cote-divoire-1-team-logo
+182,CIV 2,CIV2,CIV,cote-divoire,Côte d'Ivoire,Costa do Marfim,E,2,Yahia Fofana,player,false,https://scanini.app/teams/cote-divoire,https://scanini.app/stickers/cote-divoire-2-yahia-fofana
+183,CIV 3,CIV3,CIV,cote-divoire,Côte d'Ivoire,Costa do Marfim,E,3,Ghislain Konan,player,false,https://scanini.app/teams/cote-divoire,https://scanini.app/stickers/cote-divoire-3-ghislain-konan
+184,CIV 4,CIV4,CIV,cote-divoire,Côte d'Ivoire,Costa do Marfim,E,4,Wilfried Singo,player,false,https://scanini.app/teams/cote-divoire,https://scanini.app/stickers/cote-divoire-4-wilfried-singo
+185,CIV 5,CIV5,CIV,cote-divoire,Côte d'Ivoire,Costa do Marfim,E,5,Odilon Kossounou,player,false,https://scanini.app/teams/cote-divoire,https://scanini.app/stickers/cote-divoire-5-odilon-kossounou
+186,CIV 6,CIV6,CIV,cote-divoire,Côte d'Ivoire,Costa do Marfim,E,6,Evan Ndicka,player,false,https://scanini.app/teams/cote-divoire,https://scanini.app/stickers/cote-divoire-6-evan-ndicka
+187,CIV 7,CIV7,CIV,cote-divoire,Côte d'Ivoire,Costa do Marfim,E,7,Willy Boly,player,false,https://scanini.app/teams/cote-divoire,https://scanini.app/stickers/cote-divoire-7-willy-boly
+188,CIV 8,CIV8,CIV,cote-divoire,Côte d'Ivoire,Costa do Marfim,E,8,Emmanuel Agbadou,player,false,https://scanini.app/teams/cote-divoire,https://scanini.app/stickers/cote-divoire-8-emmanuel-agbadou
+189,CIV 9,CIV9,CIV,cote-divoire,Côte d'Ivoire,Costa do Marfim,E,9,Ousmane Diomande,player,false,https://scanini.app/teams/cote-divoire,https://scanini.app/stickers/cote-divoire-9-ousmane-diomande
+190,CIV 10,CIV10,CIV,cote-divoire,Côte d'Ivoire,Costa do Marfim,E,10,Franck Kessie,player,false,https://scanini.app/teams/cote-divoire,https://scanini.app/stickers/cote-divoire-10-franck-kessie
+191,CIV 11,CIV11,CIV,cote-divoire,Côte d'Ivoire,Costa do Marfim,E,11,Seko Fofana,player,false,https://scanini.app/teams/cote-divoire,https://scanini.app/stickers/cote-divoire-11-seko-fofana
+192,CIV 12,CIV12,CIV,cote-divoire,Côte d'Ivoire,Costa do Marfim,E,12,Ibrahim Sangare,player,false,https://scanini.app/teams/cote-divoire,https://scanini.app/stickers/cote-divoire-12-ibrahim-sangare
+193,CIV 13,CIV13,CIV,cote-divoire,Côte d'Ivoire,Costa do Marfim,E,13,Team Photo,team_photo,false,https://scanini.app/teams/cote-divoire,https://scanini.app/stickers/cote-divoire-13-team-photo
+194,CIV 14,CIV14,CIV,cote-divoire,Côte d'Ivoire,Costa do Marfim,E,14,Jean-Philippe Gbamin,player,false,https://scanini.app/teams/cote-divoire,https://scanini.app/stickers/cote-divoire-14-jean-philippe-gbamin
+195,CIV 15,CIV15,CIV,cote-divoire,Côte d'Ivoire,Costa do Marfim,E,15,Amad Diallo,player,false,https://scanini.app/teams/cote-divoire,https://scanini.app/stickers/cote-divoire-15-amad-diallo
+196,CIV 16,CIV16,CIV,cote-divoire,Côte d'Ivoire,Costa do Marfim,E,16,Sébastien Haller,player,false,https://scanini.app/teams/cote-divoire,https://scanini.app/stickers/cote-divoire-16-sebastien-haller
+197,CIV 17,CIV17,CIV,cote-divoire,Côte d'Ivoire,Costa do Marfim,E,17,Simon Adingra,player,false,https://scanini.app/teams/cote-divoire,https://scanini.app/stickers/cote-divoire-17-simon-adingra
+198,CIV 18,CIV18,CIV,cote-divoire,Côte d'Ivoire,Costa do Marfim,E,18,Yan Diomande,player,false,https://scanini.app/teams/cote-divoire,https://scanini.app/stickers/cote-divoire-18-yan-diomande
+199,CIV 19,CIV19,CIV,cote-divoire,Côte d'Ivoire,Costa do Marfim,E,19,Evann Guessand,player,false,https://scanini.app/teams/cote-divoire,https://scanini.app/stickers/cote-divoire-19-evann-guessand
+200,CIV 20,CIV20,CIV,cote-divoire,Côte d'Ivoire,Costa do Marfim,E,20,Oumar Diakite,player,false,https://scanini.app/teams/cote-divoire,https://scanini.app/stickers/cote-divoire-20-oumar-diakite
+201,COD 1,COD1,COD,dr-congo,DR Congo,Congo (RD),K,1,Team Logo,team_logo,true,https://scanini.app/teams/dr-congo,https://scanini.app/stickers/dr-congo-1-team-logo
+202,COD 2,COD2,COD,dr-congo,DR Congo,Congo (RD),K,2,Lionel Mpasi,player,false,https://scanini.app/teams/dr-congo,https://scanini.app/stickers/dr-congo-2-lionel-mpasi
+203,COD 3,COD3,COD,dr-congo,DR Congo,Congo (RD),K,3,Aaron Wan-Bissaka,player,false,https://scanini.app/teams/dr-congo,https://scanini.app/stickers/dr-congo-3-aaron-wan-bissaka
+204,COD 4,COD4,COD,dr-congo,DR Congo,Congo (RD),K,4,Axel Tuanzebe,player,false,https://scanini.app/teams/dr-congo,https://scanini.app/stickers/dr-congo-4-axel-tuanzebe
+205,COD 5,COD5,COD,dr-congo,DR Congo,Congo (RD),K,5,Arthur Masuaku,player,false,https://scanini.app/teams/dr-congo,https://scanini.app/stickers/dr-congo-5-arthur-masuaku
+206,COD 6,COD6,COD,dr-congo,DR Congo,Congo (RD),K,6,Chancel Mbemba,player,false,https://scanini.app/teams/dr-congo,https://scanini.app/stickers/dr-congo-6-chancel-mbemba
+207,COD 7,COD7,COD,dr-congo,DR Congo,Congo (RD),K,7,Joris Kayembe,player,false,https://scanini.app/teams/dr-congo,https://scanini.app/stickers/dr-congo-7-joris-kayembe
+208,COD 8,COD8,COD,dr-congo,DR Congo,Congo (RD),K,8,Charles Pickel,player,false,https://scanini.app/teams/dr-congo,https://scanini.app/stickers/dr-congo-8-charles-pickel
+209,COD 9,COD9,COD,dr-congo,DR Congo,Congo (RD),K,9,Ngal'ayel Mukau,player,false,https://scanini.app/teams/dr-congo,https://scanini.app/stickers/dr-congo-9-ngalayel-mukau
+210,COD 10,COD10,COD,dr-congo,DR Congo,Congo (RD),K,10,Edo Kayembe,player,false,https://scanini.app/teams/dr-congo,https://scanini.app/stickers/dr-congo-10-edo-kayembe
+211,COD 11,COD11,COD,dr-congo,DR Congo,Congo (RD),K,11,Samuel Moutoussamy,player,false,https://scanini.app/teams/dr-congo,https://scanini.app/stickers/dr-congo-11-samuel-moutoussamy
+212,COD 12,COD12,COD,dr-congo,DR Congo,Congo (RD),K,12,Noah Sadiki,player,false,https://scanini.app/teams/dr-congo,https://scanini.app/stickers/dr-congo-12-noah-sadiki
+213,COD 13,COD13,COD,dr-congo,DR Congo,Congo (RD),K,13,Team Photo,team_photo,false,https://scanini.app/teams/dr-congo,https://scanini.app/stickers/dr-congo-13-team-photo
+214,COD 14,COD14,COD,dr-congo,DR Congo,Congo (RD),K,14,Théo Bongonda,player,false,https://scanini.app/teams/dr-congo,https://scanini.app/stickers/dr-congo-14-theo-bongonda
+215,COD 15,COD15,COD,dr-congo,DR Congo,Congo (RD),K,15,Meschak Elia,player,false,https://scanini.app/teams/dr-congo,https://scanini.app/stickers/dr-congo-15-meschak-elia
+216,COD 16,COD16,COD,dr-congo,DR Congo,Congo (RD),K,16,Yoane Wissa,player,false,https://scanini.app/teams/dr-congo,https://scanini.app/stickers/dr-congo-16-yoane-wissa
+217,COD 17,COD17,COD,dr-congo,DR Congo,Congo (RD),K,17,Brian Cipenga,player,false,https://scanini.app/teams/dr-congo,https://scanini.app/stickers/dr-congo-17-brian-cipenga
+218,COD 18,COD18,COD,dr-congo,DR Congo,Congo (RD),K,18,Fiston Mayele,player,false,https://scanini.app/teams/dr-congo,https://scanini.app/stickers/dr-congo-18-fiston-mayele
+219,COD 19,COD19,COD,dr-congo,DR Congo,Congo (RD),K,19,Cédric Bakambu,player,false,https://scanini.app/teams/dr-congo,https://scanini.app/stickers/dr-congo-19-cedric-bakambu
+220,COD 20,COD20,COD,dr-congo,DR Congo,Congo (RD),K,20,Nathanaël Mbuku,player,false,https://scanini.app/teams/dr-congo,https://scanini.app/stickers/dr-congo-20-nathanael-mbuku
+221,COL 1,COL1,COL,colombia,Colombia,Colômbia,K,1,Team Logo,team_logo,true,https://scanini.app/teams/colombia,https://scanini.app/stickers/colombia-1-team-logo
+222,COL 2,COL2,COL,colombia,Colombia,Colômbia,K,2,Camilo Vargas,player,false,https://scanini.app/teams/colombia,https://scanini.app/stickers/colombia-2-camilo-vargas
+223,COL 3,COL3,COL,colombia,Colombia,Colômbia,K,3,David Ospina,player,false,https://scanini.app/teams/colombia,https://scanini.app/stickers/colombia-3-david-ospina
+224,COL 4,COL4,COL,colombia,Colombia,Colômbia,K,4,Dávinson Sánchez,player,false,https://scanini.app/teams/colombia,https://scanini.app/stickers/colombia-4-davinson-sanchez
+225,COL 5,COL5,COL,colombia,Colombia,Colômbia,K,5,Yerry Mina,player,false,https://scanini.app/teams/colombia,https://scanini.app/stickers/colombia-5-yerry-mina
+226,COL 6,COL6,COL,colombia,Colombia,Colômbia,K,6,Daniel Munoz,player,false,https://scanini.app/teams/colombia,https://scanini.app/stickers/colombia-6-daniel-munoz
+227,COL 7,COL7,COL,colombia,Colombia,Colômbia,K,7,Johan Mojica,player,false,https://scanini.app/teams/colombia,https://scanini.app/stickers/colombia-7-johan-mojica
+228,COL 8,COL8,COL,colombia,Colombia,Colômbia,K,8,Jhon Lucumí,player,false,https://scanini.app/teams/colombia,https://scanini.app/stickers/colombia-8-jhon-lucumi
+229,COL 9,COL9,COL,colombia,Colombia,Colômbia,K,9,Santiago Arias,player,false,https://scanini.app/teams/colombia,https://scanini.app/stickers/colombia-9-santiago-arias
+230,COL 10,COL10,COL,colombia,Colombia,Colômbia,K,10,Jefferson Lerma,player,false,https://scanini.app/teams/colombia,https://scanini.app/stickers/colombia-10-jefferson-lerma
+231,COL 11,COL11,COL,colombia,Colombia,Colômbia,K,11,Kevin Castaño,player,false,https://scanini.app/teams/colombia,https://scanini.app/stickers/colombia-11-kevin-castano
+232,COL 12,COL12,COL,colombia,Colombia,Colômbia,K,12,Richard Rios,player,false,https://scanini.app/teams/colombia,https://scanini.app/stickers/colombia-12-richard-rios
+233,COL 13,COL13,COL,colombia,Colombia,Colômbia,K,13,Team Photo,team_photo,false,https://scanini.app/teams/colombia,https://scanini.app/stickers/colombia-13-team-photo
+234,COL 14,COL14,COL,colombia,Colombia,Colômbia,K,14,James Rodriguez,player,false,https://scanini.app/teams/colombia,https://scanini.app/stickers/colombia-14-james-rodriguez
+235,COL 15,COL15,COL,colombia,Colombia,Colômbia,K,15,Juan Fernando Quintero,player,false,https://scanini.app/teams/colombia,https://scanini.app/stickers/colombia-15-juan-fernando-quintero
+236,COL 16,COL16,COL,colombia,Colombia,Colômbia,K,16,Jorge Carrascal,player,false,https://scanini.app/teams/colombia,https://scanini.app/stickers/colombia-16-jorge-carrascal
+237,COL 17,COL17,COL,colombia,Colombia,Colômbia,K,17,Jon Arias,player,false,https://scanini.app/teams/colombia,https://scanini.app/stickers/colombia-17-jon-arias
+238,COL 18,COL18,COL,colombia,Colombia,Colômbia,K,18,Jhon Cordova,player,false,https://scanini.app/teams/colombia,https://scanini.app/stickers/colombia-18-jhon-cordova
+239,COL 19,COL19,COL,colombia,Colombia,Colômbia,K,19,Luis Suarez,player,false,https://scanini.app/teams/colombia,https://scanini.app/stickers/colombia-19-luis-suarez
+240,COL 20,COL20,COL,colombia,Colombia,Colômbia,K,20,Luis Diaz,player,false,https://scanini.app/teams/colombia,https://scanini.app/stickers/colombia-20-luis-diaz
+241,CPV 1,CPV1,CPV,cape-verde,Cape Verde,Cabo Verde,H,1,Team Logo,team_logo,true,https://scanini.app/teams/cape-verde,https://scanini.app/stickers/cape-verde-1-team-logo
+242,CPV 2,CPV2,CPV,cape-verde,Cape Verde,Cabo Verde,H,2,Vozinha,player,false,https://scanini.app/teams/cape-verde,https://scanini.app/stickers/cape-verde-2-vozinha
+243,CPV 3,CPV3,CPV,cape-verde,Cape Verde,Cabo Verde,H,3,Logan Costa,player,false,https://scanini.app/teams/cape-verde,https://scanini.app/stickers/cape-verde-3-logan-costa
+244,CPV 4,CPV4,CPV,cape-verde,Cape Verde,Cabo Verde,H,4,Pico,player,false,https://scanini.app/teams/cape-verde,https://scanini.app/stickers/cape-verde-4-pico
+245,CPV 5,CPV5,CPV,cape-verde,Cape Verde,Cabo Verde,H,5,Diney,player,false,https://scanini.app/teams/cape-verde,https://scanini.app/stickers/cape-verde-5-diney
+246,CPV 6,CPV6,CPV,cape-verde,Cape Verde,Cabo Verde,H,6,Steven Moreira,player,false,https://scanini.app/teams/cape-verde,https://scanini.app/stickers/cape-verde-6-steven-moreira
+247,CPV 7,CPV7,CPV,cape-verde,Cape Verde,Cabo Verde,H,7,Wagner Pina,player,false,https://scanini.app/teams/cape-verde,https://scanini.app/stickers/cape-verde-7-wagner-pina
+248,CPV 8,CPV8,CPV,cape-verde,Cape Verde,Cabo Verde,H,8,Joao Paulo,player,false,https://scanini.app/teams/cape-verde,https://scanini.app/stickers/cape-verde-8-joao-paulo
+249,CPV 9,CPV9,CPV,cape-verde,Cape Verde,Cabo Verde,H,9,Yannick Semedo,player,false,https://scanini.app/teams/cape-verde,https://scanini.app/stickers/cape-verde-9-yannick-semedo
+250,CPV 10,CPV10,CPV,cape-verde,Cape Verde,Cabo Verde,H,10,Kevin Pina,player,false,https://scanini.app/teams/cape-verde,https://scanini.app/stickers/cape-verde-10-kevin-pina
+251,CPV 11,CPV11,CPV,cape-verde,Cape Verde,Cabo Verde,H,11,Patrick Andrade,player,false,https://scanini.app/teams/cape-verde,https://scanini.app/stickers/cape-verde-11-patrick-andrade
+252,CPV 12,CPV12,CPV,cape-verde,Cape Verde,Cabo Verde,H,12,Jamiro Monteiro,player,false,https://scanini.app/teams/cape-verde,https://scanini.app/stickers/cape-verde-12-jamiro-monteiro
+253,CPV 13,CPV13,CPV,cape-verde,Cape Verde,Cabo Verde,H,13,Team Photo,team_photo,false,https://scanini.app/teams/cape-verde,https://scanini.app/stickers/cape-verde-13-team-photo
+254,CPV 14,CPV14,CPV,cape-verde,Cape Verde,Cabo Verde,H,14,Deroy Duarte,player,false,https://scanini.app/teams/cape-verde,https://scanini.app/stickers/cape-verde-14-deroy-duarte
+255,CPV 15,CPV15,CPV,cape-verde,Cape Verde,Cabo Verde,H,15,Garry Rodrigues,player,false,https://scanini.app/teams/cape-verde,https://scanini.app/stickers/cape-verde-15-garry-rodrigues
+256,CPV 16,CPV16,CPV,cape-verde,Cape Verde,Cabo Verde,H,16,Jovane Cabral,player,false,https://scanini.app/teams/cape-verde,https://scanini.app/stickers/cape-verde-16-jovane-cabral
+257,CPV 17,CPV17,CPV,cape-verde,Cape Verde,Cabo Verde,H,17,Ryan Mendes,player,false,https://scanini.app/teams/cape-verde,https://scanini.app/stickers/cape-verde-17-ryan-mendes
+258,CPV 18,CPV18,CPV,cape-verde,Cape Verde,Cabo Verde,H,18,Dailon Livramento,player,false,https://scanini.app/teams/cape-verde,https://scanini.app/stickers/cape-verde-18-dailon-livramento
+259,CPV 19,CPV19,CPV,cape-verde,Cape Verde,Cabo Verde,H,19,Willy Semedo,player,false,https://scanini.app/teams/cape-verde,https://scanini.app/stickers/cape-verde-19-willy-semedo
+260,CPV 20,CPV20,CPV,cape-verde,Cape Verde,Cabo Verde,H,20,Bebe,player,false,https://scanini.app/teams/cape-verde,https://scanini.app/stickers/cape-verde-20-bebe
+261,CRO 1,CRO1,CRO,croatia,Croatia,Croácia,L,1,Team Logo,team_logo,true,https://scanini.app/teams/croatia,https://scanini.app/stickers/croatia-1-team-logo
+262,CRO 2,CRO2,CRO,croatia,Croatia,Croácia,L,2,Dominik Livaković,player,false,https://scanini.app/teams/croatia,https://scanini.app/stickers/croatia-2-dominik-livakovic
+263,CRO 3,CRO3,CRO,croatia,Croatia,Croácia,L,3,Duje Caleta-Car,player,false,https://scanini.app/teams/croatia,https://scanini.app/stickers/croatia-3-duje-caleta-car
+264,CRO 4,CRO4,CRO,croatia,Croatia,Croácia,L,4,Josko Gvardiol,player,false,https://scanini.app/teams/croatia,https://scanini.app/stickers/croatia-4-josko-gvardiol
+265,CRO 5,CRO5,CRO,croatia,Croatia,Croácia,L,5,Josip Stanišić,player,false,https://scanini.app/teams/croatia,https://scanini.app/stickers/croatia-5-josip-stanisic
+266,CRO 6,CRO6,CRO,croatia,Croatia,Croácia,L,6,Luka Vušković,player,false,https://scanini.app/teams/croatia,https://scanini.app/stickers/croatia-6-luka-vuskovic
+267,CRO 7,CRO7,CRO,croatia,Croatia,Croácia,L,7,Josip Sutalo,player,false,https://scanini.app/teams/croatia,https://scanini.app/stickers/croatia-7-josip-sutalo
+268,CRO 8,CRO8,CRO,croatia,Croatia,Croácia,L,8,Kristijan Jakic,player,false,https://scanini.app/teams/croatia,https://scanini.app/stickers/croatia-8-kristijan-jakic
+269,CRO 9,CRO9,CRO,croatia,Croatia,Croácia,L,9,Luka Modrić,player,false,https://scanini.app/teams/croatia,https://scanini.app/stickers/croatia-9-luka-modric
+270,CRO 10,CRO10,CRO,croatia,Croatia,Croácia,L,10,Mateo Kovacic,player,false,https://scanini.app/teams/croatia,https://scanini.app/stickers/croatia-10-mateo-kovacic
+271,CRO 11,CRO11,CRO,croatia,Croatia,Croácia,L,11,Martin Baturina,player,false,https://scanini.app/teams/croatia,https://scanini.app/stickers/croatia-11-martin-baturina
+272,CRO 12,CRO12,CRO,croatia,Croatia,Croácia,L,12,Lovro Majer,player,false,https://scanini.app/teams/croatia,https://scanini.app/stickers/croatia-12-lovro-majer
+273,CRO 13,CRO13,CRO,croatia,Croatia,Croácia,L,13,Team Photo,team_photo,false,https://scanini.app/teams/croatia,https://scanini.app/stickers/croatia-13-team-photo
+274,CRO 14,CRO14,CRO,croatia,Croatia,Croácia,L,14,Mario Pasalic,player,false,https://scanini.app/teams/croatia,https://scanini.app/stickers/croatia-14-mario-pasalic
+275,CRO 15,CRO15,CRO,croatia,Croatia,Croácia,L,15,Petar Sucic,player,false,https://scanini.app/teams/croatia,https://scanini.app/stickers/croatia-15-petar-sucic
+276,CRO 16,CRO16,CRO,croatia,Croatia,Croácia,L,16,Ivan Perišić,player,false,https://scanini.app/teams/croatia,https://scanini.app/stickers/croatia-16-ivan-perisic
+277,CRO 17,CRO17,CRO,croatia,Croatia,Croácia,L,17,Marco Pasalic,player,false,https://scanini.app/teams/croatia,https://scanini.app/stickers/croatia-17-marco-pasalic
+278,CRO 18,CRO18,CRO,croatia,Croatia,Croácia,L,18,Ante Budimir,player,false,https://scanini.app/teams/croatia,https://scanini.app/stickers/croatia-18-ante-budimir
+279,CRO 19,CRO19,CRO,croatia,Croatia,Croácia,L,19,Andrej Kramarić,player,false,https://scanini.app/teams/croatia,https://scanini.app/stickers/croatia-19-andrej-kramaric
+280,CRO 20,CRO20,CRO,croatia,Croatia,Croácia,L,20,Franjo Ivanovic,player,false,https://scanini.app/teams/croatia,https://scanini.app/stickers/croatia-20-franjo-ivanovic
+281,CUW 1,CUW1,CUW,curacao,Curaçao,Curaçao,E,1,Team Logo,team_logo,true,https://scanini.app/teams/curacao,https://scanini.app/stickers/curacao-1-team-logo
+282,CUW 2,CUW2,CUW,curacao,Curaçao,Curaçao,E,2,Eloy Room,player,false,https://scanini.app/teams/curacao,https://scanini.app/stickers/curacao-2-eloy-room
+283,CUW 3,CUW3,CUW,curacao,Curaçao,Curaçao,E,3,Armando Obispo,player,false,https://scanini.app/teams/curacao,https://scanini.app/stickers/curacao-3-armando-obispo
+284,CUW 4,CUW4,CUW,curacao,Curaçao,Curaçao,E,4,Sherel Floranus,player,false,https://scanini.app/teams/curacao,https://scanini.app/stickers/curacao-4-sherel-floranus
+285,CUW 5,CUW5,CUW,curacao,Curaçao,Curaçao,E,5,Jurien Gaari,player,false,https://scanini.app/teams/curacao,https://scanini.app/stickers/curacao-5-jurien-gaari
+286,CUW 6,CUW6,CUW,curacao,Curaçao,Curaçao,E,6,Joshua Brenet,player,false,https://scanini.app/teams/curacao,https://scanini.app/stickers/curacao-6-joshua-brenet
+287,CUW 7,CUW7,CUW,curacao,Curaçao,Curaçao,E,7,Roshon Van Eijma,player,false,https://scanini.app/teams/curacao,https://scanini.app/stickers/curacao-7-roshon-van-eijma
+288,CUW 8,CUW8,CUW,curacao,Curaçao,Curaçao,E,8,Shurandy Sambo,player,false,https://scanini.app/teams/curacao,https://scanini.app/stickers/curacao-8-shurandy-sambo
+289,CUW 9,CUW9,CUW,curacao,Curaçao,Curaçao,E,9,Livano Comenencia,player,false,https://scanini.app/teams/curacao,https://scanini.app/stickers/curacao-9-livano-comenencia
+290,CUW 10,CUW10,CUW,curacao,Curaçao,Curaçao,E,10,Godfried Roemeratoe,player,false,https://scanini.app/teams/curacao,https://scanini.app/stickers/curacao-10-godfried-roemeratoe
+291,CUW 11,CUW11,CUW,curacao,Curaçao,Curaçao,E,11,Juninho Bacuna,player,false,https://scanini.app/teams/curacao,https://scanini.app/stickers/curacao-11-juninho-bacuna
+292,CUW 12,CUW12,CUW,curacao,Curaçao,Curaçao,E,12,Leandro Bacuna,player,false,https://scanini.app/teams/curacao,https://scanini.app/stickers/curacao-12-leandro-bacuna
+293,CUW 13,CUW13,CUW,curacao,Curaçao,Curaçao,E,13,Team Photo,team_photo,false,https://scanini.app/teams/curacao,https://scanini.app/stickers/curacao-13-team-photo
+294,CUW 14,CUW14,CUW,curacao,Curaçao,Curaçao,E,14,Tahith Chong,player,false,https://scanini.app/teams/curacao,https://scanini.app/stickers/curacao-14-tahith-chong
+295,CUW 15,CUW15,CUW,curacao,Curaçao,Curaçao,E,15,Kenji Gorre,player,false,https://scanini.app/teams/curacao,https://scanini.app/stickers/curacao-15-kenji-gorre
+296,CUW 16,CUW16,CUW,curacao,Curaçao,Curaçao,E,16,Jearl Margaritha,player,false,https://scanini.app/teams/curacao,https://scanini.app/stickers/curacao-16-jearl-margaritha
+297,CUW 17,CUW17,CUW,curacao,Curaçao,Curaçao,E,17,Jurgen Locadia,player,false,https://scanini.app/teams/curacao,https://scanini.app/stickers/curacao-17-jurgen-locadia
+298,CUW 18,CUW18,CUW,curacao,Curaçao,Curaçao,E,18,Jeremy Antonisse,player,false,https://scanini.app/teams/curacao,https://scanini.app/stickers/curacao-18-jeremy-antonisse
+299,CUW 19,CUW19,CUW,curacao,Curaçao,Curaçao,E,19,Gervane Kastaneer,player,false,https://scanini.app/teams/curacao,https://scanini.app/stickers/curacao-19-gervane-kastaneer
+300,CUW 20,CUW20,CUW,curacao,Curaçao,Curaçao,E,20,Sontje Hansen,player,false,https://scanini.app/teams/curacao,https://scanini.app/stickers/curacao-20-sontje-hansen
+301,CZE 1,CZE1,CZE,czechia,Czechia,Tchéquia,A,1,Team Logo,team_logo,true,https://scanini.app/teams/czechia,https://scanini.app/stickers/czechia-1-team-logo
+302,CZE 2,CZE2,CZE,czechia,Czechia,Tchéquia,A,2,Matej Kovar,player,false,https://scanini.app/teams/czechia,https://scanini.app/stickers/czechia-2-matej-kovar
+303,CZE 3,CZE3,CZE,czechia,Czechia,Tchéquia,A,3,Jindrich Stanek,player,false,https://scanini.app/teams/czechia,https://scanini.app/stickers/czechia-3-jindrich-stanek
+304,CZE 4,CZE4,CZE,czechia,Czechia,Tchéquia,A,4,Ladislav Krejci,player,false,https://scanini.app/teams/czechia,https://scanini.app/stickers/czechia-4-ladislav-krejci
+305,CZE 5,CZE5,CZE,czechia,Czechia,Tchéquia,A,5,Vladimir Coufal,player,false,https://scanini.app/teams/czechia,https://scanini.app/stickers/czechia-5-vladimir-coufal
+306,CZE 6,CZE6,CZE,czechia,Czechia,Tchéquia,A,6,Jaroslav Zeleny,player,false,https://scanini.app/teams/czechia,https://scanini.app/stickers/czechia-6-jaroslav-zeleny
+307,CZE 7,CZE7,CZE,czechia,Czechia,Tchéquia,A,7,Tomas Holes,player,false,https://scanini.app/teams/czechia,https://scanini.app/stickers/czechia-7-tomas-holes
+308,CZE 8,CZE8,CZE,czechia,Czechia,Tchéquia,A,8,David Zima,player,false,https://scanini.app/teams/czechia,https://scanini.app/stickers/czechia-8-david-zima
+309,CZE 9,CZE9,CZE,czechia,Czechia,Tchéquia,A,9,Michal Sadilek,player,false,https://scanini.app/teams/czechia,https://scanini.app/stickers/czechia-9-michal-sadilek
+310,CZE 10,CZE10,CZE,czechia,Czechia,Tchéquia,A,10,Lukas Provod,player,false,https://scanini.app/teams/czechia,https://scanini.app/stickers/czechia-10-lukas-provod
+311,CZE 11,CZE11,CZE,czechia,Czechia,Tchéquia,A,11,Lukas Cerv,player,false,https://scanini.app/teams/czechia,https://scanini.app/stickers/czechia-11-lukas-cerv
+312,CZE 12,CZE12,CZE,czechia,Czechia,Tchéquia,A,12,Tomas Soucek,player,false,https://scanini.app/teams/czechia,https://scanini.app/stickers/czechia-12-tomas-soucek
+313,CZE 13,CZE13,CZE,czechia,Czechia,Tchéquia,A,13,Team Photo,team_photo,false,https://scanini.app/teams/czechia,https://scanini.app/stickers/czechia-13-team-photo
+314,CZE 14,CZE14,CZE,czechia,Czechia,Tchéquia,A,14,Pavel Sulc,player,false,https://scanini.app/teams/czechia,https://scanini.app/stickers/czechia-14-pavel-sulc
+315,CZE 15,CZE15,CZE,czechia,Czechia,Tchéquia,A,15,Matej Vydra,player,false,https://scanini.app/teams/czechia,https://scanini.app/stickers/czechia-15-matej-vydra
+316,CZE 16,CZE16,CZE,czechia,Czechia,Tchéquia,A,16,Vasil Kusej,player,false,https://scanini.app/teams/czechia,https://scanini.app/stickers/czechia-16-vasil-kusej
+317,CZE 17,CZE17,CZE,czechia,Czechia,Tchéquia,A,17,Tomas Chory,player,false,https://scanini.app/teams/czechia,https://scanini.app/stickers/czechia-17-tomas-chory
+318,CZE 18,CZE18,CZE,czechia,Czechia,Tchéquia,A,18,Vaclav Cerny,player,false,https://scanini.app/teams/czechia,https://scanini.app/stickers/czechia-18-vaclav-cerny
+319,CZE 19,CZE19,CZE,czechia,Czechia,Tchéquia,A,19,Adam Hlozek,player,false,https://scanini.app/teams/czechia,https://scanini.app/stickers/czechia-19-adam-hlozek
+320,CZE 20,CZE20,CZE,czechia,Czechia,Tchéquia,A,20,Patrik Schick,player,false,https://scanini.app/teams/czechia,https://scanini.app/stickers/czechia-20-patrik-schick
+321,ECU 1,ECU1,ECU,ecuador,Ecuador,Equador,E,1,Team Logo,team_logo,true,https://scanini.app/teams/ecuador,https://scanini.app/stickers/ecuador-1-team-logo
+322,ECU 2,ECU2,ECU,ecuador,Ecuador,Equador,E,2,Hernán Galíndez,player,false,https://scanini.app/teams/ecuador,https://scanini.app/stickers/ecuador-2-hernan-galindez
+323,ECU 3,ECU3,ECU,ecuador,Ecuador,Equador,E,3,Gonzalo Valle,player,false,https://scanini.app/teams/ecuador,https://scanini.app/stickers/ecuador-3-gonzalo-valle
+324,ECU 4,ECU4,ECU,ecuador,Ecuador,Equador,E,4,Piero Hincapié,player,false,https://scanini.app/teams/ecuador,https://scanini.app/stickers/ecuador-4-piero-hincapie
+325,ECU 5,ECU5,ECU,ecuador,Ecuador,Equador,E,5,Pervis Estupiñán,player,false,https://scanini.app/teams/ecuador,https://scanini.app/stickers/ecuador-5-pervis-estupinan
+326,ECU 6,ECU6,ECU,ecuador,Ecuador,Equador,E,6,Willian Pacho,player,false,https://scanini.app/teams/ecuador,https://scanini.app/stickers/ecuador-6-willian-pacho
+327,ECU 7,ECU7,ECU,ecuador,Ecuador,Equador,E,7,Ángelo Preciado,player,false,https://scanini.app/teams/ecuador,https://scanini.app/stickers/ecuador-7-angelo-preciado
+328,ECU 8,ECU8,ECU,ecuador,Ecuador,Equador,E,8,Joel Ordóñez,player,false,https://scanini.app/teams/ecuador,https://scanini.app/stickers/ecuador-8-joel-ordonez
+329,ECU 9,ECU9,ECU,ecuador,Ecuador,Equador,E,9,Moises Caicedo,player,false,https://scanini.app/teams/ecuador,https://scanini.app/stickers/ecuador-9-moises-caicedo
+330,ECU 10,ECU10,ECU,ecuador,Ecuador,Equador,E,10,Alan Franco,player,false,https://scanini.app/teams/ecuador,https://scanini.app/stickers/ecuador-10-alan-franco
+331,ECU 11,ECU11,ECU,ecuador,Ecuador,Equador,E,11,Kendry Paez,player,false,https://scanini.app/teams/ecuador,https://scanini.app/stickers/ecuador-11-kendry-paez
+332,ECU 12,ECU12,ECU,ecuador,Ecuador,Equador,E,12,Pedro Vite,player,false,https://scanini.app/teams/ecuador,https://scanini.app/stickers/ecuador-12-pedro-vite
+333,ECU 13,ECU13,ECU,ecuador,Ecuador,Equador,E,13,Team Photo,team_photo,false,https://scanini.app/teams/ecuador,https://scanini.app/stickers/ecuador-13-team-photo
+334,ECU 14,ECU14,ECU,ecuador,Ecuador,Equador,E,14,John Veboah,player,false,https://scanini.app/teams/ecuador,https://scanini.app/stickers/ecuador-14-john-veboah
+335,ECU 15,ECU15,ECU,ecuador,Ecuador,Equador,E,15,Leonardo Campana,player,false,https://scanini.app/teams/ecuador,https://scanini.app/stickers/ecuador-15-leonardo-campana
+336,ECU 16,ECU16,ECU,ecuador,Ecuador,Equador,E,16,Gonzalo Plata,player,false,https://scanini.app/teams/ecuador,https://scanini.app/stickers/ecuador-16-gonzalo-plata
+337,ECU 17,ECU17,ECU,ecuador,Ecuador,Equador,E,17,Nilson Angulo,player,false,https://scanini.app/teams/ecuador,https://scanini.app/stickers/ecuador-17-nilson-angulo
+338,ECU 18,ECU18,ECU,ecuador,Ecuador,Equador,E,18,Alan Minda,player,false,https://scanini.app/teams/ecuador,https://scanini.app/stickers/ecuador-18-alan-minda
+339,ECU 19,ECU19,ECU,ecuador,Ecuador,Equador,E,19,Kevin Rodriguez,player,false,https://scanini.app/teams/ecuador,https://scanini.app/stickers/ecuador-19-kevin-rodriguez
+340,ECU 20,ECU20,ECU,ecuador,Ecuador,Equador,E,20,Enner Valencia,player,false,https://scanini.app/teams/ecuador,https://scanini.app/stickers/ecuador-20-enner-valencia
+341,EGY 1,EGY1,EGY,egypt,Egypt,Egito,G,1,Team Logo,team_logo,true,https://scanini.app/teams/egypt,https://scanini.app/stickers/egypt-1-team-logo
+342,EGY 2,EGY2,EGY,egypt,Egypt,Egito,G,2,Mohamed El Shenawy,player,false,https://scanini.app/teams/egypt,https://scanini.app/stickers/egypt-2-mohamed-el-shenawy
+343,EGY 3,EGY3,EGY,egypt,Egypt,Egito,G,3,Mohamed Hany,player,false,https://scanini.app/teams/egypt,https://scanini.app/stickers/egypt-3-mohamed-hany
+344,EGY 4,EGY4,EGY,egypt,Egypt,Egito,G,4,Mohamed Hamdy,player,false,https://scanini.app/teams/egypt,https://scanini.app/stickers/egypt-4-mohamed-hamdy
+345,EGY 5,EGY5,EGY,egypt,Egypt,Egito,G,5,Yasser Ibrahim,player,false,https://scanini.app/teams/egypt,https://scanini.app/stickers/egypt-5-yasser-ibrahim
+346,EGY 6,EGY6,EGY,egypt,Egypt,Egito,G,6,Khaled Sobhi,player,false,https://scanini.app/teams/egypt,https://scanini.app/stickers/egypt-6-khaled-sobhi
+347,EGY 7,EGY7,EGY,egypt,Egypt,Egito,G,7,Ramy Rabia,player,false,https://scanini.app/teams/egypt,https://scanini.app/stickers/egypt-7-ramy-rabia
+348,EGY 8,EGY8,EGY,egypt,Egypt,Egito,G,8,Hossam Abdelmaguid,player,false,https://scanini.app/teams/egypt,https://scanini.app/stickers/egypt-8-hossam-abdelmaguid
+349,EGY 9,EGY9,EGY,egypt,Egypt,Egito,G,9,Ahmed Fatouh,player,false,https://scanini.app/teams/egypt,https://scanini.app/stickers/egypt-9-ahmed-fatouh
+350,EGY 10,EGY10,EGY,egypt,Egypt,Egito,G,10,Marwan Attia,player,false,https://scanini.app/teams/egypt,https://scanini.app/stickers/egypt-10-marwan-attia
+351,EGY 11,EGY11,EGY,egypt,Egypt,Egito,G,11,Zizo,player,false,https://scanini.app/teams/egypt,https://scanini.app/stickers/egypt-11-zizo
+352,EGY 12,EGY12,EGY,egypt,Egypt,Egito,G,12,Hamdy Fathy,player,false,https://scanini.app/teams/egypt,https://scanini.app/stickers/egypt-12-hamdy-fathy
+353,EGY 13,EGY13,EGY,egypt,Egypt,Egito,G,13,Team Photo,team_photo,false,https://scanini.app/teams/egypt,https://scanini.app/stickers/egypt-13-team-photo
+354,EGY 14,EGY14,EGY,egypt,Egypt,Egito,G,14,Mohamed Lasheen,player,false,https://scanini.app/teams/egypt,https://scanini.app/stickers/egypt-14-mohamed-lasheen
+355,EGY 15,EGY15,EGY,egypt,Egypt,Egito,G,15,Emam Ashour,player,false,https://scanini.app/teams/egypt,https://scanini.app/stickers/egypt-15-emam-ashour
+356,EGY 16,EGY16,EGY,egypt,Egypt,Egito,G,16,Osama Faisal,player,false,https://scanini.app/teams/egypt,https://scanini.app/stickers/egypt-16-osama-faisal
+357,EGY 17,EGY17,EGY,egypt,Egypt,Egito,G,17,Mohamed Salah,player,false,https://scanini.app/teams/egypt,https://scanini.app/stickers/egypt-17-mohamed-salah
+358,EGY 18,EGY18,EGY,egypt,Egypt,Egito,G,18,Mostafa Mohamed,player,false,https://scanini.app/teams/egypt,https://scanini.app/stickers/egypt-18-mostafa-mohamed
+359,EGY 19,EGY19,EGY,egypt,Egypt,Egito,G,19,Trezeguet,player,false,https://scanini.app/teams/egypt,https://scanini.app/stickers/egypt-19-trezeguet
+360,EGY 20,EGY20,EGY,egypt,Egypt,Egito,G,20,Omar Marmoush,player,false,https://scanini.app/teams/egypt,https://scanini.app/stickers/egypt-20-omar-marmoush
+361,ENG 1,ENG1,ENG,england,England,Inglaterra,L,1,Team Logo,team_logo,true,https://scanini.app/teams/england,https://scanini.app/stickers/england-1-team-logo
+362,ENG 2,ENG2,ENG,england,England,Inglaterra,L,2,Jordan Pickford,player,false,https://scanini.app/teams/england,https://scanini.app/stickers/england-2-jordan-pickford
+363,ENG 3,ENG3,ENG,england,England,Inglaterra,L,3,John Stones,player,false,https://scanini.app/teams/england,https://scanini.app/stickers/england-3-john-stones
+364,ENG 4,ENG4,ENG,england,England,Inglaterra,L,4,Marc Guéhi,player,false,https://scanini.app/teams/england,https://scanini.app/stickers/england-4-marc-guehi
+365,ENG 5,ENG5,ENG,england,England,Inglaterra,L,5,Ezri Konsa,player,false,https://scanini.app/teams/england,https://scanini.app/stickers/england-5-ezri-konsa
+366,ENG 6,ENG6,ENG,england,England,Inglaterra,L,6,Trent Alexander-Arnold,player,false,https://scanini.app/teams/england,https://scanini.app/stickers/england-6-trent-alexander-arnold
+367,ENG 7,ENG7,ENG,england,England,Inglaterra,L,7,Reece James,player,false,https://scanini.app/teams/england,https://scanini.app/stickers/england-7-reece-james
+368,ENG 8,ENG8,ENG,england,England,Inglaterra,L,8,Dan Burn,player,false,https://scanini.app/teams/england,https://scanini.app/stickers/england-8-dan-burn
+369,ENG 9,ENG9,ENG,england,England,Inglaterra,L,9,Jordan Henderson,player,false,https://scanini.app/teams/england,https://scanini.app/stickers/england-9-jordan-henderson
+370,ENG 10,ENG10,ENG,england,England,Inglaterra,L,10,Declan Rice,player,false,https://scanini.app/teams/england,https://scanini.app/stickers/england-10-declan-rice
+371,ENG 11,ENG11,ENG,england,England,Inglaterra,L,11,Jude Bellingham,player,false,https://scanini.app/teams/england,https://scanini.app/stickers/england-11-jude-bellingham
+372,ENG 12,ENG12,ENG,england,England,Inglaterra,L,12,Cole Palmer,player,false,https://scanini.app/teams/england,https://scanini.app/stickers/england-12-cole-palmer
+373,ENG 13,ENG13,ENG,england,England,Inglaterra,L,13,Team Photo,team_photo,false,https://scanini.app/teams/england,https://scanini.app/stickers/england-13-team-photo
+374,ENG 14,ENG14,ENG,england,England,Inglaterra,L,14,Morgan Rogers,player,false,https://scanini.app/teams/england,https://scanini.app/stickers/england-14-morgan-rogers
+375,ENG 15,ENG15,ENG,england,England,Inglaterra,L,15,Anthony Gordon,player,false,https://scanini.app/teams/england,https://scanini.app/stickers/england-15-anthony-gordon
+376,ENG 16,ENG16,ENG,england,England,Inglaterra,L,16,Phil Foden,player,false,https://scanini.app/teams/england,https://scanini.app/stickers/england-16-phil-foden
+377,ENG 17,ENG17,ENG,england,England,Inglaterra,L,17,Bukayo Saka,player,false,https://scanini.app/teams/england,https://scanini.app/stickers/england-17-bukayo-saka
+378,ENG 18,ENG18,ENG,england,England,Inglaterra,L,18,Harry Kane,player,false,https://scanini.app/teams/england,https://scanini.app/stickers/england-18-harry-kane
+379,ENG 19,ENG19,ENG,england,England,Inglaterra,L,19,Marcus Rashford,player,false,https://scanini.app/teams/england,https://scanini.app/stickers/england-19-marcus-rashford
+380,ENG 20,ENG20,ENG,england,England,Inglaterra,L,20,Ollie Watkins,player,false,https://scanini.app/teams/england,https://scanini.app/stickers/england-20-ollie-watkins
+381,ESP 1,ESP1,ESP,spain,Spain,Espanha,H,1,Team Logo,team_logo,true,https://scanini.app/teams/spain,https://scanini.app/stickers/spain-1-team-logo
+382,ESP 2,ESP2,ESP,spain,Spain,Espanha,H,2,Unai Simon,player,false,https://scanini.app/teams/spain,https://scanini.app/stickers/spain-2-unai-simon
+383,ESP 3,ESP3,ESP,spain,Spain,Espanha,H,3,Robin Le Normand,player,false,https://scanini.app/teams/spain,https://scanini.app/stickers/spain-3-robin-le-normand
+384,ESP 4,ESP4,ESP,spain,Spain,Espanha,H,4,Aymeric Laporte,player,false,https://scanini.app/teams/spain,https://scanini.app/stickers/spain-4-aymeric-laporte
+385,ESP 5,ESP5,ESP,spain,Spain,Espanha,H,5,Dean Huijsen,player,false,https://scanini.app/teams/spain,https://scanini.app/stickers/spain-5-dean-huijsen
+386,ESP 6,ESP6,ESP,spain,Spain,Espanha,H,6,Pedro Porro,player,false,https://scanini.app/teams/spain,https://scanini.app/stickers/spain-6-pedro-porro
+387,ESP 7,ESP7,ESP,spain,Spain,Espanha,H,7,Dani Carvajal,player,false,https://scanini.app/teams/spain,https://scanini.app/stickers/spain-7-dani-carvajal
+388,ESP 8,ESP8,ESP,spain,Spain,Espanha,H,8,Marc Cucurella,player,false,https://scanini.app/teams/spain,https://scanini.app/stickers/spain-8-marc-cucurella
+389,ESP 9,ESP9,ESP,spain,Spain,Espanha,H,9,Martín Zubimendi,player,false,https://scanini.app/teams/spain,https://scanini.app/stickers/spain-9-martin-zubimendi
+390,ESP 10,ESP10,ESP,spain,Spain,Espanha,H,10,Rodri,player,false,https://scanini.app/teams/spain,https://scanini.app/stickers/spain-10-rodri
+391,ESP 11,ESP11,ESP,spain,Spain,Espanha,H,11,Pedri,player,false,https://scanini.app/teams/spain,https://scanini.app/stickers/spain-11-pedri
+392,ESP 12,ESP12,ESP,spain,Spain,Espanha,H,12,Fabian Ruiz,player,false,https://scanini.app/teams/spain,https://scanini.app/stickers/spain-12-fabian-ruiz
+393,ESP 13,ESP13,ESP,spain,Spain,Espanha,H,13,Team Photo,team_photo,false,https://scanini.app/teams/spain,https://scanini.app/stickers/spain-13-team-photo
+394,ESP 14,ESP14,ESP,spain,Spain,Espanha,H,14,Mikel Merino,player,false,https://scanini.app/teams/spain,https://scanini.app/stickers/spain-14-mikel-merino
+395,ESP 15,ESP15,ESP,spain,Spain,Espanha,H,15,Lamine Yamal,player,false,https://scanini.app/teams/spain,https://scanini.app/stickers/spain-15-lamine-yamal
+396,ESP 16,ESP16,ESP,spain,Spain,Espanha,H,16,Dani Olmo,player,false,https://scanini.app/teams/spain,https://scanini.app/stickers/spain-16-dani-olmo
+397,ESP 17,ESP17,ESP,spain,Spain,Espanha,H,17,Nico Williams,player,false,https://scanini.app/teams/spain,https://scanini.app/stickers/spain-17-nico-williams
+398,ESP 18,ESP18,ESP,spain,Spain,Espanha,H,18,Ferran Torres,player,false,https://scanini.app/teams/spain,https://scanini.app/stickers/spain-18-ferran-torres
+399,ESP 19,ESP19,ESP,spain,Spain,Espanha,H,19,Álvaro Morata,player,false,https://scanini.app/teams/spain,https://scanini.app/stickers/spain-19-alvaro-morata
+400,ESP 20,ESP20,ESP,spain,Spain,Espanha,H,20,Mikel Oyarzabal,player,false,https://scanini.app/teams/spain,https://scanini.app/stickers/spain-20-mikel-oyarzabal
+401,FRA 1,FRA1,FRA,france,France,França,I,1,Team Logo,team_logo,true,https://scanini.app/teams/france,https://scanini.app/stickers/france-1-team-logo
+402,FRA 2,FRA2,FRA,france,France,França,I,2,Mike Maignan,player,false,https://scanini.app/teams/france,https://scanini.app/stickers/france-2-mike-maignan
+403,FRA 3,FRA3,FRA,france,France,França,I,3,Theo Hernandez,player,false,https://scanini.app/teams/france,https://scanini.app/stickers/france-3-theo-hernandez
+404,FRA 4,FRA4,FRA,france,France,França,I,4,William Saliba,player,false,https://scanini.app/teams/france,https://scanini.app/stickers/france-4-william-saliba
+405,FRA 5,FRA5,FRA,france,France,França,I,5,Jules Kounde,player,false,https://scanini.app/teams/france,https://scanini.app/stickers/france-5-jules-kounde
+406,FRA 6,FRA6,FRA,france,France,França,I,6,Ibrahima Konate,player,false,https://scanini.app/teams/france,https://scanini.app/stickers/france-6-ibrahima-konate
+407,FRA 7,FRA7,FRA,france,France,França,I,7,Dayot Upamecano,player,false,https://scanini.app/teams/france,https://scanini.app/stickers/france-7-dayot-upamecano
+408,FRA 8,FRA8,FRA,france,France,França,I,8,Lucas Digne,player,false,https://scanini.app/teams/france,https://scanini.app/stickers/france-8-lucas-digne
+409,FRA 9,FRA9,FRA,france,France,França,I,9,Aurélien Tchouaméni,player,false,https://scanini.app/teams/france,https://scanini.app/stickers/france-9-aurelien-tchouameni
+410,FRA 10,FRA10,FRA,france,France,França,I,10,Eduardo Camavinga,player,false,https://scanini.app/teams/france,https://scanini.app/stickers/france-10-eduardo-camavinga
+411,FRA 11,FRA11,FRA,france,France,França,I,11,Manu Kone,player,false,https://scanini.app/teams/france,https://scanini.app/stickers/france-11-manu-kone
+412,FRA 12,FRA12,FRA,france,France,França,I,12,Adrien Rabiot,player,false,https://scanini.app/teams/france,https://scanini.app/stickers/france-12-adrien-rabiot
+413,FRA 13,FRA13,FRA,france,France,França,I,13,Team Photo,team_photo,false,https://scanini.app/teams/france,https://scanini.app/stickers/france-13-team-photo
+414,FRA 14,FRA14,FRA,france,France,França,I,14,Michael Olise,player,false,https://scanini.app/teams/france,https://scanini.app/stickers/france-14-michael-olise
+415,FRA 15,FRA15,FRA,france,France,França,I,15,Ousmane Dembele,player,false,https://scanini.app/teams/france,https://scanini.app/stickers/france-15-ousmane-dembele
+416,FRA 16,FRA16,FRA,france,France,França,I,16,Bradley Barcola,player,false,https://scanini.app/teams/france,https://scanini.app/stickers/france-16-bradley-barcola
+417,FRA 17,FRA17,FRA,france,France,França,I,17,Désiré Doué,player,false,https://scanini.app/teams/france,https://scanini.app/stickers/france-17-desire-doue
+418,FRA 18,FRA18,FRA,france,France,França,I,18,Kingsley Coman,player,false,https://scanini.app/teams/france,https://scanini.app/stickers/france-18-kingsley-coman
+419,FRA 19,FRA19,FRA,france,France,França,I,19,Hugo Ekitike,player,false,https://scanini.app/teams/france,https://scanini.app/stickers/france-19-hugo-ekitike
+420,FRA 20,FRA20,FRA,france,France,França,I,20,Kylian Mbappe,player,false,https://scanini.app/teams/france,https://scanini.app/stickers/france-20-kylian-mbappe
+421,GER 1,GER1,GER,germany,Germany,Alemanha,E,1,Team Logo,team_logo,true,https://scanini.app/teams/germany,https://scanini.app/stickers/germany-1-team-logo
+422,GER 2,GER2,GER,germany,Germany,Alemanha,E,2,Marc-André ter Stegen,player,false,https://scanini.app/teams/germany,https://scanini.app/stickers/germany-2-marc-andre-ter-stegen
+423,GER 3,GER3,GER,germany,Germany,Alemanha,E,3,Jonathan Tah,player,false,https://scanini.app/teams/germany,https://scanini.app/stickers/germany-3-jonathan-tah
+424,GER 4,GER4,GER,germany,Germany,Alemanha,E,4,David Raum,player,false,https://scanini.app/teams/germany,https://scanini.app/stickers/germany-4-david-raum
+425,GER 5,GER5,GER,germany,Germany,Alemanha,E,5,Nico Schlotterbeck,player,false,https://scanini.app/teams/germany,https://scanini.app/stickers/germany-5-nico-schlotterbeck
+426,GER 6,GER6,GER,germany,Germany,Alemanha,E,6,Antonio Rüdiger,player,false,https://scanini.app/teams/germany,https://scanini.app/stickers/germany-6-antonio-rudiger
+427,GER 7,GER7,GER,germany,Germany,Alemanha,E,7,Waldemar Anton,player,false,https://scanini.app/teams/germany,https://scanini.app/stickers/germany-7-waldemar-anton
+428,GER 8,GER8,GER,germany,Germany,Alemanha,E,8,Ridle Baku,player,false,https://scanini.app/teams/germany,https://scanini.app/stickers/germany-8-ridle-baku
+429,GER 9,GER9,GER,germany,Germany,Alemanha,E,9,Maximilian Mittelstadt,player,false,https://scanini.app/teams/germany,https://scanini.app/stickers/germany-9-maximilian-mittelstadt
+430,GER 10,GER10,GER,germany,Germany,Alemanha,E,10,Joshua Kimmich,player,false,https://scanini.app/teams/germany,https://scanini.app/stickers/germany-10-joshua-kimmich
+431,GER 11,GER11,GER,germany,Germany,Alemanha,E,11,Florian Wirtz,player,false,https://scanini.app/teams/germany,https://scanini.app/stickers/germany-11-florian-wirtz
+432,GER 12,GER12,GER,germany,Germany,Alemanha,E,12,Felix Nmecha,player,false,https://scanini.app/teams/germany,https://scanini.app/stickers/germany-12-felix-nmecha
+433,GER 13,GER13,GER,germany,Germany,Alemanha,E,13,Team Photo,team_photo,false,https://scanini.app/teams/germany,https://scanini.app/stickers/germany-13-team-photo
+434,GER 14,GER14,GER,germany,Germany,Alemanha,E,14,Leon Goretzka,player,false,https://scanini.app/teams/germany,https://scanini.app/stickers/germany-14-leon-goretzka
+435,GER 15,GER15,GER,germany,Germany,Alemanha,E,15,Jamal Musiala,player,false,https://scanini.app/teams/germany,https://scanini.app/stickers/germany-15-jamal-musiala
+436,GER 16,GER16,GER,germany,Germany,Alemanha,E,16,Serge Gnabry,player,false,https://scanini.app/teams/germany,https://scanini.app/stickers/germany-16-serge-gnabry
+437,GER 17,GER17,GER,germany,Germany,Alemanha,E,17,Kai Havertz,player,false,https://scanini.app/teams/germany,https://scanini.app/stickers/germany-17-kai-havertz
+438,GER 18,GER18,GER,germany,Germany,Alemanha,E,18,Leroy Sane,player,false,https://scanini.app/teams/germany,https://scanini.app/stickers/germany-18-leroy-sane
+439,GER 19,GER19,GER,germany,Germany,Alemanha,E,19,Karim Adeyemi,player,false,https://scanini.app/teams/germany,https://scanini.app/stickers/germany-19-karim-adeyemi
+440,GER 20,GER20,GER,germany,Germany,Alemanha,E,20,Nick Woltemade,player,false,https://scanini.app/teams/germany,https://scanini.app/stickers/germany-20-nick-woltemade
+441,GHA 1,GHA1,GHA,ghana,Ghana,Gana,L,1,Team Logo,team_logo,true,https://scanini.app/teams/ghana,https://scanini.app/stickers/ghana-1-team-logo
+442,GHA 2,GHA2,GHA,ghana,Ghana,Gana,L,2,Lawrence Ati Zigi,player,false,https://scanini.app/teams/ghana,https://scanini.app/stickers/ghana-2-lawrence-ati-zigi
+443,GHA 3,GHA3,GHA,ghana,Ghana,Gana,L,3,Tariq Lamptey,player,false,https://scanini.app/teams/ghana,https://scanini.app/stickers/ghana-3-tariq-lamptey
+444,GHA 4,GHA4,GHA,ghana,Ghana,Gana,L,4,Mohammed Salisu,player,false,https://scanini.app/teams/ghana,https://scanini.app/stickers/ghana-4-mohammed-salisu
+445,GHA 5,GHA5,GHA,ghana,Ghana,Gana,L,5,Alidu Seidu,player,false,https://scanini.app/teams/ghana,https://scanini.app/stickers/ghana-5-alidu-seidu
+446,GHA 6,GHA6,GHA,ghana,Ghana,Gana,L,6,Alexander Djiku,player,false,https://scanini.app/teams/ghana,https://scanini.app/stickers/ghana-6-alexander-djiku
+447,GHA 7,GHA7,GHA,ghana,Ghana,Gana,L,7,Gideon Mensah,player,false,https://scanini.app/teams/ghana,https://scanini.app/stickers/ghana-7-gideon-mensah
+448,GHA 8,GHA8,GHA,ghana,Ghana,Gana,L,8,Caleb Yirenkyi,player,false,https://scanini.app/teams/ghana,https://scanini.app/stickers/ghana-8-caleb-yirenkyi
+449,GHA 9,GHA9,GHA,ghana,Ghana,Gana,L,9,Abdul Issahaku Fatawu,player,false,https://scanini.app/teams/ghana,https://scanini.app/stickers/ghana-9-abdul-issahaku-fatawu
+450,GHA 10,GHA10,GHA,ghana,Ghana,Gana,L,10,Thomas Partey,player,false,https://scanini.app/teams/ghana,https://scanini.app/stickers/ghana-10-thomas-partey
+451,GHA 11,GHA11,GHA,ghana,Ghana,Gana,L,11,Salis Abdul Samed,player,false,https://scanini.app/teams/ghana,https://scanini.app/stickers/ghana-11-salis-abdul-samed
+452,GHA 12,GHA12,GHA,ghana,Ghana,Gana,L,12,Kamaldeen Sulemana,player,false,https://scanini.app/teams/ghana,https://scanini.app/stickers/ghana-12-kamaldeen-sulemana
+453,GHA 13,GHA13,GHA,ghana,Ghana,Gana,L,13,Team Photo,team_photo,false,https://scanini.app/teams/ghana,https://scanini.app/stickers/ghana-13-team-photo
+454,GHA 14,GHA14,GHA,ghana,Ghana,Gana,L,14,Mohammed Kudus,player,false,https://scanini.app/teams/ghana,https://scanini.app/stickers/ghana-14-mohammed-kudus
+455,GHA 15,GHA15,GHA,ghana,Ghana,Gana,L,15,Inaki Williams,player,false,https://scanini.app/teams/ghana,https://scanini.app/stickers/ghana-15-inaki-williams
+456,GHA 16,GHA16,GHA,ghana,Ghana,Gana,L,16,Jordan Ayew,player,false,https://scanini.app/teams/ghana,https://scanini.app/stickers/ghana-16-jordan-ayew
+457,GHA 17,GHA17,GHA,ghana,Ghana,Gana,L,17,Andrew Ayew,player,false,https://scanini.app/teams/ghana,https://scanini.app/stickers/ghana-17-andrew-ayew
+458,GHA 18,GHA18,GHA,ghana,Ghana,Gana,L,18,Joseph Paintsil,player,false,https://scanini.app/teams/ghana,https://scanini.app/stickers/ghana-18-joseph-paintsil
+459,GHA 19,GHA19,GHA,ghana,Ghana,Gana,L,19,Osman Bukari,player,false,https://scanini.app/teams/ghana,https://scanini.app/stickers/ghana-19-osman-bukari
+460,GHA 20,GHA20,GHA,ghana,Ghana,Gana,L,20,Antoine Semenyo,player,false,https://scanini.app/teams/ghana,https://scanini.app/stickers/ghana-20-antoine-semenyo
+461,HAI 1,HAI1,HAI,haiti,Haiti,Haiti,C,1,Team Logo,team_logo,true,https://scanini.app/teams/haiti,https://scanini.app/stickers/haiti-1-team-logo
+462,HAI 2,HAI2,HAI,haiti,Haiti,Haiti,C,2,Johny Placide,player,false,https://scanini.app/teams/haiti,https://scanini.app/stickers/haiti-2-johny-placide
+463,HAI 3,HAI3,HAI,haiti,Haiti,Haiti,C,3,Carlens Arcus,player,false,https://scanini.app/teams/haiti,https://scanini.app/stickers/haiti-3-carlens-arcus
+464,HAI 4,HAI4,HAI,haiti,Haiti,Haiti,C,4,Martin Expérience,player,false,https://scanini.app/teams/haiti,https://scanini.app/stickers/haiti-4-martin-experience
+465,HAI 5,HAI5,HAI,haiti,Haiti,Haiti,C,5,Jean-Kevin Duverne,player,false,https://scanini.app/teams/haiti,https://scanini.app/stickers/haiti-5-jean-kevin-duverne
+466,HAI 6,HAI6,HAI,haiti,Haiti,Haiti,C,6,Ricardo Adé,player,false,https://scanini.app/teams/haiti,https://scanini.app/stickers/haiti-6-ricardo-ade
+467,HAI 7,HAI7,HAI,haiti,Haiti,Haiti,C,7,Duke Lacroix,player,false,https://scanini.app/teams/haiti,https://scanini.app/stickers/haiti-7-duke-lacroix
+468,HAI 8,HAI8,HAI,haiti,Haiti,Haiti,C,8,Garven Metusala,player,false,https://scanini.app/teams/haiti,https://scanini.app/stickers/haiti-8-garven-metusala
+469,HAI 9,HAI9,HAI,haiti,Haiti,Haiti,C,9,Hannes Delcroix,player,false,https://scanini.app/teams/haiti,https://scanini.app/stickers/haiti-9-hannes-delcroix
+470,HAI 10,HAI10,HAI,haiti,Haiti,Haiti,C,10,Leverton Pierre,player,false,https://scanini.app/teams/haiti,https://scanini.app/stickers/haiti-10-leverton-pierre
+471,HAI 11,HAI11,HAI,haiti,Haiti,Haiti,C,11,Danley Jean Jacques,player,false,https://scanini.app/teams/haiti,https://scanini.app/stickers/haiti-11-danley-jean-jacques
+472,HAI 12,HAI12,HAI,haiti,Haiti,Haiti,C,12,Jean-Ricner Bellegarde,player,false,https://scanini.app/teams/haiti,https://scanini.app/stickers/haiti-12-jean-ricner-bellegarde
+473,HAI 13,HAI13,HAI,haiti,Haiti,Haiti,C,13,Team Photo,team_photo,false,https://scanini.app/teams/haiti,https://scanini.app/stickers/haiti-13-team-photo
+474,HAI 14,HAI14,HAI,haiti,Haiti,Haiti,C,14,Christopher Attys,player,false,https://scanini.app/teams/haiti,https://scanini.app/stickers/haiti-14-christopher-attys
+475,HAI 15,HAI15,HAI,haiti,Haiti,Haiti,C,15,Derrick Etienne Jr,player,false,https://scanini.app/teams/haiti,https://scanini.app/stickers/haiti-15-derrick-etienne-jr
+476,HAI 16,HAI16,HAI,haiti,Haiti,Haiti,C,16,Josue Casimir,player,false,https://scanini.app/teams/haiti,https://scanini.app/stickers/haiti-16-josue-casimir
+477,HAI 17,HAI17,HAI,haiti,Haiti,Haiti,C,17,Ruben Providence,player,false,https://scanini.app/teams/haiti,https://scanini.app/stickers/haiti-17-ruben-providence
+478,HAI 18,HAI18,HAI,haiti,Haiti,Haiti,C,18,Duckens Nazon,player,false,https://scanini.app/teams/haiti,https://scanini.app/stickers/haiti-18-duckens-nazon
+479,HAI 19,HAI19,HAI,haiti,Haiti,Haiti,C,19,Louicius Deedson,player,false,https://scanini.app/teams/haiti,https://scanini.app/stickers/haiti-19-louicius-deedson
+480,HAI 20,HAI20,HAI,haiti,Haiti,Haiti,C,20,Frantzdy Pierrot,player,false,https://scanini.app/teams/haiti,https://scanini.app/stickers/haiti-20-frantzdy-pierrot
+481,IRN 1,IRN1,IRN,iran,Iran,Irã,G,1,Team Logo,team_logo,true,https://scanini.app/teams/iran,https://scanini.app/stickers/iran-1-team-logo
+482,IRN 2,IRN2,IRN,iran,Iran,Irã,G,2,Alireza Beiranvand,player,false,https://scanini.app/teams/iran,https://scanini.app/stickers/iran-2-alireza-beiranvand
+483,IRN 3,IRN3,IRN,iran,Iran,Irã,G,3,Morteza Pouraliganji,player,false,https://scanini.app/teams/iran,https://scanini.app/stickers/iran-3-morteza-pouraliganji
+484,IRN 4,IRN4,IRN,iran,Iran,Irã,G,4,Ehsan Hajsafi,player,false,https://scanini.app/teams/iran,https://scanini.app/stickers/iran-4-ehsan-hajsafi
+485,IRN 5,IRN5,IRN,iran,Iran,Irã,G,5,Milad Mohammadi,player,false,https://scanini.app/teams/iran,https://scanini.app/stickers/iran-5-milad-mohammadi
+486,IRN 6,IRN6,IRN,iran,Iran,Irã,G,6,Shojae Khalilzadeh,player,false,https://scanini.app/teams/iran,https://scanini.app/stickers/iran-6-shojae-khalilzadeh
+487,IRN 7,IRN7,IRN,iran,Iran,Irã,G,7,Ramin Rezaeian,player,false,https://scanini.app/teams/iran,https://scanini.app/stickers/iran-7-ramin-rezaeian
+488,IRN 8,IRN8,IRN,iran,Iran,Irã,G,8,Hossein Kanaani,player,false,https://scanini.app/teams/iran,https://scanini.app/stickers/iran-8-hossein-kanaani
+489,IRN 9,IRN9,IRN,iran,Iran,Irã,G,9,Sadegh Moharrami,player,false,https://scanini.app/teams/iran,https://scanini.app/stickers/iran-9-sadegh-moharrami
+490,IRN 10,IRN10,IRN,iran,Iran,Irã,G,10,Saleh Hardani,player,false,https://scanini.app/teams/iran,https://scanini.app/stickers/iran-10-saleh-hardani
+491,IRN 11,IRN11,IRN,iran,Iran,Irã,G,11,Saeed Ezatolahi,player,false,https://scanini.app/teams/iran,https://scanini.app/stickers/iran-11-saeed-ezatolahi
+492,IRN 12,IRN12,IRN,iran,Iran,Irã,G,12,Saman Ghoddos,player,false,https://scanini.app/teams/iran,https://scanini.app/stickers/iran-12-saman-ghoddos
+493,IRN 13,IRN13,IRN,iran,Iran,Irã,G,13,Team Photo,team_photo,false,https://scanini.app/teams/iran,https://scanini.app/stickers/iran-13-team-photo
+494,IRN 14,IRN14,IRN,iran,Iran,Irã,G,14,Omid Noorafkan,player,false,https://scanini.app/teams/iran,https://scanini.app/stickers/iran-14-omid-noorafkan
+495,IRN 15,IRN15,IRN,iran,Iran,Irã,G,15,Roozbeh Cheshmi,player,false,https://scanini.app/teams/iran,https://scanini.app/stickers/iran-15-roozbeh-cheshmi
+496,IRN 16,IRN16,IRN,iran,Iran,Irã,G,16,Mohammad Mohebi,player,false,https://scanini.app/teams/iran,https://scanini.app/stickers/iran-16-mohammad-mohebi
+497,IRN 17,IRN17,IRN,iran,Iran,Irã,G,17,Sardar Azmoun,player,false,https://scanini.app/teams/iran,https://scanini.app/stickers/iran-17-sardar-azmoun
+498,IRN 18,IRN18,IRN,iran,Iran,Irã,G,18,Mehdi Taremi,player,false,https://scanini.app/teams/iran,https://scanini.app/stickers/iran-18-mehdi-taremi
+499,IRN 19,IRN19,IRN,iran,Iran,Irã,G,19,Alireza Jahanbakhsh,player,false,https://scanini.app/teams/iran,https://scanini.app/stickers/iran-19-alireza-jahanbakhsh
+500,IRN 20,IRN20,IRN,iran,Iran,Irã,G,20,Ali Gholizadeh,player,false,https://scanini.app/teams/iran,https://scanini.app/stickers/iran-20-ali-gholizadeh
+501,IRQ 1,IRQ1,IRQ,iraq,Iraq,Iraque,I,1,Team Logo,team_logo,true,https://scanini.app/teams/iraq,https://scanini.app/stickers/iraq-1-team-logo
+502,IRQ 2,IRQ2,IRQ,iraq,Iraq,Iraque,I,2,Jalal Hassan,player,false,https://scanini.app/teams/iraq,https://scanini.app/stickers/iraq-2-jalal-hassan
+503,IRQ 3,IRQ3,IRQ,iraq,Iraq,Iraque,I,3,Rebin Sulaka,player,false,https://scanini.app/teams/iraq,https://scanini.app/stickers/iraq-3-rebin-sulaka
+504,IRQ 4,IRQ4,IRQ,iraq,Iraq,Iraque,I,4,Hussein Ali,player,false,https://scanini.app/teams/iraq,https://scanini.app/stickers/iraq-4-hussein-ali
+505,IRQ 5,IRQ5,IRQ,iraq,Iraq,Iraque,I,5,Akam Hashem,player,false,https://scanini.app/teams/iraq,https://scanini.app/stickers/iraq-5-akam-hashem
+506,IRQ 6,IRQ6,IRQ,iraq,Iraq,Iraque,I,6,Merchas Doski,player,false,https://scanini.app/teams/iraq,https://scanini.app/stickers/iraq-6-merchas-doski
+507,IRQ 7,IRQ7,IRQ,iraq,Iraq,Iraque,I,7,Zaid Tahseen,player,false,https://scanini.app/teams/iraq,https://scanini.app/stickers/iraq-7-zaid-tahseen
+508,IRQ 8,IRQ8,IRQ,iraq,Iraq,Iraque,I,8,Manaf Younis,player,false,https://scanini.app/teams/iraq,https://scanini.app/stickers/iraq-8-manaf-younis
+509,IRQ 9,IRQ9,IRQ,iraq,Iraq,Iraque,I,9,Zidane Iqbal,player,false,https://scanini.app/teams/iraq,https://scanini.app/stickers/iraq-9-zidane-iqbal
+510,IRQ 10,IRQ10,IRQ,iraq,Iraq,Iraque,I,10,Amir Al-Ammari,player,false,https://scanini.app/teams/iraq,https://scanini.app/stickers/iraq-10-amir-al-ammari
+511,IRQ 11,IRQ11,IRQ,iraq,Iraq,Iraque,I,11,Ibrahim Bavesh,player,false,https://scanini.app/teams/iraq,https://scanini.app/stickers/iraq-11-ibrahim-bavesh
+512,IRQ 12,IRQ12,IRQ,iraq,Iraq,Iraque,I,12,Ali Jasim,player,false,https://scanini.app/teams/iraq,https://scanini.app/stickers/iraq-12-ali-jasim
+513,IRQ 13,IRQ13,IRQ,iraq,Iraq,Iraque,I,13,Team Photo,team_photo,false,https://scanini.app/teams/iraq,https://scanini.app/stickers/iraq-13-team-photo
+514,IRQ 14,IRQ14,IRQ,iraq,Iraq,Iraque,I,14,Youssef Amyn,player,false,https://scanini.app/teams/iraq,https://scanini.app/stickers/iraq-14-youssef-amyn
+515,IRQ 15,IRQ15,IRQ,iraq,Iraq,Iraque,I,15,Aimar Sher,player,false,https://scanini.app/teams/iraq,https://scanini.app/stickers/iraq-15-aimar-sher
+516,IRQ 16,IRQ16,IRQ,iraq,Iraq,Iraque,I,16,Marko Farji,player,false,https://scanini.app/teams/iraq,https://scanini.app/stickers/iraq-16-marko-farji
+517,IRQ 17,IRQ17,IRQ,iraq,Iraq,Iraque,I,17,Osama Rashid,player,false,https://scanini.app/teams/iraq,https://scanini.app/stickers/iraq-17-osama-rashid
+518,IRQ 18,IRQ18,IRQ,iraq,Iraq,Iraque,I,18,Ali Al-Hamadi,player,false,https://scanini.app/teams/iraq,https://scanini.app/stickers/iraq-18-ali-al-hamadi
+519,IRQ 19,IRQ19,IRQ,iraq,Iraq,Iraque,I,19,Aymen Hussein,player,false,https://scanini.app/teams/iraq,https://scanini.app/stickers/iraq-19-aymen-hussein
+520,IRQ 20,IRQ20,IRQ,iraq,Iraq,Iraque,I,20,Mohanad Ali,player,false,https://scanini.app/teams/iraq,https://scanini.app/stickers/iraq-20-mohanad-ali
+521,JOR 1,JOR1,JOR,jordan,Jordan,Jordânia,J,1,Team Logo,team_logo,true,https://scanini.app/teams/jordan,https://scanini.app/stickers/jordan-1-team-logo
+522,JOR 2,JOR2,JOR,jordan,Jordan,Jordânia,J,2,Yazeed Abulaila,player,false,https://scanini.app/teams/jordan,https://scanini.app/stickers/jordan-2-yazeed-abulaila
+523,JOR 3,JOR3,JOR,jordan,Jordan,Jordânia,J,3,Ihsan Haddad,player,false,https://scanini.app/teams/jordan,https://scanini.app/stickers/jordan-3-ihsan-haddad
+524,JOR 4,JOR4,JOR,jordan,Jordan,Jordânia,J,4,Mohammad Abu Hashish,player,false,https://scanini.app/teams/jordan,https://scanini.app/stickers/jordan-4-mohammad-abu-hashish
+525,JOR 5,JOR5,JOR,jordan,Jordan,Jordânia,J,5,Yazan Al-Arab,player,false,https://scanini.app/teams/jordan,https://scanini.app/stickers/jordan-5-yazan-al-arab
+526,JOR 6,JOR6,JOR,jordan,Jordan,Jordânia,J,6,Abdallah Nasib,player,false,https://scanini.app/teams/jordan,https://scanini.app/stickers/jordan-6-abdallah-nasib
+527,JOR 7,JOR7,JOR,jordan,Jordan,Jordânia,J,7,Saleem Obaid,player,false,https://scanini.app/teams/jordan,https://scanini.app/stickers/jordan-7-saleem-obaid
+528,JOR 8,JOR8,JOR,jordan,Jordan,Jordânia,J,8,Mohammad Abualnadi,player,false,https://scanini.app/teams/jordan,https://scanini.app/stickers/jordan-8-mohammad-abualnadi
+529,JOR 9,JOR9,JOR,jordan,Jordan,Jordânia,J,9,Ibrahim Saadeh,player,false,https://scanini.app/teams/jordan,https://scanini.app/stickers/jordan-9-ibrahim-saadeh
+530,JOR 10,JOR10,JOR,jordan,Jordan,Jordânia,J,10,Nizar Al-Rashdan,player,false,https://scanini.app/teams/jordan,https://scanini.app/stickers/jordan-10-nizar-al-rashdan
+531,JOR 11,JOR11,JOR,jordan,Jordan,Jordânia,J,11,Noor Al-Rawabdeh,player,false,https://scanini.app/teams/jordan,https://scanini.app/stickers/jordan-11-noor-al-rawabdeh
+532,JOR 12,JOR12,JOR,jordan,Jordan,Jordânia,J,12,Mohannad Abu Taha,player,false,https://scanini.app/teams/jordan,https://scanini.app/stickers/jordan-12-mohannad-abu-taha
+533,JOR 13,JOR13,JOR,jordan,Jordan,Jordânia,J,13,Team Photo,team_photo,false,https://scanini.app/teams/jordan,https://scanini.app/stickers/jordan-13-team-photo
+534,JOR 14,JOR14,JOR,jordan,Jordan,Jordânia,J,14,Amer Jamous,player,false,https://scanini.app/teams/jordan,https://scanini.app/stickers/jordan-14-amer-jamous
+535,JOR 15,JOR15,JOR,jordan,Jordan,Jordânia,J,15,Musa Al-Taamari,player,false,https://scanini.app/teams/jordan,https://scanini.app/stickers/jordan-15-musa-al-taamari
+536,JOR 16,JOR16,JOR,jordan,Jordan,Jordânia,J,16,Yazan Al-Naimat,player,false,https://scanini.app/teams/jordan,https://scanini.app/stickers/jordan-16-yazan-al-naimat
+537,JOR 17,JOR17,JOR,jordan,Jordan,Jordânia,J,17,Mahmoud Al-Mardi,player,false,https://scanini.app/teams/jordan,https://scanini.app/stickers/jordan-17-mahmoud-al-mardi
+538,JOR 18,JOR18,JOR,jordan,Jordan,Jordânia,J,18,Ali Olwan,player,false,https://scanini.app/teams/jordan,https://scanini.app/stickers/jordan-18-ali-olwan
+539,JOR 19,JOR19,JOR,jordan,Jordan,Jordânia,J,19,Mohammad Abu Zrayq,player,false,https://scanini.app/teams/jordan,https://scanini.app/stickers/jordan-19-mohammad-abu-zrayq
+540,JOR 20,JOR20,JOR,jordan,Jordan,Jordânia,J,20,Ibrahim Sabra,player,false,https://scanini.app/teams/jordan,https://scanini.app/stickers/jordan-20-ibrahim-sabra
+541,JPN 1,JPN1,JPN,japan,Japan,Japão,F,1,Team Logo,team_logo,true,https://scanini.app/teams/japan,https://scanini.app/stickers/japan-1-team-logo
+542,JPN 2,JPN2,JPN,japan,Japan,Japão,F,2,Zion Suzuki,player,false,https://scanini.app/teams/japan,https://scanini.app/stickers/japan-2-zion-suzuki
+543,JPN 3,JPN3,JPN,japan,Japan,Japão,F,3,Henry Heroki Mochizuki,player,false,https://scanini.app/teams/japan,https://scanini.app/stickers/japan-3-henry-heroki-mochizuki
+544,JPN 4,JPN4,JPN,japan,Japan,Japão,F,4,Ayumu Seko,player,false,https://scanini.app/teams/japan,https://scanini.app/stickers/japan-4-ayumu-seko
+545,JPN 5,JPN5,JPN,japan,Japan,Japão,F,5,Junnosuke Suzuki,player,false,https://scanini.app/teams/japan,https://scanini.app/stickers/japan-5-junnosuke-suzuki
+546,JPN 6,JPN6,JPN,japan,Japan,Japão,F,6,Shogo Taniguchi,player,false,https://scanini.app/teams/japan,https://scanini.app/stickers/japan-6-shogo-taniguchi
+547,JPN 7,JPN7,JPN,japan,Japan,Japão,F,7,Tsuyoshi Watanabe,player,false,https://scanini.app/teams/japan,https://scanini.app/stickers/japan-7-tsuyoshi-watanabe
+548,JPN 8,JPN8,JPN,japan,Japan,Japão,F,8,Kaishu Sano,player,false,https://scanini.app/teams/japan,https://scanini.app/stickers/japan-8-kaishu-sano
+549,JPN 9,JPN9,JPN,japan,Japan,Japão,F,9,Yuki Soma,player,false,https://scanini.app/teams/japan,https://scanini.app/stickers/japan-9-yuki-soma
+550,JPN 10,JPN10,JPN,japan,Japan,Japão,F,10,Ao Tanaka,player,false,https://scanini.app/teams/japan,https://scanini.app/stickers/japan-10-ao-tanaka
+551,JPN 11,JPN11,JPN,japan,Japan,Japão,F,11,Daichi Kamada,player,false,https://scanini.app/teams/japan,https://scanini.app/stickers/japan-11-daichi-kamada
+552,JPN 12,JPN12,JPN,japan,Japan,Japão,F,12,Takefusa Kubo,player,false,https://scanini.app/teams/japan,https://scanini.app/stickers/japan-12-takefusa-kubo
+553,JPN 13,JPN13,JPN,japan,Japan,Japão,F,13,Team Photo,team_photo,false,https://scanini.app/teams/japan,https://scanini.app/stickers/japan-13-team-photo
+554,JPN 14,JPN14,JPN,japan,Japan,Japão,F,14,Ritsu Doan,player,false,https://scanini.app/teams/japan,https://scanini.app/stickers/japan-14-ritsu-doan
+555,JPN 15,JPN15,JPN,japan,Japan,Japão,F,15,Keito Nakamura,player,false,https://scanini.app/teams/japan,https://scanini.app/stickers/japan-15-keito-nakamura
+556,JPN 16,JPN16,JPN,japan,Japan,Japão,F,16,Takumi Minamino,player,false,https://scanini.app/teams/japan,https://scanini.app/stickers/japan-16-takumi-minamino
+557,JPN 17,JPN17,JPN,japan,Japan,Japão,F,17,Shuto Machino,player,false,https://scanini.app/teams/japan,https://scanini.app/stickers/japan-17-shuto-machino
+558,JPN 18,JPN18,JPN,japan,Japan,Japão,F,18,Junya Ito,player,false,https://scanini.app/teams/japan,https://scanini.app/stickers/japan-18-junya-ito
+559,JPN 19,JPN19,JPN,japan,Japan,Japão,F,19,Koki Ogawa,player,false,https://scanini.app/teams/japan,https://scanini.app/stickers/japan-19-koki-ogawa
+560,JPN 20,JPN20,JPN,japan,Japan,Japão,F,20,Ayase Ueda,player,false,https://scanini.app/teams/japan,https://scanini.app/stickers/japan-20-ayase-ueda
+561,KOR 1,KOR1,KOR,south-korea,South Korea,Coreia do Sul,A,1,Team Logo,team_logo,true,https://scanini.app/teams/south-korea,https://scanini.app/stickers/south-korea-1-team-logo
+562,KOR 2,KOR2,KOR,south-korea,South Korea,Coreia do Sul,A,2,Hyeon-woo Jo,player,false,https://scanini.app/teams/south-korea,https://scanini.app/stickers/south-korea-2-hyeon-woo-jo
+563,KOR 3,KOR3,KOR,south-korea,South Korea,Coreia do Sul,A,3,Seung-Gyu Kim,player,false,https://scanini.app/teams/south-korea,https://scanini.app/stickers/south-korea-3-seung-gyu-kim
+564,KOR 4,KOR4,KOR,south-korea,South Korea,Coreia do Sul,A,4,Min-jae Kim,player,false,https://scanini.app/teams/south-korea,https://scanini.app/stickers/south-korea-4-min-jae-kim
+565,KOR 5,KOR5,KOR,south-korea,South Korea,Coreia do Sul,A,5,Yu-min Cho,player,false,https://scanini.app/teams/south-korea,https://scanini.app/stickers/south-korea-5-yu-min-cho
+566,KOR 6,KOR6,KOR,south-korea,South Korea,Coreia do Sul,A,6,Young-woo Seol,player,false,https://scanini.app/teams/south-korea,https://scanini.app/stickers/south-korea-6-young-woo-seol
+567,KOR 7,KOR7,KOR,south-korea,South Korea,Coreia do Sul,A,7,Han-beom Lee,player,false,https://scanini.app/teams/south-korea,https://scanini.app/stickers/south-korea-7-han-beom-lee
+568,KOR 8,KOR8,KOR,south-korea,South Korea,Coreia do Sul,A,8,Tae-seok Lee,player,false,https://scanini.app/teams/south-korea,https://scanini.app/stickers/south-korea-8-tae-seok-lee
+569,KOR 9,KOR9,KOR,south-korea,South Korea,Coreia do Sul,A,9,Myung-jae Lee,player,false,https://scanini.app/teams/south-korea,https://scanini.app/stickers/south-korea-9-myung-jae-lee
+570,KOR 10,KOR10,KOR,south-korea,South Korea,Coreia do Sul,A,10,Jae-sung Lee,player,false,https://scanini.app/teams/south-korea,https://scanini.app/stickers/south-korea-10-jae-sung-lee
+571,KOR 11,KOR11,KOR,south-korea,South Korea,Coreia do Sul,A,11,In-beom Hwang,player,false,https://scanini.app/teams/south-korea,https://scanini.app/stickers/south-korea-11-in-beom-hwang
+572,KOR 12,KOR12,KOR,south-korea,South Korea,Coreia do Sul,A,12,Kang-in Lee,player,false,https://scanini.app/teams/south-korea,https://scanini.app/stickers/south-korea-12-kang-in-lee
+573,KOR 13,KOR13,KOR,south-korea,South Korea,Coreia do Sul,A,13,Team Photo,team_photo,false,https://scanini.app/teams/south-korea,https://scanini.app/stickers/south-korea-13-team-photo
+574,KOR 14,KOR14,KOR,south-korea,South Korea,Coreia do Sul,A,14,Seung-ho Paik,player,false,https://scanini.app/teams/south-korea,https://scanini.app/stickers/south-korea-14-seung-ho-paik
+575,KOR 15,KOR15,KOR,south-korea,South Korea,Coreia do Sul,A,15,Jens Castrop,player,false,https://scanini.app/teams/south-korea,https://scanini.app/stickers/south-korea-15-jens-castrop
+576,KOR 16,KOR16,KOR,south-korea,South Korea,Coreia do Sul,A,16,Dongg-yeong Lee,player,false,https://scanini.app/teams/south-korea,https://scanini.app/stickers/south-korea-16-dongg-yeong-lee
+577,KOR 17,KOR17,KOR,south-korea,South Korea,Coreia do Sul,A,17,Gue-sung Cho,player,false,https://scanini.app/teams/south-korea,https://scanini.app/stickers/south-korea-17-gue-sung-cho
+578,KOR 18,KOR18,KOR,south-korea,South Korea,Coreia do Sul,A,18,Heung-min Son,player,false,https://scanini.app/teams/south-korea,https://scanini.app/stickers/south-korea-18-heung-min-son
+579,KOR 19,KOR19,KOR,south-korea,South Korea,Coreia do Sul,A,19,Hee-chan Hwang,player,false,https://scanini.app/teams/south-korea,https://scanini.app/stickers/south-korea-19-hee-chan-hwang
+580,KOR 20,KOR20,KOR,south-korea,South Korea,Coreia do Sul,A,20,Hyeon-Gyu Oh,player,false,https://scanini.app/teams/south-korea,https://scanini.app/stickers/south-korea-20-hyeon-gyu-oh
+581,KSA 1,KSA1,KSA,saudi-arabia,Saudi Arabia,Arábia Saudita,H,1,Team Logo,team_logo,true,https://scanini.app/teams/saudi-arabia,https://scanini.app/stickers/saudi-arabia-1-team-logo
+582,KSA 2,KSA2,KSA,saudi-arabia,Saudi Arabia,Arábia Saudita,H,2,Nawaf Alaqidi,player,false,https://scanini.app/teams/saudi-arabia,https://scanini.app/stickers/saudi-arabia-2-nawaf-alaqidi
+583,KSA 3,KSA3,KSA,saudi-arabia,Saudi Arabia,Arábia Saudita,H,3,Abdulrahman Al-Sanbi,player,false,https://scanini.app/teams/saudi-arabia,https://scanini.app/stickers/saudi-arabia-3-abdulrahman-al-sanbi
+584,KSA 4,KSA4,KSA,saudi-arabia,Saudi Arabia,Arábia Saudita,H,4,Saud Abdulhamid,player,false,https://scanini.app/teams/saudi-arabia,https://scanini.app/stickers/saudi-arabia-4-saud-abdulhamid
+585,KSA 5,KSA5,KSA,saudi-arabia,Saudi Arabia,Arábia Saudita,H,5,Nawaf Bouwashl,player,false,https://scanini.app/teams/saudi-arabia,https://scanini.app/stickers/saudi-arabia-5-nawaf-bouwashl
+586,KSA 6,KSA6,KSA,saudi-arabia,Saudi Arabia,Arábia Saudita,H,6,Jihad Thakri,player,false,https://scanini.app/teams/saudi-arabia,https://scanini.app/stickers/saudi-arabia-6-jihad-thakri
+587,KSA 7,KSA7,KSA,saudi-arabia,Saudi Arabia,Arábia Saudita,H,7,Moteb Al-Harbi,player,false,https://scanini.app/teams/saudi-arabia,https://scanini.app/stickers/saudi-arabia-7-moteb-al-harbi
+588,KSA 8,KSA8,KSA,saudi-arabia,Saudi Arabia,Arábia Saudita,H,8,Hassan Altambakti,player,false,https://scanini.app/teams/saudi-arabia,https://scanini.app/stickers/saudi-arabia-8-hassan-altambakti
+589,KSA 9,KSA9,KSA,saudi-arabia,Saudi Arabia,Arábia Saudita,H,9,Musab Aljuwayr,player,false,https://scanini.app/teams/saudi-arabia,https://scanini.app/stickers/saudi-arabia-9-musab-aljuwayr
+590,KSA 10,KSA10,KSA,saudi-arabia,Saudi Arabia,Arábia Saudita,H,10,Ziyad Aljohani,player,false,https://scanini.app/teams/saudi-arabia,https://scanini.app/stickers/saudi-arabia-10-ziyad-aljohani
+591,KSA 11,KSA11,KSA,saudi-arabia,Saudi Arabia,Arábia Saudita,H,11,Abdullah Alkhaibari,player,false,https://scanini.app/teams/saudi-arabia,https://scanini.app/stickers/saudi-arabia-11-abdullah-alkhaibari
+592,KSA 12,KSA12,KSA,saudi-arabia,Saudi Arabia,Arábia Saudita,H,12,Nasser Aldawsari,player,false,https://scanini.app/teams/saudi-arabia,https://scanini.app/stickers/saudi-arabia-12-nasser-aldawsari
+593,KSA 13,KSA13,KSA,saudi-arabia,Saudi Arabia,Arábia Saudita,H,13,Team Photo,team_photo,false,https://scanini.app/teams/saudi-arabia,https://scanini.app/stickers/saudi-arabia-13-team-photo
+594,KSA 14,KSA14,KSA,saudi-arabia,Saudi Arabia,Arábia Saudita,H,14,Saleh Abu Alshamat,player,false,https://scanini.app/teams/saudi-arabia,https://scanini.app/stickers/saudi-arabia-14-saleh-abu-alshamat
+595,KSA 15,KSA15,KSA,saudi-arabia,Saudi Arabia,Arábia Saudita,H,15,Marwan Alsahafi,player,false,https://scanini.app/teams/saudi-arabia,https://scanini.app/stickers/saudi-arabia-15-marwan-alsahafi
+596,KSA 16,KSA16,KSA,saudi-arabia,Saudi Arabia,Arábia Saudita,H,16,Salem Aldawsari,player,false,https://scanini.app/teams/saudi-arabia,https://scanini.app/stickers/saudi-arabia-16-salem-aldawsari
+597,KSA 17,KSA17,KSA,saudi-arabia,Saudi Arabia,Arábia Saudita,H,17,Abdulrahman Al-Aboud,player,false,https://scanini.app/teams/saudi-arabia,https://scanini.app/stickers/saudi-arabia-17-abdulrahman-al-aboud
+598,KSA 18,KSA18,KSA,saudi-arabia,Saudi Arabia,Arábia Saudita,H,18,Feras Akbrikan,player,false,https://scanini.app/teams/saudi-arabia,https://scanini.app/stickers/saudi-arabia-18-feras-akbrikan
+599,KSA 19,KSA19,KSA,saudi-arabia,Saudi Arabia,Arábia Saudita,H,19,Saleh Alshehri,player,false,https://scanini.app/teams/saudi-arabia,https://scanini.app/stickers/saudi-arabia-19-saleh-alshehri
+600,KSA 20,KSA20,KSA,saudi-arabia,Saudi Arabia,Arábia Saudita,H,20,Abdullah Al-Hamdan,player,false,https://scanini.app/teams/saudi-arabia,https://scanini.app/stickers/saudi-arabia-20-abdullah-al-hamdan
+601,MAR 1,MAR1,MAR,morocco,Morocco,Marrocos,C,1,Team Logo,team_logo,true,https://scanini.app/teams/morocco,https://scanini.app/stickers/morocco-1-team-logo
+602,MAR 2,MAR2,MAR,morocco,Morocco,Marrocos,C,2,Yassine Bounou,player,false,https://scanini.app/teams/morocco,https://scanini.app/stickers/morocco-2-yassine-bounou
+603,MAR 3,MAR3,MAR,morocco,Morocco,Marrocos,C,3,Munir El Kajoui,player,false,https://scanini.app/teams/morocco,https://scanini.app/stickers/morocco-3-munir-el-kajoui
+604,MAR 4,MAR4,MAR,morocco,Morocco,Marrocos,C,4,Achraf Hakimi,player,false,https://scanini.app/teams/morocco,https://scanini.app/stickers/morocco-4-achraf-hakimi
+605,MAR 5,MAR5,MAR,morocco,Morocco,Marrocos,C,5,Noussair Mazraoui,player,false,https://scanini.app/teams/morocco,https://scanini.app/stickers/morocco-5-noussair-mazraoui
+606,MAR 6,MAR6,MAR,morocco,Morocco,Marrocos,C,6,Nayef Aguerd,player,false,https://scanini.app/teams/morocco,https://scanini.app/stickers/morocco-6-nayef-aguerd
+607,MAR 7,MAR7,MAR,morocco,Morocco,Marrocos,C,7,Roman Saiss,player,false,https://scanini.app/teams/morocco,https://scanini.app/stickers/morocco-7-roman-saiss
+608,MAR 8,MAR8,MAR,morocco,Morocco,Marrocos,C,8,Jawad El Yamio,player,false,https://scanini.app/teams/morocco,https://scanini.app/stickers/morocco-8-jawad-el-yamio
+609,MAR 9,MAR9,MAR,morocco,Morocco,Marrocos,C,9,Adam Masina,player,false,https://scanini.app/teams/morocco,https://scanini.app/stickers/morocco-9-adam-masina
+610,MAR 10,MAR10,MAR,morocco,Morocco,Marrocos,C,10,Sofyan Amrabat,player,false,https://scanini.app/teams/morocco,https://scanini.app/stickers/morocco-10-sofyan-amrabat
+611,MAR 11,MAR11,MAR,morocco,Morocco,Marrocos,C,11,Azzedine Ounahi,player,false,https://scanini.app/teams/morocco,https://scanini.app/stickers/morocco-11-azzedine-ounahi
+612,MAR 12,MAR12,MAR,morocco,Morocco,Marrocos,C,12,Eliesse Ben Seghir,player,false,https://scanini.app/teams/morocco,https://scanini.app/stickers/morocco-12-eliesse-ben-seghir
+613,MAR 13,MAR13,MAR,morocco,Morocco,Marrocos,C,13,Team Photo,team_photo,false,https://scanini.app/teams/morocco,https://scanini.app/stickers/morocco-13-team-photo
+614,MAR 14,MAR14,MAR,morocco,Morocco,Marrocos,C,14,Bilal El Khannouss,player,false,https://scanini.app/teams/morocco,https://scanini.app/stickers/morocco-14-bilal-el-khannouss
+615,MAR 15,MAR15,MAR,morocco,Morocco,Marrocos,C,15,Ismael Saibari,player,false,https://scanini.app/teams/morocco,https://scanini.app/stickers/morocco-15-ismael-saibari
+616,MAR 16,MAR16,MAR,morocco,Morocco,Marrocos,C,16,Youssef En-Nesyri,player,false,https://scanini.app/teams/morocco,https://scanini.app/stickers/morocco-16-youssef-en-nesyri
+617,MAR 17,MAR17,MAR,morocco,Morocco,Marrocos,C,17,Abde Ezzalzouli,player,false,https://scanini.app/teams/morocco,https://scanini.app/stickers/morocco-17-abde-ezzalzouli
+618,MAR 18,MAR18,MAR,morocco,Morocco,Marrocos,C,18,Soufiane Rahimi,player,false,https://scanini.app/teams/morocco,https://scanini.app/stickers/morocco-18-soufiane-rahimi
+619,MAR 19,MAR19,MAR,morocco,Morocco,Marrocos,C,19,Brahim Diaz,player,false,https://scanini.app/teams/morocco,https://scanini.app/stickers/morocco-19-brahim-diaz
+620,MAR 20,MAR20,MAR,morocco,Morocco,Marrocos,C,20,Ayoub El Kaabi,player,false,https://scanini.app/teams/morocco,https://scanini.app/stickers/morocco-20-ayoub-el-kaabi
+621,MEX 1,MEX1,MEX,mexico,Mexico,México,A,1,Team Logo,team_logo,true,https://scanini.app/teams/mexico,https://scanini.app/stickers/mexico-1-team-logo
+622,MEX 2,MEX2,MEX,mexico,Mexico,México,A,2,Luis Malagón,player,false,https://scanini.app/teams/mexico,https://scanini.app/stickers/mexico-2-luis-malagon
+623,MEX 3,MEX3,MEX,mexico,Mexico,México,A,3,Johan Vasquez,player,false,https://scanini.app/teams/mexico,https://scanini.app/stickers/mexico-3-johan-vasquez
+624,MEX 4,MEX4,MEX,mexico,Mexico,México,A,4,Jorge Sánchez,player,false,https://scanini.app/teams/mexico,https://scanini.app/stickers/mexico-4-jorge-sanchez
+625,MEX 5,MEX5,MEX,mexico,Mexico,México,A,5,Cesar Montes,player,false,https://scanini.app/teams/mexico,https://scanini.app/stickers/mexico-5-cesar-montes
+626,MEX 6,MEX6,MEX,mexico,Mexico,México,A,6,Jesus Gallardo,player,false,https://scanini.app/teams/mexico,https://scanini.app/stickers/mexico-6-jesus-gallardo
+627,MEX 7,MEX7,MEX,mexico,Mexico,México,A,7,Israel Reyes,player,false,https://scanini.app/teams/mexico,https://scanini.app/stickers/mexico-7-israel-reyes
+628,MEX 8,MEX8,MEX,mexico,Mexico,México,A,8,Diego Lainez,player,false,https://scanini.app/teams/mexico,https://scanini.app/stickers/mexico-8-diego-lainez
+629,MEX 9,MEX9,MEX,mexico,Mexico,México,A,9,Carlos Rodriguez,player,false,https://scanini.app/teams/mexico,https://scanini.app/stickers/mexico-9-carlos-rodriguez
+630,MEX 10,MEX10,MEX,mexico,Mexico,México,A,10,Edson Alvarez,player,false,https://scanini.app/teams/mexico,https://scanini.app/stickers/mexico-10-edson-alvarez
+631,MEX 11,MEX11,MEX,mexico,Mexico,México,A,11,Orbelin Pineda,player,false,https://scanini.app/teams/mexico,https://scanini.app/stickers/mexico-11-orbelin-pineda
+632,MEX 12,MEX12,MEX,mexico,Mexico,México,A,12,Marcel Ruiz,player,false,https://scanini.app/teams/mexico,https://scanini.app/stickers/mexico-12-marcel-ruiz
+633,MEX 13,MEX13,MEX,mexico,Mexico,México,A,13,Team Photo,team_photo,false,https://scanini.app/teams/mexico,https://scanini.app/stickers/mexico-13-team-photo
+634,MEX 14,MEX14,MEX,mexico,Mexico,México,A,14,Érick Sánchez,player,false,https://scanini.app/teams/mexico,https://scanini.app/stickers/mexico-14-erick-sanchez
+635,MEX 15,MEX15,MEX,mexico,Mexico,México,A,15,Hirving Lozano,player,false,https://scanini.app/teams/mexico,https://scanini.app/stickers/mexico-15-hirving-lozano
+636,MEX 16,MEX16,MEX,mexico,Mexico,México,A,16,Santiago Giménez,player,false,https://scanini.app/teams/mexico,https://scanini.app/stickers/mexico-16-santiago-gimenez
+637,MEX 17,MEX17,MEX,mexico,Mexico,México,A,17,Raúl Jiménez,player,false,https://scanini.app/teams/mexico,https://scanini.app/stickers/mexico-17-raul-jimenez
+638,MEX 18,MEX18,MEX,mexico,Mexico,México,A,18,Alexis Vega,player,false,https://scanini.app/teams/mexico,https://scanini.app/stickers/mexico-18-alexis-vega
+639,MEX 19,MEX19,MEX,mexico,Mexico,México,A,19,Roberto Alvarado,player,false,https://scanini.app/teams/mexico,https://scanini.app/stickers/mexico-19-roberto-alvarado
+640,MEX 20,MEX20,MEX,mexico,Mexico,México,A,20,Cesar Huerta,player,false,https://scanini.app/teams/mexico,https://scanini.app/stickers/mexico-20-cesar-huerta
+641,NED 1,NED1,NED,netherlands,Netherlands,Países Baixos,F,1,Team Logo,team_logo,true,https://scanini.app/teams/netherlands,https://scanini.app/stickers/netherlands-1-team-logo
+642,NED 2,NED2,NED,netherlands,Netherlands,Países Baixos,F,2,Bart Verbruggen,player,false,https://scanini.app/teams/netherlands,https://scanini.app/stickers/netherlands-2-bart-verbruggen
+643,NED 3,NED3,NED,netherlands,Netherlands,Países Baixos,F,3,Virgil van Dijk,player,false,https://scanini.app/teams/netherlands,https://scanini.app/stickers/netherlands-3-virgil-van-dijk
+644,NED 4,NED4,NED,netherlands,Netherlands,Países Baixos,F,4,Micky van de Ven,player,false,https://scanini.app/teams/netherlands,https://scanini.app/stickers/netherlands-4-micky-van-de-ven
+645,NED 5,NED5,NED,netherlands,Netherlands,Países Baixos,F,5,Jurrien Timber,player,false,https://scanini.app/teams/netherlands,https://scanini.app/stickers/netherlands-5-jurrien-timber
+646,NED 6,NED6,NED,netherlands,Netherlands,Países Baixos,F,6,Denzel Dumfries,player,false,https://scanini.app/teams/netherlands,https://scanini.app/stickers/netherlands-6-denzel-dumfries
+647,NED 7,NED7,NED,netherlands,Netherlands,Países Baixos,F,7,Nathan Aké,player,false,https://scanini.app/teams/netherlands,https://scanini.app/stickers/netherlands-7-nathan-ake
+648,NED 8,NED8,NED,netherlands,Netherlands,Países Baixos,F,8,Jeremie Frimpong,player,false,https://scanini.app/teams/netherlands,https://scanini.app/stickers/netherlands-8-jeremie-frimpong
+649,NED 9,NED9,NED,netherlands,Netherlands,Países Baixos,F,9,Jan Paul van Hecke,player,false,https://scanini.app/teams/netherlands,https://scanini.app/stickers/netherlands-9-jan-paul-van-hecke
+650,NED 10,NED10,NED,netherlands,Netherlands,Países Baixos,F,10,Tijjani Reijnders,player,false,https://scanini.app/teams/netherlands,https://scanini.app/stickers/netherlands-10-tijjani-reijnders
+651,NED 11,NED11,NED,netherlands,Netherlands,Países Baixos,F,11,Ryan Gravenberch,player,false,https://scanini.app/teams/netherlands,https://scanini.app/stickers/netherlands-11-ryan-gravenberch
+652,NED 12,NED12,NED,netherlands,Netherlands,Países Baixos,F,12,Teun Koopmeiners,player,false,https://scanini.app/teams/netherlands,https://scanini.app/stickers/netherlands-12-teun-koopmeiners
+653,NED 13,NED13,NED,netherlands,Netherlands,Países Baixos,F,13,Team Photo,team_photo,false,https://scanini.app/teams/netherlands,https://scanini.app/stickers/netherlands-13-team-photo
+654,NED 14,NED14,NED,netherlands,Netherlands,Países Baixos,F,14,Frenkie de Jong,player,false,https://scanini.app/teams/netherlands,https://scanini.app/stickers/netherlands-14-frenkie-de-jong
+655,NED 15,NED15,NED,netherlands,Netherlands,Países Baixos,F,15,Xavi Simons,player,false,https://scanini.app/teams/netherlands,https://scanini.app/stickers/netherlands-15-xavi-simons
+656,NED 16,NED16,NED,netherlands,Netherlands,Países Baixos,F,16,Justin Kluivert,player,false,https://scanini.app/teams/netherlands,https://scanini.app/stickers/netherlands-16-justin-kluivert
+657,NED 17,NED17,NED,netherlands,Netherlands,Países Baixos,F,17,Memphis Depay,player,false,https://scanini.app/teams/netherlands,https://scanini.app/stickers/netherlands-17-memphis-depay
+658,NED 18,NED18,NED,netherlands,Netherlands,Países Baixos,F,18,Donyell Malen,player,false,https://scanini.app/teams/netherlands,https://scanini.app/stickers/netherlands-18-donyell-malen
+659,NED 19,NED19,NED,netherlands,Netherlands,Países Baixos,F,19,Wout Weghorst,player,false,https://scanini.app/teams/netherlands,https://scanini.app/stickers/netherlands-19-wout-weghorst
+660,NED 20,NED20,NED,netherlands,Netherlands,Países Baixos,F,20,Cody Gakpo,player,false,https://scanini.app/teams/netherlands,https://scanini.app/stickers/netherlands-20-cody-gakpo
+661,NOR 1,NOR1,NOR,norway,Norway,Noruega,I,1,Team Logo,team_logo,true,https://scanini.app/teams/norway,https://scanini.app/stickers/norway-1-team-logo
+662,NOR 2,NOR2,NOR,norway,Norway,Noruega,I,2,Orjan Nyland,player,false,https://scanini.app/teams/norway,https://scanini.app/stickers/norway-2-orjan-nyland
+663,NOR 3,NOR3,NOR,norway,Norway,Noruega,I,3,Julian Ryerson,player,false,https://scanini.app/teams/norway,https://scanini.app/stickers/norway-3-julian-ryerson
+664,NOR 4,NOR4,NOR,norway,Norway,Noruega,I,4,Leo Ostigård,player,false,https://scanini.app/teams/norway,https://scanini.app/stickers/norway-4-leo-ostigard
+665,NOR 5,NOR5,NOR,norway,Norway,Noruega,I,5,Kristoffer Vassbakk Ajer,player,false,https://scanini.app/teams/norway,https://scanini.app/stickers/norway-5-kristoffer-vassbakk-ajer
+666,NOR 6,NOR6,NOR,norway,Norway,Noruega,I,6,Marcus Holmgren Pedersen,player,false,https://scanini.app/teams/norway,https://scanini.app/stickers/norway-6-marcus-holmgren-pedersen
+667,NOR 7,NOR7,NOR,norway,Norway,Noruega,I,7,David Møller Wolfe,player,false,https://scanini.app/teams/norway,https://scanini.app/stickers/norway-7-david-moller-wolfe
+668,NOR 8,NOR8,NOR,norway,Norway,Noruega,I,8,Torbjørn Heggem,player,false,https://scanini.app/teams/norway,https://scanini.app/stickers/norway-8-torbjorn-heggem
+669,NOR 9,NOR9,NOR,norway,Norway,Noruega,I,9,Morten Thorsby,player,false,https://scanini.app/teams/norway,https://scanini.app/stickers/norway-9-morten-thorsby
+670,NOR 10,NOR10,NOR,norway,Norway,Noruega,I,10,Martin Ødegaard,player,false,https://scanini.app/teams/norway,https://scanini.app/stickers/norway-10-martin-odegaard
+671,NOR 11,NOR11,NOR,norway,Norway,Noruega,I,11,Sander Berge,player,false,https://scanini.app/teams/norway,https://scanini.app/stickers/norway-11-sander-berge
+672,NOR 12,NOR12,NOR,norway,Norway,Noruega,I,12,Andreas Schjelderup,player,false,https://scanini.app/teams/norway,https://scanini.app/stickers/norway-12-andreas-schjelderup
+673,NOR 13,NOR13,NOR,norway,Norway,Noruega,I,13,Team Photo,team_photo,false,https://scanini.app/teams/norway,https://scanini.app/stickers/norway-13-team-photo
+674,NOR 14,NOR14,NOR,norway,Norway,Noruega,I,14,Patrick Berg,player,false,https://scanini.app/teams/norway,https://scanini.app/stickers/norway-14-patrick-berg
+675,NOR 15,NOR15,NOR,norway,Norway,Noruega,I,15,Erling Haaland,player,false,https://scanini.app/teams/norway,https://scanini.app/stickers/norway-15-erling-haaland
+676,NOR 16,NOR16,NOR,norway,Norway,Noruega,I,16,Alexander Sørloth,player,false,https://scanini.app/teams/norway,https://scanini.app/stickers/norway-16-alexander-sorloth
+677,NOR 17,NOR17,NOR,norway,Norway,Noruega,I,17,Aron Dønnum,player,false,https://scanini.app/teams/norway,https://scanini.app/stickers/norway-17-aron-donnum
+678,NOR 18,NOR18,NOR,norway,Norway,Noruega,I,18,Jorgen Strand Larsen,player,false,https://scanini.app/teams/norway,https://scanini.app/stickers/norway-18-jorgen-strand-larsen
+679,NOR 19,NOR19,NOR,norway,Norway,Noruega,I,19,Antonio Nusa,player,false,https://scanini.app/teams/norway,https://scanini.app/stickers/norway-19-antonio-nusa
+680,NOR 20,NOR20,NOR,norway,Norway,Noruega,I,20,Oscar Bobb,player,false,https://scanini.app/teams/norway,https://scanini.app/stickers/norway-20-oscar-bobb
+681,NZL 1,NZL1,NZL,new-zealand,New Zealand,Nova Zelândia,G,1,Team Logo,team_logo,true,https://scanini.app/teams/new-zealand,https://scanini.app/stickers/new-zealand-1-team-logo
+682,NZL 2,NZL2,NZL,new-zealand,New Zealand,Nova Zelândia,G,2,Max Crocombe Payne,player,false,https://scanini.app/teams/new-zealand,https://scanini.app/stickers/new-zealand-2-max-crocombe-payne
+683,NZL 3,NZL3,NZL,new-zealand,New Zealand,Nova Zelândia,G,3,Alex Paulsen,player,false,https://scanini.app/teams/new-zealand,https://scanini.app/stickers/new-zealand-3-alex-paulsen
+684,NZL 4,NZL4,NZL,new-zealand,New Zealand,Nova Zelândia,G,4,Michael Boxall,player,false,https://scanini.app/teams/new-zealand,https://scanini.app/stickers/new-zealand-4-michael-boxall
+685,NZL 5,NZL5,NZL,new-zealand,New Zealand,Nova Zelândia,G,5,Liberato Cacace,player,false,https://scanini.app/teams/new-zealand,https://scanini.app/stickers/new-zealand-5-liberato-cacace
+686,NZL 6,NZL6,NZL,new-zealand,New Zealand,Nova Zelândia,G,6,Tim Payne,player,false,https://scanini.app/teams/new-zealand,https://scanini.app/stickers/new-zealand-6-tim-payne
+687,NZL 7,NZL7,NZL,new-zealand,New Zealand,Nova Zelândia,G,7,Tyler Bindon,player,false,https://scanini.app/teams/new-zealand,https://scanini.app/stickers/new-zealand-7-tyler-bindon
+688,NZL 8,NZL8,NZL,new-zealand,New Zealand,Nova Zelândia,G,8,Francis de Vries,player,false,https://scanini.app/teams/new-zealand,https://scanini.app/stickers/new-zealand-8-francis-de-vries
+689,NZL 9,NZL9,NZL,new-zealand,New Zealand,Nova Zelândia,G,9,Finn Surman,player,false,https://scanini.app/teams/new-zealand,https://scanini.app/stickers/new-zealand-9-finn-surman
+690,NZL 10,NZL10,NZL,new-zealand,New Zealand,Nova Zelândia,G,10,Joe Bell,player,false,https://scanini.app/teams/new-zealand,https://scanini.app/stickers/new-zealand-10-joe-bell
+691,NZL 11,NZL11,NZL,new-zealand,New Zealand,Nova Zelândia,G,11,Sarpreet Singh,player,false,https://scanini.app/teams/new-zealand,https://scanini.app/stickers/new-zealand-11-sarpreet-singh
+692,NZL 12,NZL12,NZL,new-zealand,New Zealand,Nova Zelândia,G,12,Ryan Thomas,player,false,https://scanini.app/teams/new-zealand,https://scanini.app/stickers/new-zealand-12-ryan-thomas
+693,NZL 13,NZL13,NZL,new-zealand,New Zealand,Nova Zelândia,G,13,Team Photo,team_photo,false,https://scanini.app/teams/new-zealand,https://scanini.app/stickers/new-zealand-13-team-photo
+694,NZL 14,NZL14,NZL,new-zealand,New Zealand,Nova Zelândia,G,14,Matthew Garbett,player,false,https://scanini.app/teams/new-zealand,https://scanini.app/stickers/new-zealand-14-matthew-garbett
+695,NZL 15,NZL15,NZL,new-zealand,New Zealand,Nova Zelândia,G,15,Marko Stamenić,player,false,https://scanini.app/teams/new-zealand,https://scanini.app/stickers/new-zealand-15-marko-stamenic
+696,NZL 16,NZL16,NZL,new-zealand,New Zealand,Nova Zelândia,G,16,Ben Old,player,false,https://scanini.app/teams/new-zealand,https://scanini.app/stickers/new-zealand-16-ben-old
+697,NZL 17,NZL17,NZL,new-zealand,New Zealand,Nova Zelândia,G,17,Chris Wood,player,false,https://scanini.app/teams/new-zealand,https://scanini.app/stickers/new-zealand-17-chris-wood
+698,NZL 18,NZL18,NZL,new-zealand,New Zealand,Nova Zelândia,G,18,Elijah Just,player,false,https://scanini.app/teams/new-zealand,https://scanini.app/stickers/new-zealand-18-elijah-just
+699,NZL 19,NZL19,NZL,new-zealand,New Zealand,Nova Zelândia,G,19,Callum McCowatt,player,false,https://scanini.app/teams/new-zealand,https://scanini.app/stickers/new-zealand-19-callum-mccowatt
+700,NZL 20,NZL20,NZL,new-zealand,New Zealand,Nova Zelândia,G,20,Kosta Barbarouses,player,false,https://scanini.app/teams/new-zealand,https://scanini.app/stickers/new-zealand-20-kosta-barbarouses
+701,PAN 1,PAN1,PAN,panama,Panama,Panamá,L,1,Team Logo,team_logo,true,https://scanini.app/teams/panama,https://scanini.app/stickers/panama-1-team-logo
+702,PAN 2,PAN2,PAN,panama,Panama,Panamá,L,2,Orlando Mosquera,player,false,https://scanini.app/teams/panama,https://scanini.app/stickers/panama-2-orlando-mosquera
+703,PAN 3,PAN3,PAN,panama,Panama,Panamá,L,3,Luis Mejia,player,false,https://scanini.app/teams/panama,https://scanini.app/stickers/panama-3-luis-mejia
+704,PAN 4,PAN4,PAN,panama,Panama,Panamá,L,4,Fidel Escobar,player,false,https://scanini.app/teams/panama,https://scanini.app/stickers/panama-4-fidel-escobar
+705,PAN 5,PAN5,PAN,panama,Panama,Panamá,L,5,Andres Andrade,player,false,https://scanini.app/teams/panama,https://scanini.app/stickers/panama-5-andres-andrade
+706,PAN 6,PAN6,PAN,panama,Panama,Panamá,L,6,Michael Amir Murillo,player,false,https://scanini.app/teams/panama,https://scanini.app/stickers/panama-6-michael-amir-murillo
+707,PAN 7,PAN7,PAN,panama,Panama,Panamá,L,7,Eric Davis,player,false,https://scanini.app/teams/panama,https://scanini.app/stickers/panama-7-eric-davis
+708,PAN 8,PAN8,PAN,panama,Panama,Panamá,L,8,Jose Cordoba,player,false,https://scanini.app/teams/panama,https://scanini.app/stickers/panama-8-jose-cordoba
+709,PAN 9,PAN9,PAN,panama,Panama,Panamá,L,9,Cesar Blackman,player,false,https://scanini.app/teams/panama,https://scanini.app/stickers/panama-9-cesar-blackman
+710,PAN 10,PAN10,PAN,panama,Panama,Panamá,L,10,Cristian Martinez,player,false,https://scanini.app/teams/panama,https://scanini.app/stickers/panama-10-cristian-martinez
+711,PAN 11,PAN11,PAN,panama,Panama,Panamá,L,11,Aníbal Godoy,player,false,https://scanini.app/teams/panama,https://scanini.app/stickers/panama-11-anibal-godoy
+712,PAN 12,PAN12,PAN,panama,Panama,Panamá,L,12,Adalberto Carrasquilla,player,false,https://scanini.app/teams/panama,https://scanini.app/stickers/panama-12-adalberto-carrasquilla
+713,PAN 13,PAN13,PAN,panama,Panama,Panamá,L,13,Team Photo,team_photo,false,https://scanini.app/teams/panama,https://scanini.app/stickers/panama-13-team-photo
+714,PAN 14,PAN14,PAN,panama,Panama,Panamá,L,14,Édgar Bárcenas,player,false,https://scanini.app/teams/panama,https://scanini.app/stickers/panama-14-edgar-barcenas
+715,PAN 15,PAN15,PAN,panama,Panama,Panamá,L,15,Carlos Harvey,player,false,https://scanini.app/teams/panama,https://scanini.app/stickers/panama-15-carlos-harvey
+716,PAN 16,PAN16,PAN,panama,Panama,Panamá,L,16,Ismael Díaz,player,false,https://scanini.app/teams/panama,https://scanini.app/stickers/panama-16-ismael-diaz
+717,PAN 17,PAN17,PAN,panama,Panama,Panamá,L,17,Jose Fajardo,player,false,https://scanini.app/teams/panama,https://scanini.app/stickers/panama-17-jose-fajardo
+718,PAN 18,PAN18,PAN,panama,Panama,Panamá,L,18,Cecilio Waterman,player,false,https://scanini.app/teams/panama,https://scanini.app/stickers/panama-18-cecilio-waterman
+719,PAN 19,PAN19,PAN,panama,Panama,Panamá,L,19,Jose Luiz Rodriguez,player,false,https://scanini.app/teams/panama,https://scanini.app/stickers/panama-19-jose-luiz-rodriguez
+720,PAN 20,PAN20,PAN,panama,Panama,Panamá,L,20,Alberto Quintero,player,false,https://scanini.app/teams/panama,https://scanini.app/stickers/panama-20-alberto-quintero
+721,PAR 1,PAR1,PAR,paraguay,Paraguay,Paraguai,D,1,Team Logo,team_logo,true,https://scanini.app/teams/paraguay,https://scanini.app/stickers/paraguay-1-team-logo
+722,PAR 2,PAR2,PAR,paraguay,Paraguay,Paraguai,D,2,Roberto Fernandez,player,false,https://scanini.app/teams/paraguay,https://scanini.app/stickers/paraguay-2-roberto-fernandez
+723,PAR 3,PAR3,PAR,paraguay,Paraguay,Paraguai,D,3,Orlando Gill,player,false,https://scanini.app/teams/paraguay,https://scanini.app/stickers/paraguay-3-orlando-gill
+724,PAR 4,PAR4,PAR,paraguay,Paraguay,Paraguai,D,4,Gustavo Gomez,player,false,https://scanini.app/teams/paraguay,https://scanini.app/stickers/paraguay-4-gustavo-gomez
+725,PAR 5,PAR5,PAR,paraguay,Paraguay,Paraguai,D,5,Fabián Balbuena,player,false,https://scanini.app/teams/paraguay,https://scanini.app/stickers/paraguay-5-fabian-balbuena
+726,PAR 6,PAR6,PAR,paraguay,Paraguay,Paraguai,D,6,Juan José Cáceres,player,false,https://scanini.app/teams/paraguay,https://scanini.app/stickers/paraguay-6-juan-jose-caceres
+727,PAR 7,PAR7,PAR,paraguay,Paraguay,Paraguai,D,7,Omar Alderete,player,false,https://scanini.app/teams/paraguay,https://scanini.app/stickers/paraguay-7-omar-alderete
+728,PAR 8,PAR8,PAR,paraguay,Paraguay,Paraguai,D,8,Junior Alonso,player,false,https://scanini.app/teams/paraguay,https://scanini.app/stickers/paraguay-8-junior-alonso
+729,PAR 9,PAR9,PAR,paraguay,Paraguay,Paraguai,D,9,Mathías Villasanti,player,false,https://scanini.app/teams/paraguay,https://scanini.app/stickers/paraguay-9-mathias-villasanti
+730,PAR 10,PAR10,PAR,paraguay,Paraguay,Paraguai,D,10,Diego Gomez,player,false,https://scanini.app/teams/paraguay,https://scanini.app/stickers/paraguay-10-diego-gomez
+731,PAR 11,PAR11,PAR,paraguay,Paraguay,Paraguai,D,11,Damián Bobadilla,player,false,https://scanini.app/teams/paraguay,https://scanini.app/stickers/paraguay-11-damian-bobadilla
+732,PAR 12,PAR12,PAR,paraguay,Paraguay,Paraguai,D,12,Andres Cubas,player,false,https://scanini.app/teams/paraguay,https://scanini.app/stickers/paraguay-12-andres-cubas
+733,PAR 13,PAR13,PAR,paraguay,Paraguay,Paraguai,D,13,Team Photo,team_photo,false,https://scanini.app/teams/paraguay,https://scanini.app/stickers/paraguay-13-team-photo
+734,PAR 14,PAR14,PAR,paraguay,Paraguay,Paraguai,D,14,Matias Galarza Fonda,player,false,https://scanini.app/teams/paraguay,https://scanini.app/stickers/paraguay-14-matias-galarza-fonda
+735,PAR 15,PAR15,PAR,paraguay,Paraguay,Paraguai,D,15,Julio Enciso,player,false,https://scanini.app/teams/paraguay,https://scanini.app/stickers/paraguay-15-julio-enciso
+736,PAR 16,PAR16,PAR,paraguay,Paraguay,Paraguai,D,16,Alejandro Romero Gamarra,player,false,https://scanini.app/teams/paraguay,https://scanini.app/stickers/paraguay-16-alejandro-romero-gamarra
+737,PAR 17,PAR17,PAR,paraguay,Paraguay,Paraguai,D,17,Miguel Almirón,player,false,https://scanini.app/teams/paraguay,https://scanini.app/stickers/paraguay-17-miguel-almiron
+738,PAR 18,PAR18,PAR,paraguay,Paraguay,Paraguai,D,18,Ramon Sosa,player,false,https://scanini.app/teams/paraguay,https://scanini.app/stickers/paraguay-18-ramon-sosa
+739,PAR 19,PAR19,PAR,paraguay,Paraguay,Paraguai,D,19,Angel Romero,player,false,https://scanini.app/teams/paraguay,https://scanini.app/stickers/paraguay-19-angel-romero
+740,PAR 20,PAR20,PAR,paraguay,Paraguay,Paraguai,D,20,Antonio Sanabria,player,false,https://scanini.app/teams/paraguay,https://scanini.app/stickers/paraguay-20-antonio-sanabria
+741,POR 1,POR1,POR,portugal,Portugal,Portugal,K,1,Team Logo,team_logo,true,https://scanini.app/teams/portugal,https://scanini.app/stickers/portugal-1-team-logo
+742,POR 2,POR2,POR,portugal,Portugal,Portugal,K,2,Diogo Costa,player,false,https://scanini.app/teams/portugal,https://scanini.app/stickers/portugal-2-diogo-costa
+743,POR 3,POR3,POR,portugal,Portugal,Portugal,K,3,Jose Sa,player,false,https://scanini.app/teams/portugal,https://scanini.app/stickers/portugal-3-jose-sa
+744,POR 4,POR4,POR,portugal,Portugal,Portugal,K,4,Ruben Dias,player,false,https://scanini.app/teams/portugal,https://scanini.app/stickers/portugal-4-ruben-dias
+745,POR 5,POR5,POR,portugal,Portugal,Portugal,K,5,João Cancelo,player,false,https://scanini.app/teams/portugal,https://scanini.app/stickers/portugal-5-joao-cancelo
+746,POR 6,POR6,POR,portugal,Portugal,Portugal,K,6,Diogo Dalot,player,false,https://scanini.app/teams/portugal,https://scanini.app/stickers/portugal-6-diogo-dalot
+747,POR 7,POR7,POR,portugal,Portugal,Portugal,K,7,Nuno Mendes,player,false,https://scanini.app/teams/portugal,https://scanini.app/stickers/portugal-7-nuno-mendes
+748,POR 8,POR8,POR,portugal,Portugal,Portugal,K,8,Gonçalo Inácio,player,false,https://scanini.app/teams/portugal,https://scanini.app/stickers/portugal-8-goncalo-inacio
+749,POR 9,POR9,POR,portugal,Portugal,Portugal,K,9,Bernardo Silva,player,false,https://scanini.app/teams/portugal,https://scanini.app/stickers/portugal-9-bernardo-silva
+750,POR 10,POR10,POR,portugal,Portugal,Portugal,K,10,Bruno Fernandes,player,false,https://scanini.app/teams/portugal,https://scanini.app/stickers/portugal-10-bruno-fernandes
+751,POR 11,POR11,POR,portugal,Portugal,Portugal,K,11,Ruben Neves,player,false,https://scanini.app/teams/portugal,https://scanini.app/stickers/portugal-11-ruben-neves
+752,POR 12,POR12,POR,portugal,Portugal,Portugal,K,12,Vitinha,player,false,https://scanini.app/teams/portugal,https://scanini.app/stickers/portugal-12-vitinha
+753,POR 13,POR13,POR,portugal,Portugal,Portugal,K,13,Team Photo,team_photo,false,https://scanini.app/teams/portugal,https://scanini.app/stickers/portugal-13-team-photo
+754,POR 14,POR14,POR,portugal,Portugal,Portugal,K,14,João Neves,player,false,https://scanini.app/teams/portugal,https://scanini.app/stickers/portugal-14-joao-neves
+755,POR 15,POR15,POR,portugal,Portugal,Portugal,K,15,Cristiano Ronaldo,player,false,https://scanini.app/teams/portugal,https://scanini.app/stickers/portugal-15-cristiano-ronaldo
+756,POR 16,POR16,POR,portugal,Portugal,Portugal,K,16,Francisco Trincao,player,false,https://scanini.app/teams/portugal,https://scanini.app/stickers/portugal-16-francisco-trincao
+757,POR 17,POR17,POR,portugal,Portugal,Portugal,K,17,João Felix,player,false,https://scanini.app/teams/portugal,https://scanini.app/stickers/portugal-17-joao-felix
+758,POR 18,POR18,POR,portugal,Portugal,Portugal,K,18,Gonçalo Ramos,player,false,https://scanini.app/teams/portugal,https://scanini.app/stickers/portugal-18-goncalo-ramos
+759,POR 19,POR19,POR,portugal,Portugal,Portugal,K,19,Pedro Neto,player,false,https://scanini.app/teams/portugal,https://scanini.app/stickers/portugal-19-pedro-neto
+760,POR 20,POR20,POR,portugal,Portugal,Portugal,K,20,Rafael Leão,player,false,https://scanini.app/teams/portugal,https://scanini.app/stickers/portugal-20-rafael-leao
+761,QAT 1,QAT1,QAT,qatar,Qatar,Catar,B,1,Team Logo,team_logo,true,https://scanini.app/teams/qatar,https://scanini.app/stickers/qatar-1-team-logo
+762,QAT 2,QAT2,QAT,qatar,Qatar,Catar,B,2,Meshaal Barsham,player,false,https://scanini.app/teams/qatar,https://scanini.app/stickers/qatar-2-meshaal-barsham
+763,QAT 3,QAT3,QAT,qatar,Qatar,Catar,B,3,Sultan Albrake,player,false,https://scanini.app/teams/qatar,https://scanini.app/stickers/qatar-3-sultan-albrake
+764,QAT 4,QAT4,QAT,qatar,Qatar,Catar,B,4,Lucas Mendes,player,false,https://scanini.app/teams/qatar,https://scanini.app/stickers/qatar-4-lucas-mendes
+765,QAT 5,QAT5,QAT,qatar,Qatar,Catar,B,5,Homam Ahmed,player,false,https://scanini.app/teams/qatar,https://scanini.app/stickers/qatar-5-homam-ahmed
+766,QAT 6,QAT6,QAT,qatar,Qatar,Catar,B,6,Boualem Khoukhi,player,false,https://scanini.app/teams/qatar,https://scanini.app/stickers/qatar-6-boualem-khoukhi
+767,QAT 7,QAT7,QAT,qatar,Qatar,Catar,B,7,Pedro Miguel,player,false,https://scanini.app/teams/qatar,https://scanini.app/stickers/qatar-7-pedro-miguel
+768,QAT 8,QAT8,QAT,qatar,Qatar,Catar,B,8,Tarek Salman,player,false,https://scanini.app/teams/qatar,https://scanini.app/stickers/qatar-8-tarek-salman
+769,QAT 9,QAT9,QAT,qatar,Qatar,Catar,B,9,Mohamed Al-Mannai,player,false,https://scanini.app/teams/qatar,https://scanini.app/stickers/qatar-9-mohamed-al-mannai
+770,QAT 10,QAT10,QAT,qatar,Qatar,Catar,B,10,Karim Boudiaf,player,false,https://scanini.app/teams/qatar,https://scanini.app/stickers/qatar-10-karim-boudiaf
+771,QAT 11,QAT11,QAT,qatar,Qatar,Catar,B,11,Assim Madibo,player,false,https://scanini.app/teams/qatar,https://scanini.app/stickers/qatar-11-assim-madibo
+772,QAT 12,QAT12,QAT,qatar,Qatar,Catar,B,12,Ahmed Fatehi,player,false,https://scanini.app/teams/qatar,https://scanini.app/stickers/qatar-12-ahmed-fatehi
+773,QAT 13,QAT13,QAT,qatar,Qatar,Catar,B,13,Team Photo,team_photo,false,https://scanini.app/teams/qatar,https://scanini.app/stickers/qatar-13-team-photo
+774,QAT 14,QAT14,QAT,qatar,Qatar,Catar,B,14,Mohammed Waad,player,false,https://scanini.app/teams/qatar,https://scanini.app/stickers/qatar-14-mohammed-waad
+775,QAT 15,QAT15,QAT,qatar,Qatar,Catar,B,15,Abdulaziz Hatem,player,false,https://scanini.app/teams/qatar,https://scanini.app/stickers/qatar-15-abdulaziz-hatem
+776,QAT 16,QAT16,QAT,qatar,Qatar,Catar,B,16,Hassan Al-Haydos,player,false,https://scanini.app/teams/qatar,https://scanini.app/stickers/qatar-16-hassan-al-haydos
+777,QAT 17,QAT17,QAT,qatar,Qatar,Catar,B,17,Edmilson Junior,player,false,https://scanini.app/teams/qatar,https://scanini.app/stickers/qatar-17-edmilson-junior
+778,QAT 18,QAT18,QAT,qatar,Qatar,Catar,B,18,Akram Hassan Afif,player,false,https://scanini.app/teams/qatar,https://scanini.app/stickers/qatar-18-akram-hassan-afif
+779,QAT 19,QAT19,QAT,qatar,Qatar,Catar,B,19,Ahmed Al Ganehi,player,false,https://scanini.app/teams/qatar,https://scanini.app/stickers/qatar-19-ahmed-al-ganehi
+780,QAT 20,QAT20,QAT,qatar,Qatar,Catar,B,20,Almoez Ali,player,false,https://scanini.app/teams/qatar,https://scanini.app/stickers/qatar-20-almoez-ali
+781,RSA 1,RSA1,RSA,south-africa,South Africa,África do Sul,A,1,Team Logo,team_logo,true,https://scanini.app/teams/south-africa,https://scanini.app/stickers/south-africa-1-team-logo
+782,RSA 2,RSA2,RSA,south-africa,South Africa,África do Sul,A,2,Ronwen Williams,player,false,https://scanini.app/teams/south-africa,https://scanini.app/stickers/south-africa-2-ronwen-williams
+783,RSA 3,RSA3,RSA,south-africa,South Africa,África do Sul,A,3,Sipho Chaine,player,false,https://scanini.app/teams/south-africa,https://scanini.app/stickers/south-africa-3-sipho-chaine
+784,RSA 4,RSA4,RSA,south-africa,South Africa,África do Sul,A,4,Aubrey Modiba,player,false,https://scanini.app/teams/south-africa,https://scanini.app/stickers/south-africa-4-aubrey-modiba
+785,RSA 5,RSA5,RSA,south-africa,South Africa,África do Sul,A,5,Samukele Kabini,player,false,https://scanini.app/teams/south-africa,https://scanini.app/stickers/south-africa-5-samukele-kabini
+786,RSA 6,RSA6,RSA,south-africa,South Africa,África do Sul,A,6,Mbekezeli Mbokazi,player,false,https://scanini.app/teams/south-africa,https://scanini.app/stickers/south-africa-6-mbekezeli-mbokazi
+787,RSA 7,RSA7,RSA,south-africa,South Africa,África do Sul,A,7,Khulumani Ndamane,player,false,https://scanini.app/teams/south-africa,https://scanini.app/stickers/south-africa-7-khulumani-ndamane
+788,RSA 8,RSA8,RSA,south-africa,South Africa,África do Sul,A,8,Siyabonga Ngezana,player,false,https://scanini.app/teams/south-africa,https://scanini.app/stickers/south-africa-8-siyabonga-ngezana
+789,RSA 9,RSA9,RSA,south-africa,South Africa,África do Sul,A,9,Khuliso Mudau,player,false,https://scanini.app/teams/south-africa,https://scanini.app/stickers/south-africa-9-khuliso-mudau
+790,RSA 10,RSA10,RSA,south-africa,South Africa,África do Sul,A,10,Nkosinathi Sibisi,player,false,https://scanini.app/teams/south-africa,https://scanini.app/stickers/south-africa-10-nkosinathi-sibisi
+791,RSA 11,RSA11,RSA,south-africa,South Africa,África do Sul,A,11,Teboho Mokoena,player,false,https://scanini.app/teams/south-africa,https://scanini.app/stickers/south-africa-11-teboho-mokoena
+792,RSA 12,RSA12,RSA,south-africa,South Africa,África do Sul,A,12,Thalente Mbatha,player,false,https://scanini.app/teams/south-africa,https://scanini.app/stickers/south-africa-12-thalente-mbatha
+793,RSA 13,RSA13,RSA,south-africa,South Africa,África do Sul,A,13,Team Photo,team_photo,false,https://scanini.app/teams/south-africa,https://scanini.app/stickers/south-africa-13-team-photo
+794,RSA 14,RSA14,RSA,south-africa,South Africa,África do Sul,A,14,Bathasi Aubaas,player,false,https://scanini.app/teams/south-africa,https://scanini.app/stickers/south-africa-14-bathasi-aubaas
+795,RSA 15,RSA15,RSA,south-africa,South Africa,África do Sul,A,15,Yaya Sithole,player,false,https://scanini.app/teams/south-africa,https://scanini.app/stickers/south-africa-15-yaya-sithole
+796,RSA 16,RSA16,RSA,south-africa,South Africa,África do Sul,A,16,Sipho Mbule,player,false,https://scanini.app/teams/south-africa,https://scanini.app/stickers/south-africa-16-sipho-mbule
+797,RSA 17,RSA17,RSA,south-africa,South Africa,África do Sul,A,17,Lyle Foster,player,false,https://scanini.app/teams/south-africa,https://scanini.app/stickers/south-africa-17-lyle-foster
+798,RSA 18,RSA18,RSA,south-africa,South Africa,África do Sul,A,18,Iqraam Rayners,player,false,https://scanini.app/teams/south-africa,https://scanini.app/stickers/south-africa-18-iqraam-rayners
+799,RSA 19,RSA19,RSA,south-africa,South Africa,África do Sul,A,19,Mohau Nkota,player,false,https://scanini.app/teams/south-africa,https://scanini.app/stickers/south-africa-19-mohau-nkota
+800,RSA 20,RSA20,RSA,south-africa,South Africa,África do Sul,A,20,Oswin Appollis,player,false,https://scanini.app/teams/south-africa,https://scanini.app/stickers/south-africa-20-oswin-appollis
+801,SCO 1,SCO1,SCO,scotland,Scotland,Escócia,C,1,Team Logo,team_logo,true,https://scanini.app/teams/scotland,https://scanini.app/stickers/scotland-1-team-logo
+802,SCO 2,SCO2,SCO,scotland,Scotland,Escócia,C,2,Angus Gunn,player,false,https://scanini.app/teams/scotland,https://scanini.app/stickers/scotland-2-angus-gunn
+803,SCO 3,SCO3,SCO,scotland,Scotland,Escócia,C,3,Jack Hendry,player,false,https://scanini.app/teams/scotland,https://scanini.app/stickers/scotland-3-jack-hendry
+804,SCO 4,SCO4,SCO,scotland,Scotland,Escócia,C,4,Kieran Tierney,player,false,https://scanini.app/teams/scotland,https://scanini.app/stickers/scotland-4-kieran-tierney
+805,SCO 5,SCO5,SCO,scotland,Scotland,Escócia,C,5,Aaron Hickey,player,false,https://scanini.app/teams/scotland,https://scanini.app/stickers/scotland-5-aaron-hickey
+806,SCO 6,SCO6,SCO,scotland,Scotland,Escócia,C,6,Andrew Robertson,player,false,https://scanini.app/teams/scotland,https://scanini.app/stickers/scotland-6-andrew-robertson
+807,SCO 7,SCO7,SCO,scotland,Scotland,Escócia,C,7,Scott McKenna,player,false,https://scanini.app/teams/scotland,https://scanini.app/stickers/scotland-7-scott-mckenna
+808,SCO 8,SCO8,SCO,scotland,Scotland,Escócia,C,8,John Souttar,player,false,https://scanini.app/teams/scotland,https://scanini.app/stickers/scotland-8-john-souttar
+809,SCO 9,SCO9,SCO,scotland,Scotland,Escócia,C,9,Anthony Ralston,player,false,https://scanini.app/teams/scotland,https://scanini.app/stickers/scotland-9-anthony-ralston
+810,SCO 10,SCO10,SCO,scotland,Scotland,Escócia,C,10,Grant Hanley,player,false,https://scanini.app/teams/scotland,https://scanini.app/stickers/scotland-10-grant-hanley
+811,SCO 11,SCO11,SCO,scotland,Scotland,Escócia,C,11,Scott McTominay,player,false,https://scanini.app/teams/scotland,https://scanini.app/stickers/scotland-11-scott-mctominay
+812,SCO 12,SCO12,SCO,scotland,Scotland,Escócia,C,12,Billy Gilmour,player,false,https://scanini.app/teams/scotland,https://scanini.app/stickers/scotland-12-billy-gilmour
+813,SCO 13,SCO13,SCO,scotland,Scotland,Escócia,C,13,Team Photo,team_photo,false,https://scanini.app/teams/scotland,https://scanini.app/stickers/scotland-13-team-photo
+814,SCO 14,SCO14,SCO,scotland,Scotland,Escócia,C,14,Lewis Ferguson,player,false,https://scanini.app/teams/scotland,https://scanini.app/stickers/scotland-14-lewis-ferguson
+815,SCO 15,SCO15,SCO,scotland,Scotland,Escócia,C,15,Ryan Christie,player,false,https://scanini.app/teams/scotland,https://scanini.app/stickers/scotland-15-ryan-christie
+816,SCO 16,SCO16,SCO,scotland,Scotland,Escócia,C,16,Kenny McLean,player,false,https://scanini.app/teams/scotland,https://scanini.app/stickers/scotland-16-kenny-mclean
+817,SCO 17,SCO17,SCO,scotland,Scotland,Escócia,C,17,John McGinn,player,false,https://scanini.app/teams/scotland,https://scanini.app/stickers/scotland-17-john-mcginn
+818,SCO 18,SCO18,SCO,scotland,Scotland,Escócia,C,18,Lyndon Dykes,player,false,https://scanini.app/teams/scotland,https://scanini.app/stickers/scotland-18-lyndon-dykes
+819,SCO 19,SCO19,SCO,scotland,Scotland,Escócia,C,19,Che Adams,player,false,https://scanini.app/teams/scotland,https://scanini.app/stickers/scotland-19-che-adams
+820,SCO 20,SCO20,SCO,scotland,Scotland,Escócia,C,20,Ben Gannon-Doak,player,false,https://scanini.app/teams/scotland,https://scanini.app/stickers/scotland-20-ben-gannon-doak
+821,SEN 1,SEN1,SEN,senegal,Senegal,Senegal,I,1,Team Logo,team_logo,true,https://scanini.app/teams/senegal,https://scanini.app/stickers/senegal-1-team-logo
+822,SEN 2,SEN2,SEN,senegal,Senegal,Senegal,I,2,Edouard Mendy,player,false,https://scanini.app/teams/senegal,https://scanini.app/stickers/senegal-2-edouard-mendy
+823,SEN 3,SEN3,SEN,senegal,Senegal,Senegal,I,3,Yehvann Diouf,player,false,https://scanini.app/teams/senegal,https://scanini.app/stickers/senegal-3-yehvann-diouf
+824,SEN 4,SEN4,SEN,senegal,Senegal,Senegal,I,4,Moussa Niakhaté,player,false,https://scanini.app/teams/senegal,https://scanini.app/stickers/senegal-4-moussa-niakhate
+825,SEN 5,SEN5,SEN,senegal,Senegal,Senegal,I,5,Abdoulaye Seck,player,false,https://scanini.app/teams/senegal,https://scanini.app/stickers/senegal-5-abdoulaye-seck
+826,SEN 6,SEN6,SEN,senegal,Senegal,Senegal,I,6,Ismail Jakobs,player,false,https://scanini.app/teams/senegal,https://scanini.app/stickers/senegal-6-ismail-jakobs
+827,SEN 7,SEN7,SEN,senegal,Senegal,Senegal,I,7,El Hadji Malick Diouf,player,false,https://scanini.app/teams/senegal,https://scanini.app/stickers/senegal-7-el-hadji-malick-diouf
+828,SEN 8,SEN8,SEN,senegal,Senegal,Senegal,I,8,Kalidou Koulibaly,player,false,https://scanini.app/teams/senegal,https://scanini.app/stickers/senegal-8-kalidou-koulibaly
+829,SEN 9,SEN9,SEN,senegal,Senegal,Senegal,I,9,Idrissa Gana Gueye,player,false,https://scanini.app/teams/senegal,https://scanini.app/stickers/senegal-9-idrissa-gana-gueye
+830,SEN 10,SEN10,SEN,senegal,Senegal,Senegal,I,10,Pape Matar Sarr,player,false,https://scanini.app/teams/senegal,https://scanini.app/stickers/senegal-10-pape-matar-sarr
+831,SEN 11,SEN11,SEN,senegal,Senegal,Senegal,I,11,Pape Gueye,player,false,https://scanini.app/teams/senegal,https://scanini.app/stickers/senegal-11-pape-gueye
+832,SEN 12,SEN12,SEN,senegal,Senegal,Senegal,I,12,Habib Diarra,player,false,https://scanini.app/teams/senegal,https://scanini.app/stickers/senegal-12-habib-diarra
+833,SEN 13,SEN13,SEN,senegal,Senegal,Senegal,I,13,Team Photo,team_photo,false,https://scanini.app/teams/senegal,https://scanini.app/stickers/senegal-13-team-photo
+834,SEN 14,SEN14,SEN,senegal,Senegal,Senegal,I,14,Lamine Camara,player,false,https://scanini.app/teams/senegal,https://scanini.app/stickers/senegal-14-lamine-camara
+835,SEN 15,SEN15,SEN,senegal,Senegal,Senegal,I,15,Sadio Mane,player,false,https://scanini.app/teams/senegal,https://scanini.app/stickers/senegal-15-sadio-mane
+836,SEN 16,SEN16,SEN,senegal,Senegal,Senegal,I,16,Ismaïla Sarr,player,false,https://scanini.app/teams/senegal,https://scanini.app/stickers/senegal-16-ismaila-sarr
+837,SEN 17,SEN17,SEN,senegal,Senegal,Senegal,I,17,Boulaye Dia,player,false,https://scanini.app/teams/senegal,https://scanini.app/stickers/senegal-17-boulaye-dia
+838,SEN 18,SEN18,SEN,senegal,Senegal,Senegal,I,18,Iliman Ndiaye,player,false,https://scanini.app/teams/senegal,https://scanini.app/stickers/senegal-18-iliman-ndiaye
+839,SEN 19,SEN19,SEN,senegal,Senegal,Senegal,I,19,Nicolas Jackson,player,false,https://scanini.app/teams/senegal,https://scanini.app/stickers/senegal-19-nicolas-jackson
+840,SEN 20,SEN20,SEN,senegal,Senegal,Senegal,I,20,Krepin Diatta,player,false,https://scanini.app/teams/senegal,https://scanini.app/stickers/senegal-20-krepin-diatta
+841,SUI 1,SUI1,SUI,switzerland,Switzerland,Suíça,B,1,Team Logo,team_logo,true,https://scanini.app/teams/switzerland,https://scanini.app/stickers/switzerland-1-team-logo
+842,SUI 2,SUI2,SUI,switzerland,Switzerland,Suíça,B,2,Gregor Kobel,player,false,https://scanini.app/teams/switzerland,https://scanini.app/stickers/switzerland-2-gregor-kobel
+843,SUI 3,SUI3,SUI,switzerland,Switzerland,Suíça,B,3,Yvon Mvogo,player,false,https://scanini.app/teams/switzerland,https://scanini.app/stickers/switzerland-3-yvon-mvogo
+844,SUI 4,SUI4,SUI,switzerland,Switzerland,Suíça,B,4,Manuel Akanji,player,false,https://scanini.app/teams/switzerland,https://scanini.app/stickers/switzerland-4-manuel-akanji
+845,SUI 5,SUI5,SUI,switzerland,Switzerland,Suíça,B,5,Ricardo Rodriguez,player,false,https://scanini.app/teams/switzerland,https://scanini.app/stickers/switzerland-5-ricardo-rodriguez
+846,SUI 6,SUI6,SUI,switzerland,Switzerland,Suíça,B,6,Nico Elvedi,player,false,https://scanini.app/teams/switzerland,https://scanini.app/stickers/switzerland-6-nico-elvedi
+847,SUI 7,SUI7,SUI,switzerland,Switzerland,Suíça,B,7,Aurèle Amenda,player,false,https://scanini.app/teams/switzerland,https://scanini.app/stickers/switzerland-7-aurele-amenda
+848,SUI 8,SUI8,SUI,switzerland,Switzerland,Suíça,B,8,Silvan Widmer,player,false,https://scanini.app/teams/switzerland,https://scanini.app/stickers/switzerland-8-silvan-widmer
+849,SUI 9,SUI9,SUI,switzerland,Switzerland,Suíça,B,9,Granit Xhaka,player,false,https://scanini.app/teams/switzerland,https://scanini.app/stickers/switzerland-9-granit-xhaka
+850,SUI 10,SUI10,SUI,switzerland,Switzerland,Suíça,B,10,Denis Zakaria,player,false,https://scanini.app/teams/switzerland,https://scanini.app/stickers/switzerland-10-denis-zakaria
+851,SUI 11,SUI11,SUI,switzerland,Switzerland,Suíça,B,11,Remo Freuler,player,false,https://scanini.app/teams/switzerland,https://scanini.app/stickers/switzerland-11-remo-freuler
+852,SUI 12,SUI12,SUI,switzerland,Switzerland,Suíça,B,12,Fabian Rieder,player,false,https://scanini.app/teams/switzerland,https://scanini.app/stickers/switzerland-12-fabian-rieder
+853,SUI 13,SUI13,SUI,switzerland,Switzerland,Suíça,B,13,Team Photo,team_photo,false,https://scanini.app/teams/switzerland,https://scanini.app/stickers/switzerland-13-team-photo
+854,SUI 14,SUI14,SUI,switzerland,Switzerland,Suíça,B,14,Ardon Jashari,player,false,https://scanini.app/teams/switzerland,https://scanini.app/stickers/switzerland-14-ardon-jashari
+855,SUI 15,SUI15,SUI,switzerland,Switzerland,Suíça,B,15,Johan Manzambi,player,false,https://scanini.app/teams/switzerland,https://scanini.app/stickers/switzerland-15-johan-manzambi
+856,SUI 16,SUI16,SUI,switzerland,Switzerland,Suíça,B,16,Michel Aebischer,player,false,https://scanini.app/teams/switzerland,https://scanini.app/stickers/switzerland-16-michel-aebischer
+857,SUI 17,SUI17,SUI,switzerland,Switzerland,Suíça,B,17,Breel Embolo,player,false,https://scanini.app/teams/switzerland,https://scanini.app/stickers/switzerland-17-breel-embolo
+858,SUI 18,SUI18,SUI,switzerland,Switzerland,Suíça,B,18,Ruben Vargas,player,false,https://scanini.app/teams/switzerland,https://scanini.app/stickers/switzerland-18-ruben-vargas
+859,SUI 19,SUI19,SUI,switzerland,Switzerland,Suíça,B,19,Dan Ndoye,player,false,https://scanini.app/teams/switzerland,https://scanini.app/stickers/switzerland-19-dan-ndoye
+860,SUI 20,SUI20,SUI,switzerland,Switzerland,Suíça,B,20,Zeki Amdouni,player,false,https://scanini.app/teams/switzerland,https://scanini.app/stickers/switzerland-20-zeki-amdouni
+861,SWE 1,SWE1,SWE,sweden,Sweden,Suécia,F,1,Team Logo,team_logo,true,https://scanini.app/teams/sweden,https://scanini.app/stickers/sweden-1-team-logo
+862,SWE 2,SWE2,SWE,sweden,Sweden,Suécia,F,2,Victor Johansson,player,false,https://scanini.app/teams/sweden,https://scanini.app/stickers/sweden-2-victor-johansson
+863,SWE 3,SWE3,SWE,sweden,Sweden,Suécia,F,3,Isak Hien,player,false,https://scanini.app/teams/sweden,https://scanini.app/stickers/sweden-3-isak-hien
+864,SWE 4,SWE4,SWE,sweden,Sweden,Suécia,F,4,Gabriel Gudmundsson,player,false,https://scanini.app/teams/sweden,https://scanini.app/stickers/sweden-4-gabriel-gudmundsson
+865,SWE 5,SWE5,SWE,sweden,Sweden,Suécia,F,5,Emil Holm,player,false,https://scanini.app/teams/sweden,https://scanini.app/stickers/sweden-5-emil-holm
+866,SWE 6,SWE6,SWE,sweden,Sweden,Suécia,F,6,Victor Nilsson Lindelöf,player,false,https://scanini.app/teams/sweden,https://scanini.app/stickers/sweden-6-victor-nilsson-lindelof
+867,SWE 7,SWE7,SWE,sweden,Sweden,Suécia,F,7,Gustaf Lagerbielke,player,false,https://scanini.app/teams/sweden,https://scanini.app/stickers/sweden-7-gustaf-lagerbielke
+868,SWE 8,SWE8,SWE,sweden,Sweden,Suécia,F,8,Lucas Bergvall,player,false,https://scanini.app/teams/sweden,https://scanini.app/stickers/sweden-8-lucas-bergvall
+869,SWE 9,SWE9,SWE,sweden,Sweden,Suécia,F,9,Hugo Larsson,player,false,https://scanini.app/teams/sweden,https://scanini.app/stickers/sweden-9-hugo-larsson
+870,SWE 10,SWE10,SWE,sweden,Sweden,Suécia,F,10,Jesper Karlström,player,false,https://scanini.app/teams/sweden,https://scanini.app/stickers/sweden-10-jesper-karlstrom
+871,SWE 11,SWE11,SWE,sweden,Sweden,Suécia,F,11,Yasin Ayari,player,false,https://scanini.app/teams/sweden,https://scanini.app/stickers/sweden-11-yasin-ayari
+872,SWE 12,SWE12,SWE,sweden,Sweden,Suécia,F,12,Mattias Svanberg,player,false,https://scanini.app/teams/sweden,https://scanini.app/stickers/sweden-12-mattias-svanberg
+873,SWE 13,SWE13,SWE,sweden,Sweden,Suécia,F,13,Team Photo,team_photo,false,https://scanini.app/teams/sweden,https://scanini.app/stickers/sweden-13-team-photo
+874,SWE 14,SWE14,SWE,sweden,Sweden,Suécia,F,14,Daniel Svensson,player,false,https://scanini.app/teams/sweden,https://scanini.app/stickers/sweden-14-daniel-svensson
+875,SWE 15,SWE15,SWE,sweden,Sweden,Suécia,F,15,Ken Sema,player,false,https://scanini.app/teams/sweden,https://scanini.app/stickers/sweden-15-ken-sema
+876,SWE 16,SWE16,SWE,sweden,Sweden,Suécia,F,16,Roony Bardghji,player,false,https://scanini.app/teams/sweden,https://scanini.app/stickers/sweden-16-roony-bardghji
+877,SWE 17,SWE17,SWE,sweden,Sweden,Suécia,F,17,Dejan Kulusevski,player,false,https://scanini.app/teams/sweden,https://scanini.app/stickers/sweden-17-dejan-kulusevski
+878,SWE 18,SWE18,SWE,sweden,Sweden,Suécia,F,18,Anthony Elanga,player,false,https://scanini.app/teams/sweden,https://scanini.app/stickers/sweden-18-anthony-elanga
+879,SWE 19,SWE19,SWE,sweden,Sweden,Suécia,F,19,Alexander Isak,player,false,https://scanini.app/teams/sweden,https://scanini.app/stickers/sweden-19-alexander-isak
+880,SWE 20,SWE20,SWE,sweden,Sweden,Suécia,F,20,Viktor Gyökeres,player,false,https://scanini.app/teams/sweden,https://scanini.app/stickers/sweden-20-viktor-gyokeres
+881,TUN 1,TUN1,TUN,tunisia,Tunisia,Tunísia,F,1,Team Logo,team_logo,true,https://scanini.app/teams/tunisia,https://scanini.app/stickers/tunisia-1-team-logo
+882,TUN 2,TUN2,TUN,tunisia,Tunisia,Tunísia,F,2,Bechir Ben Said,player,false,https://scanini.app/teams/tunisia,https://scanini.app/stickers/tunisia-2-bechir-ben-said
+883,TUN 3,TUN3,TUN,tunisia,Tunisia,Tunísia,F,3,Aymen Dahmen,player,false,https://scanini.app/teams/tunisia,https://scanini.app/stickers/tunisia-3-aymen-dahmen
+884,TUN 4,TUN4,TUN,tunisia,Tunisia,Tunísia,F,4,Yan Valery,player,false,https://scanini.app/teams/tunisia,https://scanini.app/stickers/tunisia-4-yan-valery
+885,TUN 5,TUN5,TUN,tunisia,Tunisia,Tunísia,F,5,Montassar Talbi,player,false,https://scanini.app/teams/tunisia,https://scanini.app/stickers/tunisia-5-montassar-talbi
+886,TUN 6,TUN6,TUN,tunisia,Tunisia,Tunísia,F,6,Yassine Meriah,player,false,https://scanini.app/teams/tunisia,https://scanini.app/stickers/tunisia-6-yassine-meriah
+887,TUN 7,TUN7,TUN,tunisia,Tunisia,Tunísia,F,7,Ali Abdi,player,false,https://scanini.app/teams/tunisia,https://scanini.app/stickers/tunisia-7-ali-abdi
+888,TUN 8,TUN8,TUN,tunisia,Tunisia,Tunísia,F,8,Dylan Bronn,player,false,https://scanini.app/teams/tunisia,https://scanini.app/stickers/tunisia-8-dylan-bronn
+889,TUN 9,TUN9,TUN,tunisia,Tunisia,Tunísia,F,9,Ellyes Skhiri,player,false,https://scanini.app/teams/tunisia,https://scanini.app/stickers/tunisia-9-ellyes-skhiri
+890,TUN 10,TUN10,TUN,tunisia,Tunisia,Tunísia,F,10,Aissa Laidouni,player,false,https://scanini.app/teams/tunisia,https://scanini.app/stickers/tunisia-10-aissa-laidouni
+891,TUN 11,TUN11,TUN,tunisia,Tunisia,Tunísia,F,11,Ferjani Sassi,player,false,https://scanini.app/teams/tunisia,https://scanini.app/stickers/tunisia-11-ferjani-sassi
+892,TUN 12,TUN12,TUN,tunisia,Tunisia,Tunísia,F,12,Mohamed Ali Ben Romdhane,player,false,https://scanini.app/teams/tunisia,https://scanini.app/stickers/tunisia-12-mohamed-ali-ben-romdhane
+893,TUN 13,TUN13,TUN,tunisia,Tunisia,Tunísia,F,13,Team Photo,team_photo,false,https://scanini.app/teams/tunisia,https://scanini.app/stickers/tunisia-13-team-photo
+894,TUN 14,TUN14,TUN,tunisia,Tunisia,Tunísia,F,14,Hannibal Mejbri,player,false,https://scanini.app/teams/tunisia,https://scanini.app/stickers/tunisia-14-hannibal-mejbri
+895,TUN 15,TUN15,TUN,tunisia,Tunisia,Tunísia,F,15,Elias Achouri,player,false,https://scanini.app/teams/tunisia,https://scanini.app/stickers/tunisia-15-elias-achouri
+896,TUN 16,TUN16,TUN,tunisia,Tunisia,Tunísia,F,16,Elias Saad,player,false,https://scanini.app/teams/tunisia,https://scanini.app/stickers/tunisia-16-elias-saad
+897,TUN 17,TUN17,TUN,tunisia,Tunisia,Tunísia,F,17,Hazem Mastouri,player,false,https://scanini.app/teams/tunisia,https://scanini.app/stickers/tunisia-17-hazem-mastouri
+898,TUN 18,TUN18,TUN,tunisia,Tunisia,Tunísia,F,18,Ismael Gharbi,player,false,https://scanini.app/teams/tunisia,https://scanini.app/stickers/tunisia-18-ismael-gharbi
+899,TUN 19,TUN19,TUN,tunisia,Tunisia,Tunísia,F,19,Sayfallah Ltaief,player,false,https://scanini.app/teams/tunisia,https://scanini.app/stickers/tunisia-19-sayfallah-ltaief
+900,TUN 20,TUN20,TUN,tunisia,Tunisia,Tunísia,F,20,Naim Sliti,player,false,https://scanini.app/teams/tunisia,https://scanini.app/stickers/tunisia-20-naim-sliti
+901,TUR 1,TUR1,TUR,turkey,Turkey,Turquia,D,1,Team Logo,team_logo,true,https://scanini.app/teams/turkey,https://scanini.app/stickers/turkey-1-team-logo
+902,TUR 2,TUR2,TUR,turkey,Turkey,Turquia,D,2,Ugurcan Cakir,player,false,https://scanini.app/teams/turkey,https://scanini.app/stickers/turkey-2-ugurcan-cakir
+903,TUR 3,TUR3,TUR,turkey,Turkey,Turquia,D,3,Mert Muldur,player,false,https://scanini.app/teams/turkey,https://scanini.app/stickers/turkey-3-mert-muldur
+904,TUR 4,TUR4,TUR,turkey,Turkey,Turquia,D,4,Zeki Celik,player,false,https://scanini.app/teams/turkey,https://scanini.app/stickers/turkey-4-zeki-celik
+905,TUR 5,TUR5,TUR,turkey,Turkey,Turquia,D,5,Abdulkerim Bardakci,player,false,https://scanini.app/teams/turkey,https://scanini.app/stickers/turkey-5-abdulkerim-bardakci
+906,TUR 6,TUR6,TUR,turkey,Turkey,Turquia,D,6,Caglar Soyuncu,player,false,https://scanini.app/teams/turkey,https://scanini.app/stickers/turkey-6-caglar-soyuncu
+907,TUR 7,TUR7,TUR,turkey,Turkey,Turquia,D,7,Merih Demiral,player,false,https://scanini.app/teams/turkey,https://scanini.app/stickers/turkey-7-merih-demiral
+908,TUR 8,TUR8,TUR,turkey,Turkey,Turquia,D,8,Ferdi Kadioglu,player,false,https://scanini.app/teams/turkey,https://scanini.app/stickers/turkey-8-ferdi-kadioglu
+909,TUR 9,TUR9,TUR,turkey,Turkey,Turquia,D,9,Kaan Ayhan,player,false,https://scanini.app/teams/turkey,https://scanini.app/stickers/turkey-9-kaan-ayhan
+910,TUR 10,TUR10,TUR,turkey,Turkey,Turquia,D,10,Ismail Yuksek,player,false,https://scanini.app/teams/turkey,https://scanini.app/stickers/turkey-10-ismail-yuksek
+911,TUR 11,TUR11,TUR,turkey,Turkey,Turquia,D,11,Hakan Calhanoglu,player,false,https://scanini.app/teams/turkey,https://scanini.app/stickers/turkey-11-hakan-calhanoglu
+912,TUR 12,TUR12,TUR,turkey,Turkey,Turquia,D,12,Orkun Kokcu,player,false,https://scanini.app/teams/turkey,https://scanini.app/stickers/turkey-12-orkun-kokcu
+913,TUR 13,TUR13,TUR,turkey,Turkey,Turquia,D,13,Team Photo,team_photo,false,https://scanini.app/teams/turkey,https://scanini.app/stickers/turkey-13-team-photo
+914,TUR 14,TUR14,TUR,turkey,Turkey,Turquia,D,14,Arda Guler,player,false,https://scanini.app/teams/turkey,https://scanini.app/stickers/turkey-14-arda-guler
+915,TUR 15,TUR15,TUR,turkey,Turkey,Turquia,D,15,Irfan Can Kahveci,player,false,https://scanini.app/teams/turkey,https://scanini.app/stickers/turkey-15-irfan-can-kahveci
+916,TUR 16,TUR16,TUR,turkey,Turkey,Turquia,D,16,Yunus Akgun,player,false,https://scanini.app/teams/turkey,https://scanini.app/stickers/turkey-16-yunus-akgun
+917,TUR 17,TUR17,TUR,turkey,Turkey,Turquia,D,17,Can Uzun,player,false,https://scanini.app/teams/turkey,https://scanini.app/stickers/turkey-17-can-uzun
+918,TUR 18,TUR18,TUR,turkey,Turkey,Turquia,D,18,Baris Alper Yilmaz,player,false,https://scanini.app/teams/turkey,https://scanini.app/stickers/turkey-18-baris-alper-yilmaz
+919,TUR 19,TUR19,TUR,turkey,Turkey,Turquia,D,19,Kerem Akturkoglu,player,false,https://scanini.app/teams/turkey,https://scanini.app/stickers/turkey-19-kerem-akturkoglu
+920,TUR 20,TUR20,TUR,turkey,Turkey,Turquia,D,20,Kenan Yildiz,player,false,https://scanini.app/teams/turkey,https://scanini.app/stickers/turkey-20-kenan-yildiz
+921,URU 1,URU1,URU,uruguay,Uruguay,Uruguai,H,1,Team Logo,team_logo,true,https://scanini.app/teams/uruguay,https://scanini.app/stickers/uruguay-1-team-logo
+922,URU 2,URU2,URU,uruguay,Uruguay,Uruguai,H,2,Sergio Rochet,player,false,https://scanini.app/teams/uruguay,https://scanini.app/stickers/uruguay-2-sergio-rochet
+923,URU 3,URU3,URU,uruguay,Uruguay,Uruguai,H,3,Santiago Mele,player,false,https://scanini.app/teams/uruguay,https://scanini.app/stickers/uruguay-3-santiago-mele
+924,URU 4,URU4,URU,uruguay,Uruguay,Uruguai,H,4,Ronald Araujo,player,false,https://scanini.app/teams/uruguay,https://scanini.app/stickers/uruguay-4-ronald-araujo
+925,URU 5,URU5,URU,uruguay,Uruguay,Uruguai,H,5,José María Giménez,player,false,https://scanini.app/teams/uruguay,https://scanini.app/stickers/uruguay-5-jose-maria-gimenez
+926,URU 6,URU6,URU,uruguay,Uruguay,Uruguai,H,6,Sebastian Caceres,player,false,https://scanini.app/teams/uruguay,https://scanini.app/stickers/uruguay-6-sebastian-caceres
+927,URU 7,URU7,URU,uruguay,Uruguay,Uruguai,H,7,Mathias Olivera,player,false,https://scanini.app/teams/uruguay,https://scanini.app/stickers/uruguay-7-mathias-olivera
+928,URU 8,URU8,URU,uruguay,Uruguay,Uruguai,H,8,Guillermo Varela,player,false,https://scanini.app/teams/uruguay,https://scanini.app/stickers/uruguay-8-guillermo-varela
+929,URU 9,URU9,URU,uruguay,Uruguay,Uruguai,H,9,Nahitan Nandez,player,false,https://scanini.app/teams/uruguay,https://scanini.app/stickers/uruguay-9-nahitan-nandez
+930,URU 10,URU10,URU,uruguay,Uruguay,Uruguai,H,10,Federico Valverde,player,false,https://scanini.app/teams/uruguay,https://scanini.app/stickers/uruguay-10-federico-valverde
+931,URU 11,URU11,URU,uruguay,Uruguay,Uruguai,H,11,Giorgian De Arrascaeta,player,false,https://scanini.app/teams/uruguay,https://scanini.app/stickers/uruguay-11-giorgian-de-arrascaeta
+932,URU 12,URU12,URU,uruguay,Uruguay,Uruguai,H,12,Rodrigo Bentancur,player,false,https://scanini.app/teams/uruguay,https://scanini.app/stickers/uruguay-12-rodrigo-bentancur
+933,URU 13,URU13,URU,uruguay,Uruguay,Uruguai,H,13,Team Photo,team_photo,false,https://scanini.app/teams/uruguay,https://scanini.app/stickers/uruguay-13-team-photo
+934,URU 14,URU14,URU,uruguay,Uruguay,Uruguai,H,14,Manuel Ugarte,player,false,https://scanini.app/teams/uruguay,https://scanini.app/stickers/uruguay-14-manuel-ugarte
+935,URU 15,URU15,URU,uruguay,Uruguay,Uruguai,H,15,Nicolás de la Cruz,player,false,https://scanini.app/teams/uruguay,https://scanini.app/stickers/uruguay-15-nicolas-de-la-cruz
+936,URU 16,URU16,URU,uruguay,Uruguay,Uruguai,H,16,Maxi Araujo,player,false,https://scanini.app/teams/uruguay,https://scanini.app/stickers/uruguay-16-maxi-araujo
+937,URU 17,URU17,URU,uruguay,Uruguay,Uruguai,H,17,Darwin Núñez,player,false,https://scanini.app/teams/uruguay,https://scanini.app/stickers/uruguay-17-darwin-nunez
+938,URU 18,URU18,URU,uruguay,Uruguay,Uruguai,H,18,Federico Viñas,player,false,https://scanini.app/teams/uruguay,https://scanini.app/stickers/uruguay-18-federico-vinas
+939,URU 19,URU19,URU,uruguay,Uruguay,Uruguai,H,19,Rodrigo Aguirre,player,false,https://scanini.app/teams/uruguay,https://scanini.app/stickers/uruguay-19-rodrigo-aguirre
+940,URU 20,URU20,URU,uruguay,Uruguay,Uruguai,H,20,Facundo Pellistri,player,false,https://scanini.app/teams/uruguay,https://scanini.app/stickers/uruguay-20-facundo-pellistri
+941,USA 1,USA1,USA,united-states,United States,Estados Unidos,D,1,Team Logo,team_logo,true,https://scanini.app/teams/united-states,https://scanini.app/stickers/united-states-1-team-logo
+942,USA 2,USA2,USA,united-states,United States,Estados Unidos,D,2,Math Freese,player,false,https://scanini.app/teams/united-states,https://scanini.app/stickers/united-states-2-math-freese
+943,USA 3,USA3,USA,united-states,United States,Estados Unidos,D,3,Chris Richards,player,false,https://scanini.app/teams/united-states,https://scanini.app/stickers/united-states-3-chris-richards
+944,USA 4,USA4,USA,united-states,United States,Estados Unidos,D,4,Tim Ream,player,false,https://scanini.app/teams/united-states,https://scanini.app/stickers/united-states-4-tim-ream
+945,USA 5,USA5,USA,united-states,United States,Estados Unidos,D,5,Mark McKenzie,player,false,https://scanini.app/teams/united-states,https://scanini.app/stickers/united-states-5-mark-mckenzie
+946,USA 6,USA6,USA,united-states,United States,Estados Unidos,D,6,Alex Freeman,player,false,https://scanini.app/teams/united-states,https://scanini.app/stickers/united-states-6-alex-freeman
+947,USA 7,USA7,USA,united-states,United States,Estados Unidos,D,7,Antonee Robinson,player,false,https://scanini.app/teams/united-states,https://scanini.app/stickers/united-states-7-antonee-robinson
+948,USA 8,USA8,USA,united-states,United States,Estados Unidos,D,8,Tyler Adams,player,false,https://scanini.app/teams/united-states,https://scanini.app/stickers/united-states-8-tyler-adams
+949,USA 9,USA9,USA,united-states,United States,Estados Unidos,D,9,Tanner Tessmann,player,false,https://scanini.app/teams/united-states,https://scanini.app/stickers/united-states-9-tanner-tessmann
+950,USA 10,USA10,USA,united-states,United States,Estados Unidos,D,10,Weston McKenny,player,false,https://scanini.app/teams/united-states,https://scanini.app/stickers/united-states-10-weston-mckenny
+951,USA 11,USA11,USA,united-states,United States,Estados Unidos,D,11,Christian Roldan,player,false,https://scanini.app/teams/united-states,https://scanini.app/stickers/united-states-11-christian-roldan
+952,USA 12,USA12,USA,united-states,United States,Estados Unidos,D,12,Timothy Weah,player,false,https://scanini.app/teams/united-states,https://scanini.app/stickers/united-states-12-timothy-weah
+953,USA 13,USA13,USA,united-states,United States,Estados Unidos,D,13,Team Photo,team_photo,false,https://scanini.app/teams/united-states,https://scanini.app/stickers/united-states-13-team-photo
+954,USA 14,USA14,USA,united-states,United States,Estados Unidos,D,14,Diego Luna,player,false,https://scanini.app/teams/united-states,https://scanini.app/stickers/united-states-14-diego-luna
+955,USA 15,USA15,USA,united-states,United States,Estados Unidos,D,15,Malik Tillman,player,false,https://scanini.app/teams/united-states,https://scanini.app/stickers/united-states-15-malik-tillman
+956,USA 16,USA16,USA,united-states,United States,Estados Unidos,D,16,Christian Pulisic,player,false,https://scanini.app/teams/united-states,https://scanini.app/stickers/united-states-16-christian-pulisic
+957,USA 17,USA17,USA,united-states,United States,Estados Unidos,D,17,Brenden Aaronson,player,false,https://scanini.app/teams/united-states,https://scanini.app/stickers/united-states-17-brenden-aaronson
+958,USA 18,USA18,USA,united-states,United States,Estados Unidos,D,18,Ricardo Pepi,player,false,https://scanini.app/teams/united-states,https://scanini.app/stickers/united-states-18-ricardo-pepi
+959,USA 19,USA19,USA,united-states,United States,Estados Unidos,D,19,Haji Wright,player,false,https://scanini.app/teams/united-states,https://scanini.app/stickers/united-states-19-haji-wright
+960,USA 20,USA20,USA,united-states,United States,Estados Unidos,D,20,Folarin Balogun,player,false,https://scanini.app/teams/united-states,https://scanini.app/stickers/united-states-20-folarin-balogun
+961,UZB 1,UZB1,UZB,uzbekistan,Uzbekistan,Uzbequistão,K,1,Team Logo,team_logo,true,https://scanini.app/teams/uzbekistan,https://scanini.app/stickers/uzbekistan-1-team-logo
+962,UZB 2,UZB2,UZB,uzbekistan,Uzbekistan,Uzbequistão,K,2,Utkir Yusupov,player,false,https://scanini.app/teams/uzbekistan,https://scanini.app/stickers/uzbekistan-2-utkir-yusupov
+963,UZB 3,UZB3,UZB,uzbekistan,Uzbekistan,Uzbequistão,K,3,Farrukh Savfiev,player,false,https://scanini.app/teams/uzbekistan,https://scanini.app/stickers/uzbekistan-3-farrukh-savfiev
+964,UZB 4,UZB4,UZB,uzbekistan,Uzbekistan,Uzbequistão,K,4,Sherzod Nasrullaev,player,false,https://scanini.app/teams/uzbekistan,https://scanini.app/stickers/uzbekistan-4-sherzod-nasrullaev
+965,UZB 5,UZB5,UZB,uzbekistan,Uzbekistan,Uzbequistão,K,5,Umar Eshmurodov,player,false,https://scanini.app/teams/uzbekistan,https://scanini.app/stickers/uzbekistan-5-umar-eshmurodov
+966,UZB 6,UZB6,UZB,uzbekistan,Uzbekistan,Uzbequistão,K,6,Husniddin Aliqulov,player,false,https://scanini.app/teams/uzbekistan,https://scanini.app/stickers/uzbekistan-6-husniddin-aliqulov
+967,UZB 7,UZB7,UZB,uzbekistan,Uzbekistan,Uzbequistão,K,7,Rustamjon Ashurmatov,player,false,https://scanini.app/teams/uzbekistan,https://scanini.app/stickers/uzbekistan-7-rustamjon-ashurmatov
+968,UZB 8,UZB8,UZB,uzbekistan,Uzbekistan,Uzbequistão,K,8,Khojiakbar Alijonov,player,false,https://scanini.app/teams/uzbekistan,https://scanini.app/stickers/uzbekistan-8-khojiakbar-alijonov
+969,UZB 9,UZB9,UZB,uzbekistan,Uzbekistan,Uzbequistão,K,9,Abdukodir Khusanov,player,false,https://scanini.app/teams/uzbekistan,https://scanini.app/stickers/uzbekistan-9-abdukodir-khusanov
+970,UZB 10,UZB10,UZB,uzbekistan,Uzbekistan,Uzbequistão,K,10,Odiljon Hamrobekov,player,false,https://scanini.app/teams/uzbekistan,https://scanini.app/stickers/uzbekistan-10-odiljon-hamrobekov
+971,UZB 11,UZB11,UZB,uzbekistan,Uzbekistan,Uzbequistão,K,11,Otabek Shukurov,player,false,https://scanini.app/teams/uzbekistan,https://scanini.app/stickers/uzbekistan-11-otabek-shukurov
+972,UZB 12,UZB12,UZB,uzbekistan,Uzbekistan,Uzbequistão,K,12,Jamshid Iskanderov,player,false,https://scanini.app/teams/uzbekistan,https://scanini.app/stickers/uzbekistan-12-jamshid-iskanderov
+973,UZB 13,UZB13,UZB,uzbekistan,Uzbekistan,Uzbequistão,K,13,Team Photo,team_photo,false,https://scanini.app/teams/uzbekistan,https://scanini.app/stickers/uzbekistan-13-team-photo
+974,UZB 14,UZB14,UZB,uzbekistan,Uzbekistan,Uzbequistão,K,14,Azizbek Turgunboev,player,false,https://scanini.app/teams/uzbekistan,https://scanini.app/stickers/uzbekistan-14-azizbek-turgunboev
+975,UZB 15,UZB15,UZB,uzbekistan,Uzbekistan,Uzbequistão,K,15,Khojimat Erkinov,player,false,https://scanini.app/teams/uzbekistan,https://scanini.app/stickers/uzbekistan-15-khojimat-erkinov
+976,UZB 16,UZB16,UZB,uzbekistan,Uzbekistan,Uzbequistão,K,16,Eldor Shomurodov,player,false,https://scanini.app/teams/uzbekistan,https://scanini.app/stickers/uzbekistan-16-eldor-shomurodov
+977,UZB 17,UZB17,UZB,uzbekistan,Uzbekistan,Uzbequistão,K,17,Oston Urunov,player,false,https://scanini.app/teams/uzbekistan,https://scanini.app/stickers/uzbekistan-17-oston-urunov
+978,UZB 18,UZB18,UZB,uzbekistan,Uzbekistan,Uzbequistão,K,18,Jaloliddin Masharipov,player,false,https://scanini.app/teams/uzbekistan,https://scanini.app/stickers/uzbekistan-18-jaloliddin-masharipov
+979,UZB 19,UZB19,UZB,uzbekistan,Uzbekistan,Uzbequistão,K,19,Igor Sergeev,player,false,https://scanini.app/teams/uzbekistan,https://scanini.app/stickers/uzbekistan-19-igor-sergeev
+980,UZB 20,UZB20,UZB,uzbekistan,Uzbekistan,Uzbequistão,K,20,Abbosbek Fayzullaev,player,false,https://scanini.app/teams/uzbekistan,https://scanini.app/stickers/uzbekistan-20-abbosbek-fayzullaev

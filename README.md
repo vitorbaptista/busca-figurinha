@@ -38,6 +38,20 @@ carregamento.
 - Coleção, sessões e ajustes salvos localmente; backup por exportar/importar.
 - Instalável como app (PWA) e funciona offline.
 
+## Dados do álbum
+
+A lista em CSV do álbum físico da Copa do Mundo 2026 está em
+`world-cup-2026-album-stickers.csv`. Ela contém as **980** figurinhas do álbum:
+`00`, `FWC 1` a `FWC 19` e 48 seleções × 20 figurinhas.
+
+Campos principais:
+
+- `code`: código impresso no verso, com espaço para leitura humana (`BRA 14`).
+- `normalized_code`: o mesmo código sem espaço, como o app usa internamente (`BRA14`).
+- `name`: nome da figurinha.
+- `type`: `special`, `team_logo`, `team_photo` ou `player`.
+- `source_sticker_url`: página pública de referência da figurinha.
+
 ## Como o OCR funciona (e suas limitações)
 
 O verso Panini é padronizado: um **selo escuro arredondado** no canto com o código em letras
