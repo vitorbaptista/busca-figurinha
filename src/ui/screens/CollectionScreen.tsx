@@ -96,14 +96,30 @@ export function CollectionScreen({ collection }: CollectionScreenProps) {
 }
 
 /** Filter teams by team name or by code/display of any entry. */
-function filterTeams(teams: TeamGroup[], query: string): TeamGroup[] {
-  const q = query.trim().toUpperCase();
-  if (!q) return teams;
-  const qNorm = q.replace(/\s+/g, '');
+export function filterTeams(teams: TeamGroup[], query: string): TeamGroup[] {
+  const q = normalizeSearchText(query);
+  const qCode = normalizeCodeSearch(query);
+  if (!q && !qCode) return teams;
+
   return teams.filter((team) => {
-    if (team.teamName.toUpperCase().includes(q) || team.teamCode.includes(qNorm)) return true;
+    if (normalizeSearchText(team.teamName).includes(q) || team.teamCode.includes(qCode)) {
+      return true;
+    }
     return team.entries.some(
-      (e) => e.code.includes(qNorm) || e.display.toUpperCase().includes(q),
+      (e) => e.code.includes(qCode) || normalizeSearchText(e.display).includes(q),
     );
   });
+}
+
+function normalizeSearchText(value: string): string {
+  return value
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toUpperCase()
+    .replace(/[^A-Z0-9]+/g, ' ')
+    .trim();
+}
+
+function normalizeCodeSearch(value: string): string {
+  return normalizeSearchText(value).replace(/\s+/g, '');
 }
