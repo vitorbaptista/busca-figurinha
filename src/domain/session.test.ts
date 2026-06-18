@@ -75,6 +75,20 @@ describe('createSession', () => {
     expect(s.isEmpty()).toBe(true);
   });
 
+  it('finish() returns the report and empties the session', () => {
+    const s = createSession();
+    s.add(exact('CIV12'), false);
+    s.add(exact('EGY4'), true);
+
+    const report = s.finish(checklist);
+
+    expect(report.scannedCount).toBe(2);
+    expect(report.keepers.map((e) => e.code)).toEqual(['CIV12']);
+    expect(report.repeats.map((e) => e.code)).toEqual(['EGY4']);
+    expect(s.isEmpty()).toBe(true);
+    expect(s.records()).toEqual([]);
+  });
+
   it('seeds from initial records', () => {
     const seed = [{ raw: 'CIV12', code: 'CIV12', outcome: 'needed' as const, ts: 1 }];
     const s = createSession(seed);

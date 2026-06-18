@@ -63,10 +63,17 @@ export function createSession(initial: ScanRecord[] = []): ScanSession {
     };
   }
 
+  function finish(checklist: Checklist): SessionReport {
+    const sessionReport = report(checklist);
+    records.length = 0;
+    return sessionReport;
+  }
+
   return {
     add,
     records: () => [...records],
     report,
+    finish,
     isEmpty: () => records.length === 0,
     clear: () => {
       records.length = 0;

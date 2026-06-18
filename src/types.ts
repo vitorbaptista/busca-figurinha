@@ -86,6 +86,7 @@ export interface ScanSession {
   add(match: MatchResult, owned: boolean): ScanRecord;
   records(): ScanRecord[];
   report(checklist: Checklist): SessionReport;
+  finish(checklist: Checklist): SessionReport;
   isEmpty(): boolean;
   clear(): void;
   toJSON(): ScanRecord[];

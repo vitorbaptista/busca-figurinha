@@ -546,12 +546,17 @@ class ScanViewModel(
         if (!feedback.isMiss) persistSession()
     }
 
-    /** Build the end-of-session report (deduped keepers/repeats/unknowns) — the report screen reads
-     *  this. Read-only over the session. Empty when the session hasn't loaded yet. */
-    fun finishSession(): SessionReport =
-        session?.report(checklist) ?: SessionReport(0, emptyList(), emptyList(), emptyList())
+    /** Build the end-of-session report, then discard the in-progress scan so the next scan starts
+     *  clean. Empty when the session hasn't loaded yet. */
+    fun finishSession(): SessionReport {
+        val result = session?.finish(checklist) ?: SessionReport(0, emptyList(), emptyList(), emptyList())
+        _counters.value = Counters()
+        _recent.value = emptyList()
+        viewModelScope.launch(Dispatchers.IO) { sessionRepo.clear() }
+        return result
+    }
 
-    /** Discard the in-progress session (after the report screen committed the user's picks). Clears
+    /** Discard the in-progress session. Clears
      *  the in-memory accumulator, persisted copy, and the UI tallies. */
     fun resetSession() {
         session?.clear()

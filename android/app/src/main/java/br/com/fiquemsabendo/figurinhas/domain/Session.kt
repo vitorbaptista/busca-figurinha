@@ -35,6 +35,12 @@ class Session(
     fun clear() { records.clear() }
     fun toJSON(): List<ScanRecord> = records.toList()
 
+    fun finish(checklist: Checklist): SessionReport {
+        val result = report(checklist)
+        clear()
+        return result
+    }
+
     fun report(checklist: Checklist): SessionReport {
         val keeperCodes = LinkedHashSet<String>()
         val repeatCodes = LinkedHashSet<String>()

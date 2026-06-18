@@ -47,6 +47,18 @@ class SessionTest {
         val s = Session(); s.add(exact("CIV12"), false); s.clear()
         assertTrue(s.isEmpty())
     }
+    @Test fun finish_returns_report_and_empties() {
+        val s = Session()
+        s.add(exact("CIV12"), false)
+        s.add(exact("EGY4"), true)
+        val r = s.finish(checklist)
+
+        assertEquals(2, r.scannedCount)
+        assertEquals(listOf("CIV12"), r.keepers.map { it.code })
+        assertEquals(listOf("EGY4"), r.repeats.map { it.code })
+        assertTrue(s.isEmpty())
+        assertEquals(emptyList(), s.records())
+    }
     @Test fun seeds_from_initial() {
         val s = Session(initial = listOf(ScanRecord("CIV12", "CIV12", ScanOutcome.NEEDED, 1)))
         assertEquals(1, s.records().size)

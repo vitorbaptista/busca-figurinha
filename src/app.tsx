@@ -58,9 +58,11 @@ export function App() {
 
   const onboarded = settings.get().onboarded;
 
-  /** Build the report from the current session and move to the report screen. */
+  /** Build the report, end the current scan session, and move to the report screen. */
   const finishSession = () => {
-    setReport(session.report(checklist));
+    const nextReport = session.finish(checklist);
+    clearStoredSession();
+    setReport(nextReport);
     setScreen('report');
   };
 
