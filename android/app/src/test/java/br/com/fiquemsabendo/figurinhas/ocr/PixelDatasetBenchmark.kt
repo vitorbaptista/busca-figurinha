@@ -107,6 +107,7 @@ class PixelDatasetBenchmark {
         NEVER,
         ON_MISS,
         ON_MISS_WITHOUT_PRIMARY_READS,
+        ON_MISS_WITHOUT_PRIMARY_READS_OR_STRUCTURED_READ,
         ON_MISS_WITHOUT_PRIMARY_INK,
     }
 
@@ -463,6 +464,9 @@ class PixelDatasetBenchmark {
                 DarkFallbackPolicy.NEVER -> false
                 DarkFallbackPolicy.ON_MISS -> outcome.resolved.isEmpty()
                 DarkFallbackPolicy.ON_MISS_WITHOUT_PRIMARY_READS -> outcome.resolved.isEmpty() && outcome.reads.isEmpty()
+                DarkFallbackPolicy.ON_MISS_WITHOUT_PRIMARY_READS_OR_STRUCTURED_READ ->
+                    outcome.resolved.isEmpty() &&
+                        (outcome.reads.isEmpty() || shouldRetryDarkAfterUnresolvedReads(outcome.reads))
                 DarkFallbackPolicy.ON_MISS_WITHOUT_PRIMARY_INK -> outcome.resolved.isEmpty() && inkBoxes == 0
             }
             var darkFallbackUsed = false
@@ -647,7 +651,13 @@ class PixelDatasetBenchmark {
     }
 
     @Test fun run_pixel_dataset_benchmark() {
-        runBenchmarkAndWrite(roi = Roi.CONFIG, fastConf = Config.Ocr.HYBRID_FAST_CONF, maxBoxes = 2, reportBase = "baseline", darkFallbackPolicy = DarkFallbackPolicy.ON_MISS_WITHOUT_PRIMARY_READS)
+        runBenchmarkAndWrite(
+            roi = Roi.CONFIG,
+            fastConf = Config.Ocr.HYBRID_FAST_CONF,
+            maxBoxes = 2,
+            reportBase = "baseline",
+            darkFallbackPolicy = DarkFallbackPolicy.ON_MISS_WITHOUT_PRIMARY_READS_OR_STRUCTURED_READ,
+        )
     }
 
     // Tunable matrix over ROI/confidence/box cap for live Pixel tuning. Call manually while
@@ -799,6 +809,8 @@ class PixelDatasetBenchmark {
             DarkFallbackPolicy.NEVER -> Unit
             DarkFallbackPolicy.ON_MISS -> fallbackParts += "fallback_dark"
             DarkFallbackPolicy.ON_MISS_WITHOUT_PRIMARY_READS -> fallbackParts += "fallback_dark_no_primary_reads"
+            DarkFallbackPolicy.ON_MISS_WITHOUT_PRIMARY_READS_OR_STRUCTURED_READ ->
+                fallbackParts += "fallback_dark_no_primary_reads_or_structured_read"
             DarkFallbackPolicy.ON_MISS_WITHOUT_PRIMARY_INK -> fallbackParts += "fallback_dark_no_primary_ink"
         }
         val fallbackLabel = if (fallbackParts.isEmpty()) {

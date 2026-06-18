@@ -303,8 +303,8 @@ fun findCodeBoxes(
 /** Horizontal fallback for the live reticle. The connected-component detector can fragment a real
  *  pill into small glyph/logo pieces when the capture is soft or the capsule blends into the card.
  *  This scan looks for whole horizontal dark bands with pill-like aspect and contrast. Candidates
- *  are appended after normal component boxes and tagged separately; the current OCR path ignores
- *  them, but debug mode can display and dump them for live tuning. */
+ *  are appended after normal component boxes and tagged separately; the OCR path only reaches them
+ *  as late live candidates, while debug mode can display and dump them for tuning. */
 private fun detectHorizontalScanBoxes(
     frame: GrayImage,
     modes: Array<ForegroundMode>,

@@ -49,6 +49,7 @@ private const val LIVE_MAX_BOXES_DEFAULT = 2
 // per-frame hot path). ALNUM mirrors the TS /[A-Z0-9]/i (case-insensitive).
 private val WHITESPACE_RE = Regex("\\s+")
 private val ALNUM_RE = Regex("[A-Za-z0-9]")
+private val STRUCTURED_MULTI_DIGIT_READ_RE = Regex("^[A-Z]{2,4}\\s?\\d{2,3}$", RegexOption.IGNORE_CASE)
 private const val EXACT_ALIAS_MIN_CONF = 82.0
 private const val HIGH_CONFUSION_MIN_CONF = 85.5
 
@@ -124,6 +125,13 @@ private fun clampMaxBoxes(maxBoxes: Int): Int {
 
 private fun componentBoxesOnly(boxes: List<CodeBox>): List<CodeBox> =
     boxes.filter { it.source != CodeBoxSource.HORIZONTAL_SCAN }
+
+internal fun shouldRetryDarkAfterUnresolvedReads(reads: List<String>): Boolean {
+    return reads.any { read ->
+        if ('%' in read) return@any false
+        STRUCTURED_MULTI_DIGIT_READ_RE.matches(read.replace(WHITESPACE_RE, "").trim())
+    }
+}
 
 private fun isLateWideCodeCandidate(box: CodeBox): Boolean {
     if (box.tilt != null || box.orient != 'h') return false
@@ -497,7 +505,7 @@ private const val RETICLE_WINDOW_MAX_ROI_W = 0.52
 private const val RETICLE_WINDOW_DUP_IOU = 0.72
 private val RETICLE_WINDOW_HEIGHTS = doubleArrayOf(0.24, 0.30)
 
-private fun selectBoxesForOcr(
+internal fun selectBoxesForOcr(
     boxes: List<CodeBox>,
     maxBoxes: Int,
     stopOnFirstCode: Boolean,
@@ -843,7 +851,7 @@ fun recognizeFrameInOrder(
     // without changing the normal fast path or committing any one-off non-code read. If the primary
     // pass already produced OCR text, the useful pill was reached and rejected as unsafe; retrying
     // dark-only mostly burns time on no-sticker frames, so keep the retry for true no-text misses.
-    if (primary.reads.isNotEmpty()) return primary
+    if (primary.reads.isNotEmpty() && !shouldRetryDarkAfterUnresolvedReads(primary.reads)) return primary
     val darkBoxes = findCodeBoxes(frame, roi, arrayOf(ForegroundMode.DARK))
     val dark = recognizeFrameInOrder(
         engine = engine,

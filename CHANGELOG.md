@@ -6,6 +6,9 @@ Notable changes to the sticker scanner. Newest first. No formal releases yet (de
 ## 2026-06-17 — Android: baseline Pixel combinado
 
 ### Fixed
+- **Overlay debug Android reduz ainda mais caixas sobrepostas no mesmo pill.** A seleção visual dos
+  crops agora também considera faixas horizontais deslocadas, mantendo candidatos lado a lado
+  separados, mas desenhando uma única caixa quando várias regiões cobrem a mesma cápsula.
 - **Debug Android não empilha mais vários retângulos para a mesma faixa horizontal.** O NMS da
   varredura horizontal agora também remove duplicatas por cobertura e por mesma banda, e o overlay
   deduplica os crops já com padding antes de desenhar. O baseline manual combinado permanece em

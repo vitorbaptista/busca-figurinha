@@ -21,8 +21,6 @@ import br.com.fiquemsabendo.figurinhas.data.checklist as defaultChecklist
 import br.com.fiquemsabendo.figurinhas.domain.matchCode
 import br.com.fiquemsabendo.figurinhas.ocr.CapturePhase
 import br.com.fiquemsabendo.figurinhas.ocr.CaptureTrigger
-import br.com.fiquemsabendo.figurinhas.ocr.CodeBox
-import br.com.fiquemsabendo.figurinhas.ocr.CodeBoxSource
 import br.com.fiquemsabendo.figurinhas.ocr.FrameRecognizer
 import br.com.fiquemsabendo.figurinhas.ocr.GrayImage
 import br.com.fiquemsabendo.figurinhas.ocr.GlyphOnlyRecognizer
@@ -418,7 +416,7 @@ class ScanViewModel(
         val label = "frame-${++dumpSeq}"
         viewModelScope.launch(Dispatchers.IO) {
             val crops = findCodeBoxes(frame, Roi.CONFIG)
-                .let(::debugCodeBoxes)
+                .let(::selectDebugCodeBoxes)
                 .flatMap { codeCropCandidates(frame, it) }
             val dir = debugCapture.dump(label, frame, crops)
             _debug.value = _debug.value.copy(lastDumpDir = dir)
@@ -428,7 +426,7 @@ class ScanViewModel(
     private fun debugCropBoxes(frame: GrayImage): List<DebugCropBox> {
         if (frame.width <= 0 || frame.height <= 0) return emptyList()
         return findCodeBoxes(frame, Roi.CONFIG)
-            .let(::debugCodeBoxes)
+            .let(::selectDebugCodeBoxes)
             .map { box ->
                 val padX = box.w * DEBUG_CROP_PAD_FRAC
                 val padY = box.h * DEBUG_CROP_PAD_FRAC
@@ -441,37 +439,6 @@ class ScanViewModel(
                     source = box.source,
                 )
             }
-    }
-
-    private fun debugCodeBoxes(boxes: List<CodeBox>): List<CodeBox> {
-        val selected = ArrayList<CodeBox>(DEBUG_CROP_BOXES)
-        fun addIfDistinct(box: CodeBox) {
-            if (selected.any { debugCropCoverage(box, it) > DEBUG_CROP_DUP_COVERAGE }) return
-            selected.add(box)
-        }
-
-        boxes.filter { it.source != CodeBoxSource.HORIZONTAL_SCAN }
-            .take(DEBUG_COMPONENT_BOXES)
-            .forEach(::addIfDistinct)
-        boxes.filter { it.source == CodeBoxSource.HORIZONTAL_SCAN }
-            .take(DEBUG_HORIZONTAL_SCAN_BOXES)
-            .forEach(::addIfDistinct)
-        return selected.take(DEBUG_CROP_BOXES)
-    }
-
-    private fun debugCropCoverage(a: CodeBox, b: CodeBox): Double {
-        val ax0 = a.x - a.w * DEBUG_CROP_PAD_FRAC
-        val ay0 = a.y - a.h * DEBUG_CROP_PAD_FRAC
-        val ax1 = a.x + a.w * (1 + DEBUG_CROP_PAD_FRAC)
-        val ay1 = a.y + a.h * (1 + DEBUG_CROP_PAD_FRAC)
-        val bx0 = b.x - b.w * DEBUG_CROP_PAD_FRAC
-        val by0 = b.y - b.h * DEBUG_CROP_PAD_FRAC
-        val bx1 = b.x + b.w * (1 + DEBUG_CROP_PAD_FRAC)
-        val by1 = b.y + b.h * (1 + DEBUG_CROP_PAD_FRAC)
-        val inter = kotlin.math.max(0.0, kotlin.math.min(ax1, bx1) - kotlin.math.max(ax0, bx0)) *
-            kotlin.math.max(0.0, kotlin.math.min(ay1, by1) - kotlin.math.max(ay0, by0))
-        val smaller = kotlin.math.min((ax1 - ax0) * (ay1 - ay0), (bx1 - bx0) * (by1 - by0))
-        return if (smaller > 0) inter / smaller else 0.0
     }
 
     /** Fold one batch's feedback into the running counters + recent strip and emit the one-shot
@@ -572,15 +539,6 @@ class ScanViewModel(
 
         /** How many recent chips to keep (mirrors ScanScreen's slice(0, 12)). */
         private const val RECENT_MAX = 12
-
-        /** Mirrors Locate.cropRegion's padFrac so the overlay shows the actual OCR crop extent. */
-        private const val DEBUG_CROP_PAD_FRAC = 0.18
-
-        /** Include late horizontal-scan candidates, not just the first live OCR boxes. */
-        private const val DEBUG_CROP_BOXES = 8
-        private const val DEBUG_COMPONENT_BOXES = 4
-        private const val DEBUG_HORIZONTAL_SCAN_BOXES = 4
-        private const val DEBUG_CROP_DUP_COVERAGE = 0.72
 
         /** Atlas asset shipped under app/src/main/assets/. */
         private const val ATLAS_ASSET = "glyph_atlas.bin"
