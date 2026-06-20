@@ -13,6 +13,7 @@ import { Onboarding } from './ui/Onboarding';
 import { ScanScreen } from './ui/screens/ScanScreen';
 import { ReportScreen } from './ui/screens/ReportScreen';
 import { TradeScreen } from './ui/screens/TradeScreen';
+import { RepeatsScreen } from './ui/screens/RepeatsScreen';
 import { CollectionScreen } from './ui/screens/CollectionScreen';
 import { SettingsScreen } from './ui/screens/SettingsScreen';
 
@@ -157,6 +158,15 @@ export function App() {
           onShare={(payload) => shareTrades(payload, checklist)}
           onClearFriend={() => setFriendPayload(null)}
           onGoScan={() => setScreen('scan')}
+          onEditRepeats={() => setScreen('repeats')}
+        />
+      )}
+
+      {screen === 'repeats' && (
+        <RepeatsScreen
+          collection={collection}
+          repeats={repeats}
+          onBack={() => setScreen('trade')}
         />
       )}
 

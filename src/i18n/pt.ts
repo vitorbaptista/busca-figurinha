@@ -107,6 +107,20 @@ export const pt = {
     missing: 'falta',
   },
 
+  // The manual "Repetidas" editor — mirrors Coleção but toggles your tradeable spares.
+  repeatsScreen: {
+    title: 'Minhas repetidas',
+    back: 'Voltar pra Trocar',
+    hint: 'Toque numa figurinha pra marcar (ou tirar) uma repetida pra trocar.',
+    count: (n: number) => (n === 1 ? '1 repetida' : `${n} repetidas`),
+    searchPlaceholder: 'Buscar time ou código',
+    // Per-team: how many repeats marked (blank when none, to keep the row calm).
+    teamCount: (n: number) => (n === 0 ? '' : String(n)),
+    onLabel: 'tem repetida',
+    offLabel: 'sem repetida',
+    noResults: 'Nenhum time encontrado.',
+  },
+
   trade: {
     title: 'Trocar',
     repeatsBadge: (n: number) => (n === 1 ? '1 repetida' : `${n} repetidas`),
@@ -127,6 +141,8 @@ export const pt = {
     // which implies a counterparty already on screen).
     repeatsPromptTitle: 'Tem figurinhas repetidas?',
     repeatsPromptText: 'Escaneie as repetidas que você já tem pra montar sua lista de troca.',
+    // Link into the manual repeats editor (the RepeatsScreen).
+    editRepeats: 'Editar',
 
     // Sender — "o que eu preciso"
     needTitle: 'O que eu',

@@ -1,4 +1,4 @@
-import { Fragment } from 'preact';
+import { Fragment, type ComponentChildren } from 'preact';
 import { useEffect, useState } from 'preact/hooks';
 import type { ChecklistEntry, CollectionStore } from '../../types';
 import { checklist } from '../../data/checklist';
@@ -20,6 +20,8 @@ interface TradeScreenProps {
   onClearFriend: () => void;
   /** Jump to the scanner to capture more repeats. */
   onGoScan: () => void;
+  /** Open the manual repeats editor (RepeatsScreen). */
+  onEditRepeats: () => void;
 }
 
 interface AlbumGroup {
@@ -34,6 +36,7 @@ export function TradeScreen({
   onShare,
   onClearFriend,
   onGoScan,
+  onEditRepeats,
 }: TradeScreenProps) {
   useStore(collection);
   useStore(repeats);
@@ -176,7 +179,15 @@ export function TradeScreen({
       {/* Mockup order: minhas repetidas → o que eu preciso → prévia → ações. The "preciso" list is
           collapsed by group, so the share actions below it stay within easy reach. */}
       <div class="trade-body">
-        <SectionHead lead={pt.trade.myRepeatsTitle} em={pt.trade.myRepeatsEm} />
+        <SectionHead
+          lead={pt.trade.myRepeatsTitle}
+          em={pt.trade.myRepeatsEm}
+          action={
+            <button class="link-btn trade-edit" onClick={onEditRepeats}>
+              ✏️ {pt.trade.editRepeats}
+            </button>
+          }
+        />
         {hasRepeats ? (
           <div class="ledger">
             {myRepeatEntries.map((e) => (
@@ -359,7 +370,17 @@ function MatchGroups({ entries, emptyText }: { entries: ChecklistEntry[]; emptyT
   );
 }
 
-function SectionHead({ lead, em, count }: { lead: string; em?: string; count?: number }) {
+function SectionHead({
+  lead,
+  em,
+  count,
+  action,
+}: {
+  lead: string;
+  em?: string;
+  count?: number;
+  action?: ComponentChildren;
+}) {
   return (
     <div class="sec-h">
       <span class="t">
@@ -368,6 +389,7 @@ function SectionHead({ lead, em, count }: { lead: string; em?: string; count?: n
       </span>
       <span class="rule" />
       {count !== undefined ? <span class="trade-count">{pt.trade.count(count)}</span> : null}
+      {action}
     </div>
   );
 }
