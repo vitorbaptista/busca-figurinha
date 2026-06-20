@@ -3,6 +3,8 @@ import { pt } from '../../i18n/pt';
 
 export interface VerdictState {
   outcome: ScanOutcome;
+  /** Canonical code, e.g. "CIV12" (empty for unknown). Used to undo a misread. */
+  code: string;
   /** Display code, e.g. "CIV 12" (empty for unknown). */
   display: string;
   /** Team name shown under the code. */
@@ -16,9 +18,18 @@ export interface VerdictState {
  * bottom of the camera that PERSISTS (it stays put until the next read replaces
  * it), unlike the old full-screen flash. GUARDAR (green) = keep, REPETIDA (red)
  * = already owned, NÃO LI (kraft) = honest miss, never a faked answer. The miss
- * card carries the manual-entry escape hatch ("Digitar o código").
+ * card carries the manual-entry escape hatch ("Digitar o código"); GUARDAR/REPETIDA
+ * carry "Não é essa?" (onWrong) to undo a confident misread before it reaches a trade.
  */
-export function Verdict({ state, onManual }: { state: VerdictState; onManual: () => void }) {
+export function Verdict({
+  state,
+  onManual,
+  onWrong,
+}: {
+  state: VerdictState;
+  onManual: () => void;
+  onWrong: () => void;
+}) {
   const { outcome, display, teamName } = state;
 
   if (outcome === 'unknown') {
@@ -50,6 +61,14 @@ export function Verdict({ state, onManual }: { state: VerdictState; onManual: ()
           {rep ? '✕' : '✓'}
         </span>
         <div class="verdict-word">{rep ? pt.scan.owned : pt.scan.needed}</div>
+        <button
+          class="verdict-wrong"
+          type="button"
+          onClick={onWrong}
+          aria-label={pt.scan.wrongLabel}
+        >
+          {pt.scan.wrong}
+        </button>
       </div>
       <div class="verdict-info">
         <div class="verdict-text">

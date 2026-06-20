@@ -3,6 +3,20 @@
 Notable changes to the sticker scanner. Newest first. No formal releases yet (deploys on push to
 `main`), so entries are grouped by date. Keep this updated when you ship something notable.
 
+## 2026-06-20 — Escanear: dá pra ver que está lendo + corrigir uma leitura errada
+
+### Added
+- **A mira mostra quando está lendo.** Antes, fora do modo debug, não dava pra saber se o app estava
+  trabalhando na figurinha. Agora, quando uma figurinha para na mira, a janela vira um leitor ativo:
+  a borda fica dourada e uma faixa dourada **varre** o slot ("Lendo…"), então dá pra ver que o app
+  está lendo — mesmo com o resultado anterior ainda na tela. Respeita `prefers-reduced-motion` (sem
+  varredura, só a borda dourada e o "Lendo…" parados).
+- **Botão "Não é essa?" pra corrigir uma leitura errada.** No card GUARDAR/REPETIDA, ao lado do
+  veredito, um toque em **"Não é essa?"** descarta a leitura: tira a figurinha da contagem e da lista
+  "Últimas leituras", remove do escaneamento (pra não cair no resumo como uma troca errada) e já abre
+  a digitação pra você colocar o código certo. Só aparece em GUARDAR/REPETIDA — o card "Não li" já
+  tem a digitação manual.
+
 ## 2026-06-20 — Trocar: prévia da mensagem mais curta e organizada
 
 ### Changed

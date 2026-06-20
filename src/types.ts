@@ -84,6 +84,9 @@ export interface SessionReport {
 /** Stateful scan session (see domain/session.ts: createSession). */
 export interface ScanSession {
   add(match: MatchResult, owned: boolean): ScanRecord;
+  /** Remove the most recent record with this code (for "Não é essa?" — undoing a
+   *  confident misread so it never reaches the report). Returns true if one was removed. */
+  removeByCode(code: string): boolean;
   records(): ScanRecord[];
   report(checklist: Checklist): SessionReport;
   finish(checklist: Checklist): SessionReport;

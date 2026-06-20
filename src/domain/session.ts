@@ -32,6 +32,19 @@ export function createSession(initial: ScanRecord[] = []): ScanSession {
     return record;
   }
 
+  /** Undo a misread: drop the most recent record with this code so it never reaches
+   *  the report. Each code is added at most once per session, so this removes the lone
+   *  record for it (and scans the tail just in case there are stray duplicates). */
+  function removeByCode(code: string): boolean {
+    for (let i = records.length - 1; i >= 0; i--) {
+      if (records[i].code === code) {
+        records.splice(i, 1);
+        return true;
+      }
+    }
+    return false;
+  }
+
   function report(checklist: Checklist): SessionReport {
     const keeperCodes = new Set<string>();
     const repeatCodes = new Set<string>();
@@ -71,6 +84,7 @@ export function createSession(initial: ScanRecord[] = []): ScanSession {
 
   return {
     add,
+    removeByCode,
     records: () => [...records],
     report,
     finish,
