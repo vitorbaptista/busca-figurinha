@@ -3,6 +3,16 @@
 Notable changes to the sticker scanner. Newest first. No formal releases yet (deploys on push to
 `main`), so entries are grouped by date. Keep this updated when you ship something notable.
 
+## 2026-06-20 — Repetidas: tela pra marcar suas repetidas na mão
+
+### Added
+- **Nova tela "Repetidas"**, aberta pelo botão **"✏️ Editar"** na seção "Minhas repetidas" da aba
+  Trocar. É igual à "Minha Coleção" (álbum inteiro, com busca), mas cada toque **marca ou tira** uma
+  figurinha como **repetida** — em laranja-tijolo (a cor de "REPETIDA"), com um losango no canto pra
+  não depender só da cor. Serve pra ajustar sua lista de troca na mão, sem precisar reescanear, e pra
+  corrigir um toque errado (é só tocar de novo). Marcar uma repetida também garante que ela conta como
+  sua (entra na coleção), então ela nunca some na hora de trocar.
+
 ## 2026-06-20 — Trocar: lista aparece mesmo sem repetidas + repetidas escaneadas agora salvam
 
 ### Fixed
