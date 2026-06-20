@@ -141,14 +141,13 @@ report, settings) are conventional. Reading these files in order explains the sy
 (speed over real video frames), `npm run bench -- --latency-sharp` (the sharp single-sticker use-case).
 `scripts/bench.mjs` drives headless Chrome. ROI/use-case changes tank these by construction — see above.
 
-### Labeled real-Pixel-frame dataset — CHECK HERE FIRST for real use-case accuracy
+### Labeled real-Pixel-frame dataset + `bench:pixel` — CHECK HERE FIRST for real use-case accuracy
 
 There is a **manually-verified dataset of real Pixel capture frames** under `captures/datasets/`.
-It lives in an artifacts dir (NOT `src/`), nothing in `package.json` runs it, and the metrics runner
-isn't committed — so a code search won't surface it and it's easy to miss (it was, for a whole
-session). **Before measuring accuracy on the real use-case, look here** — it has real device frames
-*with negatives* for false-positive testing, which `npm run bench`'s synthetic/centre-framed set and
-any one-off recorded video do not.
+It lives in an artifacts dir (NOT `src/`) — a code search won't surface it and it's easy to miss (it
+was, for a whole session). **Before measuring accuracy on the real use-case, look here** — it has real
+device frames *with negatives* for false-positive testing, which `npm run bench`'s synthetic/centre-
+framed set and any one-off recorded video do not.
 
 - **Canonical set:** `captures/datasets/combined-live-20260616-20260617/` — 374 frames (216 confirmed
   stickers + 157 not-sticker negatives), `train`/`val`/`test` split.
@@ -157,15 +156,27 @@ any one-off recorded video do not.
   carries paths + splits.
 - **Frame layout:** each `raw/<session>/debug/frame-N/` holds `frame.png` (full frame), `frame.pgm.gz`
   (grayscale), `crop0..N.png` (detected crops).
-- **Prior results:** `<dataset>/benchmarks/*.md`. Best config there — a **rectangular ROI**
-  `roi=0.18,0.32,0.82,0.58` (x,y,w,h, NOT just `roiTopFraction`), `fastConf=70`, `maxBoxes=2`,
-  dark+light modes — hit **recall 75%, precision 100%, 0 FP** on real frames. (The live app still uses
-  the simpler bottom-band `roiTopFraction`; that rect-ROI crop is the "OCR only the shown scan window"
-  direction.) The JS-pipeline runner that produced these `.md`s was ephemeral / lived in the
-  `codex-native-detection-improvements` worktree — find or rebuild it before re-benchmarking.
-  `scripts/verify-pixel-dataset.mjs` is the manual labeling UI (`manual_verify.html`), not the runner.
 - **Grow it:** `?record` mode (separate from `?debug`) auto-saves every frame the scanner reads to
   `captures/` as sequential `rec-NNNN.jpg` — scan a batch on the Pixel, then label + fold into a dataset.
+
+**`npm run bench:pixel`** — the REAL-FRAME accuracy benchmark + the source of truth for use-case
+tuning (recall/FP/latency) that the synthetic bench above can't validate. It runs the EXACT live
+pipeline (detection → crops → the recognizer two-phase, or the codeNet ensemble via `--engine=ensemble`
+→ matching + the multi-frame confirmer) over the dataset above. Reports, per split (train/val/test) and
+overall: **recall, positive precision, per-frame FP rate, confirmed/held-sticker FP** (the shipped
+guard — must stay ~0), **latency** (det+ocr median/p95), and a **per-miss failure-stage table**
+(det:0boxes / crop:0ink / ocr:misread / ocr:nomatch / ocr:blank). Output →
+`captures/bench-pixel-results.md`. Tune on TRAIN, validate on VAL, report final on TEST only. Sweep
+ROI/gates/engine without rebuilding via forwarded params, e.g.
+`npm run bench:pixel -- --split=test --engine=ensemble --roiRect=0.18,0.32,0.82,0.58 --maxBoxes=2`.
+`src/dev/benchPixel.ts` + `bench-pixel.html` are dev-only (build input pinned to `index.html`); the
+dataset dir is overridable via `PIXEL_DATASET=`. Running change→effect log: `docs/web-ocr-accuracy.md`.
+
+NOTE on ROI: `CONFIG.detect.roiRect` (normalized `{left,top,right,bottom}`) restricts detection to a
+rectangle (a strip in the upper-middle, where a front-camera capture actually holds the sticker) and
+takes precedence over `roiTopFraction`. It is now the **default** — on this dataset the old band
+`roiTopFraction=0.67` (bottom third) read **0% recall** (it points below the pill). A rect ROI must be
+re-validated live (the shipping reticle position has to match it).
 
 ## Data flow & state
 
