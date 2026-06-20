@@ -14,3 +14,6 @@ captures
 
 # Video frames extracted for the accuracy benchmark (derived from the committed .mp4).
 data/raw/stickers/frames
+
+# impeccable design-tool state (not source)
+.impeccable/
