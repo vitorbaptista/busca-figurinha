@@ -9,6 +9,7 @@ import { readShareLink, shareTrades } from './domain/share';
 import type { TradePayload } from './domain/tradeList';
 import { useStore } from './ui/hooks';
 import { Nav, type Screen } from './ui/Nav';
+import { screenFromHash, sectionUrl } from './ui/routing';
 import { Onboarding } from './ui/Onboarding';
 import { ScanScreen } from './ui/screens/ScanScreen';
 import { ReportScreen } from './ui/screens/ReportScreen';
@@ -63,13 +64,6 @@ function loadFriendPayload(): TradePayload | null {
   return readShareLink(location.search, checklist);
 }
 
-/** Strip the ?t= payload from the address bar after we've read it, so a reload/back doesn't
- *  re-open the friend's list and the URL stays clean to share. */
-function clearTradeQuery(): void {
-  if (typeof history === 'undefined' || typeof location === 'undefined') return;
-  history.replaceState(history.state, '', `${location.origin}${location.pathname}${location.hash}`);
-}
-
 // Gated dataset-capture tool, opened with ?capture (same obscurity as ?debug/?record — regular
 // users never see it). Lazy-loaded so the capture UI + its deps stay out of the normal bundle.
 const CAPTURE =
@@ -91,16 +85,24 @@ export function App() {
   useStore(settings);
 
   const initialFriendPayload = useMemo(loadFriendPayload, []);
-  const [screen, setScreen] = useState<Screen>(() => (initialFriendPayload ? 'trade' : 'scan'));
+  const [screen, setScreen] = useState<Screen>(() =>
+    initialFriendPayload ? 'trade' : screenFromHash(typeof location === 'undefined' ? '' : location.hash),
+  );
   const session = useMemo(loadSession, []);
   const [report, setReport] = useState<SessionReport | null>(null);
   const [friendPayload, setFriendPayload] = useState<TradePayload | null>(initialFriendPayload);
 
   const onboarded = settings.get().onboarded;
 
+  // Mirror the active section into the URL hash so a refresh/shared link restores it, and (once a
+  // ?t= friend link has been read into state) strip that query so a reload doesn't re-open the
+  // list. replaceState (not assigning location.hash) adds no history entry — switching tabs doesn't
+  // pile up Back steps — and doesn't fire `hashchange`, so there's no sync loop. sectionUrl keeps
+  // pathname (GH-Pages base) + the ?debug/?capture flags.
   useEffect(() => {
-    if (initialFriendPayload) clearTradeQuery();
-  }, [initialFriendPayload]);
+    if (typeof history === 'undefined' || typeof location === 'undefined') return;
+    history.replaceState(history.state, '', sectionUrl(location, screen, !!initialFriendPayload));
+  }, [screen]);
 
   /** Build the report, end the current scan session, and move to the report screen. */
   const finishSession = () => {
