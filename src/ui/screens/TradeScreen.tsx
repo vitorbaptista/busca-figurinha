@@ -177,43 +177,51 @@ export function TradeScreen({
       </header>
 
       {/* Mockup order: minhas repetidas → o que eu preciso → prévia → ações. Both sticker lists share
-          the same grouped ledger (album group → team tallies), always expanded — no collapse. */}
+          the same grouped ledger (album group → team tallies), always expanded — no collapse. Each
+          list is wrapped in its own <section> so its sticky header pins only within that section and
+          hands off cleanly to the next instead of overlapping it. */}
       <div class="trade-body">
-        <SectionHead
-          lead={pt.trade.myRepeatsTitle}
-          em={pt.trade.myRepeatsEm}
-          action={
-            <button class="link-btn trade-edit" onClick={onEditRepeats}>
-              ✏️ {pt.trade.editRepeats}
-            </button>
-          }
-        />
-        {hasRepeats ? (
-          <GroupedLedger codes={myRepeatCodes} tone="have" />
-        ) : (
-          <div class="trade-cta">
-            <b>{pt.trade.repeatsPromptTitle}</b>
-            <p>{pt.trade.repeatsPromptText}</p>
-            <button class="btn btn-primary btn-block" onClick={onGoScan}>
-              {pt.trade.emptyButton}
-            </button>
-          </div>
-        )}
+        <section class="trade-section">
+          <SectionHead
+            lead={pt.trade.myRepeatsTitle}
+            em={pt.trade.myRepeatsEm}
+            sticky
+            action={
+              <button class="link-btn trade-edit" onClick={onEditRepeats}>
+                ✏️ {pt.trade.editRepeats}
+              </button>
+            }
+          />
+          {hasRepeats ? (
+            <GroupedLedger codes={myRepeatCodes} tone="have" />
+          ) : (
+            <div class="trade-cta">
+              <b>{pt.trade.repeatsPromptTitle}</b>
+              <p>{pt.trade.repeatsPromptText}</p>
+              <button class="btn btn-primary btn-block" onClick={onGoScan}>
+                {pt.trade.emptyButton}
+              </button>
+            </div>
+          )}
+        </section>
 
-        <SectionHead
-          lead={pt.trade.needTitle}
-          em={pt.trade.needEm}
-          action={
-            <button class="link-btn trade-edit" onClick={onEditNeed}>
-              ✏️ {pt.trade.editNeed}
-            </button>
-          }
-        />
-        {missingCodes.length === 0 ? (
-          <p class="trade-line-empty">{pt.trade.needEmpty}</p>
-        ) : (
-          <GroupedLedger codes={missingCodes} tone="need" />
-        )}
+        <section class="trade-section">
+          <SectionHead
+            lead={pt.trade.needTitle}
+            em={pt.trade.needEm}
+            sticky
+            action={
+              <button class="link-btn trade-edit" onClick={onEditNeed}>
+                ✏️ {pt.trade.editNeed}
+              </button>
+            }
+          />
+          {missingCodes.length === 0 ? (
+            <p class="trade-line-empty">{pt.trade.needEmpty}</p>
+          ) : (
+            <GroupedLedger codes={missingCodes} tone="need" />
+          )}
+        </section>
 
         <div class="preview">
           <span class="ptag">{pt.trade.previewTag}</span>
@@ -354,14 +362,17 @@ function SectionHead({
   em,
   count,
   action,
+  sticky,
 }: {
   lead: string;
   em?: string;
   count?: number;
   action?: ComponentChildren;
+  /** Pin the header below the "Trocar" bar while its section scrolls (the two own-offer lists). */
+  sticky?: boolean;
 }) {
   return (
-    <div class="sec-h">
+    <div class={`sec-h${sticky ? ' sec-h--sticky' : ''}`}>
       <span class="t">
         {lead}
         {em ? <span class="em"> {em}</span> : null}

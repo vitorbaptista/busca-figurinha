@@ -1879,6 +1879,29 @@ html.scan-active body {
   color: var(--gold);
 }
 
+/* Each own-offer list lives in its own block so its sticky header pins ONLY within that section and
+   hands off to the next, instead of two headers stacking at the same spot. flow-root also keeps the
+   header's top margin contained. */
+.trade-section {
+  display: flow-root;
+}
+/* "Minhas repetidas" / "O que eu preciso" pin just below the sticky "Trocar" bar so the current
+   section stays labelled while its long list scrolls. The band, the bar and the body are all
+   `--paper-deep`, so only two things must hold: `top` ≤ the SHORTEST bar (61.4px = 14+14 padding +
+   2rem/0.95 title + 3px rule, with no "N repetidas" badge — deterministic since line-height is
+   explicit) so no card peeks between bar and band; and `top` + padding-top clears the TALLEST bar
+   (~69px, badge present) so the title isn't tucked under the bar. 60 + 12 satisfies both with margin.
+   safe-top is baked into the bar's padding, so it's added here too. The band is inset like the cards
+   (no horizontal margin), so the ledger slides cleanly under it — no full-bleed needed. */
+.sec-h--sticky {
+  position: sticky;
+  top: calc(var(--safe-top) + 60px);
+  z-index: 10;
+  margin-top: 12px;
+  padding: 12px 0 8px;
+  background: var(--paper-deep);
+}
+
 /* album group label inside "o que eu preciso" / the match lists */
 .trade-grp {
   margin: 14px 0 0;
