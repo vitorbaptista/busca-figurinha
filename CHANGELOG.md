@@ -3,6 +3,19 @@
 Notable changes to the sticker scanner. Newest first. No formal releases yet (deploys on push to
 `main`), so entries are grouped by date. Keep this updated when you ship something notable.
 
+## 2026-06-20 — Trocar: listas de figurinhas compactas (por seleção)
+
+### Changed
+- **As seções "Minhas repetidas" e "O que eu preciso" agora mostram as figurinhas agrupadas por
+  seleção, não uma linha por figurinha.** Antes, cada figurinha ocupava uma linha inteira (com nome e
+  botão) — com 100+ repetidas a lista virava uma rolagem enorme. Agora cada seleção vira um bloquinho
+  com a bandeira + nome + total e os números soltos lado a lado (ex.: **🇲🇽 México · 3 4 8 12 17**),
+  que quebram em várias colunas. Cabe num celular de 320px e dá pra varrer a lista de relance. As que
+  você **tem** (repetidas, "você dá") aparecem em quadradinhos preenchidos; as que **faltam**
+  ("preciso", "você pega") em quadradinhos tracejados — a forma diferencia, nunca só a cor.
+- **Tirar uma repetida da lista agora é só pela tela "✏️ Editar"** (o álbum inteiro, é só tocar na
+  figurinha). O botão "Já troquei" por linha saiu junto com as linhas; a edição ficou num lugar só.
+
 ## 2026-06-20 — Escanear: tela sem rolagem + leitura que não desiste
 
 ### Fixed
