@@ -54,7 +54,7 @@ export function ReportScreen({
     return (
       <div class="screen report-done">
         <div class="report-done-emoji">🎉</div>
-        <h2>{pt.report.added}</h2>
+        <h2>{checked.size > 0 ? pt.report.added : pt.report.repeatsSaved}</h2>
       </div>
     );
   }
@@ -136,8 +136,16 @@ export function ReportScreen({
       {unknowns.length > 0 && <p class="report-unknowns">⚠️ {pt.report.unknownsNote(unknowns.length)}</p>}
 
       <div class="report-footer">
-        <button class="btn btn-primary btn-block" onClick={commit} disabled={checkedCount === 0}>
-          {checkedCount > 0 ? pt.report.add(checkedCount) : pt.report.addEmpty}
+        <button
+          class="btn btn-primary btn-block"
+          onClick={commit}
+          disabled={checkedCount === 0 && repeats.length === 0}
+        >
+          {checkedCount > 0
+            ? pt.report.add(checkedCount)
+            : repeats.length > 0
+              ? pt.report.saveRepeats(repeats.length)
+              : pt.report.addEmpty}
         </button>
         <button class="btn btn-ghost btn-block" onClick={onBack}>
           {pt.report.back}

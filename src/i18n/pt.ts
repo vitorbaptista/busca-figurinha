@@ -88,8 +88,12 @@ export const pt = {
     add: (n: number) =>
       n === 1 ? 'Adicionar 1 à coleção' : `Adicionar ${n} à coleção`,
     addEmpty: 'Adicionar à coleção',
+    // Repeats-only session (nothing new to keep): the CTA still has to commit the spares.
+    saveRepeats: (n: number) =>
+      n === 1 ? 'Guardar 1 repetida pra trocar' : `Guardar ${n} repetidas pra trocar`,
     back: 'Voltar a escanear',
     added: 'Adicionadas à coleção!',
+    repeatsSaved: 'Repetidas guardadas pra trocar!',
   },
 
   collection: {
@@ -119,6 +123,10 @@ export const pt = {
     myRepeatsEm: '(p/ trocar)',
     removeRepeat: 'Já troquei',
     removeRepeatLabel: (display: string) => `Tirar ${display} da lista de troca`,
+    // Owner has an album but hasn't scanned any spares yet (distinct from the friend-match giveCta,
+    // which implies a counterparty already on screen).
+    repeatsPromptTitle: 'Tem figurinhas repetidas?',
+    repeatsPromptText: 'Escaneie as repetidas que você já tem pra montar sua lista de troca.',
 
     // Sender — "o que eu preciso"
     needTitle: 'O que eu',

@@ -126,8 +126,35 @@ export function TradeScreen({
 
   // ---- The user's own trade offer ----
   const hasRepeats = myRepeatEntries.length > 0;
+
+  // Only a brand-new user who hasn't kept a single sticker yet gets the onboarding empty state. The
+  // moment they have an album, this screen ALWAYS shows what they need + the share/copy actions —
+  // even before they've scanned any repeats (a "preciso" wishlist is shareable on its own).
+  if (owned.size === 0) {
+    return (
+      <div class="screen trade-screen">
+        <header class="trade-header">
+          <div class="trade-header-row">
+            <h1>{pt.trade.title}</h1>
+          </div>
+        </header>
+        <section class="trade-empty">
+          <div class="trade-empty-emoji" aria-hidden="true">
+            {pt.trade.emptyEmoji}
+          </div>
+          <h2>{pt.trade.emptyTitle}</h2>
+          <p>{pt.trade.emptyText}</p>
+          <button class="btn btn-primary btn-block" onClick={onGoScan}>
+            {pt.trade.emptyButton}
+          </button>
+        </section>
+      </div>
+    );
+  }
+
   const needGroups = groupByAlbum(missingCodes);
-  const previewText = hasRepeats ? previewTextFor(myPayload, checklist) : '';
+  // Always built — with no repeats the share is a "wishlist" (só "Preciso"), still worth sending.
+  const previewText = previewTextFor(myPayload, checklist);
 
   return (
     <div class="screen trade-screen">
@@ -146,20 +173,11 @@ export function TradeScreen({
         </div>
       </header>
 
-      {!hasRepeats ? (
-        <section class="trade-empty">
-          <div class="trade-empty-emoji" aria-hidden="true">
-            {pt.trade.emptyEmoji}
-          </div>
-          <h2>{pt.trade.emptyTitle}</h2>
-          <p>{pt.trade.emptyText}</p>
-          <button class="btn btn-primary btn-block" onClick={onGoScan}>
-            {pt.trade.emptyButton}
-          </button>
-        </section>
-      ) : (
-        <div class="trade-body">
-          <SectionHead lead={pt.trade.myRepeatsTitle} em={pt.trade.myRepeatsEm} />
+      {/* Mockup order: minhas repetidas → o que eu preciso → prévia → ações. The "preciso" list is
+          collapsed by group, so the share actions below it stay within easy reach. */}
+      <div class="trade-body">
+        <SectionHead lead={pt.trade.myRepeatsTitle} em={pt.trade.myRepeatsEm} />
+        {hasRepeats ? (
           <div class="ledger">
             {myRepeatEntries.map((e) => (
               <div class="lrow" key={e.code}>
@@ -175,62 +193,68 @@ export function TradeScreen({
               </div>
             ))}
           </div>
-
-          {/* Preview + share sit right after the offer so the primary action is always reachable —
-              the full "preciso" reference list (hundreds of rows) lives BELOW them, not on top. */}
-          <div class="preview">
-            <span class="ptag">{pt.trade.previewTag}</span>
-            <pre class="preview-text">{previewText}</pre>
-          </div>
-
-          <div class="trade-actions">
-            <button class="btn-wa" onClick={share}>
-              <span class="wa" aria-hidden="true">
-                📲
-              </span>{' '}
-              {pt.trade.shareWhats}
-            </button>
-            <button class="btn-copy" onClick={copy}>
-              {pt.trade.copy}
+        ) : (
+          <div class="trade-cta">
+            <b>{pt.trade.repeatsPromptTitle}</b>
+            <p>{pt.trade.repeatsPromptText}</p>
+            <button class="btn btn-primary btn-block" onClick={onGoScan}>
+              {pt.trade.emptyButton}
             </button>
           </div>
+        )}
 
-          <SectionHead lead={pt.trade.needTitle} em={pt.trade.needEm} />
-          {needGroups.length === 0 ? (
-            <p class="trade-line-empty">{pt.trade.needEmpty}</p>
-          ) : (
-            <div class="ledger need-list">
-              {needGroups.map((group) => {
-                const open = openGroups.has(group.label);
-                return (
-                  <Fragment key={group.label}>
-                    <button
-                      type="button"
-                      class={`need-grp-row ${open ? 'is-open' : ''}`}
-                      onClick={() => toggleGroup(group.label)}
-                      aria-expanded={open}
-                    >
-                      <span class="ngname">{group.label}</span>
-                      <span class="ngcount">{pt.trade.groupFaltam(group.entries.length)}</span>
-                      <span class="ngcaret" aria-hidden="true">
-                        {open ? '▾' : '▸'}
-                      </span>
-                    </button>
-                    {open &&
-                      group.entries.map((e) => (
-                        <div class="need-row" key={e.code}>
-                          <span class="lcode">{e.display}</span>
-                          <span class="lname">{teamLabel(e)}</span>
-                          <span class="ltag ltag-falta">{pt.trade.faltaTag}</span>
-                        </div>
-                      ))}
-                  </Fragment>
-                );
-              })}
-            </div>
-          )}
+        <SectionHead lead={pt.trade.needTitle} em={pt.trade.needEm} />
+        {needGroups.length === 0 ? (
+          <p class="trade-line-empty">{pt.trade.needEmpty}</p>
+        ) : (
+          <div class="ledger need-list">
+            {needGroups.map((group) => {
+              const open = openGroups.has(group.label);
+              return (
+                <Fragment key={group.label}>
+                  <button
+                    type="button"
+                    class={`need-grp-row ${open ? 'is-open' : ''}`}
+                    onClick={() => toggleGroup(group.label)}
+                    aria-expanded={open}
+                  >
+                    <span class="ngname">{group.label}</span>
+                    <span class="ngcount">{pt.trade.groupFaltam(group.entries.length)}</span>
+                    <span class="ngcaret" aria-hidden="true">
+                      {open ? '▾' : '▸'}
+                    </span>
+                  </button>
+                  {open &&
+                    group.entries.map((e) => (
+                      <div class="need-row" key={e.code}>
+                        <span class="lcode">{e.display}</span>
+                        <span class="lname">{teamLabel(e)}</span>
+                        <span class="ltag ltag-falta">{pt.trade.faltaTag}</span>
+                      </div>
+                    ))}
+                </Fragment>
+              );
+            })}
+          </div>
+        )}
+
+        <div class="preview">
+          <span class="ptag">{pt.trade.previewTag}</span>
+          <pre class="preview-text">{previewText}</pre>
         </div>
-      )}
+
+        <div class="trade-actions">
+          <button class="btn-wa" onClick={share}>
+            <span class="wa" aria-hidden="true">
+              📲
+            </span>{' '}
+            {pt.trade.shareWhats}
+          </button>
+          <button class="btn-copy" onClick={copy}>
+            {pt.trade.copy}
+          </button>
+        </div>
+      </div>
     </div>
   );
 }

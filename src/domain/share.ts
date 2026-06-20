@@ -10,6 +10,8 @@ import {
 export type ShareTradesResult = 'shared' | 'whatsapp' | 'copied' | 'unavailable';
 
 const LINK_CTA = '👉 Abre o link e veja na hora o que serve pra você 👇';
+/** Headline when the sharer has no spares yet — the message becomes a "wishlist" (só "Preciso"). */
+const WISHLIST_HEADER = '🔁 Tô montando meu álbum da Copa 2026!';
 
 /** Build the deep link that carries the payload in the query (?t=...). baseUrl is like
  *  location.origin + location.pathname. */
@@ -45,10 +47,15 @@ export function buildShareMessage(
   link: string,
   checklist: Checklist,
 ): string {
-  const tenho = formatTradeList(payload.repeats, checklist, { name: payload.name });
   const preciso = formatNeeds(payload.missing, checklist);
 
-  const parts = [tenho];
+  // With spares: the grouped "Tenho" block. Without: a "wishlist" headline (sharing what you NEED is
+  // useful even before you've scanned a single repeat — that's the whole point of this screen).
+  const parts = [
+    payload.repeats.length > 0
+      ? formatTradeList(payload.repeats, checklist, { name: payload.name })
+      : WISHLIST_HEADER,
+  ];
   if (preciso) parts.push('', preciso);
   parts.push('', LINK_CTA, link);
   return parts.join('\n');
