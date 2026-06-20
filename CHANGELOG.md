@@ -3,6 +3,21 @@
 Notable changes to the sticker scanner. Newest first. No formal releases yet (deploys on push to
 `main`), so entries are grouped by date. Keep this updated when you ship something notable.
 
+## 2026-06-20 — Escanear: tela sem rolagem + leitura que não desiste
+
+### Fixed
+- **A tela "Escanear" não precisa mais de rolagem.** O contêiner usava `min-height: 100vh`, e no
+  celular `100vh` é maior que a área visível (conta o espaço atrás da barra do navegador) — então o
+  veredito fixo da base caía abaixo da dobra. Agora a tela usa `100dvh` (altura visível real) +
+  `overflow: hidden`, com a área da câmera flexível, então tudo cabe sem rolar.
+
+### Changed
+- **O leitor nunca desiste de uma figurinha — e o "lido ✓" só aparece quando lê de verdade.** Antes,
+  todo disparo de leitura travava o loop (o heartbeat de debug mostrava "lido ✓ — troque a
+  figurinha") mesmo quando NADA era lido. Agora o loop só trava após uma leitura real; com a
+  figurinha parada e ilegível, ele continua tentando enquanto ela estiver à frente, e fica ocioso só
+  quando não há nada em vista (sem gastar bateria à toa).
+
 ## 2026-06-20 — Repetidas: tela pra marcar suas repetidas na mão
 
 ### Added
