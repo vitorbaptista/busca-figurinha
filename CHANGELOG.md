@@ -3,6 +3,19 @@
 Notable changes to the sticker scanner. Newest first. No formal releases yet (deploys on push to
 `main`), so entries are grouped by date. Keep this updated when you ship something notable.
 
+## 2026-06-19 — Dados: figurinhas Coca-Cola (CC1–CC12)
+
+### Added
+- **As 12 figurinhas exclusivas da Coca-Cola (CC1 a CC12)** entraram na lista do álbum, numa seção
+  própria "Coca-Cola" depois das especiais. Elas não vêm nos pacotes normais — só atrás do rótulo
+  de garrafas Coca-Cola marcadas — mas o álbum tem uma página dedicada a elas, então contam para
+  completar a coleção. O álbum passa de 980 para **992** figurinhas.
+
+### Changed
+- O leitor agora trata "CV12" como **indefinido** (não chuta): com a "CC12" na lista, "CV12" fica a
+  uma troca de distância tanto de "CC12" (V→C) quanto da "CIV12" (recupera o "I" fino) — empate, e a
+  regra de ouro é nunca cravar um código errado.
+
 ## 2026-06-19 — Visual: tema "Banca — Álbum de Papel"
 
 ### Changed
