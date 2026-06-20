@@ -3,6 +3,13 @@
 Notable changes to the sticker scanner. Newest first. No formal releases yet (deploys on push to
 `main`), so entries are grouped by date. Keep this updated when you ship something notable.
 
+## 2026-06-20 — Trocar: títulos de seção fixos ao rolar
+
+### Changed
+- **Os títulos "Minhas repetidas" e "O que eu preciso" agora ficam fixos no topo** enquanto você
+  rola a lista, logo abaixo da barra "Trocar". Assim você sempre sabe em qual seção está, mesmo nas
+  listas longas — e quando uma seção termina, o título dela dá lugar ao da próxima.
+
 ## 2026-06-20 — Trocar: "Minhas repetidas" agrupada por grupo do álbum
 
 ### Changed
