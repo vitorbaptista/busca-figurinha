@@ -49,7 +49,9 @@ export function createAutoCapture(deps: AutoCaptureDeps): AutoCapture {
 
   /** Report the loop's current phase to the debug heartbeat (if any). `stalled` means
    *  we couldn't grab a camera frame this tick — surfaced distinctly so a starved loop
-   *  doesn't masquerade as `locked` ("troque a figurinha") in the debug readout. */
+   *  doesn't masquerade as `locked` ("troque a figurinha") in the debug readout. `locked` is
+   *  ONLY reached after a real read, so it always truthfully means "lido ✓" — a held sticker
+   *  we couldn't read yet stays in holding/reading (still trying), never locked. */
   function emitTick(change: number, stalled = false): void {
     if (!deps.onTick) return;
     const phase = stalled
@@ -134,20 +136,39 @@ export function createAutoCapture(deps: AutoCaptureDeps): AutoCapture {
     deps.onTick?.({ phase: 'reading', change: 0, heldMs: 0, tick: ticks });
     deps.onBurstStart?.();
     const { burstFrames, burstIntervalMs } = CONFIG.capture;
+    let committed = false; // a code was actually read this burst
+    let detected = false; // a sticker was in view this burst (even if unread)
     try {
       // Read several frames of the held sticker until a result is confirmed (or we
       // run out of attempts). One frame can mis-read; agreement across frames can't.
       for (let attempt = 0; attempt < burstFrames; attempt++) {
         if (!deps.source.drawTo(captureCanvas, CONFIG.ocr.maxWidth)) break;
-        const done = await deps.onCapture(captureCanvas);
-        if (done === true) break;
+        const r = await deps.onCapture(captureCanvas);
+        if (r.committed) committed = true;
+        if (r.detected) detected = true;
+        if (r.stop) break;
         if (attempt < burstFrames - 1) await delay(burstIntervalMs);
       }
     } finally {
-      state = 'locked';
-      sawMotion = false;
-      stillSince = null;
       lastCaptureAt = Date.now();
+      stillSince = null;
+      if (committed) {
+        // A real read — lock and wait for the sticker to be swapped before reading again.
+        // This is the ONLY path to `locked`, so the heartbeat's "lido ✓ — troque a figurinha"
+        // never lies: it shows only after a sticker was actually read.
+        state = 'locked';
+        sawMotion = false;
+      } else if (detected) {
+        // A sticker is in view but we couldn't read it yet — NEVER give up. Stay armed
+        // (state stays 'waiting', sawMotion kept) so the next still frame re-tries it while
+        // it's held; the minRecaptureMs gate paces the retries.
+        state = 'waiting';
+      } else {
+        // Nothing in view (empty mat) — go idle and require fresh motion before bursting
+        // again, so a held-empty view can't burst forever (battery on low-end phones).
+        state = 'waiting';
+        sawMotion = false;
+      }
     }
   }
 

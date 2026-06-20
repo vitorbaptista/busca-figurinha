@@ -143,7 +143,9 @@ export interface AutoCaptureStatus {
   /** waiting = armed, show a sticker; moving = sticker in motion; holding = still,
    *  counting toward the read; reading = OCR burst in flight; locked = already read,
    *  move/swap the sticker to re-arm; stalled = no camera frame this tick (video
-   *  paused/not ready) — the loop is alive but starved, NOT locked. */
+   *  paused/not ready) — the loop is alive but starved, NOT locked. The loop never gives up
+   *  on an unread sticker: it stays in the holding/reading cycle until it reads or the sticker
+   *  leaves, and only enters `locked` after a real read. */
   phase: 'waiting' | 'moving' | 'holding' | 'reading' | 'locked' | 'stalled';
   /** Sampled frame-change fraction (0..1) this tick. */
   change: number;
@@ -153,11 +155,28 @@ export interface AutoCaptureStatus {
   tick: number;
 }
 
+/** Outcome of OCR-ing one burst frame, fed back to the capture loop so it knows whether
+ *  to lock (a real read happened), keep trying (a sticker is in view but unread), or idle
+ *  (nothing in view). */
+export interface CaptureResult {
+  /** Stop the burst now — a code confirmed, or (single-shot debug path) one read is done. */
+  stop: boolean;
+  /** A code was committed during this burst — i.e. the sticker was actually read. Only this
+   *  locks the loop ("troque a figurinha"); a burst that reads nothing never claims a read. */
+  committed: boolean;
+  /** At least one code box was detected in the frame — a sticker is in view (even if it
+   *  couldn't be read). Lets the loop keep trying on a present-but-unread sticker yet idle on
+   *  an empty mat instead of bursting forever. */
+  detected: boolean;
+}
+
 export interface AutoCaptureDeps {
   source: FrameSource;
-  /** Called for each frame of a settled sticker's burst. Resolve `true` to stop the
-   *  burst early (a result was confirmed); `false`/void to keep reading more frames. */
-  onCapture: (frame: HTMLCanvasElement) => boolean | void | Promise<boolean | void>;
+  /** Called for each frame of a settled sticker's burst. The returned CaptureResult tells the
+   *  loop whether to stop the burst, whether a code committed, and whether a sticker was even
+   *  in view (see CaptureResult). The loop NEVER gives up on a present-but-unread sticker — it
+   *  keeps re-trying while it's held — and only locks after a real read. */
+  onCapture: (frame: HTMLCanvasElement) => CaptureResult | Promise<CaptureResult>;
   /** Called once when a new sticker settles, before its first burst frame — the
    *  place to reset any per-sticker accumulation (e.g. the multi-frame confirmer). */
   onBurstStart?: () => void;

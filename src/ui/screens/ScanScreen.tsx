@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from 'preact/hooks';
 import type {
   AutoCapture,
+  AutoCaptureStatus,
+  CaptureResult,
   CollectionStore,
   MatchResult,
   OcrEngine,
@@ -102,6 +104,10 @@ export function ScanScreen({ session, collection, settings, onPersist, onFinish 
   // Adaptive fill-light: false = dark, camera visible (framing); true = warm backlight bloom
   // (a sticker is present and being read). Driven by the capture loop's phase via onTick.
   const [lighting, setLighting] = useState(false);
+  // Live capture-loop phase, mirrored from autoCapture's onTick — drives the persistent
+  // status line at the bottom (Mostre o verso → Lendo… → Troque a figurinha). setState bails
+  // when the value is unchanged, so the per-tick call is cheap (re-renders only on a change).
+  const [scanPhase, setScanPhase] = useState<AutoCaptureStatus['phase']>('waiting');
   // ?record: how many frames have been saved this session (shown in the REC badge).
   const [recCount, setRecCount] = useState(0);
 
@@ -293,11 +299,12 @@ export function ScanScreen({ session, collection, settings, onPersist, onFinish 
   const recognizeCanvas = (
     canvas: HTMLCanvasElement,
     opts: { confirm: boolean; silent: boolean },
-  ): Promise<boolean> => {
-    const job = recognizeChainRef.current.then(async (): Promise<boolean> => {
+  ): Promise<CaptureResult> => {
+    const idle: CaptureResult = { stop: false, committed: false, detected: false };
+    const job = recognizeChainRef.current.then(async (): Promise<CaptureResult> => {
       const ready = await ensureOcr();
       const ocr = ocrRef.current;
-      if (!ready || !ocr) return false;
+      if (!ready || !ocr) return idle;
       try {
         if (RECORD) {
           postDebugImg('rec-' + String(recSeqRef.current++).padStart(4, '0'), canvas);
@@ -379,10 +386,17 @@ export function ScanScreen({ session, collection, settings, onPersist, onFinish 
         } else if (!opts.silent) {
           handleMatches([]); // explicit read that found nothing
         }
-        return opts.confirm ? stopBurst : toCommit.length > 0;
+        // Tell the capture loop what happened so it can lock on a real read, keep trying on a
+        // present-but-unread sticker, or idle on an empty view. `committed` = a code agreed this
+        // burst (even if the cooldown deduped its display); `detected` = a code box was located
+        // (a sticker is in view); `stop` = end the burst now.
+        const committed = opts.confirm
+          ? confirmerRef.current.committedCount() > 0
+          : toCommit.length > 0;
+        return { stop: opts.confirm ? stopBurst : true, committed, detected: crops > 0 };
       } catch {
         if (!opts.silent) handleMatches([]);
-        return false; // a bad frame — let the burst try the next one
+        return idle; // a bad frame — let the burst try the next one
       }
     });
     recognizeChainRef.current = job.then(
@@ -448,6 +462,8 @@ export function ScanScreen({ session, collection, settings, onPersist, onFinish 
           // already steady by 'holding'; a brightness change mid-settle would read as motion
           // and reset the stability timer. (setLighting bails when unchanged, so this is cheap.)
           setLighting(s.phase === 'moving' || s.phase === 'holding' || s.phase === 'reading');
+          // Mirror the phase to the persistent bottom status line (cheap: bails when unchanged).
+          setScanPhase(s.phase);
           if (!DEBUG) return;
           const sp = '⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏'[s.tick % 10];
           const label =
@@ -574,6 +590,24 @@ export function ScanScreen({ session, collection, settings, onPersist, onFinish 
     };
   }, [cameraState, facing]);
 
+  // Message for the persistent bottom status line. Loading/error states win; otherwise it
+  // tracks the live capture phase so the user always knows what to do next — show a sticker,
+  // wait while it reads, or swap once it's been read.
+  const statusMsg =
+    cameraState === 'denied'
+      ? pt.scan.cameraDenied
+      : cameraState === 'loading'
+        ? pt.scan.cameraLoading
+        : ocrFailed
+          ? pt.scan.ocrUnavailable
+          : !ocrReady
+            ? pt.scan.preparing(ocrProgress)
+            : scanPhase === 'locked'
+              ? pt.scan.swapHint
+              : scanPhase === 'moving' || scanPhase === 'holding' || scanPhase === 'reading'
+                ? pt.scan.readingHint
+                : pt.scan.startHint;
+
   return (
     <div class="screen scan-screen">
       {/* Screen-reader / sound-off announcement of each scan result. */}
@@ -620,7 +654,6 @@ export function ScanScreen({ session, collection, settings, onPersist, onFinish 
                 <p>{pt.scan.ocrUnavailable}</p>
               </div>
             )}
-            {ocrReady && !flash && <p class="scan-hint">{pt.scan.startHint}</p>}
             <button
               class="btn-flip"
               onClick={flipCamera}
@@ -662,16 +695,21 @@ export function ScanScreen({ session, collection, settings, onPersist, onFinish 
         </button>
       </div>
 
-      {/* Recent strip */}
-      {recent.length > 0 && (
-        <div class="scan-recent" aria-label={pt.scan.recent}>
-          {recent.map((r) => (
-            <span key={r.id} class={`recent-chip recent-${r.outcome}`}>
-              {r.label}
-            </span>
-          ))}
-        </div>
-      )}
+      {/* Persistent feed: a status line that's ALWAYS present — so the bottom section shows from
+          the first open and carries messages to the user — plus the recent-results chips once
+          any exist. */}
+      <div class="scan-feed">
+        <p class="scan-feed-msg">{statusMsg}</p>
+        {recent.length > 0 && (
+          <div class="scan-recent" aria-label={pt.scan.recent}>
+            {recent.map((r) => (
+              <span key={r.id} class={`recent-chip recent-${r.outcome}`}>
+                {r.label}
+              </span>
+            ))}
+          </div>
+        )}
+      </div>
 
       {/* Fallback affordances */}
       <div class="scan-actions">

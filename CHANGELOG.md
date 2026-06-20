@@ -3,6 +3,27 @@
 Notable changes to the sticker scanner. Newest first. No formal releases yet (deploys on push to
 `main`), so entries are grouped by date. Keep this updated when you ship something notable.
 
+## 2026-06-20 — Escanear: tela sem rolagem, rodapé de mensagens e leitura que não desiste
+
+### Fixed
+- **A tela "Escanear" não precisa mais de rolagem.** O contêiner usava `min-height: 100vh`, e no
+  celular `100vh` é maior que a área visível (conta o espaço atrás da barra do navegador) — então
+  os controles de baixo caíam abaixo da dobra. Agora a tela usa `100dvh` (altura visível real) +
+  `overflow: hidden`, e a área da câmera é flexível, então tudo cabe sem rolar.
+
+### Added
+- **Rodapé de status sempre visível.** Uma linha de mensagem fixa no rodapé aparece desde a
+  primeira abertura (antes a faixa de baixo só surgia depois da primeira leitura) e guia o usuário:
+  "Mostre o verso da figurinha" → "Lendo a figurinha…" → "Troque a figurinha" depois de ler. As
+  "Últimas" (etiquetas GUARDAR/REPETIDA) continuam logo abaixo quando existem.
+
+### Changed
+- **O leitor nunca desiste de uma figurinha — e só pede para trocar depois de ler.** Antes, todo
+  disparo de leitura travava o loop (o heartbeat de debug mostrava "lido ✓ — troque a figurinha")
+  mesmo quando NADA era lido. Agora o loop só trava (e só pede "troque a figurinha") após uma
+  leitura de verdade; com a figurinha parada e ilegível, ele continua tentando enquanto ela estiver
+  à frente, e fica ocioso só quando não há nada em vista (sem gastar bateria à toa).
+
 ## 2026-06-20 — Scanner: a moldura "cole aqui" agora aponta para onde o leitor lê
 
 ### Fixed
