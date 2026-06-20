@@ -407,7 +407,16 @@ button {
 .scan-screen {
   display: flex;
   flex-direction: column;
-  min-height: 100vh;
+  /* Exactly the VISIBLE viewport, not 100vh. On mobile 100vh is the LARGE viewport — it counts
+     the area behind the browser's URL bar — so it's taller than what's on screen and pushes the
+     fixed bottom verdict below the fold, forcing a scroll. 100dvh tracks the visible height; with
+     overflow:hidden and a flexible camera area (.cam) the whole screen always fits, no scroll.
+     The 100vh line is the fallback for browsers without dvh; min-height:0 overrides the 100vh
+     min-height inherited from `.screen`. */
+  height: 100vh;
+  height: 100dvh;
+  min-height: 0;
+  overflow: hidden;
   padding-bottom: calc(var(--nav-h) + var(--safe-bottom));
 }
 
@@ -442,8 +451,11 @@ button {
 /* the camera area */
 .cam {
   position: relative;
-  flex: 1;
-  min-height: 46vh;
+  /* Absorbs the slack: grows to fill what the fixed tab/counters/verdict leave, and min-height:0
+     lets it shrink too (e.g. manual-entry open) so the bottom verdict is never pushed off-screen.
+     The screen is overflow:hidden, so this is what keeps the layout scroll-free at any height. */
+  flex: 1 1 0;
+  min-height: 0;
   overflow: hidden;
   background: radial-gradient(circle at 50% 38%, #2a3b33 0%, #12211a 70%);
 }

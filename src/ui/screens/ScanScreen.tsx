@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'preact/hooks';
 import type {
   AutoCapture,
+  CaptureResult,
   CollectionStore,
   MatchResult,
   OcrEngine,
@@ -273,16 +274,18 @@ export function ScanScreen({ session, collection, settings, onPersist, onFinish 
    * `confirm` (the live burst) only commits a code once the multi-frame confirmer
    * agrees, and stays silent on a miss so empty frames don't spam "try again".
    * `!confirm` (an explicit debug tap) commits a single read and does report a miss.
-   * Resolves true once at least one code is committed — the burst stops on that.
+   * Resolves a CaptureResult so the capture loop knows whether a code committed (lock),
+   * a sticker was merely detected (keep trying), or nothing was in view (idle).
    */
   const recognizeCanvas = (
     canvas: HTMLCanvasElement,
     opts: { confirm: boolean; silent: boolean },
-  ): Promise<boolean> => {
-    const job = recognizeChainRef.current.then(async (): Promise<boolean> => {
+  ): Promise<CaptureResult> => {
+    const idle: CaptureResult = { stop: false, committed: false, detected: false };
+    const job = recognizeChainRef.current.then(async (): Promise<CaptureResult> => {
       const ready = await ensureOcr();
       const ocr = ocrRef.current;
-      if (!ready || !ocr) return false;
+      if (!ready || !ocr) return idle;
       try {
         if (RECORD) {
           postDebugImg('rec-' + String(recSeqRef.current++).padStart(4, '0'), canvas);
@@ -364,10 +367,17 @@ export function ScanScreen({ session, collection, settings, onPersist, onFinish 
         } else if (!opts.silent) {
           handleMatches([]); // explicit read that found nothing
         }
-        return opts.confirm ? stopBurst : toCommit.length > 0;
+        // Tell the capture loop what happened so it can lock on a real read, keep trying on a
+        // present-but-unread sticker, or idle on an empty view. `committed` = a code agreed this
+        // burst (even if the cooldown deduped its display); `detected` = a code box was located
+        // (a sticker is in view); `stop` = end the burst now.
+        const committed = opts.confirm
+          ? confirmerRef.current.committedCount() > 0
+          : toCommit.length > 0;
+        return { stop: opts.confirm ? stopBurst : true, committed, detected: crops > 0 };
       } catch {
         if (!opts.silent) handleMatches([]);
-        return false; // a bad frame — let the burst try the next one
+        return idle; // a bad frame — let the burst try the next one
       }
     });
     recognizeChainRef.current = job.then(
