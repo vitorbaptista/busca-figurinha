@@ -420,6 +420,20 @@ button {
   padding-bottom: calc(var(--nav-h) + var(--safe-bottom));
 }
 
+/* While the scanner is mounted (class toggled by ScanScreen), lock the WHOLE document to the
+   visible viewport so it can't scroll behind the fixed screen. `.scan-screen` is height:100dvh +
+   overflow:hidden, but that only clips its own content — the shell ancestors (#app/.app) are sized
+   to height/min-height:100%, which on mobile is the LARGE (url-bar-hidden) viewport, taller than the
+   visible area 100dvh tracks. That extra height made the DOCUMENT scroll and pushed the bottom
+   verdict below the fold. Pinning the root to 100dvh + overflow:hidden removes the slack and the
+   scroll; the class is only present on the scan screen, so other (scrolling) screens are untouched. */
+html.scan-active,
+html.scan-active body {
+  height: 100vh;
+  height: 100dvh;
+  overflow: hidden;
+}
+
 /* album section tab — the strip above the camera */
 .pagetab {
   flex: none;
@@ -1921,12 +1935,8 @@ button {
   font-weight: 700;
   font-size: 0.9rem;
 }
-/* expanded sticker row — own container (not .lrow) so it doesn't inherit .lrow:last-child */
-.need-row {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 11px 14px;
+/* expanded group: a faint inset panel holding the team tallies of an open "preciso" group */
+.need-open {
   background: rgba(15, 60, 39, 0.04); /* faint inset under an open group (--paper-edge at 4%) */
   border-bottom: 1.5px dashed var(--kraft-deep);
 }
@@ -1943,76 +1953,72 @@ button {
   box-shadow: 2px 2px 0 rgba(15, 60, 39, 0.28);
   overflow: hidden;
 }
-.lrow {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 11px 14px;
+/* team tally — flag + name + count on one line, the sticker numbers as wrapping pills below. One
+   block per team replaces one row per sticker, so a 100+ list stays a short, scannable card.
+   Shared by the repeats ledger, the open "preciso" groups, and the friend-match lists. */
+.tally {
+  padding: 10px 14px;
   border-bottom: 1.5px dashed var(--kraft-deep);
 }
-.lrow:last-child {
+.tally:last-child {
   border-bottom: 0;
 }
-.lcode {
-  flex: none;
-  font-family: var(--font-head);
-  font-weight: 700;
-  font-size: 1.05rem;
-  color: var(--ink);
-  background: var(--cream-dim);
-  border: 1.5px solid var(--ink);
-  border-radius: var(--radius-sm);
-  padding: 2px 9px;
-  letter-spacing: 0.02em;
-  white-space: nowrap;
+.tally-head {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
 }
-.lname {
+.tally-team {
   flex: 1;
   min-width: 0;
-  font-size: 0.9rem;
-  color: #46564b;
+  font-family: var(--font-head);
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: var(--ink);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-/* tag on the right — "Falta" (green) / "Você pega" (green) / "Você dá" (red) */
-.ltag {
+.tally-count {
   flex: none;
   font-family: var(--font-head);
   font-weight: 700;
-  font-size: 0.72rem;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  border: 1.5px solid currentColor;
-  border-radius: var(--radius-sm);
-  padding: 2px 8px;
-  white-space: nowrap;
-}
-.ltag-falta {
-  color: var(--keep);
-}
-
-/* per-row "já troquei" remove on the repeats ledger (keeps a shared list from offering ghosts) */
-.lremove {
-  flex: none;
-  font-family: var(--font-head);
-  font-weight: 700;
-  font-size: 0.72rem;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
+  font-size: 0.78rem;
+  line-height: 1.4;
   color: var(--kraft-text);
   background: var(--cream-dim);
   border: 1.5px solid var(--kraft-deep);
-  border-radius: var(--radius-sm);
-  padding: 8px 12px;
-  min-height: 40px;
-  white-space: nowrap;
-  transition: background 0.12s ease, border-color 0.12s ease, color 0.12s ease;
+  border-radius: var(--radius-pill);
+  padding: 0 9px;
 }
-.lremove:active {
-  background: var(--dupe-soft);
-  border-color: var(--dupe);
-  color: var(--dupe);
+.tally-nums {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-top: 8px;
+}
+/* a single sticker number; the team header carries the code, so the pill is just the number */
+.tally-num {
+  font-family: var(--font-head);
+  font-weight: 700;
+  font-size: 0.9rem;
+  line-height: 1;
+  min-width: 30px;
+  text-align: center;
+  padding: 5px 7px;
+  border-radius: var(--radius-sm);
+}
+/* have = a filled cream slot you hold; need = a dashed empty slot. Shape, not colour, carries the
+   meaning (mirrors the album chips: owned filled, needed dashed). */
+.tally-nums-have .tally-num {
+  color: var(--ink);
+  background: var(--cream-dim);
+  border: 1.5px solid var(--ink);
+}
+.tally-nums-need .tally-num {
+  color: var(--kraft-text);
+  background: transparent;
+  border: 1.5px dashed var(--kraft-deep);
 }
 
 .trade-line-empty {

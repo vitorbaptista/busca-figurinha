@@ -190,18 +190,8 @@ export function TradeScreen({
         />
         {hasRepeats ? (
           <div class="ledger">
-            {myRepeatEntries.map((e) => (
-              <div class="lrow" key={e.code}>
-                <span class="lcode">{e.display}</span>
-                <span class="lname">{teamLabel(e)}</span>
-                <button
-                  class="lremove"
-                  onClick={() => repeats.remove(e.code)}
-                  aria-label={pt.trade.removeRepeatLabel(e.display)}
-                >
-                  {pt.trade.removeRepeat}
-                </button>
-              </div>
+            {splitByTeam(myRepeatEntries).map((team) => (
+              <TeamTally key={team[0].teamCode} entries={team} tone="have" />
             ))}
           </div>
         ) : (
@@ -235,14 +225,13 @@ export function TradeScreen({
                       {open ? '▾' : '▸'}
                     </span>
                   </button>
-                  {open &&
-                    group.entries.map((e) => (
-                      <div class="need-row" key={e.code}>
-                        <span class="lcode">{e.display}</span>
-                        <span class="lname">{teamLabel(e)}</span>
-                        <span class="ltag ltag-falta">{pt.trade.faltaTag}</span>
-                      </div>
-                    ))}
+                  {open && (
+                    <div class="need-open">
+                      {splitByTeam(group.entries).map((team) => (
+                        <TeamTally key={team[0].teamCode} entries={team} tone="need" />
+                      ))}
+                    </div>
+                  )}
                 </Fragment>
               );
             })}
@@ -316,11 +305,11 @@ function FriendMatch({
 
       <div class="trade-body">
         <SectionHead lead={pt.trade.iCanGetTitle} count={iCanGet.length} />
-        <MatchGroups entries={iCanGet} emptyText={pt.trade.iCanGetEmpty} />
+        <MatchGroups entries={iCanGet} emptyText={pt.trade.iCanGetEmpty} tone="need" />
 
         <SectionHead lead={pt.trade.iCanGiveTitle} count={hasMyRepeats ? iCanGive.length : undefined} />
         {hasMyRepeats ? (
-          <MatchGroups entries={iCanGive} emptyText={pt.trade.iCanGiveEmpty} />
+          <MatchGroups entries={iCanGive} emptyText={pt.trade.iCanGiveEmpty} tone="have" />
         ) : (
           <div class="trade-cta">
             <b>{pt.trade.giveCtaTitle}</b>
@@ -346,22 +335,27 @@ function FriendMatch({
   );
 }
 
-function MatchGroups({ entries, emptyText }: { entries: ChecklistEntry[]; emptyText: string }) {
+function MatchGroups({
+  entries,
+  emptyText,
+  tone,
+}: {
+  entries: ChecklistEntry[];
+  emptyText: string;
+  tone: TallyTone;
+}) {
   if (entries.length === 0) return <p class="trade-line-empty">{emptyText}</p>;
 
-  // No per-row tag: the "Você pega" / "Você dá" section headers already label each list, and a
-  // colour-only chip would signal by colour alone — which the album's design deliberately avoids.
+  // No colour coding: the "Você pega" / "Você dá" section headers already label each list, and the
+  // pills carry their have/need meaning by fill vs. dashed slot — never by colour alone.
   return (
     <>
       {groupByAlbum(entries.map((e) => e.code)).map((group) => (
         <Fragment key={group.label}>
           <div class="trade-grp">{group.label}</div>
           <div class="ledger">
-            {group.entries.map((e) => (
-              <div class="lrow" key={e.code}>
-                <span class="lcode">{e.display}</span>
-                <span class="lname">{teamLabel(e)}</span>
-              </div>
+            {splitByTeam(group.entries).map((team) => (
+              <TeamTally key={team[0].teamCode} entries={team} tone={tone} />
             ))}
           </div>
         </Fragment>
@@ -394,9 +388,45 @@ function SectionHead({
   );
 }
 
+/** "have" = stickers you hold (filled slots); "need" = stickers you're missing (dashed slots). The
+ *  fill-vs-dashed shape carries the meaning, never colour alone (mirrors the album chips). */
+type TallyTone = 'have' | 'need';
+
+/** One team as a compact tally: flag + name + count, then the sticker numbers as wrapping pills
+ *  (🇲🇽 México · 4 · "3 4 8 12"). Replaces one row per sticker so a 100+ list stays scannable. */
+function TeamTally({ entries, tone }: { entries: ChecklistEntry[]; tone: TallyTone }) {
+  return (
+    <div class="tally">
+      <div class="tally-head">
+        <span class="tally-team">{teamLabel(entries[0])}</span>
+        <span class="tally-count">{entries.length}</span>
+      </div>
+      <div class={`tally-nums tally-nums-${tone}`}>
+        {entries.map((e) => (
+          <span class="tally-num" key={e.code}>
+            {e.number === 0 ? '00' : e.number}
+          </span>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 function teamLabel(entry: ChecklistEntry): string {
   const flag = flagFor(entry.teamCode);
   return flag ? `${flag} ${entry.teamName}` : entry.teamName;
+}
+
+/** Split entries that are already in album order into consecutive same-team runs, so each team
+ *  becomes one tally block. Used by every sticker list on this screen (repeats, preciso, match). */
+function splitByTeam(entries: ChecklistEntry[]): ChecklistEntry[][] {
+  const teams: ChecklistEntry[][] = [];
+  for (const entry of entries) {
+    const last = teams[teams.length - 1];
+    if (last && last[0].teamCode === entry.teamCode) last.push(entry);
+    else teams.push([entry]);
+  }
+  return teams;
 }
 
 /** Resolve a set of codes to checklist entries in album order. */
