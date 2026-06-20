@@ -57,6 +57,10 @@ export function ScanScreen({ session, collection, settings, onPersist, onFinish 
   // Neural recognizer (codeNet), lazy-loaded in the background; the ensemble cascade uses it
   // once ready and falls back to the hybrid alone until then / if it fails to load.
   const codeNetRef = useRef<CodeNet | null>(null);
+  // The scan area + the "cole aqui" reticle, so we can align the reticle with the detection ROI
+  // at runtime (the ROI is in camera-frame coords; the frame is letterboxed on screen).
+  const scanWrapRef = useRef<HTMLDivElement>(null);
+  const reticleRef = useRef<HTMLDivElement>(null);
   const sourceRef = useRef<ReturnType<typeof createCameraSource> | null>(null);
   const captureRef = useRef<AutoCapture | null>(null);
   const flashTimerRef = useRef<number | undefined>(undefined);
@@ -525,6 +529,51 @@ export function ScanScreen({ session, collection, settings, onPersist, onFinish 
 
   // ---------- Render ----------
 
+  // Align the reticle ("cole aqui" window) with the detection ROI. CONFIG.detect.roiRect is
+  // normalized to the camera FRAME, but the frame is shown object-fit:contain (letterboxed), so we
+  // map the ROI through the displayed video rect. Without this the window and the region the
+  // recognizer actually reads drift apart — a sticker placed in the reticle wouldn't be detected.
+  // (The ROI is x-symmetric, so the front camera's display mirroring doesn't shift it.)
+  useEffect(() => {
+    const rect = CONFIG.detect.roiRect;
+    const reticle = reticleRef.current;
+    const wrap = scanWrapRef.current;
+    if (!rect || !reticle || !wrap) return;
+
+    const place = () => {
+      const video = sourceRef.current?.element as HTMLVideoElement | undefined;
+      const vw = video?.videoWidth ?? 0;
+      const vh = video?.videoHeight ?? 0;
+      const ww = wrap.clientWidth;
+      const wh = wrap.clientHeight;
+      if (!vw || !vh || !ww || !wh) return;
+      const scale = Math.min(ww / vw, wh / vh); // object-fit: contain
+      const dispW = vw * scale;
+      const dispH = vh * scale;
+      const offX = (ww - dispW) / 2;
+      const offY = (wh - dispH) / 2;
+      reticle.style.left = `${offX + rect.left * dispW}px`;
+      reticle.style.top = `${offY + rect.top * dispH}px`;
+      reticle.style.width = `${(rect.right - rect.left) * dispW}px`;
+      reticle.style.height = `${(rect.bottom - rect.top) * dispH}px`;
+      reticle.style.transform = 'none';
+    };
+
+    place();
+    const ro = new ResizeObserver(place);
+    ro.observe(wrap);
+    const video = sourceRef.current?.element as HTMLVideoElement | undefined;
+    video?.addEventListener('loadedmetadata', place);
+    video?.addEventListener('resize', place);
+    window.addEventListener('orientationchange', place);
+    return () => {
+      ro.disconnect();
+      video?.removeEventListener('loadedmetadata', place);
+      video?.removeEventListener('resize', place);
+      window.removeEventListener('orientationchange', place);
+    };
+  }, [cameraState, facing]);
+
   return (
     <div class="screen scan-screen">
       {/* Screen-reader / sound-off announcement of each scan result. */}
@@ -533,6 +582,7 @@ export function ScanScreen({ session, collection, settings, onPersist, onFinish 
       </p>
 
       <div
+        ref={scanWrapRef}
         class={lighting ? 'scan-video-wrap is-lighting' : 'scan-video-wrap'}
         onClick={DEBUG ? captureNow : undefined}
       >
@@ -557,7 +607,7 @@ export function ScanScreen({ session, collection, settings, onPersist, onFinish 
 
         {cameraState !== 'denied' && (
           <>
-            <div class="scan-frame" aria-hidden="true" />
+            <div class="scan-frame" ref={reticleRef} aria-hidden="true" />
             {cameraState === 'ready' && !ocrReady && !ocrFailed && (
               <div class="scan-overlay">
                 <div class="spinner" />
