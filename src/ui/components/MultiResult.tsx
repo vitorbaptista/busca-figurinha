@@ -10,7 +10,7 @@ export interface ScanResultItem {
 /**
  * Result panel shown when several sticker backs are recognized in one capture.
  * Each row is glanceable on its own (icon + colour + word), so a kid sorting a
- * pile can see at once which to keep. The single-sticker case uses the big Flash.
+ * pile can see at once which to keep. The single-sticker case uses the verdict card.
  */
 export function MultiResult({ items }: { items: ScanResultItem[] }) {
   const needed = items.filter((i) => i.outcome === 'needed').length;

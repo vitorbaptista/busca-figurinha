@@ -19,7 +19,7 @@ import { createCameraSource } from '../../ocr/frameSource';
 import { recognizeFrameInOrder, recognizeFrameCodeNet } from '../../ocr/recognize';
 import type { CodeNet } from '../../ocr/codeNetEngine';
 import { createAutoCapture } from '../../ocr/autoCapture';
-import { Flash, type FlashState } from '../components/Flash';
+import { Verdict, type VerdictState } from '../components/Verdict';
 import { MultiResult, type ScanResultItem } from '../components/MultiResult';
 
 interface ScanScreenProps {
@@ -46,8 +46,6 @@ interface RecentScan {
   label: string;
 }
 
-const FLASH_MS = 1100;
-
 export function ScanScreen({ session, collection, settings, onPersist, onFinish }: ScanScreenProps) {
   // Dedicated, Preact-untouched layer for the <video>. Preact never renders
   // children into it, so mounting the camera element by hand is safe.
@@ -59,7 +57,6 @@ export function ScanScreen({ session, collection, settings, onPersist, onFinish 
   const codeNetRef = useRef<CodeNet | null>(null);
   const sourceRef = useRef<ReturnType<typeof createCameraSource> | null>(null);
   const captureRef = useRef<AutoCapture | null>(null);
-  const flashTimerRef = useRef<number | undefined>(undefined);
   const multiTimerRef = useRef<number | undefined>(undefined);
   // Serializes every OCR call (auto-capture, manual share one worker) so a
   // user-triggered read is queued behind a live one instead of being dropped.
@@ -82,7 +79,7 @@ export function ScanScreen({ session, collection, settings, onPersist, onFinish 
   const [ocrProgress, setOcrProgress] = useState(0);
   const [ocrReady, setOcrReady] = useState(false);
   const [ocrFailed, setOcrFailed] = useState(false);
-  const [flash, setFlash] = useState<FlashState | null>(null);
+  const [verdict, setVerdict] = useState<VerdictState | null>(null);
   const [multi, setMulti] = useState<ScanResultItem[] | null>(null);
   const [announce, setAnnounce] = useState('');
   const [counters, setCounters] = useState({ neededCount: 0, repeatedCount: 0 });
@@ -95,16 +92,13 @@ export function ScanScreen({ session, collection, settings, onPersist, onFinish 
   const [debugText, setDebugText] = useState('');
   // Debug-only capture-loop heartbeat (a rotating spinner proves the loop is ticking).
   const [beat, setBeat] = useState('');
-  // Adaptive fill-light: false = dark, camera visible (framing); true = warm backlight bloom
-  // (a sticker is present and being read). Driven by the capture loop's phase via onTick.
-  const [lighting, setLighting] = useState(false);
   // ?record: how many frames have been saved this session (shown in the REC badge).
   const [recCount, setRecCount] = useState(0);
 
   // ---------- Result handling shared by all input paths ----------
 
   /** Route one OR MANY recognized stickers (several backs can be in view at once)
-   *  to the flash/panel, counters, session, and the screen-reader announcer.
+   *  to the verdict card / multi panel, counters, session, and the screen-reader announcer.
    *  A resolved checklist code (exact or autocorrected) is trusted directly — the
    *  match is the confidence signal. We deliberately do NOT gate on Tesseract's
    *  whole-frame mean confidence: the sticker back is full of noisy legal text
@@ -143,7 +137,7 @@ export function ScanScreen({ session, collection, settings, onPersist, onFinish 
 
     if (items.length === 0) {
       clearMulti();
-      showFlash({ outcome: 'unknown', display: '', teamName: '', key });
+      setVerdict({ outcome: 'unknown', display: '', teamName: '', key });
       setAnnounce(pt.scan.tryAgain + zwsp);
       return;
     }
@@ -169,25 +163,19 @@ export function ScanScreen({ session, collection, settings, onPersist, onFinish 
     if (items.length === 1) {
       const it = items[0];
       clearMulti();
-      showFlash({
+      setVerdict({
         outcome: it.outcome,
         display: it.display,
-        teamName: it.outcome === 'owned' ? '' : it.teamName,
+        teamName: it.teamName,
         key,
       });
     } else {
-      setFlash(null);
+      setVerdict(null);
       showMulti(items);
     }
     const outcome = items.some((it) => it.outcome === 'needed') ? 'needed' : 'owned';
     beep(outcome);
     haptic(outcome);
-  };
-
-  const showFlash = (next: FlashState) => {
-    setFlash(next);
-    window.clearTimeout(flashTimerRef.current);
-    flashTimerRef.current = window.setTimeout(() => setFlash(null), FLASH_MS);
   };
 
   /** Multi-sticker panel: shown a bit longer so all rows can be read. */
@@ -394,7 +382,6 @@ export function ScanScreen({ session, collection, settings, onPersist, onFinish 
     // Preload OCR up front so it's ready by the time a sticker is shown.
     void ensureOcr();
     return () => {
-      window.clearTimeout(flashTimerRef.current);
       window.clearTimeout(multiTimerRef.current);
       ocrRef.current?.terminate().catch(() => {});
       audioCtxRef.current?.close().catch(() => {});
@@ -439,11 +426,6 @@ export function ScanScreen({ session, collection, settings, onPersist, onFinish 
         // obvious) plus the current phase — notably "lido ✓ — troque" when it's locked and
         // waiting for you to swap the sticker (the usual reason it looks "stopped").
         onTick: (s) => {
-          // Bloom the fill-light whenever a sticker is present (moving/holding/reading) and go
-          // dark when idle. Trigger on 'moving' — BEFORE it settles — so the brightness is
-          // already steady by 'holding'; a brightness change mid-settle would read as motion
-          // and reset the stability timer. (setLighting bails when unchanged, so this is cheap.)
-          setLighting(s.phase === 'moving' || s.phase === 'holding' || s.phase === 'reading');
           if (!DEBUG) return;
           const sp = '⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏'[s.tick % 10];
           const label =
@@ -532,14 +514,56 @@ export function ScanScreen({ session, collection, settings, onPersist, onFinish 
         {announce}
       </p>
 
-      <div
-        class={lighting ? 'scan-video-wrap is-lighting' : 'scan-video-wrap'}
-        onClick={DEBUG ? captureNow : undefined}
-      >
-        {/* Camera <video> is appended here imperatively; Preact leaves it alone. */}
-        <div class="scan-video-layer" ref={videoLayerRef} aria-hidden="true" />
-        {/* Fill-light layer: transparent while framing, warm bloom while reading (.is-lighting). */}
-        <div class="scan-fill" aria-hidden="true" />
+      {/* Album section tab */}
+      <div class="pagetab">
+        <span class="pagetab-name">{pt.scan.pageTitle}</span>
+        <span class="pagetab-pg">{pt.scan.pageSubtitle}</span>
+      </div>
+
+      {/* Full-bleed camera. The live <video> is shown ONLY inside the .mira window;
+          everything around it is the dark album surface (no fill-light flood). */}
+      <div class="cam" onClick={DEBUG ? captureNow : undefined}>
+        <div class="cam-top">
+          <div class="counters">
+            <div class="chip-count">
+              <b>{counters.neededCount}</b>
+              <span>{pt.scan.counters.new}</span>
+            </div>
+            <div class="chip-count dup">
+              <b>{counters.repeatedCount}</b>
+              <span>{pt.scan.counters.repeated}</span>
+            </div>
+          </div>
+          <div class="cam-top-actions">
+            {!session.isEmpty() && (
+              <button class="finish-pill" onClick={onFinish}>
+                {pt.scan.finish}
+              </button>
+            )}
+            {cameraState !== 'denied' && (
+              <>
+                {/* Always-reachable manual entry: the live burst is silent on misses, so the
+                    "Não li" card rarely shows — without this a stuck sticker has no escape. */}
+                <button
+                  class="cam-icon-btn"
+                  onClick={() => setShowManual(true)}
+                  aria-label={pt.scan.manualEntry}
+                  title={pt.scan.manualEntry}
+                >
+                  ⌨️
+                </button>
+                <button
+                  class="cam-icon-btn"
+                  onClick={flipCamera}
+                  aria-label={pt.scan.flipCamera}
+                  title={facing === 'user' ? pt.scan.cameraFront : pt.scan.cameraBack}
+                >
+                  🔄
+                </button>
+              </>
+            )}
+          </div>
+        </div>
 
         {RECORD && (
           <div class="scan-rec" role="status">
@@ -556,34 +580,42 @@ export function ScanScreen({ session, collection, settings, onPersist, onFinish 
         )}
 
         {cameraState !== 'denied' && (
-          <>
-            <div class="scan-frame" aria-hidden="true" />
-            {cameraState === 'ready' && !ocrReady && !ocrFailed && (
-              <div class="scan-overlay">
-                <div class="spinner" />
-                <p>{pt.scan.preparing(ocrProgress)}</p>
-              </div>
+          <div class="mira-wrap">
+            <div class="mira">
+              {/* Camera <video> is appended here imperatively; Preact leaves it alone. */}
+              <div class="scan-video-layer" ref={videoLayerRef} aria-hidden="true" />
+              <span class="corner tl" aria-hidden="true" />
+              <span class="corner tr" aria-hidden="true" />
+              <span class="corner bl" aria-hidden="true" />
+              <span class="corner br" aria-hidden="true" />
+              {cameraState === 'loading' && <span class="cole">{pt.scan.slotLabel}</span>}
+            </div>
+            {ocrReady && !verdict && !multi && (
+              <span class="hint">
+                <span class="pulse" aria-hidden="true" />
+                {pt.scan.holdStill}
+              </span>
             )}
-            {cameraState === 'ready' && ocrFailed && (
-              <div class="scan-overlay scan-overlay-msg">
-                <div class="scan-denied-emoji">📴</div>
-                <p>{pt.scan.ocrUnavailable}</p>
-              </div>
-            )}
-            {ocrReady && !flash && <p class="scan-hint">{pt.scan.startHint}</p>}
-            <button
-              class="btn-flip"
-              onClick={flipCamera}
-              aria-label={pt.scan.flipCamera}
-              title={facing === 'user' ? pt.scan.cameraFront : pt.scan.cameraBack}
-            >
-              🔄
-            </button>
-          </>
+          </div>
         )}
 
+        {cameraState === 'ready' && !ocrReady && !ocrFailed && (
+          <div class="scan-overlay">
+            <div class="spinner" />
+            <p>{pt.scan.preparing(ocrProgress)}</p>
+          </div>
+        )}
+        {cameraState === 'ready' && ocrFailed && (
+          <div class="scan-overlay scan-overlay-msg">
+            <div class="scan-denied-emoji">📴</div>
+            <p>{pt.scan.ocrUnavailable}</p>
+            <button class="miss-action" type="button" onClick={() => setShowManual(true)}>
+              ⌨️ {pt.scan.manualOpen}
+            </button>
+          </div>
+        )}
         {cameraState === 'denied' && (
-          <div class="scan-denied">
+          <div class="scan-overlay scan-denied">
             <div class="scan-denied-emoji">📷</div>
             <h2>{pt.scan.cameraDenied}</h2>
             <p>{pt.scan.cameraDeniedHint}</p>
@@ -593,60 +625,60 @@ export function ScanScreen({ session, collection, settings, onPersist, onFinish 
           </div>
         )}
 
-        {flash && <Flash state={flash} />}
+        {/* Multi-sticker reads (several backs at once) stay a full-camera overlay panel. */}
         {multi && <MultiResult items={multi} />}
-      </div>
 
-      {/* Top bar */}
-      <div class="scan-topbar">
-        <div class="scan-counters">
-          <span class="counter counter-new">
-            <b>{counters.neededCount}</b> {pt.scan.counters.new}
-          </span>
-          <span class="counter counter-rep">
-            <b>{counters.repeatedCount}</b> {pt.scan.counters.repeated}
-          </span>
+        {/* Bottom dock — recent reads sit above the verdict, both stay visible. */}
+        <div class="cam-bottom">
+          {recent.length > 0 && (
+            <>
+              <div class="recent-cap">{pt.scan.recentCap}</div>
+              <div class="recent" aria-label={pt.scan.recent}>
+                {recent.slice(0, 3).map((r) => (
+                  <div key={r.id} class="rd">
+                    <div class="rc">{r.label}</div>
+                    <div class={r.outcome === 'owned' ? 'rs rep' : 'rs nova'}>
+                      {r.outcome === 'owned' ? pt.scan.recentRep : pt.scan.recentNew}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </>
+          )}
+          {verdict && !multi && (
+            <Verdict state={verdict} onManual={() => setShowManual(true)} />
+          )}
         </div>
-        <button class="btn btn-finish" onClick={onFinish} disabled={session.isEmpty()}>
-          {pt.scan.finish}
-        </button>
-      </div>
-
-      {/* Recent strip */}
-      {recent.length > 0 && (
-        <div class="scan-recent" aria-label={pt.scan.recent}>
-          {recent.map((r) => (
-            <span key={r.id} class={`recent-chip recent-${r.outcome}`}>
-              {r.label}
-            </span>
-          ))}
-        </div>
-      )}
-
-      {/* Fallback affordances */}
-      <div class="scan-actions">
-        <button class="btn btn-ghost" onClick={() => setShowManual((s) => !s)}>
-          ⌨️ {pt.scan.manualEntry}
-        </button>
       </div>
 
       {showManual && (
-        <form class="manual-form" onSubmit={submitManual}>
-          <input
-            class="manual-input"
-            type="text"
-            inputMode="text"
-            autocomplete="off"
-            autocapitalize="characters"
-            placeholder={pt.scan.manualPlaceholder}
-            value={manualValue}
-            onInput={(e) => setManualValue((e.currentTarget as HTMLInputElement).value)}
-            autofocus
-          />
-          <button class="btn btn-primary" type="submit">
-            {pt.scan.manualConfirm}
-          </button>
-        </form>
+        <div class="manual-sheet">
+          <form class="manual-form" onSubmit={submitManual}>
+            <input
+              class="manual-input"
+              type="text"
+              inputMode="text"
+              autocomplete="off"
+              autocapitalize="characters"
+              placeholder={pt.scan.manualPlaceholder}
+              value={manualValue}
+              onInput={(e) => setManualValue((e.currentTarget as HTMLInputElement).value)}
+              autofocus
+            />
+            <div class="manual-actions">
+              <button
+                class="btn btn-ghost"
+                type="button"
+                onClick={() => setShowManual(false)}
+              >
+                {pt.scan.manualCancel}
+              </button>
+              <button class="btn btn-primary" type="submit">
+                {pt.scan.manualConfirm}
+              </button>
+            </div>
+          </form>
+        </div>
       )}
     </div>
   );

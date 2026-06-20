@@ -60,6 +60,18 @@ export const pt = {
     flipCamera: 'Virar câmera',
     cameraFront: 'Câmera frontal',
     cameraBack: 'Câmera traseira',
+    pageTitle: 'Escanear',
+    pageSubtitle: 'Verso da figurinha',
+    holdStill: 'Mostre o verso e segure parado',
+    slotLabel: 'Cole aqui',
+    recentCap: 'Últimas leituras',
+    recentNew: 'Nova',
+    recentRep: 'Repetida',
+    neededSub: 'Você ainda não tem essa',
+    missWord: 'Não li',
+    missSub: 'Não consegui ler o código. Aproxime e segure firme.',
+    manualOpen: 'Digitar o código',
+    manualCancel: 'Cancelar',
   },
 
   report: {

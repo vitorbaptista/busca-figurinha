@@ -398,6 +398,11 @@ button {
 }
 
 /* ====================================================== Scan screen ======= */
+/* Digital twin of the album scan page: a full-bleed dark "camera" surface with the
+   live <video> shown ONLY inside the .mira window (the sticker slot). Counters + flip
+   overlay the top; the verdict + recent reads dock at the bottom. No fill-light flood —
+   the surround is the dark album surface (see CLAUDE.md: validate front-camera capture
+   live, since the screen ring-light was removed here). */
 
 .scan-screen {
   display: flex;
@@ -406,112 +411,508 @@ button {
   padding-bottom: calc(var(--nav-h) + var(--safe-bottom));
 }
 
-.scan-video-wrap {
+/* album section tab — the strip above the camera */
+.pagetab {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: calc(10px + var(--safe-top)) 18px 11px;
+  background: var(--ink);
+  border-bottom: 3px solid var(--gold-deep);
+}
+.pagetab-name {
+  font-family: var(--font-head);
+  font-weight: 700;
+  font-size: 0.95rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--cream);
+}
+.pagetab-pg {
+  font-family: var(--font-head);
+  font-weight: 600;
+  font-size: 0.7rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--gold);
+}
+
+/* the camera area */
+.cam {
   position: relative;
   flex: 1;
   min-height: 46vh;
-  /* Dark album scan area so the live camera is clearly VISIBLE while framing. The bright
-     FILL LIGHT (the screen acts as a ring light for the close sticker — a hard-won capture
-     fix) is now the .scan-fill layer, which blooms warm-bright only while a sticker is being
-     read (.is-lighting). Dark idle → bright-on-read keeps the camera legible AND lights the
-     pill at the moment it's captured. */
-  background:
-    radial-gradient(125% 80% at 50% 38%, #26402f 0%, #14271e 55%, #0e1f17 100%);
   overflow: hidden;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  background: radial-gradient(circle at 50% 38%, #2a3b33 0%, #12211a 70%);
 }
-
-/* The fill light. Transparent while framing (the dark camera shows through); blooms into a
-   warm, high-luminance backlight while a sticker is read — lighting the close sticker for the
-   front camera. Warm ivory/cream rather than clinical #fff: still very bright (so it works as a
-   ring light) but on-brand and easier on the eyes; brightest low-centre where the pill sits in
-   the reticle, fading to a soft gold rim. */
-.scan-fill {
+/* faux camera grain */
+.cam::after {
+  content: '';
   position: absolute;
   inset: 0;
-  z-index: 1;
   pointer-events: none;
-  opacity: 0;
-  background:
-    radial-gradient(
-      135% 96% at 50% 70%,
-      rgba(255, 252, 244, 0.98) 0%,
-      rgba(252, 245, 228, 0.9) 30%,
-      rgba(245, 230, 196, 0.6) 55%,
-      rgba(236, 214, 166, 0.24) 74%,
-      rgba(214, 184, 138, 0.08) 88%,
-      transparent 96%
-    );
-  transition: opacity 170ms ease-out;
+  background-image: radial-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+  background-size: 4px 4px;
+  opacity: 0.5;
 }
-.scan-video-wrap.is-lighting .scan-fill {
-  opacity: 1;
+
+/* ---- top overlay: counters · finish · flip ---- */
+.cam-top {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 4;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 14px 16px;
 }
-@media (prefers-reduced-motion: reduce) {
-  .scan-fill {
-    transition: none;
+.counters {
+  display: flex;
+  gap: 8px;
+}
+/* counters as little print tickets */
+.chip-count {
+  background: var(--cream);
+  color: var(--ink);
+  border: 2px solid var(--ink);
+  border-radius: 3px;
+  padding: 5px 10px 4px;
+  text-align: center;
+  min-width: 64px;
+  box-shadow: 3px 3px 0 rgba(15, 60, 39, 0.6);
+}
+.chip-count b {
+  display: block;
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: 1.4rem;
+  line-height: 1;
+  color: var(--keep);
+}
+.chip-count.dup b {
+  color: var(--dupe);
+}
+.chip-count span {
+  font-family: var(--font-head);
+  font-weight: 700;
+  font-size: 0.6rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+.cam-top-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+/* finish-session pill (gold foil); only shown once a scan exists */
+.finish-pill {
+  background: var(--gold);
+  color: var(--ink);
+  border: 2px solid var(--ink);
+  border-radius: 3px;
+  padding: 8px 14px;
+  min-height: 40px;
+  font-family: var(--font-head);
+  font-weight: 700;
+  font-size: 0.85rem;
+  letter-spacing: 0.02em;
+  box-shadow: 3px 3px 0 rgba(15, 60, 39, 0.6);
+  -webkit-tap-highlight-color: transparent;
+}
+.finish-pill:active {
+  transform: translate(2px, 2px);
+  box-shadow: 1px 1px 0 rgba(15, 60, 39, 0.6);
+  background: var(--gold-deep);
+}
+.cam-icon-btn {
+  width: 46px;
+  height: 46px;
+  flex: none;
+  border: 2px solid var(--ink);
+  border-radius: 50%;
+  background: var(--cream);
+  color: var(--ink);
+  font-size: 1.2rem;
+  line-height: 1;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  box-shadow: 3px 3px 0 rgba(15, 60, 39, 0.6);
+  -webkit-tap-highlight-color: transparent;
+}
+.cam-icon-btn:active {
+  transform: translate(2px, 2px);
+  box-shadow: 1px 1px 0 rgba(15, 60, 39, 0.6);
+}
+
+/* ---- the mira / sticker slot — the live video lives HERE, clipped to the window ---- */
+.mira-wrap {
+  position: absolute;
+  top: 42%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 3;
+  width: min(78vw, 300px);
+  text-align: center;
+}
+.mira {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 236 / 158;
+  border: 3px dashed var(--cream);
+  border-radius: 8px;
+  background: rgba(244, 236, 216, 0.06);
+  animation: mira-breathe 2.6s ease-in-out infinite;
+}
+@keyframes mira-breathe {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(244, 236, 216, 0);
+  }
+  50% {
+    box-shadow: 0 0 0 6px rgba(244, 236, 216, 0.1);
   }
 }
+@media (prefers-reduced-motion: reduce) {
+  .mira {
+    animation: none;
+  }
+}
+/* the camera frame, clipped to the rounded window (corners sit OUTSIDE this layer) */
 .scan-video-layer {
   position: absolute;
   inset: 0;
+  overflow: hidden;
+  border-radius: 6px;
 }
 .scan-video {
-  position: absolute;
-  inset: 0;
   width: 100%;
   height: 100%;
-  /* contain, NOT cover: cover crops the frame (usually top+bottom) to fill the screen, so
-     the bottom you SEE isn't the bottom of the camera STREAM — which is exactly the band the
-     ROI detects. contain shows the whole frame (the letterbox fills with the white fill-light),
-     so the reticle's bottom third lines up with the detected bottom third. */
-  object-fit: contain;
+  /* cover: fill the small window with a centred crop of the frame (a viewfinder), rather
+     than letterboxing the whole frame down to a sliver. Detection still runs on the full
+     frame's ROI; this window is only a framing aid. */
+  object-fit: cover;
 }
-
-/* Reticle guiding where to place the sticker. Everything OUTSIDE it is painted bright
-   white by the box-shadow spread — that white area is the fill light (the screen faces
-   the sticker), with the camera visible through the reticle "window". The bracket corners
-   and dashed edge echo the album's "cole aqui" slot. */
-.scan-frame {
+.mira .corner {
   position: absolute;
-  /* In the BOTTOM THIRD of the view, matching the detection band (roiTopFraction 0.67). */
-  top: 83%;
-  left: 50%;
-  width: min(86vw, 360px);
-  height: min(42vw, 190px);
-  transform: translate(-50%, -50%);
-  border: 3px dashed var(--gold);
-  border-radius: 8px;
-  /* The gold "cole aqui" slot. A soft warm halo + a faint ink ring read it as a lit window
-     over the camera — no opaque flood, so the live feed stays fully visible while framing. */
-  box-shadow:
-    0 0 0 2px rgba(14, 31, 23, 0.45),
-    0 0 30px 6px rgba(244, 236, 216, 0.22),
-    inset 0 0 22px rgba(244, 236, 216, 0.14);
-  z-index: 3;
-  animation: scan-breathe 2.4s ease-in-out infinite;
+  width: 20px;
+  height: 20px;
+  border: 3px solid var(--gold);
 }
-@keyframes scan-breathe {
-  0%,
-  100% {
-    border-color: var(--gold-deep);
-  }
+.mira .corner.tl {
+  top: -3px;
+  left: -3px;
+  border-right: 0;
+  border-bottom: 0;
+}
+.mira .corner.tr {
+  top: -3px;
+  right: -3px;
+  border-left: 0;
+  border-bottom: 0;
+}
+.mira .corner.bl {
+  bottom: -3px;
+  left: -3px;
+  border-right: 0;
+  border-top: 0;
+}
+.mira .corner.br {
+  bottom: -3px;
+  right: -3px;
+  border-left: 0;
+  border-top: 0;
+}
+.mira .cole {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-family: var(--font-head);
+  font-weight: 700;
+  font-size: 0.7rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: rgba(244, 236, 216, 0.6);
+}
+.hint {
+  margin-top: 14px;
+  display: inline-block;
+  background: var(--ink);
+  color: var(--cream);
+  font-family: var(--font-head);
+  font-weight: 600;
+  font-size: 0.82rem;
+  letter-spacing: 0.04em;
+  padding: 6px 14px;
+  border-radius: 3px;
+  border: 2px solid var(--gold-deep);
+}
+.hint .pulse {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--keep-bright);
+  margin-right: 7px;
+  vertical-align: middle;
+  animation: hint-blink 1.1s steps(2) infinite;
+}
+@keyframes hint-blink {
   50% {
-    border-color: var(--gold);
+    opacity: 0.25;
   }
 }
 @media (prefers-reduced-motion: reduce) {
-  .scan-frame {
+  .hint .pulse {
     animation: none;
   }
 }
 
+/* ---- bottom dock: recent reads above the verdict, both always visible ---- */
+/* Above the preparing/failed overlay (z-6) so a manually-entered code's verdict still
+   shows even when the OCR engine couldn't load (the only way to scan in that state). */
+.cam-bottom {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 8;
+  display: flex;
+  flex-direction: column;
+}
+/* caption above the recent strip */
+.recent-cap {
+  padding: 0 16px 5px;
+  font-family: var(--font-head);
+  font-weight: 700;
+  font-size: 0.6rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(244, 236, 216, 0.72);
+}
+.recent {
+  display: flex;
+  gap: 8px;
+  padding: 0 16px 10px;
+  overflow: hidden;
+}
+.rd {
+  flex: 1;
+  min-width: 0;
+  background: var(--cream);
+  border: 2px solid var(--ink);
+  border-radius: 3px;
+  padding: 5px 8px 6px;
+  box-shadow: 2px 2px 0 rgba(15, 60, 39, 0.5);
+}
+.rd .rc {
+  font-family: var(--font-head);
+  font-weight: 700;
+  font-size: 0.85rem;
+  color: var(--ink);
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.rd .rs {
+  font-family: var(--font-head);
+  font-weight: 700;
+  font-size: 0.58rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  margin-top: 1px;
+}
+.rd .rs.nova {
+  color: var(--keep);
+}
+.rd .rs.rep {
+  color: var(--dupe);
+}
+.rd .rs::before {
+  content: '';
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  margin-right: 4px;
+  vertical-align: middle;
+}
+.rd .rs.nova::before {
+  background: var(--keep);
+  border-radius: 50%;
+}
+.rd .rs.rep::before {
+  background: var(--dupe);
+  transform: rotate(45deg);
+}
+
+/* ---- THE VERDICT — the hero, a print ticket docked at the bottom ---- */
+.verdict {
+  position: relative;
+  z-index: 5;
+  background: var(--keep);
+  border-top: 5px solid var(--ink);
+  padding: 16px 20px 18px;
+  color: var(--cream);
+  box-shadow: 0 -6px 0 rgba(15, 60, 39, 0.45), 0 -16px 22px rgba(0, 0, 0, 0.35);
+  animation: verdict-in 0.18s ease-out;
+}
+@keyframes verdict-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .verdict {
+    animation: none;
+  }
+}
+.verdict::before {
+  /* foil ticket notches */
+  content: '';
+  position: absolute;
+  top: -5px;
+  left: 0;
+  right: 0;
+  height: 5px;
+  background: repeating-linear-gradient(90deg, var(--gold) 0 14px, var(--ink) 14px 22px);
+}
+.verdict-head {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.verdict-mark {
+  flex: none;
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  background: var(--gold);
+  color: var(--ink);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font);
+  font-weight: 700;
+  font-size: 1.6rem;
+  line-height: 1;
+  border: 3px solid var(--ink);
+  box-shadow: 3px 3px 0 var(--paper-edge);
+}
+.verdict-word {
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: clamp(2.4rem, 12vw, 3.5rem);
+  line-height: 0.82;
+  text-transform: uppercase;
+  color: #fff;
+  letter-spacing: 0.005em;
+  text-shadow: 3px 3px 0 var(--paper-edge);
+}
+.verdict-info {
+  display: flex;
+  align-items: flex-end;
+  gap: 12px;
+  margin-top: 13px;
+}
+.verdict-text {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 7px 11px;
+}
+.verdict-code {
+  font-family: var(--font-head);
+  font-weight: 700;
+  font-size: 1.4rem;
+  letter-spacing: 0.02em;
+  background: var(--cream);
+  color: var(--ink);
+  padding: 3px 13px 2px;
+  border-radius: 3px;
+  border: 2px solid var(--ink);
+  white-space: nowrap;
+}
+.verdict-team {
+  font-family: var(--font-head);
+  font-weight: 600;
+  font-size: 1.05rem;
+  letter-spacing: 0.02em;
+  color: #fff;
+}
+.verdict-sub {
+  width: 100%;
+  font-family: var(--font-head);
+  font-weight: 700;
+  font-size: 0.68rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgba(244, 236, 216, 0.85);
+}
+
+/* verdict variants */
+.verdict.rep {
+  background: var(--dupe);
+}
+.verdict.rep::before {
+  background: repeating-linear-gradient(90deg, #fff 0 14px, var(--ink) 14px 22px);
+}
+.verdict.rep .verdict-mark {
+  background: #fff;
+  color: var(--dupe);
+}
+/* the honest "couldn't read" state — neutral kraft, never green/red, never a fake answer */
+.verdict.miss {
+  background: var(--miss);
+  color: var(--ink);
+  border-top-color: var(--ink);
+}
+.verdict.miss::before {
+  background: repeating-linear-gradient(90deg, var(--ink) 0 14px, var(--miss) 14px 22px);
+}
+.verdict.miss .verdict-mark {
+  background: var(--cream);
+  color: var(--ink);
+}
+.verdict.miss .verdict-word {
+  color: var(--ink);
+  text-shadow: 3px 3px 0 rgba(255, 255, 255, 0.45);
+}
+.verdict.miss .verdict-sub {
+  color: #3a2c12;
+}
+.miss-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  background: var(--ink);
+  color: var(--cream);
+  border: 2px solid var(--ink);
+  border-radius: 4px;
+  font-family: var(--font-head);
+  font-weight: 600;
+  font-size: 0.85rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  padding: 9px 14px;
+  min-height: 44px;
+  cursor: pointer;
+}
+
+/* ---- OCR preparing / failed / denied overlays (cover the camera) ---- */
 .scan-overlay {
   position: absolute;
   inset: 0;
-  z-index: 4;
+  z-index: 6;
   background: rgba(15, 60, 39, 0.86);
   display: flex;
   flex-direction: column;
@@ -531,6 +932,23 @@ button {
   font-weight: 500;
   line-height: 1.4;
 }
+/* camera-denied: a light panel so the ink text reads */
+.scan-denied {
+  background: var(--cream);
+  color: var(--ink);
+}
+.scan-denied-emoji {
+  font-size: 4rem;
+}
+.scan-denied h2 {
+  margin: 0;
+  color: var(--ink);
+}
+.scan-denied p {
+  color: #3a4a40;
+  margin: 0;
+  max-width: 420px;
+}
 
 /* Recording indicator (?record). */
 .scan-rec {
@@ -538,7 +956,7 @@ button {
   top: calc(10px + env(safe-area-inset-top, 0px));
   left: 50%;
   transform: translateX(-50%);
-  z-index: 6;
+  z-index: 7;
   display: flex;
   align-items: center;
   gap: 8px;
@@ -579,7 +997,7 @@ button {
   top: 6px;
   left: 6px;
   right: 6px;
-  z-index: 6;
+  z-index: 7;
   background: rgba(22, 36, 28, 0.82);
   color: var(--keep-bright);
   font: 600 11px/1.35 ui-monospace, monospace;
@@ -589,81 +1007,16 @@ button {
   pointer-events: none;
 }
 
-.scan-hint {
-  position: absolute;
-  bottom: 18px;
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 3;
-  margin: 0;
-  background: var(--ink);
-  border: 2px solid var(--gold-deep);
-  padding: 7px 16px;
-  border-radius: var(--radius-sm);
-  font-family: var(--font-head);
-  font-weight: 600;
-  font-size: 0.9rem;
-  color: var(--cream);
-  max-width: calc(100% - 32px);
-  text-align: center;
-}
-
-/* Flip front/back camera */
-.btn-flip {
-  position: absolute;
-  top: 14px;
-  right: 14px;
-  z-index: 4;
-  width: 46px;
-  height: 46px;
-  border: 2px solid var(--ink);
-  border-radius: 50%;
-  background: var(--cream);
-  color: var(--ink);
-  font-size: 1.2rem;
-  line-height: 1;
-  display: grid;
-  place-items: center;
-  cursor: pointer;
-  box-shadow: 3px 3px 0 rgba(15, 60, 39, 0.6);
-  -webkit-tap-highlight-color: transparent;
-}
-.btn-flip:active {
-  transform: translate(2px, 2px);
-  box-shadow: 1px 1px 0 rgba(15, 60, 39, 0.6);
-}
-
-/* Camera denied state */
-.scan-denied {
-  z-index: 5;
-  text-align: center;
-  padding: 28px;
-  max-width: 420px;
-  color: var(--ink);
-}
-.scan-denied-emoji {
-  font-size: 4rem;
-  margin-bottom: 8px;
-}
-.scan-denied h2 {
-  margin: 0 0 8px;
-  color: var(--ink);
-}
-.scan-denied p {
-  color: #3a4a40;
-  margin: 0 0 20px;
-}
-
-/* ---- Full-screen flash — THE VERDICT, the hero of the whole app ---- */
-.flash {
+/* ---- Multi-sticker result panel (several backs in view at once) ---- */
+.multi-result {
   position: absolute;
   inset: 0;
-  z-index: 10;
+  z-index: 6;
+  background: rgba(15, 60, 39, 0.94);
   display: flex;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  color: #fff;
+  flex-direction: column;
+  gap: 10px;
+  padding: 16px;
   animation: flash-in 0.16s ease-out;
 }
 @keyframes flash-in {
@@ -671,79 +1024,6 @@ button {
     opacity: 0;
     transform: scale(1.04);
   }
-}
-.flash-needed {
-  background: var(--keep);
-}
-.flash-owned {
-  background: var(--dupe);
-}
-/* honest "couldn't read": neutral kraft, never green/red, never a faked answer */
-.flash-unknown {
-  background: var(--miss);
-  color: var(--ink);
-}
-.flash-inner {
-  animation: pop 0.32s ease;
-}
-.flash-emoji {
-  font-size: 4.2rem;
-  line-height: 1;
-}
-.flash-verb {
-  font-family: var(--font-display);
-  font-size: 3rem;
-  font-weight: 400;
-  letter-spacing: 0.01em;
-  text-transform: uppercase;
-  margin-top: 8px;
-  text-shadow: 3px 3px 0 var(--paper-edge);
-}
-.flash-owned .flash-verb {
-  text-shadow: 3px 3px 0 #6e1f0c;
-}
-.flash-verb-sm {
-  font-family: var(--font-display);
-  font-size: 1.9rem;
-  font-weight: 400;
-  text-transform: uppercase;
-  letter-spacing: 0.01em;
-  margin-top: 8px;
-  color: var(--ink);
-  text-shadow: 3px 3px 0 rgba(255, 255, 255, 0.45);
-}
-.flash-code {
-  display: inline-block;
-  font-family: var(--font-head);
-  font-size: 1.7rem;
-  font-weight: 700;
-  letter-spacing: 0.02em;
-  margin-top: 12px;
-  background: var(--cream);
-  color: var(--ink);
-  border: 2px solid var(--ink);
-  border-radius: var(--radius-sm);
-  padding: 2px 14px;
-}
-.flash-team {
-  font-family: var(--font-head);
-  font-size: 1.2rem;
-  font-weight: 600;
-  opacity: 0.95;
-  margin-top: 8px;
-}
-
-/* ---- Multi-sticker result panel (several backs in view at once) ---- */
-.multi-result {
-  position: absolute;
-  inset: 0;
-  z-index: 5;
-  background: rgba(15, 60, 39, 0.94);
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  padding: 16px;
-  animation: flash-in 0.16s ease-out;
 }
 .multi-head {
   display: flex;
@@ -827,96 +1107,31 @@ button {
   color: var(--dupe);
 }
 
-/* ---- Top bar ---- */
-.scan-topbar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  padding: 12px 16px;
-  background: var(--paper);
+/* ---- Manual entry — a bottom sheet opened from the "Não li" verdict ---- */
+.manual-sheet {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: calc(var(--nav-h) + var(--safe-bottom));
+  z-index: 40;
+  background: var(--paper-deep);
+  border-top: 3px solid var(--gold-deep);
+  padding: 14px 16px;
+  box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.4);
+  animation: verdict-in 0.18s ease-out;
 }
-.scan-counters {
-  display: flex;
-  gap: 8px;
-}
-/* counters as little print tickets */
-.counter {
-  font-family: var(--font-head);
-  font-size: 0.95rem;
-  font-weight: 600;
-  padding: 6px 12px;
-  border-radius: var(--radius-sm);
-  background: var(--cream);
-  border: 2px solid var(--ink);
-  color: var(--ink);
-  box-shadow: 2px 2px 0 var(--paper-edge);
-}
-.counter b {
-  font-family: var(--font-display);
-  font-weight: 400;
-  font-size: 1.2rem;
-}
-.counter-new b {
-  color: var(--keep);
-}
-.counter-rep b {
-  color: var(--dupe);
-}
-
-/* ---- Recent strip ---- */
-.scan-recent {
-  display: flex;
-  gap: 8px;
-  overflow-x: auto;
-  padding: 10px 16px;
-  background: var(--paper);
-  scrollbar-width: none;
-}
-.scan-recent::-webkit-scrollbar {
-  display: none;
-}
-.recent-chip {
-  flex: 0 0 auto;
-  padding: 6px 13px;
-  border-radius: var(--radius-sm);
-  border: 2px solid var(--ink);
-  font-family: var(--font-head);
-  font-weight: 700;
-  font-size: 0.9rem;
-  white-space: nowrap;
-}
-.recent-needed {
-  background: var(--keep);
-  color: #fff;
-}
-.recent-owned {
-  background: var(--cream-dim);
-  color: var(--kraft-text);
-}
-.recent-unknown {
-  display: none;
-}
-
-/* ---- Fallback actions ---- */
-.scan-actions {
-  display: flex;
-  gap: 10px;
-  padding: 10px 16px 12px;
-  background: var(--paper);
-}
-.scan-actions .btn {
-  flex: 1;
-  font-size: 0.95rem;
-  padding: 12px;
-  min-height: 48px;
-}
-
 .manual-form {
   display: flex;
-  gap: 8px;
-  padding: 0 16px 12px;
-  background: var(--paper);
+  flex-direction: column;
+  gap: 10px;
+}
+.manual-actions {
+  display: flex;
+  gap: 10px;
+}
+.manual-actions .btn {
+  flex: 1;
+  min-height: 48px;
 }
 .manual-input {
   flex: 1;
