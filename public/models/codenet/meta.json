@@ -1,0 +1,8 @@
+{
+  "alphabet": "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789",
+  "blank": 36,
+  "maxlen": 5,
+  "w": 128,
+  "h": 32,
+  "valExact": 0.6190476190476191
+}
