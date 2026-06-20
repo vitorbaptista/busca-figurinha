@@ -13,6 +13,21 @@ import puppeteer from 'puppeteer-core';
 const QUICK = process.argv.includes('--quick');
 const LATENCY = process.argv.includes('--latency');
 const LATENCY_SHARP = process.argv.includes('--latency-sharp');
+// `--pixel` runs the REAL-FRAME (Pixel dataset) accuracy benchmark instead. Any extra
+// `--key=value` args (split, roiTop, roiRect, fastConf, maxBoxes, limit, note) are forwarded
+// to /bench-pixel.html as query params so ROI/gate sweeps need no rebuild:
+//   node scripts/bench.mjs --pixel --split=test --roiRect=0.18,0.32,0.82,0.58 --maxBoxes=2
+const PIXEL = process.argv.includes('--pixel');
+const PIXEL_KEYS = ['split', 'roiTop', 'roiRect', 'fastConf', 'maxBoxes', 'fgDelta', 'engine', 'limit', 'note', 'debugFrame', 'deriveAliases'];
+const pixelQuery = () => {
+  const p = new URLSearchParams();
+  for (const arg of process.argv.slice(2)) {
+    const m = arg.match(/^--([a-zA-Z]+)=(.*)$/);
+    if (m && PIXEL_KEYS.includes(m[1])) p.set(m[1], m[2]);
+  }
+  const s = p.toString();
+  return s ? `?${s}` : '';
+};
 const CHROME =
   ['/usr/bin/google-chrome-stable', '/usr/bin/chromium', '/usr/bin/chromium-browser'].find((p) => {
     try {
@@ -23,7 +38,9 @@ const CHROME =
     }
   }) || '/usr/bin/google-chrome-stable';
 
-const TIMEOUT_MS = 5 * 60 * 1000;
+// The pixel bench runs the full pipeline (with tesseract fallback) over ~370 frames, so it
+// needs a longer ceiling than the synthetic bench.
+const TIMEOUT_MS = (PIXEL ? 15 : 5) * 60 * 1000;
 
 function startServer() {
   return new Promise((res, rej) => {
@@ -59,10 +76,15 @@ try {
   const page = await browser.newPage();
   page.on('pageerror', (e) => console.error('[page error]', e.message));
   const q = LATENCY_SHARP ? '?latencysharp' : LATENCY ? '?latency' : QUICK ? '?quick' : '';
-  const url = `http://localhost:${server.port}/bench.html${q}`;
+  const url = PIXEL
+    ? `http://localhost:${server.port}/bench-pixel.html${pixelQuery()}`
+    : `http://localhost:${server.port}/bench.html${q}`;
   await page.goto(url, { waitUntil: 'load', timeout: 60000 });
   await page.waitForFunction(() => document.title === 'bench done', { timeout: TIMEOUT_MS });
-  const report = readFileSync(resolve('captures', 'bench-results.md'), 'utf8');
+  const report = readFileSync(
+    resolve('captures', PIXEL ? 'bench-pixel-results.md' : 'bench-results.md'),
+    'utf8',
+  );
   process.stdout.write('\n' + report + '\n');
 } catch (err) {
   console.error('BENCH FAILED:', err.message);

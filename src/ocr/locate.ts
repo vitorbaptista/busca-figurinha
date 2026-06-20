@@ -140,7 +140,8 @@ function collectBoxes(
   const n = dw * dh;
   const bg = boxBlur(gray, dw, dh, radius);
   const fg = new Uint8Array(n);
-  for (let i = 0; i < n; i++) fg[i] = gray[i] < bg[i] - FG_DELTA ? 1 : 0;
+  const fgDelta = CONFIG.detect.fgDelta || FG_DELTA;
+  for (let i = 0; i < n; i++) fg[i] = gray[i] < bg[i] - fgDelta ? 1 : 0;
 
   const labels = new Int32Array(n).fill(-1);
   const stack = new Int32Array(n);
@@ -212,6 +213,32 @@ export function findCodeBoxes(frame: HTMLCanvasElement): CodeBox[] {
   const fw = frame.width;
   const fh = frame.height;
   if (!fw || !fh) return [];
+
+  // A rectangular ROI (when set) takes precedence over the bottom band: detect only inside
+  // the normalized rect, then offset boxes back to full-frame coordinates. Scale is taken
+  // against the FULL frame's long side (like the band path) so every DET_LONG-relative gate
+  // stays calibrated; the cropped rect is just the matching slice of the full-frame raster.
+  const rect = CONFIG.detect.roiRect;
+  if (rect) {
+    const x0 = Math.min(fw - 1, Math.max(0, Math.round(rect.left * fw)));
+    const y0 = Math.min(fh - 1, Math.max(0, Math.round(rect.top * fh)));
+    const x1 = Math.min(fw, Math.max(x0 + 1, Math.round(rect.right * fw)));
+    const y1 = Math.min(fh, Math.max(y0 + 1, Math.round(rect.bottom * fh)));
+    const rw = x1 - x0;
+    const rh = y1 - y0;
+    const sub = document.createElement('canvas');
+    sub.width = rw;
+    sub.height = rh;
+    const sctx = sub.getContext('2d', { willReadFrequently: true });
+    if (!sctx) return detectBoxes(frame);
+    sctx.drawImage(frame, x0, y0, rw, rh, 0, 0, rw, rh);
+    const boxes = detectBoxes(sub, Math.max(fw, fh));
+    for (const b of boxes) {
+      b.x += x0;
+      b.y += y0;
+    }
+    return boxes;
+  }
 
   const roi = CONFIG.detect.roiTopFraction;
   if (roi <= 0 || roi >= 1) return detectBoxes(frame);

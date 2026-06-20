@@ -16,7 +16,8 @@ import { createConfirmer } from '../../domain/confirm';
 import { allowCommit } from '../../domain/commitGate';
 import { createHybridOcrEngine as createOcrEngine } from '../../ocr/hybridEngine';
 import { createCameraSource } from '../../ocr/frameSource';
-import { recognizeFrameInOrder } from '../../ocr/recognize';
+import { recognizeFrameInOrder, recognizeFrameCodeNet } from '../../ocr/recognize';
+import type { CodeNet } from '../../ocr/codeNetEngine';
 import { createAutoCapture } from '../../ocr/autoCapture';
 import { Flash, type FlashState } from '../components/Flash';
 import { MultiResult, type ScanResultItem } from '../components/MultiResult';
@@ -53,6 +54,9 @@ export function ScanScreen({ session, collection, settings, onPersist, onFinish 
   const videoLayerRef = useRef<HTMLDivElement>(null);
   const ocrRef = useRef<OcrEngine | null>(null);
   const ocrInitRef = useRef<Promise<boolean> | null>(null);
+  // Neural recognizer (codeNet), lazy-loaded in the background; the ensemble cascade uses it
+  // once ready and falls back to the hybrid alone until then / if it fails to load.
+  const codeNetRef = useRef<CodeNet | null>(null);
   const sourceRef = useRef<ReturnType<typeof createCameraSource> | null>(null);
   const captureRef = useRef<AutoCapture | null>(null);
   const flashTimerRef = useRef<number | undefined>(undefined);
@@ -240,6 +244,21 @@ export function ScanScreen({ session, collection, settings, onPersist, onFinish 
     const engine = createOcrEngine();
     ocrRef.current = engine;
     setOcrFailed(false);
+    // Lazy-load the neural recognizer in the background (dynamic import keeps tfjs + the model
+    // out of the initial bundle). It's OPTIONAL: until it's ready (or if it fails), the scanner
+    // uses the hybrid alone; once ready, recognizeCanvas runs the ensemble cascade.
+    if (!codeNetRef.current) {
+      import('../../ocr/codeNetEngine')
+        .then(({ createCodeNet }) => {
+          const cn = createCodeNet(checklist);
+          return cn.init(import.meta.env.BASE_URL + 'models/codenet/model.json').then(() => {
+            codeNetRef.current = cn;
+          });
+        })
+        .catch(() => {
+          /* codeNet unavailable (offline first-load, slow net, etc.) → hybrid-only */
+        });
+    }
     // Race init against a timeout so a blocked/slow CDN (school/kid networks) can't
     // hang the "preparing" spinner forever — we fall back to manual entry instead.
     const init = engine.init((ratio) => setOcrProgress(Math.round(ratio * 100))).then(() => true);
@@ -294,12 +313,18 @@ export function ScanScreen({ session, collection, settings, onPersist, onFinish 
         // OCR instead of ~11. The cross-frame confirmer still gathers every sticker in a
         // multi-sticker hold as the burst progresses; the single-shot debug-tap path keeps
         // stopOnFirstCode=false so one static frame of several backs surfaces them all.
-        const { resolved, reads, crops } = await recognizeFrameInOrder(
-          ocr,
-          canvas,
-          checklist,
-          /* stopOnFirstCode */ opts.confirm,
-        );
+        // Ensemble cascade: the neural codeNet (reads the RAW grayscale crop, strong on the
+        // low-contrast pills) runs first; the classical hybrid is the fallback only when codeNet
+        // resolves nothing — combining their complementary hits. Both are 0-FP-gated. Until
+        // codeNet finishes loading (or if it failed), this is the hybrid alone.
+        const cn = codeNetRef.current;
+        let out = cn?.ready()
+          ? await recognizeFrameCodeNet(cn, canvas, checklist, /* stopOnFirstCode */ opts.confirm)
+          : await recognizeFrameInOrder(ocr, canvas, checklist, opts.confirm);
+        if (cn?.ready() && out.resolved.length === 0) {
+          out = await recognizeFrameInOrder(ocr, canvas, checklist, opts.confirm);
+        }
+        const { resolved, reads, crops } = out;
         const rawText = reads.join(' | ');
 
         // Live burst: only act on codes that agree across frames. Single shot: trust

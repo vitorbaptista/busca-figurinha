@@ -12,15 +12,18 @@
     "test:watch": "vitest",
     "typecheck": "tsc --noEmit",
     "bench": "node scripts/bench.mjs",
+    "bench:pixel": "node scripts/bench.mjs --pixel",
     "pixel:gaps": "node scripts/pixel-capture-gaps.mjs"
   },
   "dependencies": {
+    "@tensorflow/tfjs": "^4.22.0",
     "idb-keyval": "^6.2.1",
     "preact": "^10.24.3",
     "tesseract.js": "^5.1.1"
   },
   "devDependencies": {
     "@preact/preset-vite": "^2.9.1",
+    "@tensorflow/tfjs-node": "^4.22.0",
     "@types/node": "^22.9.0",
     "jsdom": "^25.0.1",
     "puppeteer-core": "^25.1.0",
