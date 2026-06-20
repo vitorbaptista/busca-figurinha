@@ -172,24 +172,33 @@ export const pt = {
       'Tá trocando pessoalmente? Mostre este QR Code pra pessoa apontar a câmera e abrir sua lista na hora.',
     qrAria: 'QR Code com o link da sua lista de troca',
 
-    // Receiver — a friend opened your shared link
+    // Receiver — a friend opened your shared link. The screen is now TAPPABLE: tap the friend's
+    // spares you want ("quero") and the friend's needs you have ("tenho"), see a live scoreboard,
+    // and respond with the combined trade. Names are optional (a link may carry none) → default
+    // "seu amigo"; the titles template the name so a named link personalizes ("O que o Léo tem…").
     friendFallback: 'seu amigo',
-    receiverHero: (friend: string) => `Trocas com ${friend}`,
-    receiverWin: (n: number) =>
-      n === 0
-        ? 'Nada que sirva pra você agora.'
-        : n === 1
-          ? '1 figurinha serve pra você!'
-          : `${n} figurinhas servem pra você!`,
-    iCanGetTitle: 'Você pega',
-    iCanGiveTitle: 'Você dá',
-    iCanGetEmpty: 'Nada dessa lista que você precise.',
-    iCanGiveEmpty: 'Você não tem repetidas que ele(a) precisa.',
-    giveCtaTitle: 'Tem repetidas?',
-    giveCtaText: 'Escaneie as suas pra ver o que você pode dar em troca.',
-    giveCtaButton: 'Escanear repetidas',
-    shareBack: 'Compartilhar minha lista',
+    friendTradeTitle: (name: string) => `Trocar com ${name}`,
+    friendGuide: 'Marca o que serve pra você.',
+    friendHasTitle: (name: string) => `O que ${name} tem repetida`,
+    friendNeedsTitle: (name: string) => `O que falta pro ${name}`,
+    // Tappable chip states + the legend (meaning never by colour alone: ✓ + label + shape).
+    chipWant: 'quero',
+    chipHave: 'tenho',
+    legendTap: 'toque',
+    wantAll: 'Quero todas dele',
+    clearSel: 'Limpar tudo',
+    // Live scoreboard (session state only). Receive-only until you have something to give.
+    scoreReceiveOnly: (p: number, name: string) => `Você quer ${p} do ${name}`,
+    scoreTrade: (total: number) => `Dá pra trocar ${total}!`,
+    scorePega: (p: number, d: number) => `Você pega ${p} · você dá ${d}`,
+    respond: 'Responder no WhatsApp',
+    // Honest post-commit conversion (shown only after the selections are actually saved).
+    albumStarted: 'Seu álbum começou',
     backToMine: 'Ver minha lista',
+    // A link with nothing to compare (name-only, or an album-complete sharer).
+    emptyLinkTitle: 'Esse link tá vazio',
+    emptyLinkText: 'Escaneie seu álbum e monte o seu pra trocar com a galera.',
+    emptyLinkButton: 'Escanear meu álbum',
 
     // Grouping (mirrors the album)
     albumGroup: (g: string) => `Grupo ${g}`,

@@ -24,6 +24,9 @@ const collection = createCollectionStore(idbStore);
 // separately from the owned set so the Trocar offer + sharing keep working any time — not
 // only in the brief window between finishing a scan and committing it.
 const repeats = createCollectionStore(idbStore, 'repeats');
+// A wishlist set: codes the user WANTS, seeded by tapping a friend's spares on a shared link (and
+// shareable/persisted like repeats). No 0-FP risk — wanting a sticker can never offer a wrong trade.
+const wants = createCollectionStore(idbStore, 'wants');
 const settings = createSettingsStore();
 
 const SESSION_KEY = 'session';
@@ -82,6 +85,7 @@ function CaptureGate() {
 export function App() {
   useStore(collection);
   useStore(repeats);
+  useStore(wants);
   useStore(settings);
 
   const initialFriendPayload = useMemo(loadFriendPayload, []);
@@ -156,6 +160,7 @@ export function App() {
         <TradeScreen
           collection={collection}
           repeats={repeats}
+          wants={wants}
           friendPayload={friendPayload}
           onShare={(payload) => shareTrades(payload, checklist)}
           onClearFriend={() => setFriendPayload(null)}
@@ -174,10 +179,13 @@ export function App() {
       )}
 
       {screen === 'settings' && (
-        <SettingsScreen collection={collection} repeats={repeats} settings={settings} />
+        <SettingsScreen collection={collection} repeats={repeats} wants={wants} settings={settings} />
       )}
 
-      <Nav current={screen} onNavigate={setScreen} />
+      {/* Hide the bottom nav while a friend's shared list is open: the receiver has no tabs to use
+          mid-flow, and dropping it recovers ~48px on a 320px screen. It returns once they clear the
+          friend (← Ver minha lista) or navigate away. */}
+      {!(friendPayload && screen === 'trade') && <Nav current={screen} onNavigate={setScreen} />}
 
       {/* A friend who arrives via a shared link lands straight on their trade comparison — don't
           bury it behind the intro. The intro still gates the SCANNER (it teaches the show-the-back

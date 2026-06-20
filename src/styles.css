@@ -2240,11 +2240,12 @@ html.scan-active body {
   padding: 6px 4px;
   margin-left: -4px;
 }
-.trade-win {
+/* one-line guide under the friend-trade title */
+.trade-guide {
   margin: 0;
   font-family: var(--font-head);
   font-weight: 600;
-  font-size: 1rem;
+  font-size: 0.95rem;
   color: var(--gold);
 }
 
@@ -2266,6 +2267,217 @@ html.scan-active body {
 .trade-cta p {
   color: var(--kraft-text);
   margin: 4px 0 12px;
+}
+
+/* ===== tappable friend-match (cold-receiver) flow ===== */
+
+/* room so the last chip can scroll clear of the sticky scoreboard footer */
+.trade-body-friend {
+  padding-bottom: 160px;
+}
+
+/* legend — ✓ + label + shape carry "quero"/"tenho", never colour alone */
+.trade-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  margin: 14px 0 0;
+  font-family: var(--font-head);
+  font-weight: 700;
+  font-size: 0.72rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+.trade-legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.leg-sw {
+  width: 17px;
+  height: 17px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid var(--ink);
+  border-radius: var(--radius-sm);
+  font-size: 0.6rem;
+  font-style: normal;
+  font-weight: 700;
+  color: var(--ink);
+}
+.leg-want {
+  background: var(--gold);
+}
+.leg-have {
+  background: var(--keep);
+  color: #fff;
+}
+.leg-tap {
+  background: transparent;
+  border-style: dashed;
+  border-color: var(--kraft-deep);
+}
+
+/* bulk select shortcuts ("Quero todas dele" / "Limpar tudo") */
+.trade-bulk {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 10px 0 0;
+}
+.bulk-btn {
+  min-height: 44px;
+  font-family: var(--font-head);
+  font-weight: 700;
+  font-size: 0.78rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--gold);
+  background: transparent;
+  border: 1.5px dashed var(--gold);
+  border-radius: var(--radius-pill);
+  padding: 8px 15px;
+}
+.bulk-btn:active {
+  transform: scale(0.96);
+}
+.bulk-clear {
+  color: var(--kraft);
+  border-color: var(--kraft);
+}
+
+/* tappable sticker chips: base = dashed "cole aqui" slot; selected = filled gold (quero) / green
+   (tenho) with an inset ✓. Shape + icon carry the state so it never rests on colour alone. */
+.tally-select {
+  gap: 7px;
+}
+.sel-num {
+  position: relative;
+  min-width: 44px;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px 8px;
+  font-family: var(--font-head);
+  font-weight: 700;
+  font-size: 0.95rem;
+  line-height: 1;
+  border-radius: var(--radius-sm);
+  color: var(--kraft-text);
+  background: transparent;
+  border: 1.5px dashed var(--kraft-deep);
+  cursor: pointer;
+  transition: transform 0.08s ease, background 0.12s ease, border-color 0.12s ease;
+}
+.sel-num:active {
+  transform: scale(0.93);
+}
+.sel-num.is-want {
+  color: var(--ink);
+  background: var(--gold);
+  border: 2px solid var(--ink);
+}
+.sel-num.is-have {
+  color: #fff;
+  background: var(--keep);
+  border: 2px solid var(--ink);
+}
+.sel-num.is-want::after,
+.sel-num.is-have::after {
+  content: "✓";
+  position: absolute;
+  top: 1px;
+  right: 3px;
+  font-size: 0.55rem;
+  font-weight: 700;
+  line-height: 1;
+}
+.sel-num.is-want::after {
+  color: var(--ink);
+}
+.sel-num.is-have::after {
+  color: var(--gold);
+}
+
+/* sticky scoreboard footer — the album "spine": ink bar, gold foil top edge */
+.friend-foot {
+  position: sticky;
+  bottom: 0;
+  z-index: 30;
+  background: var(--ink);
+  border-top: 4px solid var(--gold-deep);
+  padding: 12px 16px calc(12px + var(--safe-bottom));
+}
+.friend-score {
+  text-align: center;
+}
+.score-trade {
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: 1.7rem;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: var(--gold);
+}
+.score-recv {
+  font-family: var(--font-head);
+  font-weight: 600;
+  font-size: 1.05rem;
+  color: var(--cream);
+}
+.friend-pega {
+  text-align: center;
+  margin-top: 2px;
+  font-family: var(--font-head);
+  font-weight: 700;
+  font-size: 0.8rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+.friend-foot .btn-wa {
+  margin-top: 10px;
+}
+.btn-wa:disabled {
+  background: var(--cream-dim);
+  color: var(--kraft-text);
+  border-color: var(--kraft-deep);
+  box-shadow: none;
+  cursor: default;
+}
+/* honest post-commit conversion: shown only after the selections are actually saved */
+.friend-converted {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 56px;
+}
+.conv-msg {
+  font-family: var(--font-head);
+  font-weight: 700;
+  font-size: 1rem;
+  color: var(--gold);
+}
+.conv-see {
+  flex: none;
+  min-height: 44px;
+  background: var(--gold);
+  color: var(--ink);
+  border: 2px solid var(--ink);
+  border-radius: var(--radius-pill);
+  font-family: var(--font-head);
+  font-weight: 700;
+  font-size: 0.85rem;
+  padding: 8px 16px;
+  box-shadow: 2px 2px 0 var(--paper-edge);
+}
+.conv-see:active {
+  transform: translate(1px, 1px);
+  box-shadow: 1px 1px 0 var(--paper-edge);
 }
 
 /* --------------------------------------------------- Narrow phones ------- */
