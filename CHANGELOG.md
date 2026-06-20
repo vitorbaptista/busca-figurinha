@@ -3,6 +3,21 @@
 Notable changes to the sticker scanner. Newest first. No formal releases yet (deploys on push to
 `main`), so entries are grouped by date. Keep this updated when you ship something notable.
 
+## 2026-06-20 — Trocar: lista aparece mesmo sem repetidas + repetidas escaneadas agora salvam
+
+### Fixed
+- **Repetidas escaneadas agora são salvas.** Quando você escaneava só figurinhas repetidas (sem
+  nenhuma nova), o botão de concluir ficava desabilitado e nada era guardado — as repetidas se
+  perdiam. Agora o botão **"Guardar N repetidas pra trocar"** funciona mesmo sem figurinhas novas no
+  escaneamento, e elas entram na sua lista de troca.
+
+### Changed
+- **A tela "Trocar" mostra tudo mesmo sem repetidas.** Antes, sem nenhuma repetida salva, a tela só
+  mostrava "Monte sua lista de troca" — escondendo o que você precisa e os botões de compartilhar.
+  Agora, tendo álbum, ela sempre mostra **"O que eu preciso"** + **"Enviar no WhatsApp"** +
+  **"Copiar lista"**; a mensagem vira uma lista de desejos (só "Preciso") quando você ainda não tem
+  repetidas. Ordem igual ao mockup: suas repetidas → o que você precisa → prévia → ações.
+
 ## 2026-06-20 — Trocar: prévia mais limpa + "O que eu preciso" recolhido por grupo
 
 ### Changed

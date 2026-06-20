@@ -68,6 +68,19 @@ describe('share links', () => {
     expect(message).toContain('📍 Preciso (2): CIV12, 00');
     expect(message).toContain(link);
   });
+
+  it('builds a "wishlist" message (no repeats yet) — só Preciso, sem linha redundante', () => {
+    const payload: TradePayload = { repeats: [], missing: ['CIV12', '00'] };
+    const link = buildShareLink('https://exemplo.com/app', payload, checklist);
+    const message = buildShareMessage(payload, link, checklist);
+
+    expect(message).toContain('🔁 Tô montando meu álbum da Copa 2026!');
+    expect(message).toContain('📍 Preciso (2): CIV12, 00');
+    expect(message).toContain(link);
+    // No awkward "Tenho 0 …" / "Nenhuma repetida informada." when sharing a pure wishlist.
+    expect(message).not.toContain('Tenho 0');
+    expect(message).not.toContain('Nenhuma repetida informada.');
+  });
 });
 
 describe('preview text', () => {
