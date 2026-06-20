@@ -22,6 +22,8 @@ interface TradeScreenProps {
   onGoScan: () => void;
   /** Open the manual repeats editor (RepeatsScreen). */
   onEditRepeats: () => void;
+  /** Open the Coleção screen to edit what's still missing ("o que eu preciso"). */
+  onEditNeed: () => void;
 }
 
 interface AlbumGroup {
@@ -37,6 +39,7 @@ export function TradeScreen({
   onClearFriend,
   onGoScan,
   onEditRepeats,
+  onEditNeed,
 }: TradeScreenProps) {
   useStore(collection);
   useStore(repeats);
@@ -204,7 +207,15 @@ export function TradeScreen({
           </div>
         )}
 
-        <SectionHead lead={pt.trade.needTitle} em={pt.trade.needEm} />
+        <SectionHead
+          lead={pt.trade.needTitle}
+          em={pt.trade.needEm}
+          action={
+            <button class="link-btn trade-edit" onClick={onEditNeed}>
+              ✏️ {pt.trade.editNeed}
+            </button>
+          }
+        />
         {needGroups.length === 0 ? (
           <p class="trade-line-empty">{pt.trade.needEmpty}</p>
         ) : (

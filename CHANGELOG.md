@@ -3,6 +3,15 @@
 Notable changes to the sticker scanner. Newest first. No formal releases yet (deploys on push to
 `main`), so entries are grouped by date. Keep this updated when you ship something notable.
 
+## 2026-06-20 — Repetidas vira aba + atalho "Editar" pra coleção
+
+### Added
+- **Nova aba "Repetidas"** na barra de baixo, entre **Coleção** e **Trocar**. Abre a mesma tela que
+  já existia pelo botão "✏️ Editar" de "Minhas repetidas" na aba Trocar — agora também dá pra chegar
+  nela direto pela navegação.
+- **Botão "✏️ Editar" na seção "O que eu preciso"** (aba Trocar), igual ao de "Minhas repetidas".
+  Leva pra tela **Coleção**, onde marcar as figurinhas que você tem encurta a lista do que falta.
+
 ## 2026-06-20 — Links por seção (#trocar, #colecao…)
 
 ### Added

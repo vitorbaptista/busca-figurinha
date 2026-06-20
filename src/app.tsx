@@ -161,6 +161,7 @@ export function App() {
           onClearFriend={() => setFriendPayload(null)}
           onGoScan={() => setScreen('scan')}
           onEditRepeats={() => setScreen('repeats')}
+          onEditNeed={() => setScreen('collection')}
         />
       )}
 
