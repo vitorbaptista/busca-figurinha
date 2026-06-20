@@ -420,6 +420,20 @@ button {
   padding-bottom: calc(var(--nav-h) + var(--safe-bottom));
 }
 
+/* While the scanner is mounted (class toggled by ScanScreen), lock the WHOLE document to the
+   visible viewport so it can't scroll behind the fixed screen. `.scan-screen` is height:100dvh +
+   overflow:hidden, but that only clips its own content — the shell ancestors (#app/.app) are sized
+   to height/min-height:100%, which on mobile is the LARGE (url-bar-hidden) viewport, taller than the
+   visible area 100dvh tracks. That extra height made the DOCUMENT scroll and pushed the bottom
+   verdict below the fold. Pinning the root to 100dvh + overflow:hidden removes the slack and the
+   scroll; the class is only present on the scan screen, so other (scrolling) screens are untouched. */
+html.scan-active,
+html.scan-active body {
+  height: 100vh;
+  height: 100dvh;
+  overflow: hidden;
+}
+
 /* album section tab — the strip above the camera */
 .pagetab {
   flex: none;
