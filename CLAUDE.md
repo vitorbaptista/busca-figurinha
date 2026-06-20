@@ -2,6 +2,29 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## Working principles
+
+Behavioral guidelines to reduce common LLM coding mistakes. These bias toward caution over speed —
+for trivial tasks, use judgment. They reinforce the project-specific invariants below; where they
+conflict, the project rules win.
+
+1. **Think before coding.** State assumptions explicitly; if uncertain, ask. If multiple
+   interpretations exist, present them — don't pick silently. If a simpler approach exists, say so.
+   If something is unclear, stop and name what's confusing.
+2. **Simplicity first.** Minimum code that solves the problem, nothing speculative — no unrequested
+   features, abstractions for single-use code, configurability, or error handling for impossible
+   scenarios. If 200 lines could be 50, rewrite it. (But never "simplify" away the documented
+   invariants below — those are load-bearing.)
+3. **Surgical changes.** Touch only what you must. Don't "improve" adjacent code, refactor what
+   isn't broken, or reformat — match existing style even if you'd do it differently (this repo
+   already asks you to match surrounding comment density and naming). Remove only the
+   imports/variables YOUR changes orphaned; flag pre-existing dead code, don't delete it. Every
+   changed line should trace to the request.
+4. **Goal-driven execution.** Turn tasks into verifiable goals ("fix the bug" → "write a test that
+   reproduces it, then make it pass"). For multi-step work, state a brief plan with a verify step
+   per item. Remember the cardinal gate here: **0 false positives** and `npm run build` (typecheck)
+   must hold.
+
 ## What this is
 
 A Portuguese (pt-BR) PWA that scans the **backs** of Panini World Cup 2026 album stickers
