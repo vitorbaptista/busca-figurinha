@@ -3,6 +3,22 @@
 Notable changes to the sticker scanner. Newest first. No formal releases yet (deploys on push to
 `main`), so entries are grouped by date. Keep this updated when you ship something notable.
 
+## 2026-06-19 — Visual: tema "Banca — Álbum de Papel"
+
+### Changed
+- **Cara nova em todo o app: o "Álbum de Papel".** O app agora é o gêmeo digital do álbum
+  Panini de verdade — superfície verde-álbum com textura de meio-tom, cartões cor de creme com
+  borda de tinta e sombra dura deslocada, detalhes em kraft/dourado e tipografia condensada de
+  banca (Anton + Oswald, fontes self-hosted no `src/fonts/`, ~40 KB, funcionam offline). O
+  veredito (GUARDAR / REPETIDA) continua sendo o herói da tela.
+- **Estado honesto "NÃO LI".** A leitura sem resultado agora aparece num tom kraft neutro (nunca
+  verde nem vermelho), reforçando que o app não chuta um código.
+- **A área da câmera continua branca de propósito** (luz de preenchimento da câmera frontal) — só
+  a moldura "cole aqui" virou tracejado dourado; o resto do app é verde-álbum.
+- Contraste do texto secundário ajustado para WCAG AA; listas mais calmas que os cartões-herói.
+- Novos `PRODUCT.md` (estratégia) e `DESIGN.md` (sistema visual) como fonte da verdade do design;
+  10 mockups de exploração em `docs/mockups/`.
+
 ## 2026-06-17 — Android: baseline Pixel combinado
 
 ### Fixed
