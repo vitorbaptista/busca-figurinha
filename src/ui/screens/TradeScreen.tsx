@@ -4,7 +4,7 @@ import type { ChecklistEntry, CollectionStore } from '../../types';
 import { checklist } from '../../data/checklist';
 import { flagFor } from '../../data/flags';
 import { matchTrades, type TradePayload } from '../../domain/tradeList';
-import { shareTextFor, copyTradeList, type ShareTradesResult } from '../../domain/share';
+import { previewTextFor, copyTradeList, type ShareTradesResult } from '../../domain/share';
 import { pt } from '../../i18n/pt';
 import { useStore } from '../hooks';
 
@@ -43,6 +43,17 @@ export function TradeScreen({
     setNotice(text);
     window.setTimeout(() => setNotice(null), 2800);
   };
+
+  // Which "O que eu preciso" album groups are expanded. Starts empty (all collapsed) so the section
+  // is a short list of group rows instead of every missing sticker (~620 rows on a half-full album).
+  const [openGroups, setOpenGroups] = useState<Set<string>>(() => new Set());
+  const toggleGroup = (label: string) =>
+    setOpenGroups((prev) => {
+      const next = new Set(prev);
+      if (next.has(label)) next.delete(label);
+      else next.add(label);
+      return next;
+    });
 
   // Gate the first paint until both stores have hydrated from IndexedDB. A friend opening a shared
   // ?t= link lands here immediately at startup; without this the match would briefly compute against
@@ -116,7 +127,7 @@ export function TradeScreen({
   // ---- The user's own trade offer ----
   const hasRepeats = myRepeatEntries.length > 0;
   const needGroups = groupByAlbum(missingCodes);
-  const previewText = hasRepeats ? shareTextFor(myPayload, checklist).text : '';
+  const previewText = hasRepeats ? previewTextFor(myPayload, checklist) : '';
 
   return (
     <div class="screen trade-screen">
@@ -188,20 +199,35 @@ export function TradeScreen({
           {needGroups.length === 0 ? (
             <p class="trade-line-empty">{pt.trade.needEmpty}</p>
           ) : (
-            needGroups.map((group) => (
-              <Fragment key={group.label}>
-                <div class="trade-grp">{group.label}</div>
-                <div class="ledger">
-                  {group.entries.map((e) => (
-                    <div class="lrow" key={e.code}>
-                      <span class="lcode">{e.display}</span>
-                      <span class="lname">{teamLabel(e)}</span>
-                      <span class="ltag ltag-falta">{pt.trade.faltaTag}</span>
-                    </div>
-                  ))}
-                </div>
-              </Fragment>
-            ))
+            <div class="ledger need-list">
+              {needGroups.map((group) => {
+                const open = openGroups.has(group.label);
+                return (
+                  <Fragment key={group.label}>
+                    <button
+                      type="button"
+                      class={`need-grp-row ${open ? 'is-open' : ''}`}
+                      onClick={() => toggleGroup(group.label)}
+                      aria-expanded={open}
+                    >
+                      <span class="ngname">{group.label}</span>
+                      <span class="ngcount">{pt.trade.groupFaltam(group.entries.length)}</span>
+                      <span class="ngcaret" aria-hidden="true">
+                        {open ? '▾' : '▸'}
+                      </span>
+                    </button>
+                    {open &&
+                      group.entries.map((e) => (
+                        <div class="need-row" key={e.code}>
+                          <span class="lcode">{e.display}</span>
+                          <span class="lname">{teamLabel(e)}</span>
+                          <span class="ltag ltag-falta">{pt.trade.faltaTag}</span>
+                        </div>
+                      ))}
+                  </Fragment>
+                );
+              })}
+            </div>
           )}
         </div>
       )}
@@ -333,7 +359,7 @@ function entriesFor(codes: Set<string>): ChecklistEntry[] {
 }
 
 /** Bucket entries (given by code) into album groups (Grupo A..L, then Especiais), in album order. */
-function groupByAlbum(codes: Iterable<string>): AlbumGroup[] {
+export function groupByAlbum(codes: Iterable<string>): AlbumGroup[] {
   const selected = new Set(codes);
   const groups: AlbumGroup[] = [];
 

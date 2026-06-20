@@ -1530,6 +1530,63 @@ button {
   text-shadow: 2px 2px 0 var(--paper-edge);
 }
 
+/* "O que eu preciso": album groups collapsed inside one cream card; tap a group to expand its
+   missing codes. `.need-list` reuses `.ledger` for the card; rows below set their own dividers. */
+.need-grp-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 12px 14px;
+  min-height: 48px;
+  background: transparent;
+  border: 0;
+  border-bottom: 1.5px dashed var(--kraft-deep);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.need-grp-row.is-open {
+  background: var(--cream-dim);
+}
+.ngname {
+  font-family: var(--font-head);
+  font-weight: 700;
+  font-size: 1rem;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: var(--ink);
+}
+.ngcount {
+  margin-left: auto;
+  font-family: var(--font-head);
+  font-weight: 700;
+  font-size: 0.8rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--keep);
+}
+.need-grp-row.is-open .ngcount {
+  color: var(--kraft-text);
+}
+.ngcaret {
+  color: var(--kraft-deep);
+  font-weight: 700;
+  font-size: 0.9rem;
+}
+/* expanded sticker row — own container (not .lrow) so it doesn't inherit .lrow:last-child */
+.need-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 11px 14px;
+  background: rgba(15, 60, 39, 0.04); /* faint inset under an open group (--paper-edge at 4%) */
+  border-bottom: 1.5px dashed var(--kraft-deep);
+}
+.need-list > :last-child {
+  border-bottom: 0; /* no leftover divider at the card's bottom edge (collapsed group OR sticker row) */
+}
+
 /* the ledger — cream card with dashed kraft dividers, like a paper trade slip */
 .ledger {
   margin: 9px 0 0;

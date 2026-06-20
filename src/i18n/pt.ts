@@ -113,6 +113,8 @@ export const pt = {
     needEm: 'preciso',
     faltaTag: 'Falta',
     needEmpty: 'Você já tem todas as figurinhas! 🎉',
+    // Collapsed group row: "faltam N" (N = missing stickers in the group, up to 80).
+    groupFaltam: (n: number) => (n === 1 ? 'falta 1' : `faltam ${n}`),
 
     // Preview + actions
     previewTag: 'Prévia da mensagem',
