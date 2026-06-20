@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Marcar o que FALTA — 4 opções · Troca Figurinhas</title>
+<style>
+  /* Self-hosted display faces (same files the app ships), so the mockup matches 1:1. */
+  @font-face { font-family:'Anton'; font-style:normal; font-weight:400; font-display:swap; src:url('../../src/fonts/anton-latin.woff2') format('woff2'); }
+  @font-face { font-family:'Oswald'; font-style:normal; font-weight:400 700; font-display:swap; src:url('../../src/fonts/oswald-latin.woff2') format('woff2'); }
+
+  :root{
+    --paper:#1f6b46; --paper-deep:#185438; --paper-edge:#0f3c27;
+    --cream:#f4ecd8; --cream-dim:#e4d8bc;
+    --ink:#16241c; --kraft:#d8b88a; --kraft-deep:#c39b66; --kraft-text:#6c4e23;
+    --gold:#f0c64b; --gold-deep:#caa033;
+    --keep:#0a7a3e; --keep-bright:#2bd06f; --dupe:#b23a1e; --miss:#cdbb95;
+    --text:var(--cream); --text-dim:rgba(244,236,216,.72);
+    --radius:6px; --radius-sm:4px; --radius-pill:999px;
+    --font:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+    --font-head:'Oswald',var(--font);
+    --font-display:'Anton','Oswald',Impact,var(--font);
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  html,body{margin:0;}
+  body{
+    background:#0c130f;
+    color:var(--text);
+    font-family:var(--font);
+    -webkit-font-smoothing:antialiased;
+    padding:40px 28px 60px;
+  }
+
+  /* ---- page chrome (not part of the app) ---- */
+  .page-head{max-width:1700px;margin:0 auto 28px;}
+  .page-head h1{font-family:var(--font-display);font-weight:400;text-transform:uppercase;letter-spacing:.01em;font-size:2.1rem;margin:0 0 8px;color:#fff;}
+  .page-head p{color:#aeb9af;max-width:80ch;margin:0;font-size:1.02rem;line-height:1.5;}
+  .stage{display:flex;flex-wrap:wrap;gap:40px 34px;justify-content:center;max-width:1820px;margin:0 auto;}
+  figure{margin:0;display:flex;flex-direction:column;align-items:center;gap:14px;width:384px;}
+  figcaption{width:100%;color:#d7ddd6;}
+  figcaption b{display:block;font-family:var(--font-head);font-weight:700;font-size:1.05rem;letter-spacing:.01em;color:#fff;margin-bottom:3px;}
+  figcaption span{font-size:.9rem;color:#9fb0a4;line-height:1.45;}
+  figcaption .tag{display:inline-block;font-family:var(--font-head);font-weight:700;font-size:.7rem;letter-spacing:.08em;text-transform:uppercase;color:var(--gold);border:1px solid rgba(240,198,75,.4);border-radius:999px;padding:2px 9px;margin-bottom:8px;}
+
+  /* ---- phone frame ---- */
+  .phone{width:384px;height:812px;background:var(--paper-deep);border-radius:30px;overflow:hidden;border:9px solid #07140d;box-shadow:0 22px 50px rgba(0,0,0,.55);display:flex;flex-direction:column;}
+  .surf{position:relative;flex:1;min-height:0;overflow:hidden;}
+  .surf::before{content:'';position:absolute;inset:0;pointer-events:none;z-index:0;background-image:radial-gradient(rgba(0,0,0,.16) 1px,transparent 1.4px);background-size:7px 7px;opacity:.34;mix-blend-mode:multiply;}
+  .scrolls{position:relative;z-index:1;height:100%;overflow:auto;}
+  .scrolls::-webkit-scrollbar{display:none;}
+
+  /* ---- app components (copied from src/styles.css so the mockup is faithful) ---- */
+  .collection-header{position:sticky;top:0;z-index:20;background:var(--paper-deep);padding:16px 16px 14px;border-bottom:3px solid var(--gold-deep);}
+  .collection-progress-row{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin-bottom:10px;}
+  h1.scr{font-family:var(--font-display);font-weight:400;font-size:1.85rem;line-height:.95;letter-spacing:.01em;text-transform:uppercase;margin:0;}
+  .collection-count{font-family:var(--font-display);font-weight:400;font-size:1.5rem;color:var(--gold);white-space:nowrap;}
+  .progress{height:14px;background:var(--cream-dim);border:2px solid var(--ink);border-radius:var(--radius-sm);overflow:hidden;}
+  .progress-fill{height:100%;background:repeating-linear-gradient(45deg,var(--keep) 0 8px,#096e38 8px 16px);}
+  .search-input{width:100%;background:var(--cream);border:2px solid var(--ink);border-radius:var(--radius);color:var(--ink);font-family:var(--font-head);font-size:1rem;padding:11px 14px;min-height:46px;}
+  .search-input::placeholder{color:var(--kraft-text);opacity:.8;}
+
+  .team-list{list-style:none;margin:0;padding:10px 16px;display:flex;flex-direction:column;gap:8px;}
+  .group-header{margin:8px 2px 2px;font-family:var(--font-display);font-weight:400;font-size:1.3rem;letter-spacing:.02em;text-transform:uppercase;color:var(--cream);text-shadow:2px 2px 0 var(--paper-edge);}
+  .group-header:first-child{margin-top:0;}
+  .team{background:var(--cream);border:2px solid var(--ink);border-radius:var(--radius);box-shadow:2px 2px 0 rgba(15,60,39,.28);overflow:hidden;}
+  .team-head{width:100%;display:flex;align-items:center;justify-content:space-between;gap:12px;color:var(--ink);padding:13px 16px;min-height:56px;font-family:var(--font-head);font-size:1.05rem;font-weight:700;}
+  .team-name{display:flex;align-items:center;gap:8px;}
+  .team-progress{font-family:var(--font-head);font-size:.9rem;font-weight:700;color:var(--kraft-text);background:var(--cream-dim);border:1.5px solid var(--ink);padding:3px 10px;border-radius:var(--radius-pill);white-space:nowrap;}
+  .team-progress.is-complete{background:var(--keep);border-color:var(--ink);color:#fff;}
+  .team-progress.is-falta{background:#f3dcc4;border-color:var(--ink);color:var(--dupe);}
+
+  .chip-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(44px,1fr));gap:8px;padding:4px 14px 14px;}
+  .chip{aspect-ratio:1/1;min-width:44px;min-height:44px;border-radius:var(--radius-sm);font-family:var(--font-head);font-size:1.02rem;font-weight:700;display:grid;place-items:center;border:2px solid var(--ink);position:relative;}
+  .chip-owned{background:var(--paper);border-color:var(--ink);color:var(--cream);box-shadow:2px 2px 0 rgba(15,60,39,.45);}
+  .chip-owned::after{content:'✓';position:absolute;top:0;right:4px;font-size:.7rem;font-weight:900;color:var(--gold);}
+  .chip-needed{background:transparent;color:var(--kraft-text);border-style:dashed;border-color:var(--kraft-deep);}
+
+  /* the missing chip pulled out — brick "falta" ring so the eye lands on the empty slots */
+  .chip-needed.hot{border-color:var(--dupe);border-width:3px;background:#f7e7d9;color:var(--dupe);box-shadow:2px 2px 0 rgba(178,58,30,.3);}
+
+  .btn{border:2px solid var(--ink);border-radius:var(--radius);padding:12px 18px;font-family:var(--font-head);font-size:1rem;font-weight:700;letter-spacing:.02em;color:var(--ink);background:var(--cream);min-height:50px;display:inline-flex;align-items:center;justify-content:center;gap:8px;box-shadow:4px 4px 0 var(--paper-edge);}
+  .btn-block{width:100%;}
+  .btn-primary{background:var(--keep);color:#fff;}
+  .btn-gold{background:var(--gold);color:var(--ink);}
+
+  /* ============ NEW elements proposed by the 4 options ============ */
+
+  /* OPT 1 — seed "marcar tudo" entry card + after-state notice */
+  .seed-card{background:var(--kraft);border:2px solid var(--ink);border-radius:var(--radius);box-shadow:3px 3px 0 var(--paper-edge);padding:13px 14px;margin:10px 0 0;color:var(--ink);}
+  .seed-card .sc-emoji{font-size:1.5rem;}
+  .seed-card .sc-row{display:flex;align-items:flex-start;gap:10px;}
+  .seed-card .sc-title{font-family:var(--font-head);font-weight:700;font-size:1.02rem;margin:0 0 2px;}
+  .seed-card .sc-text{font-size:.88rem;color:#5b4322;margin:0;line-height:1.4;}
+  .seed-card .btn{margin-top:11px;}
+
+  .notice{background:var(--cream);border:2px solid var(--ink);border-radius:var(--radius);box-shadow:3px 3px 0 var(--paper-edge);padding:12px 14px;margin:12px 16px 0;color:var(--ink);}
+  .notice-title{font-family:var(--font-head);font-weight:700;font-size:1rem;display:flex;gap:8px;align-items:center;margin:0 0 3px;}
+  .notice-title .dot{width:18px;height:18px;border-radius:50%;background:var(--keep);color:#fff;display:grid;place-items:center;font-size:.72rem;}
+  .notice-text{font-size:.9rem;color:var(--kraft-text);margin:0;line-height:1.4;}
+  .notice-row{display:flex;justify-content:flex-end;margin-top:10px;}
+  .btn-mini{border:2px solid var(--ink);background:var(--cream);border-radius:var(--radius);font-family:var(--font-head);font-weight:700;font-size:.9rem;padding:7px 14px;min-height:38px;box-shadow:2px 2px 0 var(--paper-edge);color:var(--ink);display:inline-flex;align-items:center;gap:6px;}
+
+  /* OPT 2 — TENHO / FALTA segmented toggle + inverted grid */
+  .seg{display:flex;background:var(--cream-dim);border:2px solid var(--ink);border-radius:var(--radius-pill);padding:3px;gap:3px;box-shadow:2px 2px 0 var(--paper-edge);margin-bottom:10px;}
+  .seg button{flex:1;border:none;background:none;font-family:var(--font-head);font-weight:700;font-size:.92rem;letter-spacing:.05em;text-transform:uppercase;color:var(--kraft-text);padding:9px 0;border-radius:var(--radius-pill);min-height:40px;display:flex;align-items:center;justify-content:center;gap:6px;}
+  .seg button.is-active{background:var(--gold);color:var(--ink);box-shadow:0 2px 0 var(--gold-deep);}
+  .col-help{font-family:var(--font-head);font-size:.86rem;color:var(--text-dim);margin:0;display:flex;gap:7px;align-items:flex-start;line-height:1.35;}
+  .col-help .hi{color:var(--gold);flex:none;}
+  .col-help .ct{flex:1;}
+  /* a sticker you already have — calm, out of the way, in FALTA mode */
+  .chip-have{background:#d3e2d6;border-color:#9bb6a4;color:#5c7a67;}
+  .chip-have::after{content:'✓';position:absolute;top:0;right:4px;font-size:.66rem;font-weight:900;color:#9bb6a4;}
+
+  /* OPT 3 — per-team "Tenho todas" */
+  .allbtn{border:2px solid var(--ink);background:var(--cream);color:var(--ink);font-family:var(--font-head);font-weight:700;font-size:.78rem;letter-spacing:.03em;text-transform:uppercase;padding:7px 13px;min-height:38px;border-radius:var(--radius-pill);box-shadow:2px 2px 0 var(--paper-edge);white-space:nowrap;}
+  .team.done .team-head{padding-top:14px;padding-bottom:14px;}
+  .team-check{width:22px;height:22px;border-radius:50%;background:var(--keep);color:#fff;display:grid;place-items:center;font-size:.78rem;font-weight:900;}
+
+  /* OPT 4 — "lista de faltas" builder */
+  .falta-intro{font-family:var(--font-head);font-size:.92rem;color:var(--text-dim);margin:0 0 10px;line-height:1.4;}
+  .falta-add{display:flex;gap:8px;}
+  .falta-add .search-input{flex:1;}
+  .falta-add .btn{padding:0 16px;min-height:46px;box-shadow:3px 3px 0 var(--paper-edge);}
+  .falta-list{list-style:none;margin:14px 16px 0;padding:0;display:flex;flex-direction:column;gap:8px;}
+  .falta-ticket{display:flex;align-items:center;gap:10px;background:var(--cream);border:2px solid var(--ink);border-radius:var(--radius);box-shadow:2px 2px 0 rgba(15,60,39,.28);padding:9px 10px 9px 12px;color:var(--ink);}
+  .falta-code{font-family:var(--font-head);font-weight:700;background:var(--cream-dim);border:1.5px solid var(--ink);border-radius:var(--radius-sm);padding:3px 9px;font-size:.95rem;}
+  .falta-name{flex:1;font-size:.92rem;color:var(--kraft-text);}
+  .falta-x{border:2px solid var(--ink);background:var(--cream);color:var(--dupe);font-weight:900;font-size:1rem;width:34px;height:34px;border-radius:var(--radius-sm);box-shadow:2px 2px 0 rgba(15,60,39,.28);}
+  .falta-meta{font-family:var(--font-head);font-size:.9rem;color:var(--text-dim);margin:14px 18px 0;display:flex;justify-content:space-between;}
+  .falta-meta b{color:var(--gold);}
+  .falta-cta{margin:12px 16px 0;}
+
+  .pnav{display:flex;background:var(--ink);border-top:3px solid var(--gold-deep);flex:none;}
+  .pnav button{flex:1;background:none;border:none;border-right:1px solid rgba(244,236,216,.12);color:rgba(244,236,216,.6);display:flex;flex-direction:column;align-items:center;gap:3px;padding:9px 0 10px;font-family:var(--font-head);}
+  .pnav button:last-child{border-right:0;}
+  .pnav .pe{font-size:1.3rem;line-height:1;filter:grayscale(.5);}
+  .pnav .pl{font-size:.68rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase;}
+  .pnav button.on{color:var(--gold);background:rgba(240,198,75,.08);}
+  .pnav button.on .pe{filter:none;}
+
+  .pad{padding:0 16px;}
+</style>
+</head>
+<body>
+
+<div class="page-head">
+  <h1>Marcar “o que FALTA” — 4 opções</h1>
+  <p>Para quem tem o álbum quase completo, apontar as poucas que faltam é muito mais rápido que marcar uma a uma as ~960 que já tem. Quatro formas de oferecer isso na tela <b>Coleção</b>, todas sem inventar resposta (regra de ouro: 0 falso positivo). Mockups no design real “Banca / Álbum de Papel”.</p>
+</div>
+
+<div class="stage">
+
+  <!-- ============================ OPÇÃO 1 ============================ -->
+  <figure>
+    <div class="phone" id="opt1">
+      <div class="surf"><div class="scrolls">
+        <div class="collection-header">
+          <div class="collection-progress-row">
+            <h1 class="scr">Minha coleção</h1>
+            <span class="collection-count">974/992</span>
+          </div>
+          <div class="progress"><div class="progress-fill" style="width:98%"></div></div>
+          <div class="seed-card">
+            <div class="sc-row">
+              <span class="sc-emoji">📕</span>
+              <div>
+                <p class="sc-title">Tem o álbum quase completo?</p>
+                <p class="sc-text">Marque o álbum inteiro de uma vez e depois é só tirar as que faltam.</p>
+              </div>
+            </div>
+            <button class="btn btn-block btn-gold">Marcar álbum inteiro</button>
+          </div>
+        </div>
+
+        <div class="notice">
+          <div class="notice-title"><span class="dot">✓</span> Álbum inteiro marcado!</div>
+          <p class="notice-text">Agora toque nas que faltam pra <b>tirar</b> da coleção. Achou só 2 vazias? Pronto.</p>
+          <div class="notice-row"><button class="btn-mini">↩︎ Desfazer</button></div>
+        </div>
+
+        <ul class="team-list">
+          <li class="group-header">Grupo C</li>
+          <li class="team">
+            <div class="team-head"><span class="team-name">Brasil</span><span class="team-progress">18/20</span></div>
+            <div class="chip-grid" data-grid data-n="20" data-missing="7,14"></div>
+          </li>
+          <li class="team">
+            <div class="team-head"><span class="team-name">Marrocos</span><span class="team-progress is-complete">20/20</span></div>
+            <div class="chip-grid" data-grid data-n="20" data-missing=""></div>
+          </li>
+        </ul>
+      </div></div>
+      <nav class="pnav">
+        <button><span class="pe">📷</span><span class="pl">Escanear</span></button>
+        <button class="on"><span class="pe">📒</span><span class="pl">Coleção</span></button>
+        <button><span class="pe">🔁</span><span class="pl">Trocar</span></button>
+        <button><span class="pe">⚙️</span><span class="pl">Ajustes</span></button>
+      </nav>
+    </div>
+    <figcaption>
+      <span class="tag">Recomendada (base)</span>
+      <b>1 · “Marcar álbum inteiro” + tirar o que falta</b>
+      <span>Um toque marca tudo como seu (com <b>Desfazer</b> bem visível); a tela vira um mar de verde e você só tira as vazias. O tap nunca muda de sentido — verde = tenho, sempre. Mais seguro contra erro.</span>
+    </figcaption>
+  </figure>
+
+  <!-- ============================ OPÇÃO 2 ============================ -->
+  <figure>
+    <div class="phone" id="opt2">
+      <div class="surf"><div class="scrolls">
+        <div class="collection-header">
+          <div class="seg">
+            <button>Tenho</button>
+            <button class="is-active">⌖ Falta</button>
+          </div>
+          <div class="collection-progress-row">
+            <h1 class="scr">Minha coleção</h1>
+            <span class="collection-count">Faltam&nbsp;18</span>
+          </div>
+          <p class="col-help"><span class="hi">⌖</span><span class="ct">Toque na figurinha que você <b>NÃO</b> tem pra marcar a falta. As que já são suas ficam apagadinhas.</span></p>
+        </div>
+
+        <ul class="team-list">
+          <li class="group-header">Grupo C</li>
+          <li class="team">
+            <div class="team-head"><span class="team-name">Brasil</span><span class="team-progress is-falta">faltam 2</span></div>
+            <div class="chip-grid" data-grid data-n="20" data-mode="falta" data-missing="7,14"></div>
+          </li>
+          <li class="team">
+            <div class="team-head"><span class="team-name">Haiti</span><span class="team-progress is-falta">falta 1</span></div>
+            <div class="chip-grid" data-grid data-n="20" data-mode="falta" data-missing="4"></div>
+          </li>
+        </ul>
+      </div></div>
+      <nav class="pnav">
+        <button><span class="pe">📷</span><span class="pl">Escanear</span></button>
+        <button class="on"><span class="pe">📒</span><span class="pl">Coleção</span></button>
+        <button><span class="pe">🔁</span><span class="pl">Trocar</span></button>
+        <button><span class="pe">⚙️</span><span class="pl">Ajustes</span></button>
+      </nav>
+    </div>
+    <figcaption>
+      <span class="tag">Mais intuitiva · mais arriscada</span>
+      <b>2 · Modo “Falta” (chave Tenho / Falta)</b>
+      <span>Uma chave inverte o que o toque significa: no modo Falta você toca só nas vazias (realçadas em vermelho) e as suas ficam apagadas. Casa com a cabeça de “álbum quase cheio”, mas exige sinal de modo forte pra ninguém tocar no modo errado.</span>
+    </figcaption>
+  </figure>
+
+  <!-- ============================ OPÇÃO 3 ============================ -->
+  <figure>
+    <div class="phone" id="opt3">
+      <div class="surf"><div class="scrolls">
+        <div class="collection-header">
+          <div class="collection-progress-row">
+            <h1 class="scr">Minha coleção</h1>
+            <span class="collection-count">974/992</span>
+          </div>
+          <p class="col-help"><span class="hi">✓</span><span class="ct">Já fechou um time? Toque em <b>Tenho todas</b> e ele inteiro vira seu de uma vez.</span></p>
+        </div>
+
+        <ul class="team-list">
+          <li class="group-header">Grupo C</li>
+          <li class="team done">
+            <div class="team-head"><span class="team-name"><span class="team-check">✓</span> Brasil</span><span class="team-progress is-complete">Tenho todas · 20/20</span></div>
+          </li>
+          <li class="team done">
+            <div class="team-head"><span class="team-name"><span class="team-check">✓</span> Marrocos</span><span class="team-progress is-complete">Tenho todas · 20/20</span></div>
+          </li>
+          <li class="team">
+            <div class="team-head"><span class="team-name">Haiti</span><button class="allbtn">Tenho todas</button></div>
+            <div class="chip-grid" data-grid data-n="20" data-missing="11,18"></div>
+          </li>
+          <li class="team done">
+            <div class="team-head"><span class="team-name"><span class="team-check">✓</span> Escócia</span><span class="team-progress is-complete">Tenho todas · 20/20</span></div>
+          </li>
+        </ul>
+      </div></div>
+      <nav class="pnav">
+        <button><span class="pe">📷</span><span class="pl">Escanear</span></button>
+        <button class="on"><span class="pe">📒</span><span class="pl">Coleção</span></button>
+        <button><span class="pe">🔁</span><span class="pl">Trocar</span></button>
+        <button><span class="pe">⚙️</span><span class="pl">Ajustes</span></button>
+      </nav>
+    </div>
+    <figcaption>
+      <span class="tag">Granular · combina com a 1</span>
+      <b>3 · “Tenho todas” por time</b>
+      <span>Cada time ganha um botão que marca os 20 de uma vez; o time fechado encolhe pra uma linha limpa “20/20 ✓”. Bate com a cabeça de quem pensa “fechei o Brasil, a Argentina… só faltam uns soltos”. Toque sempre = tenho.</span>
+    </figcaption>
+  </figure>
+
+  <!-- ============================ OPÇÃO 4 ============================ -->
+  <figure>
+    <div class="phone" id="opt4">
+      <div class="surf"><div class="scrolls">
+        <div class="collection-header">
+          <div class="collection-progress-row">
+            <h1 class="scr">Só o que falta</h1>
+            <span class="collection-count">974/992</span>
+          </div>
+          <p class="falta-intro">Tem quase tudo? Diz <b>só as que faltam</b> — o resto a gente marca como seu.</p>
+          <div class="falta-add">
+            <input class="search-input" placeholder="Código que falta (ex: BRA 7)" />
+            <button class="btn">＋</button>
+          </div>
+        </div>
+
+        <ul class="falta-list">
+          <li class="falta-ticket"><span class="falta-code">BRA 7</span><span class="falta-name">Brasil · jogador</span><button class="falta-x">✕</button></li>
+          <li class="falta-ticket"><span class="falta-code">BRA 14</span><span class="falta-name">Brasil · jogador</span><button class="falta-x">✕</button></li>
+          <li class="falta-ticket"><span class="falta-code">FWC 3</span><span class="falta-name">Especiais</span><button class="falta-x">✕</button></li>
+          <li class="falta-ticket"><span class="falta-code">CC 5</span><span class="falta-name">Coca-Cola · Antonee Robinson</span><button class="falta-x">✕</button></li>
+        </ul>
+
+        <div class="falta-meta"><span>Você marcou <b>4 faltando</b></span><span>tem <b>988</b></span></div>
+        <div class="falta-cta"><button class="btn btn-block btn-primary">Tenho todas as outras (988)</button></div>
+      </div></div>
+      <nav class="pnav">
+        <button><span class="pe">📷</span><span class="pl">Escanear</span></button>
+        <button class="on"><span class="pe">📒</span><span class="pl">Coleção</span></button>
+        <button><span class="pe">🔁</span><span class="pl">Trocar</span></button>
+        <button><span class="pe">⚙️</span><span class="pl">Ajustes</span></button>
+      </nav>
+    </div>
+    <figcaption>
+      <span class="tag">Literal “aponte o que não tem”</span>
+      <b>4 · Lista de faltas (digita só o que falta)</b>
+      <span>Você digita/escaneia só os códigos que faltam, vira uma listinha removível, e um único botão marca todo o resto como seu. É o caminho mais direto pra quem já sabe de cabeça (ou lê na contracapa) o que está faltando.</span>
+    </figcaption>
+  </figure>
+
+</div>
+
+<script>
+  // Stamp out the 20-chip grids from data-attrs so the markup stays small.
+  for (const g of document.querySelectorAll('[data-grid]')) {
+    const n = +g.dataset.n || 20;
+    const missing = new Set((g.dataset.missing || '').split(',').filter(Boolean).map(Number));
+    const mode = g.dataset.mode || 'own';
+    let html = '';
+    for (let i = 1; i <= n; i++) {
+      const miss = missing.has(i);
+      let cls;
+      if (mode === 'falta') cls = miss ? 'chip chip-needed hot' : 'chip chip-have';
+      else cls = miss ? 'chip chip-needed' : 'chip chip-owned';
+      html += '<button class="' + cls + '">' + i + '</button>';
+    }
+    g.innerHTML = html;
+  }
+</script>
+</body>
+</html>
