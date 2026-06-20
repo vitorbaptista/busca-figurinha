@@ -15,10 +15,6 @@ const SPECIAL_CODE = 'FWC';
 const NAME_PRESENT = 1;
 const BASE64URL = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_';
 
-/** How many "preciso" codes to spell out inline before collapsing the rest to "+N".
- *  A real wishlist can be hundreds of stickers; the full set still travels in the link. */
-const NEEDS_INLINE_CAP = 24;
-
 function canonicalFromInput(raw: string, checklist: Checklist): string | null {
   const normalized = normalizeCode(raw);
   if (normalized === `${SPECIAL_CODE}0`) return checklist.byCode.has('00') ? '00' : null;
@@ -47,14 +43,38 @@ function displayTeamLine(teamEntries: ChecklistEntry[]): string {
   const flag = flagFor(first.teamCode);
   const prefix = flag ? `${flag} ` : '';
   const numbers = teamEntries.map(numberLabel).join(', ');
-  return `${prefix}${first.teamName} (${first.teamCode}): ${numbers}`;
+  // Compact, WhatsApp-friendly: "🇲🇽 MEX 3, 6, 10" (flag + 3-letter code + numbers). The country is
+  // already named by the flag + the group header above, so the full team name would only add length.
+  return `${prefix}${first.teamCode} ${numbers}`;
+}
+
+/** The per-team lines, grouped by album group (A..L) then the group-less sections (Especiais,
+ *  Coca-Cola), one team per line via displayTeamLine, with a blank line between groups. The group
+ *  header is "Grupo X" for the A..L draw and the section's own name (Especiais / Coca-Cola) otherwise.
+ *  Shared by the "Tenho" and "Preciso" blocks so the two layouts can never drift. */
+function groupedTeamLines(selected: Set<string>, checklist: Checklist): string[] {
+  const lines: string[] = [];
+  let currentGroup: string | null = null;
+  for (const team of checklist.teams) {
+    const teamEntries = team.entries.filter((entry) => selected.has(entry.code));
+    if (teamEntries.length === 0) continue;
+
+    const groupLabel = team.group ? `Grupo ${team.group}` : team.teamName;
+    if (groupLabel !== currentGroup) {
+      if (lines.length > 0) lines.push('');
+      lines.push(groupLabel);
+      currentGroup = groupLabel;
+    }
+    lines.push(displayTeamLine(teamEntries));
+  }
+  return lines;
 }
 
 /** Build the human-readable, WhatsApp-friendly pt-BR text of a set of repeat codes, grouped by
- *  album group (A..L, then "Especiais"), one line per team: "🇲🇽 México (MEX): 3, 6, 10, 20".
- *  Numbers sorted ascending; teams in album order; groups in A..L order then Especiais. Include an
- *  optional title line (default e.g. "Repetidas para trocar 🔁", or include opts.name if given) and,
- *  if opts.link is provided, a final call-to-action line with the link. */
+ *  album group (A..L, then "Especiais", "Coca-Cola"), one line per team: "🇲🇽 MEX 3, 6, 10, 20".
+ *  Numbers sorted ascending; teams in album order; groups in A..L order then the special sections.
+ *  Include an optional title line (default e.g. "Repetidas para trocar 🔁", or include opts.name if
+ *  given) and, if opts.link is provided, a final call-to-action line with the link. */
 export function formatTradeList(
   codes: Iterable<string>,
   checklist: Checklist,
@@ -72,25 +92,10 @@ export function formatTradeList(
       : 'Ainda não tenho repetidas pra trocar 🔁',
   ];
 
-  let currentGroup: string | null = null;
-  let wroteAnyTeam = false;
-  for (const team of checklist.teams) {
-    const teamEntries = team.entries.filter((entry) => selected.has(entry.code));
-    if (teamEntries.length === 0) continue;
-
-    // Group-less sections use their own name (Especiais, Coca-Cola), not a hardcoded "Especiais".
-    const groupLabel = team.group ? `Grupo ${team.group}` : team.teamName;
-    if (groupLabel !== currentGroup) {
-      if (wroteAnyTeam) lines.push('');
-      lines.push(groupLabel);
-      currentGroup = groupLabel;
-    }
-
-    lines.push(displayTeamLine(teamEntries));
-    wroteAnyTeam = true;
-  }
-
-  if (!wroteAnyTeam) {
+  const teamLines = groupedTeamLines(selected, checklist);
+  if (teamLines.length > 0) {
+    lines.push(...teamLines);
+  } else {
     lines.push('', 'Nenhuma repetida informada.');
   }
 
@@ -102,23 +107,14 @@ export function formatTradeList(
   return lines.join('\n');
 }
 
-/** A compact, capped "Preciso" line for the share message: the codes the sharer still needs,
- *  inline in album order ("Preciso (123): MEX1, MEX2, … +99"). Returns "" when nothing is needed
- *  — a real wishlist can be hundreds long, so only the first NEEDS_INLINE_CAP are spelled out and
- *  the rest collapse to "+N"; the full set still travels in the link payload for the app to match. */
-export function formatNeeds(
-  codes: Iterable<string>,
-  checklist: Checklist,
-  opts?: { cap?: number },
-): string {
-  const entries = entriesFromCodeSet(canonicalCodeSet(codes, checklist), checklist);
-  if (entries.length === 0) return '';
-
-  const cap = opts?.cap ?? NEEDS_INLINE_CAP;
-  const shown = entries.slice(0, cap).map((entry) => entry.code);
-  const rest = entries.length - shown.length;
-  const list = rest > 0 ? `${shown.join(', ')} +${rest}` : shown.join(', ');
-  return `📍 Preciso (${entries.length}): ${list}`;
+/** The "Preciso" block for the share message: the codes the sharer still needs, in the SAME
+ *  album-grouped, one-team-per-line layout as the "Tenho" list ("🇲🇽 MEX 1, 2, 5, 7"), under a
+ *  count header. Returns "" when nothing is needed. No inline cap: grouping by team keeps even a
+ *  hundreds-long wishlist down to one line per team, and the full set still travels in the link. */
+export function formatNeeds(codes: Iterable<string>, checklist: Checklist): string {
+  const selected = canonicalCodeSet(codes, checklist);
+  if (selected.size === 0) return '';
+  return [`📍 Preciso (${selected.size}):`, ...groupedTeamLines(selected, checklist)].join('\n');
 }
 
 interface TeamMention {
