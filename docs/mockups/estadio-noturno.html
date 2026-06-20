@@ -1,0 +1,626 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Troca Figurinhas — Estádio Noturno</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800&family=Hanken+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --field:#070b0a;          /* deep near-black pitch */
+    --field-2:#0d1513;
+    --panel:#111c19;
+    --panel-2:#17241f;
+    --line:#23332d;           /* hairline pitch markings */
+    --line-bright:#33473f;
+    --green:#16d06a;          /* GUARDAR */
+    --green-deep:#0a8c45;
+    --green-glow:rgba(22,208,106,.55);
+    --red:#ff3b4e;            /* REPETIDA */
+    --red-deep:#b21223;
+    --amber:#ffc23b;          /* "não consegui ler" honest state */
+    --ink:#f4fbf7;            /* scoreboard white */
+    --ink-dim:#aebcb6;        /* ≥4.5:1 on panel */
+    --ink-faint:#7f9089;
+    --flood:#dff6ec;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{
+    font-family:'Hanken Grotesk',system-ui,sans-serif;
+    color:var(--ink);
+    background:
+      radial-gradient(1200px 500px at 50% -120px, rgba(22,208,106,.10), transparent 60%),
+      radial-gradient(900px 600px at 12% 120%, rgba(28,90,200,.10), transparent 55%),
+      radial-gradient(900px 600px at 90% 110%, rgba(255,59,78,.07), transparent 55%),
+      #040706;
+    min-height:100vh;
+    padding:40px 20px 64px;
+    -webkit-font-smoothing:antialiased;
+  }
+  .scoreboard-name{font-family:'Barlow Condensed',sans-serif}
+
+  /* ---------- page header ---------- */
+  .masthead{max-width:1280px;margin:0 auto 40px;text-align:center;position:relative}
+  .floodbar{
+    display:inline-flex;gap:10px;margin-bottom:22px;
+  }
+  .floodbar i{
+    width:38px;height:8px;border-radius:8px;display:block;
+    background:linear-gradient(180deg,#fff,#cfe9dc);
+    box-shadow:0 0 16px 3px rgba(223,246,236,.7), 0 0 40px 8px rgba(22,208,106,.18);
+  }
+  .floodbar i:nth-child(2){box-shadow:0 0 16px 3px rgba(223,246,236,.7), 0 0 40px 8px rgba(22,208,106,.28)}
+  .masthead h1{
+    font-family:'Barlow Condensed',sans-serif;
+    font-weight:800;font-size:clamp(38px,6vw,68px);line-height:.92;
+    letter-spacing:.5px;text-transform:uppercase;
+  }
+  .masthead h1 .sub{display:block;font-size:.42em;font-weight:600;color:var(--green);letter-spacing:3px;margin-top:6px}
+  .rationale{
+    max-width:680px;margin:22px auto 0;
+    background:linear-gradient(180deg,var(--panel),var(--field-2));
+    border:1px solid var(--line);border-radius:16px;padding:20px 24px;text-align:left;
+  }
+  .rationale h2{
+    font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:700;
+    text-transform:uppercase;letter-spacing:1.5px;color:var(--ink);margin-bottom:8px;
+    display:flex;align-items:center;gap:9px;
+  }
+  .rationale h2::before{content:"";width:10px;height:10px;border-radius:50%;background:var(--green);box-shadow:0 0 12px var(--green-glow)}
+  .rationale p{font-size:14.5px;line-height:1.6;color:var(--ink-dim)}
+
+  /* ---------- phone rack ---------- */
+  .rack{display:flex;flex-wrap:wrap;gap:44px 36px;justify-content:center;max-width:1320px;margin:0 auto}
+  .phone{
+    width:390px;height:844px;flex:0 0 auto;
+    background:#000;border-radius:46px;padding:11px;
+    box-shadow:0 0 0 2px #1b2a25, 0 30px 70px -18px rgba(0,0,0,.85), 0 0 90px -30px rgba(22,208,106,.25);
+    position:relative;
+  }
+  .screen{
+    width:100%;height:100%;border-radius:36px;overflow:hidden;
+    background:var(--field);position:relative;display:flex;flex-direction:column;
+  }
+  .notch{
+    position:absolute;top:0;left:50%;transform:translateX(-50%);
+    width:128px;height:28px;background:#000;border-radius:0 0 18px 18px;z-index:40;
+  }
+  /* status bar */
+  .statusbar{
+    display:flex;justify-content:space-between;align-items:center;
+    padding:13px 26px 6px;font-size:13px;font-weight:600;color:var(--ink);z-index:30;
+    position:relative;
+  }
+  .statusbar .right{display:flex;gap:7px;align-items:center;font-size:12px}
+
+  .caption{
+    position:absolute;left:0;right:0;bottom:-30px;text-align:center;
+    font-family:'Barlow Condensed',sans-serif;font-size:15px;letter-spacing:2px;
+    text-transform:uppercase;color:var(--ink-faint);font-weight:600;
+  }
+
+  /* ===== SCREEN 1 — ESCANEAR ===== */
+  .cam{position:relative;flex:1;display:flex;flex-direction:column;background:
+    linear-gradient(180deg,#0a0f0d 0%, #060a09 100%);overflow:hidden}
+  .cam-feed{
+    position:absolute;inset:0;
+    background:
+      radial-gradient(120% 90% at 50% 12%, rgba(223,246,236,.10), transparent 55%),
+      repeating-linear-gradient(115deg, rgba(255,255,255,.018) 0 2px, transparent 2px 9px),
+      linear-gradient(160deg,#16201c,#0a100e 70%);
+  }
+  /* faint pitch lines to read as "stadium" */
+  .cam-feed::after{
+    content:"";position:absolute;inset:0;
+    background:
+      linear-gradient(90deg, transparent 49.6%, rgba(255,255,255,.05) 49.8%, rgba(255,255,255,.05) 50.2%, transparent 50.4%),
+      radial-gradient(circle at 50% 50%, transparent 78px, rgba(255,255,255,.05) 79px, rgba(255,255,255,.05) 81px, transparent 82px);
+  }
+  .scan-top{
+    position:relative;z-index:10;display:flex;justify-content:space-between;align-items:center;
+    padding:6px 18px 0;
+  }
+  .live-tag{
+    display:inline-flex;align-items:center;gap:7px;font-family:'Barlow Condensed',sans-serif;
+    font-weight:700;font-size:14px;letter-spacing:2px;text-transform:uppercase;color:var(--ink);
+    background:rgba(0,0,0,.4);padding:6px 12px;border-radius:20px;border:1px solid var(--line);
+  }
+  .live-dot{width:9px;height:9px;border-radius:50%;background:var(--red);box-shadow:0 0 10px var(--red);animation:pulse 1.4s infinite}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+  .flip{
+    width:42px;height:42px;border-radius:50%;background:rgba(0,0,0,.45);border:1px solid var(--line-bright);
+    color:var(--ink);font-size:19px;display:grid;place-items:center;
+  }
+  /* reticle */
+  .mira-wrap{position:relative;z-index:10;flex:1;display:flex;align-items:center;justify-content:center;padding:6px 0 0}
+  .mira{
+    width:212px;height:138px;border-radius:14px;position:relative;
+    box-shadow:0 0 0 9999px rgba(4,7,6,.46), 0 0 60px 6px var(--green-glow);
+    /* screen fill-light ring — echoes the real app */
+    background:linear-gradient(180deg, rgba(223,246,236,.06), transparent);
+  }
+  .mira span{position:absolute;width:26px;height:26px;border:3px solid var(--green)}
+  .mira .tl{top:-2px;left:-2px;border-right:none;border-bottom:none;border-radius:6px 0 0 0}
+  .mira .tr{top:-2px;right:-2px;border-left:none;border-bottom:none;border-radius:0 6px 0 0}
+  .mira .bl{bottom:-2px;left:-2px;border-right:none;border-top:none;border-radius:0 0 0 6px}
+  .mira .br{bottom:-2px;right:-2px;border-left:none;border-top:none;border-radius:0 0 6px 0}
+  .scanline{
+    position:absolute;left:8px;right:8px;height:2px;border-radius:2px;top:14px;
+    background:linear-gradient(90deg,transparent,var(--green),transparent);
+    box-shadow:0 0 12px var(--green);animation:sweep 2.4s ease-in-out infinite;
+  }
+  @keyframes sweep{0%,100%{top:14px;opacity:.3}50%{top:118px;opacity:1}}
+  /* the code as it would appear on the back of the sticker, inside mira */
+  .pill-preview{
+    position:absolute;bottom:12px;left:50%;transform:translateX(-50%);
+    font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:15px;letter-spacing:2px;
+    color:#0c100e;background:#cfe0d7;padding:2px 12px;border-radius:5px;
+  }
+  .hint{
+    position:relative;z-index:10;text-align:center;margin:0 auto 8px;
+    font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:16px;letter-spacing:1px;
+    color:var(--flood);text-shadow:0 1px 8px rgba(0,0,0,.8);
+  }
+  .hint b{color:var(--green)}
+
+  /* the VERDICT — the hero */
+  .verdict{
+    position:relative;z-index:20;margin:0 14px 0;
+    border-radius:22px 22px 0 0;overflow:hidden;
+    background:
+      radial-gradient(140% 120% at 50% 0%, rgba(22,208,106,.30), transparent 60%),
+      linear-gradient(180deg,#0c1a13,#08120d);
+    border:1px solid var(--green-deep);border-bottom:none;
+    box-shadow:0 -8px 50px -6px var(--green-glow);
+    padding:16px 18px 8px;
+  }
+  .verdict-head{display:flex;align-items:center;justify-content:center;gap:14px}
+  .verdict-icon{
+    width:46px;height:46px;border-radius:50%;display:grid;place-items:center;flex:0 0 auto;
+    background:var(--green);color:#04130a;font-size:26px;font-weight:800;
+    box-shadow:0 0 22px var(--green-glow);
+  }
+  .verdict-word{
+    font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:62px;line-height:.86;
+    letter-spacing:1px;color:#fff;text-shadow:0 0 26px var(--green-glow);
+    animation:flash .5s ease-out;
+  }
+  @keyframes flash{0%{transform:scale(.8);opacity:0}55%{transform:scale(1.06)}100%{transform:scale(1);opacity:1}}
+  .verdict-meta{
+    display:flex;align-items:baseline;justify-content:center;gap:12px;margin-top:6px;
+    padding-top:10px;border-top:1px solid rgba(255,255,255,.08);
+  }
+  .verdict-code{
+    font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:30px;letter-spacing:2px;color:var(--green);
+  }
+  .verdict-team{font-size:15px;font-weight:600;color:var(--ink-dim);letter-spacing:.3px}
+
+  /* scoreboard footer */
+  .scorebar{
+    position:relative;z-index:20;background:#08120d;border-top:1px solid var(--line);
+    padding:12px 16px 10px;
+  }
+  .counters{display:flex;gap:10px;margin-bottom:12px}
+  .counter{
+    flex:1;background:var(--panel);border:1px solid var(--line);border-radius:12px;
+    padding:10px 12px;display:flex;align-items:center;gap:11px;
+  }
+  .counter .num{font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:30px;line-height:1}
+  .counter .lab{font-size:11px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:var(--ink-dim)}
+  .counter.keep .num{color:var(--green)}
+  .counter.dup .num{color:var(--red)}
+  .counter .tick{margin-left:auto;font-size:15px;opacity:.5}
+
+  .recent-h{
+    font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;letter-spacing:2px;
+    text-transform:uppercase;color:var(--ink-faint);margin:2px 2px 8px;
+  }
+  .recent{display:flex;gap:8px}
+  .chip-read{
+    flex:1;background:var(--field-2);border:1px solid var(--line);border-radius:10px;
+    padding:8px 9px;
+  }
+  .chip-read .c{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:17px;letter-spacing:1px}
+  .chip-read .s{font-size:11px;font-weight:600;display:flex;align-items:center;gap:4px;margin-top:2px}
+  .chip-read.nova .s{color:var(--green)} .chip-read.nova{border-color:rgba(22,208,106,.35)}
+  .chip-read.rep .s{color:var(--red)}
+
+  /* ===== bottom tab bar (all screens) ===== */
+  .tabbar{
+    display:flex;background:#05090800;border-top:1px solid var(--line);
+    background:#070d0b;padding:8px 8px 18px;gap:4px;
+  }
+  .tab{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px 0;
+    font-size:10.5px;font-weight:600;letter-spacing:.5px;color:var(--ink-faint)}
+  .tab .ic{font-size:19px;line-height:1}
+  .tab.active{color:var(--green)}
+  .tab.active .ic{filter:drop-shadow(0 0 8px var(--green-glow))}
+
+  /* ===== SCREEN 2 — ÁLBUM ===== */
+  .body-scroll{flex:1;overflow:hidden;display:flex;flex-direction:column}
+  .album-head{padding:18px 20px 16px;background:linear-gradient(180deg,var(--panel-2),var(--field));border-bottom:1px solid var(--line)}
+  .album-title{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:20px;letter-spacing:.5px;margin-bottom:14px;display:flex;align-items:center;gap:8px}
+  .album-title .badge{margin-left:auto;font-size:11px;font-weight:600;color:var(--ink-dim);letter-spacing:1px;background:var(--field-2);border:1px solid var(--line);padding:3px 9px;border-radius:20px}
+  .bigprog{display:flex;align-items:flex-end;gap:10px;margin-bottom:10px}
+  .bigprog .pct{font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:52px;line-height:.85;color:var(--ink)}
+  .bigprog .pct b{color:var(--green)}
+  .bigprog .of{font-size:14px;color:var(--ink-dim);font-weight:600;padding-bottom:6px}
+  .bigprog .of span{color:var(--ink-faint)}
+  .pbar{height:14px;border-radius:8px;background:#0a120f;border:1px solid var(--line);overflow:hidden;position:relative}
+  .pbar i{display:block;height:100%;width:42%;border-radius:7px 4px 4px 7px;
+    background:linear-gradient(90deg,var(--green-deep),var(--green));box-shadow:0 0 18px var(--green-glow)}
+  .pbar i::after{content:"";position:absolute;top:0;bottom:0;width:100%;
+    background:repeating-linear-gradient(115deg,rgba(255,255,255,.10) 0 6px,transparent 6px 14px)}
+  .faltam{margin-top:7px;font-size:13px;font-weight:600;color:var(--ink-dim)}
+  .faltam b{color:var(--ink)}
+
+  .album-list{flex:1;overflow-y:auto;padding:14px 16px 8px}
+  .group-h{
+    font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:14px;letter-spacing:3px;
+    text-transform:uppercase;color:var(--ink);display:flex;align-items:center;gap:10px;margin:6px 2px 12px;
+  }
+  .group-h::after{content:"";flex:1;height:1px;background:var(--line)}
+  .team{
+    background:var(--panel);border:1px solid var(--line);border-radius:13px;padding:11px 13px;margin-bottom:9px;
+  }
+  .team-row{display:flex;align-items:center;gap:11px}
+  .flag{width:26px;height:26px;border-radius:6px;flex:0 0 auto;display:grid;place-items:center;font-size:13px;font-weight:700;color:#06100b}
+  .team-name{font-weight:700;font-size:15px}
+  .team-frac{margin-left:auto;font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:16px;letter-spacing:1px;color:var(--ink-dim)}
+  .team-frac.done{color:var(--green)}
+  .team-frac.done b{font-weight:700}
+  .mini{height:6px;border-radius:4px;background:#0a120f;margin-top:9px;overflow:hidden}
+  .mini i{display:block;height:100%;background:linear-gradient(90deg,var(--green-deep),var(--green))}
+  .mini.full i{background:var(--green)}
+  .complete-tag{font-size:11px;color:var(--green);font-weight:700;letter-spacing:.5px;display:inline-flex;align-items:center;gap:4px}
+
+  /* expanded chips grid */
+  .team.open{border-color:var(--line-bright);background:var(--panel-2)}
+  .chips{display:grid;grid-template-columns:repeat(5,1fr);gap:7px;margin-top:13px}
+  .chip{
+    aspect-ratio:1;border-radius:9px;display:flex;flex-direction:column;align-items:center;justify-content:center;
+    font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:13px;
+  }
+  .chip.has{background:linear-gradient(180deg,#0f2419,#0a1b12);border:1px solid var(--green-deep);color:var(--ink)}
+  .chip.has .mk{color:var(--green);font-size:14px;line-height:1}
+  .chip.need{background:transparent;border:1px dashed var(--line-bright);color:var(--ink-faint)}
+  .chip.need .mk{font-size:13px;line-height:1;opacity:.6}
+  .chip .n{font-size:11px;color:var(--ink-faint);margin-top:1px}
+  .chip.has .n{color:var(--ink-dim)}
+
+  /* ===== SCREEN 3 — TROCAR ===== */
+  .trade-head{padding:18px 20px 16px;background:linear-gradient(180deg,var(--panel-2),var(--field));border-bottom:1px solid var(--line)}
+  .trade-head h2{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:22px;letter-spacing:.5px}
+  .trade-head p{font-size:13px;color:var(--ink-dim);margin-top:4px}
+  .trade-body{flex:1;overflow-y:auto;padding:16px 16px 8px}
+  .sec-h{
+    font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:15px;letter-spacing:1.5px;
+    display:flex;align-items:center;gap:9px;margin:4px 2px 11px;
+  }
+  .sec-h .dot{width:9px;height:9px;border-radius:2px}
+  .sec-h.give .dot{background:var(--red);box-shadow:0 0 10px rgba(255,59,78,.6)}
+  .sec-h.need .dot{background:var(--green);box-shadow:0 0 10px var(--green-glow)}
+  .sec-h .count{margin-left:auto;font-size:12px;font-weight:600;color:var(--ink-faint);letter-spacing:1px}
+
+  .give-list{display:flex;flex-direction:column;gap:8px;margin-bottom:22px}
+  .give{
+    display:flex;align-items:center;gap:12px;background:var(--panel);border:1px solid var(--line);
+    border-radius:12px;padding:11px 14px;
+  }
+  .give .code{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:19px;letter-spacing:1.5px}
+  .give .qty{
+    margin-left:auto;font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:18px;
+    color:var(--red);background:rgba(255,59,78,.12);border:1px solid rgba(255,59,78,.3);
+    border-radius:9px;padding:3px 11px;
+  }
+  .give .team{background:none;border:none;padding:0;margin:0;font-size:12px;color:var(--ink-faint);font-weight:500}
+
+  .need-grid{display:flex;gap:9px;flex-wrap:wrap;margin-bottom:8px}
+  .need-pill{
+    display:inline-flex;align-items:center;gap:7px;
+    background:linear-gradient(180deg,#0f2419,#0a1b12);border:1px solid var(--green-deep);
+    border-radius:11px;padding:9px 14px;
+    font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:18px;letter-spacing:1px;color:var(--ink);
+  }
+  .need-pill::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--green);box-shadow:0 0 9px var(--green-glow)}
+
+  /* shareable preview card */
+  .preview-card{
+    margin:6px 2px 4px;background:#0a1310;border:1px solid var(--line);border-radius:14px;overflow:hidden;
+  }
+  .pc-top{display:flex;align-items:center;gap:8px;padding:9px 13px;background:#0d1815;border-bottom:1px solid var(--line);font-size:11px;color:var(--ink-faint);font-weight:600;letter-spacing:.5px}
+  .pc-top .wa{width:20px;height:20px;border-radius:50%;background:#25d366;display:grid;place-items:center;color:#06231a;font-size:12px;font-weight:800}
+  .pc-body{padding:13px 15px;font-size:13.5px;line-height:1.6;color:var(--ink-dim)}
+  .pc-body strong{color:var(--ink);font-weight:700}
+  .pc-body .g{color:var(--green);font-weight:700}
+  .pc-body .r{color:var(--ink)}
+
+  .trade-actions{padding:12px 16px 8px;background:#070d0b;border-top:1px solid var(--line)}
+  .btn-wa{
+    width:100%;display:flex;align-items:center;justify-content:center;gap:11px;
+    background:linear-gradient(180deg,#19e070,#0fae54);color:#04130a;
+    font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:21px;letter-spacing:1px;
+    border:none;border-radius:14px;padding:15px;box-shadow:0 8px 26px -6px var(--green-glow);
+    text-transform:uppercase;
+  }
+  .btn-wa .ic{font-size:20px}
+  .btn-copy{
+    width:100%;margin-top:9px;background:transparent;color:var(--ink-dim);
+    border:1px solid var(--line-bright);border-radius:12px;padding:12px;
+    font-weight:600;font-size:14px;letter-spacing:.5px;display:flex;align-items:center;justify-content:center;gap:8px;
+  }
+
+  @media(max-width:480px){
+    .phone{width:100%;max-width:390px;height:auto;aspect-ratio:390/844}
+  }
+</style>
+</head>
+<body>
+
+  <header class="masthead">
+    <div class="floodbar"><i></i><i></i><i></i><i></i></div>
+    <h1>Estádio Noturno<span class="sub">Troca Figurinhas — Copa 2026</span></h1>
+    <div class="rationale">
+      <h2>Por que este estilo serve o usuário</h2>
+      <p>O veredito aparece como um gol no telão: branco de placar sobre o gramado escuro, verde
+      confiante para <b style="color:var(--green)">GUARDAR</b> e vermelho claro para <b style="color:var(--red)">REPETIDA</b> — sem dúvida, em meio segundo,
+      mesmo no sol da rua. O fundo quase preto poupa bateria e deixa o brilho da tela virar luz de apoio
+      para a câmera fraca. Energia de jogo, com disciplina: cada cor carrega ícone e texto, nunca cor sozinha.</p>
+    </div>
+  </header>
+
+  <div class="rack">
+
+    <!-- ============ SCREEN 1 — ESCANEAR ============ -->
+    <div class="phone">
+      <div class="screen">
+        <div class="notch"></div>
+        <div class="statusbar">
+          <span>20:42</span>
+          <span class="right">●●● &nbsp; ▮▮ &nbsp; 78%</span>
+        </div>
+
+        <div class="cam">
+          <div class="cam-feed"></div>
+
+          <div class="scan-top">
+            <span class="live-tag"><span class="live-dot"></span> Ao vivo</span>
+            <button class="flip" aria-label="Virar câmera">🔄</button>
+          </div>
+
+          <div class="mira-wrap">
+            <div class="mira">
+              <span class="tl"></span><span class="tr"></span><span class="bl"></span><span class="br"></span>
+              <div class="scanline"></div>
+              <div class="pill-preview">CIV 12</div>
+            </div>
+          </div>
+
+          <div class="hint">Mostre o verso e <b>segure parado</b></div>
+
+          <!-- HERO VERDICT -->
+          <div class="verdict">
+            <div class="verdict-head">
+              <div class="verdict-icon">✓</div>
+              <div class="verdict-word">GUARDAR</div>
+            </div>
+            <div class="verdict-meta">
+              <span class="verdict-code">CIV 12</span>
+              <span class="verdict-team">Costa do Marfim</span>
+            </div>
+          </div>
+
+          <div class="scorebar">
+            <div class="counters">
+              <div class="counter keep">
+                <span class="num">23</span>
+                <span class="lab">Novas</span>
+              </div>
+              <div class="counter dup">
+                <span class="num">8</span>
+                <span class="lab">Repetidas</span>
+              </div>
+            </div>
+            <div class="recent-h">Últimas leituras</div>
+            <div class="recent">
+              <div class="chip-read nova"><div class="c">CIV 12</div><div class="s">✓ nova</div></div>
+              <div class="chip-read rep"><div class="c">BRA 04</div><div class="s">⊘ repetida</div></div>
+              <div class="chip-read nova"><div class="c">ARG 11</div><div class="s">✓ nova</div></div>
+            </div>
+          </div>
+        </div>
+
+        <nav class="tabbar">
+          <div class="tab active"><span class="ic">◎</span>Escanear</div>
+          <div class="tab"><span class="ic">▦</span>Álbum</div>
+          <div class="tab"><span class="ic">⇄</span>Trocar</div>
+        </nav>
+      </div>
+      <div class="caption">Escanear · ao vivo</div>
+    </div>
+
+    <!-- ============ SCREEN 2 — ÁLBUM ============ -->
+    <div class="phone">
+      <div class="screen">
+        <div class="notch"></div>
+        <div class="statusbar">
+          <span>20:43</span>
+          <span class="right">●●● &nbsp; ▮▮ &nbsp; 78%</span>
+        </div>
+
+        <div class="body-scroll">
+          <div class="album-head">
+            <div class="album-title">Meu álbum <span class="badge">Copa 2026</span></div>
+            <div class="bigprog">
+              <div class="pct"><b>412</b><span style="font-size:.5em;color:var(--ink-faint)"> / 980</span></div>
+              <div class="of">42% completo</div>
+            </div>
+            <div class="pbar"><i></i></div>
+            <div class="faltam">Faltam <b>568</b> figurinhas</div>
+          </div>
+
+          <div class="album-list">
+            <div class="group-h">Grupo A</div>
+
+            <!-- Brasil -->
+            <div class="team">
+              <div class="team-row">
+                <span class="flag" style="background:linear-gradient(135deg,#16d06a,#ffc23b)">BR</span>
+                <span class="team-name">Brasil</span>
+                <span class="team-frac">18/20</span>
+              </div>
+              <div class="mini"><i style="width:90%"></i></div>
+            </div>
+
+            <!-- Argentina completa -->
+            <div class="team">
+              <div class="team-row">
+                <span class="flag" style="background:linear-gradient(135deg,#8fd3ff,#dff3ff);color:#0a3a66">AR</span>
+                <span class="team-name">Argentina</span>
+                <span class="team-frac done">20/20 <span class="complete-tag">✓ completa</span></span>
+              </div>
+              <div class="mini full"><i style="width:100%"></i></div>
+            </div>
+
+            <!-- França -->
+            <div class="team">
+              <div class="team-row">
+                <span class="flag" style="background:linear-gradient(135deg,#3a6bff,#ff5b6e);color:#fff">FR</span>
+                <span class="team-name">França</span>
+                <span class="team-frac">12/20</span>
+              </div>
+              <div class="mini"><i style="width:60%"></i></div>
+            </div>
+
+            <!-- Costa do Marfim — EXPANDED -->
+            <div class="team open">
+              <div class="team-row">
+                <span class="flag" style="background:linear-gradient(135deg,#ff9a3c,#16d06a)">CI</span>
+                <span class="team-name">Costa do Marfim</span>
+                <span class="team-frac">9/20</span>
+              </div>
+              <div class="mini"><i style="width:45%"></i></div>
+              <div class="chips">
+                <div class="chip has"><span class="mk">✓</span><span class="n">1</span></div>
+                <div class="chip has"><span class="mk">✓</span><span class="n">2</span></div>
+                <div class="chip need"><span class="mk">＋</span><span class="n">3</span></div>
+                <div class="chip has"><span class="mk">✓</span><span class="n">4</span></div>
+                <div class="chip has"><span class="mk">✓</span><span class="n">5</span></div>
+                <div class="chip need"><span class="mk">＋</span><span class="n">6</span></div>
+                <div class="chip has"><span class="mk">✓</span><span class="n">7</span></div>
+                <div class="chip need"><span class="mk">＋</span><span class="n">8</span></div>
+                <div class="chip has"><span class="mk">✓</span><span class="n">9</span></div>
+                <div class="chip need"><span class="mk">＋</span><span class="n">10</span></div>
+                <div class="chip has"><span class="mk">✓</span><span class="n">11</span></div>
+                <div class="chip need"><span class="mk">＋</span><span class="n">12</span></div>
+                <div class="chip has"><span class="mk">✓</span><span class="n">13</span></div>
+                <div class="chip has"><span class="mk">✓</span><span class="n">14</span></div>
+                <div class="chip need"><span class="mk">＋</span><span class="n">15</span></div>
+                <div class="chip need"><span class="mk">＋</span><span class="n">16</span></div>
+                <div class="chip has"><span class="mk">✓</span><span class="n">17</span></div>
+                <div class="chip need"><span class="mk">＋</span><span class="n">18</span></div>
+                <div class="chip need"><span class="mk">＋</span><span class="n">19</span></div>
+                <div class="chip need"><span class="mk">＋</span><span class="n">20</span></div>
+              </div>
+            </div>
+
+            <!-- Especiais FWC -->
+            <div class="group-h" style="margin-top:18px">Especiais</div>
+            <div class="team">
+              <div class="team-row">
+                <span class="flag" style="background:linear-gradient(135deg,#ffc23b,#ff8a3c);color:#3a1d00">★</span>
+                <span class="team-name">Especiais FWC</span>
+                <span class="team-frac">6/20</span>
+              </div>
+              <div class="mini"><i style="width:30%"></i></div>
+            </div>
+          </div>
+        </div>
+
+        <nav class="tabbar">
+          <div class="tab"><span class="ic">◎</span>Escanear</div>
+          <div class="tab active"><span class="ic">▦</span>Álbum</div>
+          <div class="tab"><span class="ic">⇄</span>Trocar</div>
+        </nav>
+      </div>
+      <div class="caption">Álbum · coleção</div>
+    </div>
+
+    <!-- ============ SCREEN 3 — TROCAR ============ -->
+    <div class="phone">
+      <div class="screen">
+        <div class="notch"></div>
+        <div class="statusbar">
+          <span>20:44</span>
+          <span class="right">●●● &nbsp; ▮▮ &nbsp; 77%</span>
+        </div>
+
+        <div class="trade-head">
+          <h2>Trocar figurinhas</h2>
+          <p>Mande suas repetidas e o que falta direto pro amigo.</p>
+        </div>
+
+        <div class="trade-body">
+          <div class="sec-h give">
+            <span class="dot"></span> Minhas repetidas <span style="font-weight:500;color:var(--ink-dim)">(para trocar)</span>
+            <span class="count">8 no total</span>
+          </div>
+          <div class="give-list">
+            <div class="give">
+              <div><div class="code">BRA 04</div><div class="team">Brasil</div></div>
+              <span class="qty">×3</span>
+            </div>
+            <div class="give">
+              <div><div class="code">ARG 11</div><div class="team">Argentina</div></div>
+              <span class="qty">×2</span>
+            </div>
+            <div class="give">
+              <div><div class="code">FRA 07</div><div class="team">França</div></div>
+              <span class="qty">×2</span>
+            </div>
+            <div class="give">
+              <div><div class="code">FWC 03</div><div class="team">Especial</div></div>
+              <span class="qty">×1</span>
+            </div>
+          </div>
+
+          <div class="sec-h need">
+            <span class="dot"></span> O que eu preciso
+            <span class="count">3 figurinhas</span>
+          </div>
+          <div class="need-grid">
+            <span class="need-pill">CIV 12</span>
+            <span class="need-pill">MEX 15</span>
+            <span class="need-pill">JPN 02</span>
+          </div>
+
+          <div class="preview-card">
+            <div class="pc-top"><span class="wa">✆</span> Prévia da mensagem</div>
+            <div class="pc-body">
+              <strong>Bora trocar figurinha? 🔵🟢</strong><br>
+              Tenho p/ trocar: <span class="r">BRA04 ×3, ARG11 ×2, FRA07 ×2, FWC03 ×1</span><br>
+              Preciso: <span class="g">CIV12, MEX15, JPN02</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="trade-actions">
+          <button class="btn-wa"><span class="ic">✆</span> Enviar no WhatsApp</button>
+          <button class="btn-copy">⧉ Copiar lista</button>
+        </div>
+
+        <nav class="tabbar">
+          <div class="tab"><span class="ic">◎</span>Escanear</div>
+          <div class="tab"><span class="ic">▦</span>Álbum</div>
+          <div class="tab active"><span class="ic">⇄</span>Trocar</div>
+        </nav>
+      </div>
+      <div class="caption">Trocar · WhatsApp</div>
+    </div>
+
+  </div>
+
+</body>
+</html>

@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Copa Retrô — Troca Figurinhas Copa 2026</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Anton&family=Archivo:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ochre:#d99323;        /* ochre / golden */
+    --burnt:#c14a2a;        /* burnt orange */
+    --teal:#1f6f6a;         /* deep teal */
+    --teal-deep:#134a47;
+    --cream:#f2e3c6;        /* cream of its own hue */
+    --cream-2:#e8d2a8;
+    --ink:#2a1f14;          /* warm near-black */
+    --ink-soft:#4a3a28;
+    --rust:#8f3415;
+    --leaf:#3f6b34;         /* keep / positive supporting */
+    --paper:#ede0c4;
+    --line:#b89766;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{
+    font-family:'Archivo',sans-serif;
+    color:var(--ink);
+    background-color:#cf9b3f;
+    background-image:
+      radial-gradient(circle at 18% 12%, rgba(31,111,106,.20), transparent 38%),
+      radial-gradient(circle at 84% 84%, rgba(193,74,42,.22), transparent 42%),
+      repeating-linear-gradient(135deg, rgba(42,31,20,.045) 0 2px, transparent 2px 9px);
+    padding:34px 18px 64px;
+    -webkit-font-smoothing:antialiased;
+  }
+  /* film grain over the whole page */
+  body::after{
+    content:"";position:fixed;inset:0;pointer-events:none;z-index:50;opacity:.5;
+    background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='120' height='120'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix type='matrix' values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 .5 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+    mix-blend-mode:multiply;
+  }
+
+  /* ---------- header band ---------- */
+  .masthead{
+    max-width:1280px;margin:0 auto 40px;
+    background:var(--ink);
+    color:var(--cream);
+    border:3px solid var(--ink);
+    box-shadow:14px 14px 0 rgba(42,31,20,.35);
+    position:relative;overflow:hidden;
+  }
+  .masthead::before{
+    content:"";position:absolute;inset:0;z-index:0;
+    background:
+      repeating-linear-gradient(90deg, transparent 0 46px, rgba(217,147,35,.10) 46px 48px),
+      radial-gradient(circle at 92% -20%, var(--burnt), transparent 46%),
+      radial-gradient(circle at 6% 130%, var(--teal), transparent 44%);
+  }
+  .masthead-inner{position:relative;z-index:1;padding:30px 38px 34px;display:flex;flex-wrap:wrap;gap:26px;align-items:flex-end;justify-content:space-between}
+  .brand-kicker{
+    font-family:'Archivo';font-weight:700;letter-spacing:.34em;
+    font-size:12px;color:var(--ochre);text-transform:uppercase;margin-bottom:6px;
+  }
+  .masthead h1{
+    font-family:'Anton',sans-serif;font-weight:400;
+    font-size:clamp(46px,8vw,86px);line-height:.86;letter-spacing:.01em;
+    text-transform:uppercase;color:var(--cream);
+    text-shadow:5px 5px 0 var(--burnt), 9px 9px 0 var(--teal);
+  }
+  .masthead h1 em{font-style:normal;color:var(--ochre)}
+  .rationale{max-width:460px}
+  .rationale .r-title{
+    font-family:'Bricolage Grotesque';font-weight:800;font-size:15px;
+    color:var(--ochre);margin-bottom:9px;
+    display:inline-flex;align-items:center;gap:9px;
+  }
+  .rationale .r-title::before{content:"●";color:var(--burnt);font-size:11px}
+  .rationale p{font-size:14.5px;line-height:1.62;color:var(--cream-2)}
+
+  /* the retro globe / ball badge */
+  .crest{
+    width:74px;height:74px;border-radius:50%;flex:none;
+    background:
+      conic-gradient(from 20deg, var(--ochre) 0 25%, var(--burnt) 25% 50%, var(--teal) 50% 75%, var(--cream) 75% 100%);
+    border:4px solid var(--cream);box-shadow:0 0 0 4px var(--ink), 6px 6px 0 rgba(42,31,20,.4);
+    display:grid;place-items:center;
+  }
+  .crest span{font-family:'Anton';font-size:30px;color:var(--ink);text-shadow:1px 1px 0 var(--cream)}
+
+  /* ---------- phone rack ---------- */
+  .rack{max-width:1280px;margin:0 auto;display:flex;flex-wrap:wrap;gap:40px;justify-content:center}
+  .phone{
+    width:390px;height:844px;flex:none;
+    background:var(--ink);
+    border-radius:46px;padding:11px;
+    box-shadow:
+      0 0 0 2px var(--ochre),
+      16px 18px 0 rgba(42,31,20,.40),
+      inset 0 0 0 2px rgba(0,0,0,.5);
+    position:relative;
+  }
+  .screen{
+    width:100%;height:100%;border-radius:36px;overflow:hidden;
+    background:var(--cream);position:relative;display:flex;flex-direction:column;
+  }
+  /* status bar */
+  .statusbar{
+    height:34px;flex:none;display:flex;align-items:center;justify-content:space-between;
+    padding:0 22px;font-size:12.5px;font-weight:700;font-family:'Archivo';
+    letter-spacing:.02em;z-index:6;
+  }
+  .statusbar .dots{display:flex;gap:5px;align-items:center}
+  .statusbar .dots b{font-weight:700;letter-spacing:.04em}
+  .label-strip{
+    text-align:center;font-family:'Archivo';font-weight:700;font-size:11px;
+    letter-spacing:.32em;text-transform:uppercase;padding:4px 0 10px;
+  }
+
+  /* ============ SCREEN 1 — ESCANEAR ============ */
+  .s1 .statusbar{color:var(--cream)}
+  .cam{
+    flex:1;position:relative;
+    background:
+      radial-gradient(circle at 50% 38%, #2b4f4b 0%, #16302d 60%, #0d1f1d 100%);
+    overflow:hidden;display:flex;flex-direction:column;
+  }
+  .cam .cam-grain{position:absolute;inset:0;opacity:.16;
+    background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='100' height='100'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='2'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>")}
+  .cam-top{position:relative;z-index:3;display:flex;justify-content:space-between;align-items:flex-start;padding:8px 16px 0}
+  .session{display:flex;gap:8px}
+  .pill-count{
+    font-family:'Archivo';font-weight:700;font-size:12.5px;color:var(--ink);
+    padding:7px 12px;border-radius:2px;display:flex;flex-direction:column;line-height:1;gap:3px;
+    border:2px solid var(--ink);
+  }
+  .pill-count b{font-family:'Anton';font-size:21px;font-weight:400}
+  .pill-count.nova{background:var(--ochre)}
+  .pill-count.rep{background:var(--cream-2)}
+  .pill-count small{font-size:9.5px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;opacity:.8}
+  .flip{
+    width:46px;height:46px;border-radius:50%;flex:none;
+    background:rgba(242,227,198,.92);border:2px solid var(--ink);
+    display:grid;place-items:center;font-size:20px;color:var(--ink);
+  }
+  /* reticle */
+  .reticle-wrap{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;z-index:2}
+  .mira{
+    width:230px;height:150px;position:relative;
+    display:grid;place-items:center;
+  }
+  .mira .corner{position:absolute;width:34px;height:34px;border:4px solid var(--ochre)}
+  .mira .tl{top:0;left:0;border-right:0;border-bottom:0}
+  .mira .tr{top:0;right:0;border-left:0;border-bottom:0}
+  .mira .bl{bottom:0;left:0;border-right:0;border-top:0}
+  .mira .br{bottom:0;right:0;border-left:0;border-top:0}
+  .mira .sticker-ghost{
+    width:178px;height:104px;border-radius:6px;
+    background:linear-gradient(160deg,#f3e7cd,#d9c39a);
+    box-shadow:0 8px 24px rgba(0,0,0,.45), inset 0 0 0 2px rgba(42,31,20,.25);
+    display:flex;flex-direction:column;align-items:flex-start;justify-content:flex-end;
+    padding:10px 12px;transform:rotate(-2deg);
+  }
+  .sticker-ghost .code{font-family:'Anton';font-size:23px;color:var(--ink);letter-spacing:.04em}
+  .sticker-ghost .gt{font-size:10px;font-weight:700;color:var(--ink-soft);letter-spacing:.1em;text-transform:uppercase}
+  .scanline{position:absolute;left:6%;right:6%;height:3px;background:var(--ochre);
+    box-shadow:0 0 12px 2px rgba(217,147,35,.8);animation:scan 2.6s ease-in-out infinite;border-radius:2px}
+  @keyframes scan{0%,100%{top:14%}50%{top:82%}}
+  .hint{
+    margin-top:18px;background:var(--ink);color:var(--cream);
+    font-family:'Archivo';font-weight:700;font-size:13px;letter-spacing:.02em;
+    padding:8px 16px;border:2px solid var(--ochre);border-radius:2px;
+    display:inline-flex;align-items:center;gap:8px;
+  }
+  .hint::before{content:"";width:9px;height:9px;border-radius:50%;background:var(--ochre);animation:blink 1.1s steps(2) infinite}
+  @keyframes blink{50%{opacity:.25}}
+
+  /* the verdict hero */
+  .verdict{
+    position:relative;z-index:4;background:var(--leaf);
+    border-top:4px solid var(--ink);
+    padding:18px 20px 16px;color:var(--cream);
+    box-shadow:0 -10px 30px rgba(0,0,0,.4);
+  }
+  .verdict-head{display:flex;align-items:center;gap:14px}
+  .v-mark{
+    width:58px;height:58px;flex:none;border-radius:50%;
+    background:var(--cream);color:var(--leaf);
+    display:grid;place-items:center;font-family:'Anton';font-size:36px;
+    border:3px solid var(--ink);box-shadow:4px 4px 0 rgba(42,31,20,.5);
+  }
+  .verdict h2{font-family:'Anton';font-weight:400;font-size:52px;line-height:.85;letter-spacing:.02em;
+    text-shadow:3px 3px 0 rgba(19,74,71,.55)}
+  .verdict .v-sub{display:flex;align-items:baseline;gap:12px;margin-top:8px;padding-left:2px}
+  .verdict .v-code{font-family:'Anton';font-size:27px;color:var(--ochre);
+    background:var(--ink);padding:2px 11px;letter-spacing:.06em}
+  .verdict .v-team{font-size:15px;font-weight:700;letter-spacing:.01em}
+  /* recent strip */
+  .recent{background:var(--ink);padding:10px 14px 12px;z-index:4;position:relative}
+  .recent .rt{font-size:10px;font-weight:700;letter-spacing:.26em;text-transform:uppercase;color:var(--ochre);margin-bottom:8px}
+  .recent .row{display:flex;gap:8px}
+  .chip-recent{
+    flex:1;background:var(--cream);border:2px solid var(--cream);
+    padding:7px 9px;display:flex;flex-direction:column;gap:3px;border-radius:2px;
+  }
+  .chip-recent .c-code{font-family:'Anton';font-size:16px;color:var(--ink)}
+  .chip-recent .c-tag{font-size:9.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;display:flex;align-items:center;gap:4px}
+  .chip-recent.nova .c-tag{color:var(--leaf)}
+  .chip-recent.rep{background:var(--cream-2)}
+  .chip-recent.rep .c-tag{color:var(--rust)}
+  .c-tag .ic{font-family:'Anton';font-size:11px}
+
+  /* ============ SCREEN 2 — ÁLBUM ============ */
+  .s2{background:var(--paper)}
+  .s2 .statusbar{color:var(--ink)}
+  .s2-body{flex:1;overflow:hidden;display:flex;flex-direction:column}
+  .album-hero{
+    background:var(--teal);color:var(--cream);padding:16px 20px 18px;border-bottom:4px solid var(--ink);position:relative;overflow:hidden;
+  }
+  .album-hero::before{content:"";position:absolute;right:-30px;top:-30px;width:130px;height:130px;border-radius:50%;
+    background:repeating-radial-gradient(circle, rgba(242,227,198,.12) 0 6px, transparent 6px 12px)}
+  .album-hero .ah-top{display:flex;align-items:flex-end;justify-content:space-between;position:relative;z-index:1}
+  .album-hero .big{font-family:'Anton';font-size:50px;line-height:.84;letter-spacing:.01em}
+  .album-hero .big small{font-size:24px;color:var(--ochre)}
+  .album-hero .ah-label{text-align:right}
+  .album-hero .ah-label b{font-family:'Anton';font-size:22px;color:var(--ochre);display:block}
+  .album-hero .ah-label span{font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase}
+  .pbar{height:16px;background:var(--teal-deep);border:2px solid var(--ink);margin-top:14px;position:relative;z-index:1;
+    box-shadow:inset 0 2px 4px rgba(0,0,0,.3)}
+  .pbar i{display:block;height:100%;width:42%;background:
+    repeating-linear-gradient(45deg, var(--ochre) 0 9px, var(--burnt) 9px 18px)}
+  .pct-note{font-size:11px;font-weight:700;letter-spacing:.08em;margin-top:7px;position:relative;z-index:1;color:var(--cream-2)}
+
+  .album-scroll{flex:1;overflow-y:auto;padding:14px 16px 22px}
+  .group-head{
+    display:flex;align-items:center;gap:12px;margin:6px 0 14px;
+  }
+  .group-head .gnum{
+    font-family:'Anton';font-size:24px;background:var(--ink);color:var(--ochre);
+    width:42px;height:42px;display:grid;place-items:center;flex:none;border-radius:2px;
+  }
+  .group-head .gtxt b{font-family:'Bricolage Grotesque';font-weight:800;font-size:18px;color:var(--ink);display:block;line-height:1}
+  .group-head .gtxt span{font-size:11px;font-weight:600;color:var(--ink-soft);letter-spacing:.04em}
+  .group-head .line{flex:1;height:3px;background:var(--line)}
+
+  .team{border:2px solid var(--ink);background:var(--cream);margin-bottom:10px;border-radius:2px;overflow:hidden}
+  .team-row{display:flex;align-items:center;gap:11px;padding:11px 13px}
+  .flag{width:30px;height:22px;flex:none;border:2px solid var(--ink);border-radius:1px;overflow:hidden;position:relative}
+  .f-bra{background:var(--leaf)}
+  .f-bra::after{content:"";position:absolute;inset:4px;background:var(--ochre);clip-path:polygon(50% 0,100% 50%,50% 100%,0 50%)}
+  .f-arg{background:linear-gradient(#7fb6d6 0 33%, #fff 33% 66%, #7fb6d6 66% 100%)}
+  .f-arg::after{content:"☀";position:absolute;inset:0;display:grid;place-items:center;color:var(--ochre);font-size:11px}
+  .f-fra{background:linear-gradient(90deg,#2b4a8a 0 33%, #fff 33% 66%, #b5223a 66% 100%)}
+  .f-civ{background:linear-gradient(90deg,#d98a23 0 33%, #fff 33% 66%, var(--leaf) 66% 100%)}
+  .team-name{flex:1}
+  .team-name b{font-family:'Bricolage Grotesque';font-weight:800;font-size:15.5px;color:var(--ink);display:block;line-height:1.1}
+  .team-name .frac{font-size:12px;font-weight:700;color:var(--ink-soft)}
+  .team-name .done{color:var(--leaf)}
+  .mini-bar{width:58px;height:9px;border:2px solid var(--ink);flex:none;background:var(--cream-2)}
+  .mini-bar i{display:block;height:100%;background:var(--teal)}
+  .badge-complete{font-family:'Anton';font-size:11px;color:var(--cream);background:var(--leaf);padding:3px 8px;border:2px solid var(--ink);letter-spacing:.04em;display:flex;gap:4px;align-items:center}
+
+  .team.open{background:var(--cream)}
+  .chip-grid{display:grid;grid-template-columns:repeat(10,1fr);gap:5px;padding:4px 13px 14px}
+  .chip{
+    aspect-ratio:1;display:grid;place-items:center;font-size:11px;font-weight:700;border-radius:2px;
+    font-family:'Archivo';
+  }
+  .chip.have{background:var(--teal);color:var(--cream);border:2px solid var(--ink);position:relative}
+  .chip.have::after{content:"✓";position:absolute;font-size:13px;font-weight:700}
+  .chip.have span{position:absolute;top:1px;left:3px;font-size:7.5px;opacity:.7}
+  .chip.need{background:transparent;color:var(--ink-soft);border:2px dashed var(--rust)}
+
+  .special-row{
+    margin-top:6px;display:flex;align-items:center;gap:11px;padding:12px 13px;
+    background:var(--ink);color:var(--cream);border:2px solid var(--ink);border-radius:2px;
+  }
+  .special-row .star{font-family:'Anton';font-size:22px;color:var(--ochre);width:34px;height:34px;display:grid;place-items:center;border:2px solid var(--ochre);border-radius:50%;flex:none}
+  .special-row b{font-family:'Bricolage Grotesque';font-weight:800;font-size:15px;display:block}
+  .special-row span{font-size:11px;color:var(--cream-2);font-weight:600}
+  .special-row .frac{margin-left:auto;font-family:'Anton';font-size:18px;color:var(--ochre)}
+
+  /* ============ SCREEN 3 — TROCAR ============ */
+  .s3{background:var(--burnt)}
+  .s3 .statusbar{color:var(--cream)}
+  .s3-body{flex:1;overflow-y:auto;padding:6px 16px 18px;
+    background-image:repeating-linear-gradient(0deg, rgba(42,31,20,.05) 0 1px, transparent 1px 14px)}
+  .s3-title{
+    font-family:'Anton';font-size:34px;color:var(--cream);text-transform:uppercase;line-height:.9;
+    text-shadow:3px 3px 0 var(--rust);margin:6px 2px 16px;
+  }
+  .panel{background:var(--cream);border:3px solid var(--ink);border-radius:3px;margin-bottom:16px;
+    box-shadow:7px 7px 0 rgba(42,31,20,.35);overflow:hidden}
+  .panel-head{display:flex;align-items:center;gap:9px;background:var(--ink);color:var(--cream);padding:9px 14px}
+  .panel-head .ph-ic{font-family:'Anton';font-size:18px;color:var(--ochre)}
+  .panel-head b{font-family:'Bricolage Grotesque';font-weight:800;font-size:14.5px;letter-spacing:.01em}
+  .trade-list{padding:10px 12px;display:flex;flex-direction:column;gap:8px}
+  .trade-item{display:flex;align-items:center;gap:10px;background:var(--paper);border:2px solid var(--ink);padding:8px 11px;border-radius:2px}
+  .trade-item .ti-code{font-family:'Anton';font-size:19px;color:var(--ink);letter-spacing:.04em}
+  .qty{margin-left:auto;font-family:'Anton';font-size:16px;color:var(--cream);background:var(--burnt);
+    border:2px solid var(--ink);padding:2px 10px;display:flex;align-items:center;gap:2px}
+  .qty.need{background:var(--teal)}
+  .ti-tag{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-soft)}
+
+  .need-grid{padding:11px 12px;display:flex;gap:8px;flex-wrap:wrap}
+  .need-chip{font-family:'Anton';font-size:18px;color:var(--cream);background:var(--teal);
+    border:2px solid var(--ink);padding:6px 13px;letter-spacing:.04em;box-shadow:3px 3px 0 rgba(42,31,20,.4);
+    display:flex;align-items:center;gap:6px}
+  .need-chip::before{content:"+";color:var(--ochre);font-size:20px}
+
+  /* share preview card */
+  .preview{
+    background:var(--teal-deep);color:var(--cream);border:3px dashed var(--ochre);border-radius:3px;
+    padding:13px 14px;margin-bottom:18px;position:relative;
+  }
+  .preview .pv-label{position:absolute;top:-11px;left:14px;background:var(--ink);color:var(--ochre);
+    font-size:10px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;padding:2px 9px;border:2px solid var(--ochre)}
+  .preview .bubble{background:#dff2d8;color:#1d3a16;border-radius:9px 9px 9px 2px;padding:11px 12px;
+    font-size:13px;line-height:1.5;font-family:'Archivo';font-weight:500;box-shadow:2px 3px 0 rgba(0,0,0,.25)}
+  .preview .bubble .b-hi{font-weight:700;color:var(--rust)}
+  .preview .bubble .b-time{display:block;text-align:right;font-size:10px;color:#5a7350;margin-top:4px;font-weight:600}
+
+  .actions{display:flex;flex-direction:column;gap:11px;padding-bottom:6px}
+  .btn-wa{
+    background:#1faa52;color:#fff;border:3px solid var(--ink);border-radius:3px;
+    font-family:'Anton';font-size:23px;letter-spacing:.02em;text-transform:uppercase;
+    padding:15px;display:flex;align-items:center;justify-content:center;gap:11px;
+    box-shadow:6px 6px 0 rgba(42,31,20,.45);text-shadow:2px 2px 0 rgba(0,0,0,.25);
+  }
+  .btn-wa .wa{font-size:24px}
+  .btn-copy{
+    background:var(--cream);color:var(--ink);border:3px solid var(--ink);border-radius:3px;
+    font-family:'Bricolage Grotesque';font-weight:800;font-size:15px;letter-spacing:.04em;text-transform:uppercase;
+    padding:12px;display:flex;align-items:center;justify-content:center;gap:9px;
+  }
+
+  /* bottom tab bar (shared visual on screen 2 & 3) */
+  .tabbar{flex:none;display:flex;background:var(--ink);border-top:3px solid var(--ochre)}
+  .tab{flex:1;text-align:center;padding:9px 0 11px;color:var(--cream-2);font-family:'Archivo';
+    font-weight:700;font-size:10px;letter-spacing:.1em;text-transform:uppercase}
+  .tab .ti{display:block;font-size:18px;margin-bottom:2px}
+  .tab.active{color:var(--ochre)}
+  .tab.active .ti{filter:none}
+
+  .caption{max-width:1280px;margin:42px auto 0;text-align:center;color:var(--ink);
+    font-family:'Archivo';font-weight:700;font-size:12.5px;letter-spacing:.06em}
+  .caption span{color:var(--rust)}
+</style>
+</head>
+<body>
+
+  <header class="masthead">
+    <div class="masthead-inner">
+      <div>
+        <div class="brand-kicker">Troca Figurinhas · Copa 2026</div>
+        <h1>Copa <em>Retrô</em></h1>
+      </div>
+      <div style="display:flex;gap:22px;align-items:flex-end">
+        <div class="rationale">
+          <div class="r-title">Por que este estilo serve o usuário</div>
+          <p>A linguagem gráfica dos pôsteres de Copa antigos dá personalidade e alegria
+          ao álbum sem custar legibilidade: tipos pesados e cores quentes de alto contraste
+          são vistos no sol do recreio. O veredito GUARDAR/REPETIDA vira manchete — impossível
+          de ignorar — e cada estado carrega ícone e texto, nunca só cor.</p>
+        </div>
+        <div class="crest"><span>26</span></div>
+      </div>
+    </div>
+  </header>
+
+  <main class="rack">
+
+    <!-- ===================== SCREEN 1 — ESCANEAR ===================== -->
+    <div class="phone">
+      <div class="screen s1">
+        <div class="statusbar">
+          <span>9:41</span>
+          <span class="dots"><b>Escanear</b></span>
+          <span class="dots">📶 100%</span>
+        </div>
+        <div class="cam">
+          <div class="cam-grain"></div>
+
+          <div class="cam-top">
+            <div class="session">
+              <div class="pill-count nova"><b>23</b><small>novas</small></div>
+              <div class="pill-count rep"><b>8</b><small>repetidas</small></div>
+            </div>
+            <div class="flip" title="Virar câmera">🔄</div>
+          </div>
+
+          <div class="reticle-wrap">
+            <div class="mira">
+              <span class="corner tl"></span><span class="corner tr"></span>
+              <span class="corner bl"></span><span class="corner br"></span>
+              <div class="scanline"></div>
+              <div class="sticker-ghost">
+                <span class="gt">verso</span>
+                <span class="code">CIV 12</span>
+              </div>
+            </div>
+            <div class="hint">Mostre o verso e segure parado</div>
+          </div>
+
+          <!-- VERDICT HERO -->
+          <div class="verdict">
+            <div class="verdict-head">
+              <div class="v-mark">✓</div>
+              <h2>GUARDAR</h2>
+            </div>
+            <div class="v-sub">
+              <span class="v-code">CIV 12</span>
+              <span class="v-team">Costa do Marfim</span>
+            </div>
+          </div>
+
+          <div class="recent">
+            <div class="rt">Últimas leituras</div>
+            <div class="row">
+              <div class="chip-recent nova">
+                <span class="c-code">CIV 12</span>
+                <span class="c-tag"><span class="ic">✓</span> nova</span>
+              </div>
+              <div class="chip-recent rep">
+                <span class="c-code">BRA 04</span>
+                <span class="c-tag"><span class="ic">↺</span> repetida</span>
+              </div>
+              <div class="chip-recent nova">
+                <span class="c-code">ARG 11</span>
+                <span class="c-tag"><span class="ic">✓</span> nova</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===================== SCREEN 2 — ÁLBUM ===================== -->
+    <div class="phone">
+      <div class="screen s2">
+        <div class="statusbar">
+          <span>9:41</span>
+          <span class="dots"><b>Álbum</b></span>
+          <span class="dots">📶 100%</span>
+        </div>
+        <div class="s2-body">
+          <div class="album-hero">
+            <div class="ah-top">
+              <div class="big">412<small>/980</small></div>
+              <div class="ah-label">
+                <b>42%</b>
+                <span>coladas</span>
+              </div>
+            </div>
+            <div class="pbar"><i></i></div>
+            <div class="pct-note">Faltam 568 figurinhas</div>
+          </div>
+
+          <div class="album-scroll">
+            <div class="group-head">
+              <span class="gnum">A</span>
+              <div class="gtxt"><b>Grupo A</b><span>4 seleções</span></div>
+              <span class="line"></span>
+            </div>
+
+            <!-- Brasil (expanded) -->
+            <div class="team open">
+              <div class="team-row">
+                <span class="flag f-bra"></span>
+                <div class="team-name"><b>Brasil</b><span class="frac">18/20</span></div>
+                <div class="mini-bar"><i style="width:90%"></i></div>
+              </div>
+              <div class="chip-grid">
+                <div class="chip have"><span>1</span></div>
+                <div class="chip have"><span>2</span></div>
+                <div class="chip have"><span>3</span></div>
+                <div class="chip have"><span>4</span></div>
+                <div class="chip have"><span>5</span></div>
+                <div class="chip have"><span>6</span></div>
+                <div class="chip have"><span>7</span></div>
+                <div class="chip need">8</div>
+                <div class="chip have"><span>9</span></div>
+                <div class="chip have"><span>10</span></div>
+                <div class="chip have"><span>11</span></div>
+                <div class="chip have"><span>12</span></div>
+                <div class="chip have"><span>13</span></div>
+                <div class="chip have"><span>14</span></div>
+                <div class="chip need">15</div>
+                <div class="chip have"><span>16</span></div>
+                <div class="chip have"><span>17</span></div>
+                <div class="chip have"><span>18</span></div>
+                <div class="chip have"><span>19</span></div>
+                <div class="chip have"><span>20</span></div>
+              </div>
+            </div>
+
+            <!-- Argentina complete -->
+            <div class="team">
+              <div class="team-row">
+                <span class="flag f-arg"></span>
+                <div class="team-name"><b>Argentina</b><span class="frac done">20/20</span></div>
+                <span class="badge-complete">✓ completa</span>
+              </div>
+            </div>
+
+            <!-- França -->
+            <div class="team">
+              <div class="team-row">
+                <span class="flag f-fra"></span>
+                <div class="team-name"><b>França</b><span class="frac">12/20</span></div>
+                <div class="mini-bar"><i style="width:60%"></i></div>
+              </div>
+            </div>
+
+            <!-- Costa do Marfim -->
+            <div class="team">
+              <div class="team-row">
+                <span class="flag f-civ"></span>
+                <div class="team-name"><b>Costa do Marfim</b><span class="frac">9/20</span></div>
+                <div class="mini-bar"><i style="width:45%"></i></div>
+              </div>
+            </div>
+
+            <!-- Especiais FWC -->
+            <div class="special-row">
+              <span class="star">★</span>
+              <div>
+                <b>Especiais FWC</b>
+                <span>brilhantes da Copa</span>
+              </div>
+              <span class="frac">6/20</span>
+            </div>
+          </div>
+        </div>
+
+        <nav class="tabbar">
+          <div class="tab"><span class="ti">◎</span>Escanear</div>
+          <div class="tab active"><span class="ti">▦</span>Álbum</div>
+          <div class="tab"><span class="ti">⇄</span>Trocar</div>
+          <div class="tab"><span class="ti">▤</span>Ajustes</div>
+        </nav>
+      </div>
+    </div>
+
+    <!-- ===================== SCREEN 3 — TROCAR ===================== -->
+    <div class="phone">
+      <div class="screen s3">
+        <div class="statusbar">
+          <span>9:41</span>
+          <span class="dots"><b>Trocar</b></span>
+          <span class="dots">📶 100%</span>
+        </div>
+        <div class="s3-body">
+          <div class="s3-title">Bora<br>trocar!</div>
+
+          <!-- Minhas repetidas -->
+          <div class="panel">
+            <div class="panel-head"><span class="ph-ic">↺</span><b>Minhas repetidas (para trocar)</b></div>
+            <div class="trade-list">
+              <div class="trade-item">
+                <span class="ti-code">BRA 04</span>
+                <span class="ti-tag">Brasil</span>
+                <span class="qty">×3</span>
+              </div>
+              <div class="trade-item">
+                <span class="ti-code">ARG 11</span>
+                <span class="ti-tag">Argentina</span>
+                <span class="qty">×2</span>
+              </div>
+              <div class="trade-item">
+                <span class="ti-code">FRA 07</span>
+                <span class="ti-tag">França</span>
+                <span class="qty">×2</span>
+              </div>
+              <div class="trade-item">
+                <span class="ti-code">FWC 03</span>
+                <span class="ti-tag">Especial</span>
+                <span class="qty">×1</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- O que preciso -->
+          <div class="panel">
+            <div class="panel-head"><span class="ph-ic">+</span><b>O que eu preciso</b></div>
+            <div class="need-grid">
+              <span class="need-chip">CIV 12</span>
+              <span class="need-chip">MEX 15</span>
+              <span class="need-chip">JPN 02</span>
+            </div>
+          </div>
+
+          <!-- preview da mensagem -->
+          <div class="preview">
+            <span class="pv-label">Prévia da mensagem</span>
+            <div class="bubble">
+              Tenho p/ trocar: <span class="b-hi">BRA04 ×3, ARG11 ×2, FRA07 ×2, FWC03 ×1</span>.
+              Preciso: <span class="b-hi">CIV12, MEX15, JPN02</span>. Bora? 🇧🇷⚽
+              <span class="b-time">9:41 ✓✓</span>
+            </div>
+          </div>
+
+          <div class="actions">
+            <a class="btn-wa"><span class="wa">✆</span> Enviar no WhatsApp</a>
+            <a class="btn-copy">⧉ Copiar lista</a>
+          </div>
+        </div>
+
+        <nav class="tabbar">
+          <div class="tab"><span class="ti">◎</span>Escanear</div>
+          <div class="tab"><span class="ti">▦</span>Álbum</div>
+          <div class="tab active"><span class="ti">⇄</span>Trocar</div>
+          <div class="tab"><span class="ti">▤</span>Ajustes</div>
+        </nav>
+      </div>
+    </div>
+
+  </main>
+
+  <p class="caption">Copa Retrô — pôster de torneio reinterpretado para a mão. <span>Resposta primeiro, sempre.</span></p>
+
+</body>
+</html>

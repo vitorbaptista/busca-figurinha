@@ -1,0 +1,593 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Scanner HUD — Troca Figurinhas Copa 2026</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#05090b;
+    --grid:#0d161a;
+    --panel:#0a1216;
+    --panel-2:#0c161b;
+    --line:#16313a;
+    --line-bright:#1f4e5c;
+    --ink:#cfe9e6;          /* body text on dark — high contrast */
+    --ink-dim:#7fa6a3;      /* secondary, still ~5:1 on --bg */
+    --hud:#3ff5b0;          /* primary instrument green */
+    --hud-deep:#0e3a30;
+    --warn:#ff7a45;         /* REPETIDA / secondary signal — orange, not red-vs-green only */
+    --warn-deep:#3a1c10;
+    --amber:#ffc24b;
+    --white:#eafffb;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    background:
+      radial-gradient(900px 600px at 18% -8%, #0a1a1f 0%, transparent 60%),
+      radial-gradient(900px 700px at 92% 110%, #0c1612 0%, transparent 55%),
+      var(--bg);
+    color:var(--ink);
+    font-family:"Chakra Petch",system-ui,sans-serif;
+    min-height:100vh;
+    padding:32px 20px 64px;
+  }
+  /* faint engineering grid behind everything */
+  body::before{
+    content:"";position:fixed;inset:0;pointer-events:none;z-index:0;
+    background-image:
+      linear-gradient(var(--grid) 1px,transparent 1px),
+      linear-gradient(90deg,var(--grid) 1px,transparent 1px);
+    background-size:42px 42px;
+    mask-image:radial-gradient(1200px 800px at 50% 30%,#000 0%,transparent 85%);
+    opacity:.55;
+  }
+  .wrap{position:relative;z-index:1;max-width:1320px;margin:0 auto}
+
+  /* ---------- header band ---------- */
+  .masthead{
+    border:1px solid var(--line);
+    background:linear-gradient(180deg,#08151a,#070f12);
+    border-radius:16px;
+    padding:22px 26px;
+    margin-bottom:34px;
+    position:relative;
+    overflow:hidden;
+  }
+  .masthead::after{
+    content:"";position:absolute;right:-40px;top:-40px;width:220px;height:220px;
+    border:1px dashed var(--line-bright);border-radius:50%;opacity:.4;
+  }
+  .mh-tag{
+    display:inline-flex;align-items:center;gap:8px;
+    font-family:"JetBrains Mono",monospace;font-size:11px;letter-spacing:.18em;
+    color:var(--hud);border:1px solid var(--line-bright);border-radius:999px;
+    padding:5px 12px;text-transform:uppercase;
+  }
+  .mh-dot{width:7px;height:7px;border-radius:50%;background:var(--hud);box-shadow:0 0 10px var(--hud)}
+  .masthead h1{
+    font-size:clamp(28px,4.4vw,46px);font-weight:700;letter-spacing:.01em;
+    margin:14px 0 6px;color:var(--white);
+  }
+  .masthead h1 span{color:var(--hud)}
+  .mh-sub{font-family:"JetBrains Mono",monospace;font-size:12.5px;color:var(--ink-dim);margin-bottom:14px}
+  .mh-why{max-width:760px;line-height:1.6;color:var(--ink);font-size:15px}
+  .mh-why strong{
+    display:block;font-family:"JetBrains Mono",monospace;font-size:11px;letter-spacing:.16em;
+    text-transform:uppercase;color:var(--hud);margin-bottom:8px;
+  }
+
+  /* ---------- phone rail ---------- */
+  .rail{display:flex;flex-wrap:wrap;gap:30px;justify-content:center;align-items:flex-start}
+  .phone{
+    width:390px;height:844px;flex:0 0 auto;
+    background:#02060700;
+    border-radius:46px;padding:11px;
+    border:1px solid #14272d;
+    box-shadow:0 0 0 2px #060d10, 0 30px 70px rgba(0,0,0,.6), inset 0 0 0 1px #0c1a1f;
+    position:relative;
+  }
+  .screen{
+    position:relative;width:100%;height:100%;border-radius:36px;overflow:hidden;
+    background:var(--bg);display:flex;flex-direction:column;
+  }
+  /* status bar */
+  .statusbar{
+    height:34px;flex:0 0 auto;display:flex;align-items:center;justify-content:space-between;
+    padding:0 22px;font-family:"JetBrains Mono",monospace;font-size:12px;color:var(--ink);
+    letter-spacing:.04em;
+  }
+  .statusbar .sb-r{display:flex;gap:7px;align-items:center}
+  .notch{
+    position:absolute;top:9px;left:50%;transform:translateX(-50%);
+    width:118px;height:26px;background:#02060a;border-radius:0 0 16px 16px;z-index:5;
+    border:1px solid #0d1a1f;border-top:none;
+  }
+  .screenlabel{
+    position:absolute;bottom:14px;left:50%;transform:translateX(-50%);
+    font-family:"JetBrains Mono",monospace;font-size:10px;letter-spacing:.22em;
+    color:var(--ink-dim);text-transform:uppercase;z-index:9;
+  }
+
+  .app{flex:1 1 auto;display:flex;flex-direction:column;min-height:0;position:relative}
+
+  /* app top bar (HUD chrome) */
+  .topbar{
+    display:flex;align-items:center;justify-content:space-between;gap:8px;
+    padding:8px 16px;border-bottom:1px solid var(--line);
+    font-family:"JetBrains Mono",monospace;font-size:11px;color:var(--ink-dim);
+    flex:0 0 auto;
+  }
+  .topbar .sys{display:flex;align-items:center;gap:8px;color:var(--hud)}
+  .sig{display:inline-flex;gap:2px;align-items:flex-end;height:12px}
+  .sig i{width:3px;background:var(--hud);border-radius:1px;display:block}
+  .sig i:nth-child(1){height:4px}.sig i:nth-child(2){height:7px}.sig i:nth-child(3){height:10px}.sig i:nth-child(4){height:12px;opacity:.4}
+
+  /* ---------- SCREEN 1 : SCAN ---------- */
+  .cam{
+    position:relative;flex:1 1 auto;min-height:0;overflow:hidden;
+    background:
+      radial-gradient(120% 90% at 50% 30%, #11202a 0%, #0a141a 55%, #060c10 100%);
+  }
+  /* simulated sticker back in viewport */
+  .sticker{
+    position:absolute;left:50%;top:42%;transform:translate(-50%,-50%) rotate(-1.5deg);
+    width:188px;height:128px;border-radius:8px;
+    background:linear-gradient(160deg,#243a44,#16252c);
+    border:1px solid #2c4a55;box-shadow:0 18px 40px rgba(0,0,0,.55);
+    display:flex;align-items:center;justify-content:center;
+    color:#bfe9df;font-family:"JetBrains Mono",monospace;
+  }
+  .sticker .scode{font-size:30px;font-weight:800;letter-spacing:.08em;color:#dffaf0;text-shadow:0 0 14px rgba(63,245,176,.25)}
+  .sticker .sgrid{
+    position:absolute;inset:8px;border:1px dashed #34555f;border-radius:5px;opacity:.5;
+  }
+  /* reticle */
+  .reticle{position:absolute;left:50%;top:42%;transform:translate(-50%,-50%);width:262px;height:200px;pointer-events:none}
+  .reticle .corner{position:absolute;width:34px;height:34px;border:2px solid var(--hud)}
+  .reticle .c1{top:0;left:0;border-right:none;border-bottom:none}
+  .reticle .c2{top:0;right:0;border-left:none;border-bottom:none}
+  .reticle .c3{bottom:0;left:0;border-right:none;border-top:none}
+  .reticle .c4{bottom:0;right:0;border-left:none;border-top:none}
+  .reticle .cross-h,.reticle .cross-v{position:absolute;background:rgba(63,245,176,.45)}
+  .reticle .cross-h{left:50%;top:50%;width:18px;height:1px;transform:translate(-50%,-50%)}
+  .reticle .cross-v{left:50%;top:50%;width:1px;height:18px;transform:translate(-50%,-50%)}
+  .reticle .lock{
+    position:absolute;top:-22px;left:0;font-family:"JetBrains Mono",monospace;
+    font-size:10px;letter-spacing:.16em;color:var(--hud);text-transform:uppercase;
+  }
+  /* sweep line */
+  .sweep{
+    position:absolute;left:8%;right:8%;height:2px;top:0;
+    background:linear-gradient(90deg,transparent,var(--hud),transparent);
+    box-shadow:0 0 12px var(--hud);opacity:.75;
+    animation:sweep 2.6s ease-in-out infinite;
+  }
+  @keyframes sweep{0%{top:24%}50%{top:60%}100%{top:24%}}
+  @media (prefers-reduced-motion:reduce){.sweep{animation:none;top:42%}}
+
+  .hint{
+    position:absolute;left:50%;top:calc(42% + 118px);transform:translateX(-50%);
+    font-family:"JetBrains Mono",monospace;font-size:12px;color:var(--ink);
+    background:rgba(6,12,15,.72);border:1px solid var(--line-bright);
+    padding:6px 12px;border-radius:999px;white-space:nowrap;letter-spacing:.02em;
+  }
+  .hint::before{content:"› ";color:var(--hud)}
+
+  /* flip cam */
+  .flip{
+    position:absolute;top:14px;right:14px;width:42px;height:42px;border-radius:12px;
+    background:rgba(8,16,20,.8);border:1px solid var(--line-bright);
+    display:flex;align-items:center;justify-content:center;font-size:18px;color:var(--hud);
+  }
+  /* signal readout top-left of cam */
+  .camreadout{
+    position:absolute;top:14px;left:14px;font-family:"JetBrains Mono",monospace;
+    font-size:10px;color:var(--hud);line-height:1.5;letter-spacing:.05em;
+    background:rgba(6,12,15,.55);border:1px solid var(--line);padding:6px 9px;border-radius:8px;
+  }
+  .camreadout b{color:var(--white);font-weight:700}
+
+  /* VERDICT hero */
+  .verdict{
+    flex:0 0 auto;background:linear-gradient(180deg,var(--hud-deep),#06120e);
+    border-top:2px solid var(--hud);padding:16px 18px 14px;position:relative;
+  }
+  .verdict::before{
+    content:"";position:absolute;top:-2px;left:0;width:80px;height:2px;background:var(--white);
+    box-shadow:0 0 14px var(--hud);
+  }
+  .v-top{display:flex;align-items:baseline;gap:10px}
+  .v-icon{
+    font-family:"JetBrains Mono",monospace;font-weight:800;color:#04130d;
+    background:var(--hud);border-radius:8px;padding:2px 8px;font-size:13px;line-height:1.5;
+  }
+  .v-word{font-size:46px;font-weight:700;letter-spacing:.04em;color:var(--hud);line-height:1;text-shadow:0 0 26px rgba(63,245,176,.4)}
+  .v-meta{display:flex;align-items:center;gap:12px;margin-top:8px}
+  .v-code{
+    font-family:"JetBrains Mono",monospace;font-weight:800;font-size:22px;color:var(--white);
+    border:1px solid var(--line-bright);border-radius:8px;padding:3px 10px;letter-spacing:.06em;
+  }
+  .v-team{font-size:17px;color:var(--ink);font-weight:500}
+  .v-team small{display:block;font-family:"JetBrains Mono",monospace;font-size:10px;color:var(--ink-dim);letter-spacing:.12em;text-transform:uppercase}
+
+  /* counters */
+  .counters{display:flex;gap:10px;padding:12px 14px;flex:0 0 auto;background:var(--panel)}
+  .counter{
+    flex:1;border:1px solid var(--line);border-radius:12px;padding:10px 12px;background:#0a141a;
+    position:relative;
+  }
+  .counter .num{font-family:"JetBrains Mono",monospace;font-size:26px;font-weight:800;line-height:1}
+  .counter .lbl{font-family:"JetBrains Mono",monospace;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-dim);margin-top:5px}
+  .counter.keep .num{color:var(--hud)}
+  .counter.dup .num{color:var(--warn)}
+  .counter .tick{position:absolute;top:10px;right:12px;font-family:"JetBrains Mono",monospace;font-size:10px;color:var(--ink-dim)}
+
+  /* recent strip */
+  .recent{padding:4px 14px 14px;flex:0 0 auto;background:var(--panel)}
+  .recent h4{font-family:"JetBrains Mono",monospace;font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-dim);margin:6px 2px 8px;font-weight:500}
+  .rrow{
+    display:flex;align-items:center;justify-content:space-between;
+    font-family:"JetBrains Mono",monospace;font-size:13px;padding:7px 11px;border-radius:9px;
+    border:1px solid var(--line);margin-bottom:6px;background:#091217;
+  }
+  .rrow .rc{color:var(--white);font-weight:700;letter-spacing:.05em}
+  .rrow .rs{font-size:11px;letter-spacing:.08em;display:flex;align-items:center;gap:6px}
+  .pill{font-size:9.5px;padding:2px 7px;border-radius:999px;letter-spacing:.1em;text-transform:uppercase;font-weight:700}
+  .pill.nova{color:var(--hud);border:1px solid var(--hud);background:rgba(63,245,176,.08)}
+  .pill.rep{color:var(--warn);border:1px solid var(--warn);background:rgba(255,122,69,.08)}
+
+  /* ---------- shared: scrolly content ---------- */
+  .scroll{flex:1 1 auto;min-height:0;overflow:hidden;padding:14px 14px 18px;display:flex;flex-direction:column;gap:14px}
+
+  /* ---------- SCREEN 2 : ÁLBUM ---------- */
+  .panel{border:1px solid var(--line);border-radius:14px;background:var(--panel-2);overflow:hidden}
+  .ph{
+    display:flex;align-items:center;justify-content:space-between;
+    padding:11px 14px;border-bottom:1px solid var(--line);
+    font-family:"JetBrains Mono",monospace;font-size:11px;letter-spacing:.14em;
+    text-transform:uppercase;color:var(--hud);
+  }
+  .ph .small{color:var(--ink-dim);letter-spacing:.06em}
+
+  .prog-head{padding:16px 16px 14px}
+  .prog-num{font-family:"JetBrains Mono",monospace;font-size:40px;font-weight:800;color:var(--white);line-height:1}
+  .prog-num span{color:var(--ink-dim);font-size:22px}
+  .prog-sub{display:flex;justify-content:space-between;align-items:center;margin-top:10px;font-family:"JetBrains Mono",monospace;font-size:12px;color:var(--ink-dim)}
+  .prog-sub b{color:var(--amber)}
+  .bar{height:12px;border:1px solid var(--line-bright);border-radius:7px;margin-top:11px;background:#06110e;overflow:hidden;position:relative}
+  .bar i{display:block;height:100%;width:42%;background:repeating-linear-gradient(90deg,var(--hud),var(--hud) 6px,#2bd497 6px,#2bd497 12px);box-shadow:0 0 12px rgba(63,245,176,.45)}
+  .bar .pct{position:absolute;right:8px;top:50%;transform:translateY(-50%);font-family:"JetBrains Mono",monospace;font-size:9px;color:#04130d;font-weight:800;letter-spacing:.1em}
+
+  .team{padding:11px 14px;border-bottom:1px solid var(--line);display:flex;flex-direction:column;gap:8px}
+  .team:last-child{border-bottom:none}
+  .team-row{display:flex;align-items:center;justify-content:space-between;gap:10px}
+  .team-name{font-size:15px;color:var(--ink);font-weight:600;display:flex;align-items:center;gap:8px}
+  .team-name .done{font-family:"JetBrains Mono",monospace;font-size:10px;color:var(--hud);border:1px solid var(--hud);border-radius:5px;padding:1px 5px;letter-spacing:.08em}
+  .team-frac{font-family:"JetBrains Mono",monospace;font-size:13px;color:var(--ink);font-weight:700;letter-spacing:.04em}
+  .team-frac.full{color:var(--hud)}
+  .minibar{height:6px;border-radius:4px;background:#0b1a16;border:1px solid var(--line);overflow:hidden}
+  .minibar i{display:block;height:100%;background:var(--hud)}
+  .minibar.warn i{background:var(--amber)}
+
+  /* sticker chips grid */
+  .chips{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-top:4px}
+  .chip{
+    aspect-ratio:1/1;border-radius:8px;display:flex;align-items:center;justify-content:center;
+    font-family:"JetBrains Mono",monospace;font-size:12px;font-weight:700;position:relative;
+  }
+  .chip.have{background:#0d2a22;border:1px solid var(--hud);color:var(--hud)}
+  .chip.have::after{content:"✓";position:absolute;top:1px;right:4px;font-size:9px;color:var(--hud)}
+  .chip.need{background:transparent;border:1px dashed #2a4751;color:var(--ink-dim)}
+  .chips-cap{font-family:"JetBrains Mono",monospace;font-size:10px;color:var(--ink-dim);margin-top:8px;display:flex;gap:14px}
+  .chips-cap span{display:flex;align-items:center;gap:5px}
+  .key-have{width:11px;height:11px;border-radius:3px;background:#0d2a22;border:1px solid var(--hud);display:inline-block}
+  .key-need{width:11px;height:11px;border-radius:3px;border:1px dashed #2a4751;display:inline-block}
+
+  /* ---------- SCREEN 3 : TROCAR ---------- */
+  .trow{
+    display:flex;align-items:center;justify-content:space-between;
+    padding:10px 14px;border-bottom:1px solid var(--line);font-family:"JetBrains Mono",monospace;
+  }
+  .trow:last-child{border-bottom:none}
+  .trow .tc{font-size:15px;font-weight:700;color:var(--white);letter-spacing:.05em}
+  .trow .tn{font-size:11px;color:var(--ink-dim);letter-spacing:.06em;font-family:"Chakra Petch"}
+  .qty{font-family:"JetBrains Mono",monospace;font-size:14px;font-weight:800;color:var(--warn);border:1px solid var(--warn);border-radius:6px;padding:2px 9px}
+  .qty.need{color:var(--hud);border-color:var(--hud)}
+
+  .preview{
+    border:1px solid var(--line-bright);border-radius:12px;background:#06110e;padding:12px 14px;
+    position:relative;
+  }
+  .preview .pv-head{font-family:"JetBrains Mono",monospace;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-dim);margin-bottom:8px}
+  .preview .pv-body{font-size:13.5px;line-height:1.55;color:var(--ink)}
+  .preview .pv-body b{color:var(--white)}
+  .preview .pv-tag{color:var(--hud);font-family:"JetBrains Mono",monospace}
+  .preview::after{content:"PRÉVIA";position:absolute;top:10px;right:12px;font-family:"JetBrains Mono",monospace;font-size:9px;color:var(--ink-dim);letter-spacing:.18em;border:1px solid var(--line);padding:2px 6px;border-radius:4px}
+
+  .actions{display:flex;flex-direction:column;gap:10px;margin-top:auto;padding-top:4px}
+  .btn{
+    display:flex;align-items:center;justify-content:center;gap:9px;
+    border-radius:12px;padding:15px;font-size:16px;font-weight:700;letter-spacing:.02em;
+    font-family:"Chakra Petch";cursor:pointer;
+  }
+  .btn.primary{background:var(--hud);color:#03130d;border:1px solid var(--hud);box-shadow:0 0 22px rgba(63,245,176,.3)}
+  .btn.secondary{background:transparent;color:var(--ink);border:1px solid var(--line-bright);font-family:"JetBrains Mono",monospace;font-size:13px;letter-spacing:.06em}
+
+  /* bottom nav (HUD tabs) */
+  .nav{
+    flex:0 0 auto;display:flex;border-top:1px solid var(--line);background:#070f12;
+  }
+  .nav a{
+    flex:1;text-align:center;padding:11px 4px 12px;text-decoration:none;
+    font-family:"JetBrains Mono",monospace;font-size:10px;letter-spacing:.1em;text-transform:uppercase;
+    color:var(--ink-dim);position:relative;
+  }
+  .nav a .ico{display:block;font-size:18px;margin-bottom:3px;line-height:1}
+  .nav a.on{color:var(--hud)}
+  .nav a.on::before{content:"";position:absolute;top:0;left:22%;right:22%;height:2px;background:var(--hud);box-shadow:0 0 10px var(--hud)}
+
+  @media (max-width:520px){
+    .phone{width:100%;max-width:390px}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="masthead">
+    <span class="mh-tag"><span class="mh-dot"></span>Estilo de interface · HUD</span>
+    <h1>Scanner <span>HUD</span></h1>
+    <div class="mh-sub">TROCA FIGURINHAS — COPA 2026 · instrumento de leitura óptica</div>
+    <p class="mh-why">
+      <strong>Por que este estilo serve o usuário</strong>
+      A mira com cantos, a varredura e os leitores em monoespaçado fazem o app parecer uma
+      ferramenta de verdade que lê sozinha — reforçando a promessa "instantâneo, sem toque". O
+      verde-instrumento dá um GUARDAR inconfundível e o laranja separa REPETIDA por cor, ícone e
+      texto ao mesmo tempo, legível no sol e em telas pequenas. A mesma moldura de HUD organiza
+      Álbum e Trocar como painéis de dados, então o garoto entende tudo de relance.
+    </p>
+  </header>
+
+  <div class="rail">
+
+    <!-- ===================== SCREEN 1 — ESCANEAR ===================== -->
+    <div class="phone">
+      <div class="notch"></div>
+      <div class="screen">
+        <div class="statusbar">
+          <span>9:41</span>
+          <span class="sb-r"><span>5G</span><span>◧</span><span>87%</span></span>
+        </div>
+        <div class="app">
+          <div class="topbar">
+            <span class="sys">● LEITOR ATIVO</span>
+            <span>FOCO 1.0× · ISO 320</span>
+            <span><span class="sig"><i></i><i></i><i></i><i></i></span></span>
+          </div>
+
+          <div class="cam">
+            <div class="camreadout">SINAL <b>FORTE</b><br>NITIDEZ <b>OK</b></div>
+            <div class="flip" title="Virar câmera">🔄</div>
+            <div class="sweep"></div>
+
+            <div class="sticker">
+              <div class="sgrid"></div>
+              <div class="scode">CIV&nbsp;12</div>
+            </div>
+
+            <div class="reticle">
+              <span class="lock">● TRAVADO</span>
+              <span class="corner c1"></span><span class="corner c2"></span>
+              <span class="corner c3"></span><span class="corner c4"></span>
+              <span class="cross-h"></span><span class="cross-v"></span>
+            </div>
+
+            <div class="hint">Mostre o verso e segure parado</div>
+          </div>
+
+          <!-- VERDICT hero -->
+          <div class="verdict">
+            <div class="v-top">
+              <span class="v-icon">✓ NOVA</span>
+              <span class="v-word">GUARDAR</span>
+            </div>
+            <div class="v-meta">
+              <span class="v-code">CIV 12</span>
+              <span class="v-team">Costa do Marfim<small>Grupo · seleção</small></span>
+            </div>
+          </div>
+
+          <div class="counters">
+            <div class="counter keep">
+              <div class="num">23</div>
+              <div class="lbl">novas</div>
+              <span class="tick">↑ sessão</span>
+            </div>
+            <div class="counter dup">
+              <div class="num">8</div>
+              <div class="lbl">repetidas</div>
+              <span class="tick">⟳ sessão</span>
+            </div>
+          </div>
+
+          <div class="recent">
+            <h4>Últimas leituras</h4>
+            <div class="rrow"><span class="rc">CIV 12</span><span class="rs"><span class="pill nova">nova</span></span></div>
+            <div class="rrow"><span class="rc">BRA 04</span><span class="rs"><span class="pill rep">repetida</span></span></div>
+            <div class="rrow"><span class="rc">ARG 11</span><span class="rs"><span class="pill nova">nova</span></span></div>
+          </div>
+
+          <div class="nav">
+            <a href="#" class="on"><span class="ico">◎</span>Escanear</a>
+            <a href="#"><span class="ico">▦</span>Álbum</a>
+            <a href="#"><span class="ico">⇄</span>Trocar</a>
+          </div>
+        </div>
+        <span class="screenlabel">Leitor · Escanear</span>
+      </div>
+    </div>
+
+    <!-- ===================== SCREEN 2 — ÁLBUM ===================== -->
+    <div class="phone">
+      <div class="notch"></div>
+      <div class="screen">
+        <div class="statusbar">
+          <span>9:41</span>
+          <span class="sb-r"><span>5G</span><span>◧</span><span>87%</span></span>
+        </div>
+        <div class="app">
+          <div class="topbar">
+            <span class="sys">▦ ÁLBUM</span>
+            <span>BASE 980 FIGURINHAS</span>
+            <span><span class="sig"><i></i><i></i><i></i><i></i></span></span>
+          </div>
+
+          <div class="scroll">
+
+            <div class="panel">
+              <div class="prog-head">
+                <div class="prog-num">412 <span>/ 980</span></div>
+                <div class="prog-sub"><span>PROGRESSO 42%</span><span>Faltam <b>568</b></span></div>
+                <div class="bar"><i></i><span class="pct">42%</span></div>
+              </div>
+            </div>
+
+            <div class="panel">
+              <div class="ph">Grupo A <span class="small">4 seleções</span></div>
+
+              <!-- Brasil -->
+              <div class="team">
+                <div class="team-row">
+                  <span class="team-name">Brasil</span>
+                  <span class="team-frac">18/20</span>
+                </div>
+                <div class="minibar"><i style="width:90%"></i></div>
+              </div>
+
+              <!-- Argentina completa -->
+              <div class="team">
+                <div class="team-row">
+                  <span class="team-name">Argentina <span class="done">✓ COMPLETA</span></span>
+                  <span class="team-frac full">20/20</span>
+                </div>
+                <div class="minibar"><i style="width:100%"></i></div>
+              </div>
+
+              <!-- França expandida -->
+              <div class="team">
+                <div class="team-row">
+                  <span class="team-name">França</span>
+                  <span class="team-frac">12/20</span>
+                </div>
+                <div class="minibar warn"><i style="width:60%"></i></div>
+                <div class="chips">
+                  <div class="chip have">1</div><div class="chip have">2</div><div class="chip have">3</div><div class="chip need">4</div><div class="chip have">5</div>
+                  <div class="chip have">6</div><div class="chip need">7</div><div class="chip have">8</div><div class="chip have">9</div><div class="chip have">10</div>
+                  <div class="chip need">11</div><div class="chip have">12</div><div class="chip have">13</div><div class="chip need">14</div><div class="chip have">15</div>
+                  <div class="chip need">16</div><div class="chip have">17</div><div class="chip need">18</div><div class="chip have">19</div><div class="chip need">20</div>
+                </div>
+                <div class="chips-cap">
+                  <span><span class="key-have"></span> tenho (✓)</span>
+                  <span><span class="key-need"></span> falta</span>
+                </div>
+              </div>
+
+              <!-- Costa do Marfim -->
+              <div class="team">
+                <div class="team-row">
+                  <span class="team-name">Costa do Marfim</span>
+                  <span class="team-frac">9/20</span>
+                </div>
+                <div class="minibar warn"><i style="width:45%"></i></div>
+              </div>
+            </div>
+
+            <div class="panel">
+              <div class="ph">Especiais <span class="small">brilho</span></div>
+              <div class="team">
+                <div class="team-row">
+                  <span class="team-name">FWC — Especiais</span>
+                  <span class="team-frac">6/20</span>
+                </div>
+                <div class="minibar warn"><i style="width:30%"></i></div>
+              </div>
+            </div>
+
+          </div>
+
+          <div class="nav">
+            <a href="#"><span class="ico">◎</span>Escanear</a>
+            <a href="#" class="on"><span class="ico">▦</span>Álbum</a>
+            <a href="#"><span class="ico">⇄</span>Trocar</a>
+          </div>
+        </div>
+        <span class="screenlabel">Painel · Álbum</span>
+      </div>
+    </div>
+
+    <!-- ===================== SCREEN 3 — TROCAR ===================== -->
+    <div class="phone">
+      <div class="notch"></div>
+      <div class="screen">
+        <div class="statusbar">
+          <span>9:41</span>
+          <span class="sb-r"><span>5G</span><span>◧</span><span>87%</span></span>
+        </div>
+        <div class="app">
+          <div class="topbar">
+            <span class="sys">⇄ TROCAR</span>
+            <span>PRONTO P/ ENVIAR</span>
+            <span><span class="sig"><i></i><i></i><i></i><i></i></span></span>
+          </div>
+
+          <div class="scroll">
+
+            <div class="panel">
+              <div class="ph">Minhas repetidas <span class="small">para trocar</span></div>
+              <div class="trow"><span><span class="tc">BRA 04</span> &nbsp;<span class="tn">Brasil</span></span><span class="qty">×3</span></div>
+              <div class="trow"><span><span class="tc">ARG 11</span> &nbsp;<span class="tn">Argentina</span></span><span class="qty">×2</span></div>
+              <div class="trow"><span><span class="tc">FRA 07</span> &nbsp;<span class="tn">França</span></span><span class="qty">×2</span></div>
+              <div class="trow"><span><span class="tc">FWC 03</span> &nbsp;<span class="tn">Especial</span></span><span class="qty">×1</span></div>
+            </div>
+
+            <div class="panel">
+              <div class="ph">O que eu preciso <span class="small">3 itens</span></div>
+              <div class="trow"><span><span class="tc">CIV 12</span> &nbsp;<span class="tn">Costa do Marfim</span></span><span class="qty need">falta</span></div>
+              <div class="trow"><span><span class="tc">MEX 15</span> &nbsp;<span class="tn">México</span></span><span class="qty need">falta</span></div>
+              <div class="trow"><span><span class="tc">JPN 02</span> &nbsp;<span class="tn">Japão</span></span><span class="qty need">falta</span></div>
+            </div>
+
+            <div class="preview">
+              <div class="pv-head">Prévia da mensagem que o amigo recebe</div>
+              <div class="pv-body">
+                <span class="pv-tag">[Copa 2026]</span> <b>Tenho p/ trocar:</b> BRA04 ×3, ARG11 ×2, FRA07 ×2, FWC03 ×1.
+                <b>Preciso:</b> CIV12, MEX15, JPN02. Bora trocar? 🔁
+              </div>
+            </div>
+
+            <div class="actions">
+              <a class="btn primary" href="#">💬 Enviar no WhatsApp</a>
+              <a class="btn secondary" href="#">⧉ Copiar lista</a>
+            </div>
+
+          </div>
+
+          <div class="nav">
+            <a href="#"><span class="ico">◎</span>Escanear</a>
+            <a href="#"><span class="ico">▦</span>Álbum</a>
+            <a href="#" class="on"><span class="ico">⇄</span>Trocar</a>
+          </div>
+        </div>
+        <span class="screenlabel">Painel · Trocar</span>
+      </div>
+    </div>
+
+  </div>
+</div>
+</body>
+</html>
