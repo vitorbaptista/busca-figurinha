@@ -687,6 +687,65 @@ button {
     animation: none;
   }
 }
+/* while reading, the live readout pulse turns gold to match the mira sweep */
+.hint.reading {
+  border-color: var(--gold);
+}
+.hint.reading .pulse {
+  background: var(--gold);
+}
+
+/* ---- reading state: the mira becomes an active scanner (the "it's reading" signal) ---- */
+.mira.reading {
+  border-style: solid;
+  border-color: var(--gold);
+  animation: none; /* drop the idle breathe; the sweep carries the motion */
+  box-shadow: 0 0 0 3px rgba(240, 198, 75, 0.16);
+}
+/* gold sweep bar travelling the slot, clipped to the rounded window. Sits over the video
+   but under the gold corners (which come later in the DOM). */
+.mira-scan {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  overflow: hidden;
+  border-radius: 6px;
+  pointer-events: none;
+}
+.mira-scan::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 40%;
+  background: linear-gradient(
+    to bottom,
+    transparent,
+    rgba(240, 198, 75, 0.1),
+    rgba(240, 198, 75, 0.55),
+    rgba(240, 198, 75, 0.1),
+    transparent
+  );
+  animation: mira-sweep 1.15s ease-in-out infinite;
+}
+@keyframes mira-sweep {
+  0% {
+    transform: translateY(-100%);
+  }
+  100% {
+    transform: translateY(250%);
+  }
+}
+/* Reduced motion: the global rule forces a 0.01ms duration (which would make the sweep
+   flicker), so kill the animation outright and leave a still scan line at rest instead. */
+@media (prefers-reduced-motion: reduce) {
+  .mira-scan::before {
+    animation: none;
+    top: 32%;
+    opacity: 0.75;
+  }
+}
 
 /* ---- bottom dock: recent reads above the verdict, both always visible ---- */
 /* Above the preparing/failed overlay (z-6) so a manually-entered code's verdict still
@@ -920,6 +979,35 @@ button {
   padding: 9px 14px;
   min-height: 44px;
   cursor: pointer;
+}
+
+/* "Não é essa?" — undo a confident misread. A quiet inked chip docked at the right of the
+   GUARDAR/REPETIDA head: clearly tappable, deliberately secondary to the hero word. */
+.verdict-wrong {
+  margin-left: auto;
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  background: rgba(22, 36, 28, 0.32);
+  color: var(--cream);
+  border: 2px solid rgba(244, 236, 216, 0.62);
+  border-radius: var(--radius-pill);
+  font-family: var(--font-head);
+  font-weight: 600;
+  font-size: 0.72rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  line-height: 1;
+  padding: 0 13px;
+  min-height: 44px;
+  cursor: pointer;
+}
+.verdict-wrong:hover {
+  background: rgba(22, 36, 28, 0.46);
+  border-color: var(--cream);
+}
+.verdict-wrong:active {
+  transform: translateY(1px);
 }
 
 /* ---- OCR preparing / failed / denied overlays (cover the camera) ---- */
