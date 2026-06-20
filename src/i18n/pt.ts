@@ -165,6 +165,12 @@ export const pt = {
     copied: 'Lista copiada!',
     copyFail: 'Não consegui copiar. Use “Enviar no WhatsApp”.',
 
+    // QR Code — for trading in person: show it and the other person opens your list with the camera.
+    qrTag: 'Trocar ao vivo',
+    qrHint:
+      'Tá trocando pessoalmente? Mostre este QR Code pra pessoa apontar a câmera e abrir sua lista na hora.',
+    qrAria: 'QR Code com o link da sua lista de troca',
+
     // Receiver — a friend opened your shared link
     friendFallback: 'seu amigo',
     receiverHero: (friend: string) => `Trocas com ${friend}`,

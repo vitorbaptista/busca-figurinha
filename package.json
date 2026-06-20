@@ -19,6 +19,7 @@
     "@tensorflow/tfjs": "^4.22.0",
     "idb-keyval": "^6.2.1",
     "preact": "^10.24.3",
+    "qrcode-generator": "^2.0.4",
     "tesseract.js": "^5.1.1"
   },
   "devDependencies": {

@@ -71,6 +71,12 @@ export function shareTextFor(
   return { link, text: buildShareMessage(payload, link, checklist) };
 }
 
+/** Just the deep link for `payload` against the current page — what the QR code encodes. Mirrors
+ *  shareTextFor but without the message text, so the QR and the WhatsApp link stay byte-identical. */
+export function shareLinkFor(payload: TradePayload, checklist: Checklist): string {
+  return buildShareLink(browserBaseUrl(), payload, checklist);
+}
+
 /** Marker that stands in for the long deep link in the ON-SCREEN preview only. What's actually
  *  shared/copied (shareTextFor) keeps the real link — the receiver loop depends on it. Without this
  *  the preview would dump a ~350-char base64 URL that wraps over several lines and reads as broken. */

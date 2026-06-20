@@ -2122,6 +2122,52 @@ html.scan-active body {
   background: rgba(244, 236, 216, 0.08);
 }
 
+/* QR for in-person trading — a LIGHT "ticket" (mirrors .preview's gold-tag look) so the QR is
+   dark-on-light, which is required for a camera to read it. */
+.trade-qr {
+  position: relative;
+  margin: 18px 0 4px;
+  background: var(--cream);
+  border: 2px solid var(--gold-deep);
+  border-radius: var(--radius);
+  padding: 22px 16px 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+.trade-qr .ptag {
+  position: absolute;
+  top: -11px;
+  left: 14px;
+  background: var(--gold);
+  color: var(--ink);
+  font-family: var(--font-head);
+  font-weight: 700;
+  font-size: 0.7rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 3px 9px;
+  border-radius: var(--radius-sm);
+  border: 1.5px solid var(--ink);
+}
+.trade-qr-svg {
+  width: min(80vw, 320px);
+  height: auto;
+  display: block;
+  background: #fff;
+  padding: 8px;
+  border-radius: var(--radius-sm);
+}
+.trade-qr-hint {
+  margin: 12px 2px 0;
+  font-family: var(--font);
+  font-size: 0.85rem;
+  line-height: 1.45;
+  color: var(--ink);
+  max-width: 30ch;
+}
+
 /* empty state — no repeats scanned yet */
 .trade-empty {
   display: flex;

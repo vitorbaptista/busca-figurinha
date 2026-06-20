@@ -4,9 +4,15 @@ import type { ChecklistEntry, CollectionStore } from '../../types';
 import { checklist } from '../../data/checklist';
 import { flagFor } from '../../data/flags';
 import { matchTrades, type TradePayload } from '../../domain/tradeList';
-import { previewTextFor, copyTradeList, type ShareTradesResult } from '../../domain/share';
+import {
+  previewTextFor,
+  copyTradeList,
+  shareLinkFor,
+  type ShareTradesResult,
+} from '../../domain/share';
 import { pt } from '../../i18n/pt';
 import { useStore } from '../hooks';
+import { QrCode } from '../components/QrCode';
 
 interface TradeScreenProps {
   /** The user's owned codes (to derive what they still need). */
@@ -161,6 +167,9 @@ export function TradeScreen({
   const needGroups = groupByAlbum(missingCodes);
   // Always built — with no repeats the share is a "wishlist" (só "Preciso"), still worth sending.
   const previewText = previewTextFor(myPayload, checklist);
+  // The exact deep link the WhatsApp message carries — encoded as a QR so someone trading in person
+  // can scan it and open this same list (no typing, no WhatsApp needed).
+  const shareLink = shareLinkFor(myPayload, checklist);
 
   return (
     <div class="screen trade-screen">
@@ -265,6 +274,14 @@ export function TradeScreen({
             {pt.trade.copy}
           </button>
         </div>
+
+        {/* QR for in-person trading: show it, the other person scans it and lands on this exact list
+            (same deep link as the WhatsApp share) without typing anything. */}
+        <section class="trade-qr">
+          <span class="ptag">{pt.trade.qrTag}</span>
+          <QrCode value={shareLink} ariaLabel={pt.trade.qrAria} class="trade-qr-svg" />
+          <p class="trade-qr-hint">{pt.trade.qrHint}</p>
+        </section>
       </div>
     </div>
   );
