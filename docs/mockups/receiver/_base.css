@@ -1,0 +1,141 @@
+/* Banca — Álbum de Papel · shared mockup chrome for the receiver-flow images.
+   Tokens + phone frame lifted from docs/mockups/banca-album-print.html so these
+   mockups match the shipped src/styles.css visual system 1:1. pt-BR throughout. */
+:root{
+  --paper:#1f6b46; --paper-deep:#185438; --paper-edge:#0f3c27;
+  --kraft:#d8b88a; --kraft-deep:#c39b66; --kraft-text:#6c4e23;
+  --miss:#cdbb95; --ink:#16241c; --cream:#f4ecd8; --cream-dim:#e4d8bc;
+  --gold:#f0c64b; --gold-deep:#caa033;
+  --keep:#0a7a3e; --keep-bright:#2bd06f; --dupe:#b23a1e;
+  --line:rgba(244,236,216,.34);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{-webkit-text-size-adjust:100%}
+body{
+  font-family:'Archivo',system-ui,sans-serif;color:var(--cream);
+  background:
+    radial-gradient(circle at 18% 12%, rgba(255,255,255,.05), transparent 40%),
+    repeating-linear-gradient(0deg, rgba(0,0,0,.05) 0 2px, transparent 2px 4px),
+    var(--paper-deep);
+  background-blend-mode:normal,overlay,normal;
+  min-height:100vh;padding:34px 22px 40px;position:relative;
+}
+body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;
+  background-image:radial-gradient(rgba(0,0,0,.16) 1px, transparent 1.4px);
+  background-size:7px 7px;opacity:.36;mix-blend-mode:multiply}
+.wrap{max-width:1880px;margin:0 auto;position:relative;z-index:1}
+
+/* caption masthead */
+.cap{background:var(--cream);color:var(--ink);border:3px solid var(--ink);border-radius:4px;
+  box-shadow:8px 8px 0 var(--paper-edge);padding:16px 22px 18px;margin-bottom:34px;max-width:1100px}
+.cap .kick{font-family:'Oswald';font-weight:600;font-size:12px;letter-spacing:.22em;text-transform:uppercase;color:var(--kraft-text)}
+.cap h1{font-family:'Anton';font-weight:400;font-size:clamp(26px,3.4vw,40px);line-height:.95;
+  text-transform:uppercase;color:var(--paper);margin:5px 0 6px;letter-spacing:.01em}
+.cap p{font-size:14px;line-height:1.5;color:#243a2e;font-weight:500;max-width:80ch}
+
+/* phone row + device */
+.phones{display:flex;flex-wrap:nowrap;gap:30px;justify-content:flex-start;align-items:flex-start}
+.device{width:360px;flex:none;background:#0c1c14;border-radius:42px;padding:12px;
+  box-shadow:0 2px 0 #000 inset, 12px 16px 0 rgba(15,60,39,.55), 0 26px 52px rgba(0,0,0,.4);position:relative}
+.device::before{content:"";position:absolute;right:-3px;top:140px;width:3px;height:58px;background:#0c1c14;border-radius:0 3px 3px 0}
+.screen{background:var(--paper);border-radius:30px;overflow:hidden;height:740px;display:flex;flex-direction:column;position:relative;
+  background-image:radial-gradient(rgba(0,0,0,.10) 1px,transparent 1.3px);background-size:6px 6px}
+.notch{position:absolute;top:6px;left:50%;transform:translateX(-50%);width:108px;height:20px;background:#0c1c14;border-radius:0 0 13px 13px;z-index:6}
+.statusbar{height:30px;flex:none;display:flex;align-items:center;justify-content:space-between;padding:0 22px;
+  font-family:'Archivo';font-weight:700;font-size:12px;color:var(--cream);background:var(--paper-deep)}
+.statusbar .dots{display:flex;gap:4px;align-items:center;font-size:10px;letter-spacing:.5px}
+.pagetab{flex:none;display:flex;align-items:center;justify-content:space-between;padding:9px 16px 10px;
+  background:var(--ink);color:var(--cream);border-bottom:3px solid var(--gold-deep)}
+.pagetab .name{font-family:'Oswald';font-weight:700;font-size:14px;letter-spacing:.22em;text-transform:uppercase}
+.pagetab .pg{font-family:'Archivo Narrow';font-weight:700;font-size:10px;letter-spacing:.1em;color:var(--gold);text-transform:uppercase}
+.body{flex:1;overflow:hidden;display:flex;flex-direction:column;position:relative}
+.scroll{flex:1;overflow:hidden;padding:0 0 6px}
+
+/* step badge under each phone */
+.steplab{margin:16px auto 0;text-align:center;width:360px;flex:none}
+.steplab .n{display:inline-flex;align-items:center;gap:9px;background:var(--cream);color:var(--ink);
+  border:2px solid var(--ink);border-radius:999px;padding:7px 16px 7px 8px;box-shadow:3px 3px 0 var(--paper-edge)}
+.steplab .n b{width:26px;height:26px;border-radius:50%;background:var(--gold);color:var(--ink);border:2px solid var(--ink);
+  display:flex;align-items:center;justify-content:center;font-family:'Anton';font-size:15px;line-height:1}
+.steplab .n span{font-family:'Oswald';font-weight:700;font-size:13px;letter-spacing:.04em;text-transform:uppercase}
+
+/* ===== trade screen ===== */
+.guide{margin:11px 14px 0;background:var(--ink);border:2px solid var(--gold-deep);border-radius:4px;
+  padding:8px 12px;font-family:'Oswald';font-weight:600;font-size:12.5px;letter-spacing:.02em;color:var(--cream);display:flex;gap:8px;align-items:center}
+.guide .pulse{width:8px;height:8px;border-radius:50%;background:var(--keep-bright);flex:none}
+.legend{margin:9px 14px 0;display:flex;gap:14px;font-family:'Archivo Narrow';font-weight:700;font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--text-dim,rgba(244,236,216,.8))}
+.legend i{display:inline-flex;align-items:center;gap:5px}
+.legend .sw{width:15px;height:15px;border-radius:3px;border:2px solid var(--ink);display:inline-flex;align-items:center;justify-content:center;font-size:9px;color:var(--ink);font-weight:700}
+.legend .sw.q{background:var(--gold)} .legend .sw.h{background:var(--keep);color:#fff}
+
+.sec-h{margin:15px 14px 0;display:flex;align-items:center;gap:9px}
+.sec-h .t{font-family:'Oswald';font-weight:700;font-size:13.5px;letter-spacing:.04em;text-transform:uppercase;color:var(--cream)}
+.sec-h .rule{flex:1;height:2px;background:var(--line)}
+.bulk{margin:8px 14px 0;display:flex;gap:8px;flex-wrap:wrap}
+.bulk button{font-family:'Archivo Narrow';font-weight:700;font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;
+  background:transparent;border:1.5px dashed var(--gold);color:var(--gold);border-radius:999px;padding:5px 11px}
+.bulk button.clear{border-color:var(--kraft);color:var(--kraft)}
+
+.trow{margin:9px 14px 0;background:var(--cream);border:2px solid var(--ink);border-radius:5px;overflow:hidden;box-shadow:2px 2px 0 rgba(15,60,39,.28)}
+.trow .th{display:flex;align-items:center;gap:9px;padding:8px 12px 7px}
+.trow .flag{font-size:17px}
+.trow .tn{font-family:'Oswald';font-weight:700;font-size:14px;color:var(--ink)}
+.trow .cnt{margin-left:auto;font-family:'Archivo Narrow';font-weight:700;font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:var(--kraft-text)}
+.ncs{display:flex;flex-wrap:wrap;gap:6px;padding:0 12px 11px}
+.nc{min-width:33px;height:33px;padding:0 6px;border-radius:3px;display:flex;align-items:center;justify-content:center;position:relative;
+  font-family:'Archivo Narrow';font-weight:700;font-size:14px;border:2px dashed var(--kraft-deep);color:var(--kraft-text);background:transparent}
+.nc.want{background:var(--gold);border:2px solid var(--ink);color:var(--ink)}
+.nc.have{background:var(--keep);border:2px solid var(--ink);color:#fff}
+.nc.want::after,.nc.have::after{content:"✓";position:absolute;top:-7px;right:-6px;width:15px;height:15px;border-radius:50%;
+  background:var(--ink);color:var(--gold);font-size:9px;display:flex;align-items:center;justify-content:center;border:1.5px solid var(--cream)}
+.nc.have::after{color:var(--keep-bright)}
+
+/* sticky footer (the spine) */
+.foot{flex:none;background:var(--ink);border-top:4px solid var(--gold-deep);padding:11px 14px 13px;position:relative}
+.foot::before{content:"";position:absolute;top:-4px;left:0;right:0;height:4px;background:repeating-linear-gradient(90deg,var(--gold) 0 13px,var(--ink) 13px 20px)}
+.foot .score{display:flex;align-items:baseline;gap:10px}
+.foot .score .big{font-family:'Anton';font-size:30px;line-height:.9;color:var(--gold)}
+.foot .score .lbl{font-family:'Oswald';font-weight:600;font-size:13px;color:var(--cream);letter-spacing:.02em}
+.foot .recv{font-family:'Oswald';font-weight:600;font-size:14px;color:var(--cream);letter-spacing:.01em}
+.foot .pega{margin-top:2px;font-family:'Archivo Narrow';font-weight:700;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:rgba(244,236,216,.82)}
+.foot .conv{margin-top:9px;display:flex;align-items:center;gap:7px;font-family:'Archivo Narrow';font-weight:700;font-size:11px;letter-spacing:.05em;text-transform:uppercase;color:var(--gold)}
+.foot .conv .v{margin-left:auto;border:1.5px solid var(--gold);border-radius:999px;padding:2px 10px;color:var(--gold)}
+.btn-wa{margin-top:10px;display:flex;align-items:center;justify-content:center;gap:9px;width:100%;
+  background:var(--keep);color:#fff;border:3px solid #0c1c14;border-radius:5px;
+  font-family:'Anton';font-size:18px;letter-spacing:.02em;text-transform:uppercase;padding:12px;box-shadow:4px 4px 0 var(--paper-edge)}
+.btn-wa.off{background:var(--cream-dim);color:#8a8068;box-shadow:none;border-color:#8a8068}
+
+/* bottom-sheet preview */
+.dim{position:absolute;inset:0;background:rgba(12,28,20,.55);z-index:7}
+.sheet{position:absolute;left:0;right:0;bottom:0;z-index:8;background:var(--cream);border-top:3px solid var(--ink);
+  border-radius:16px 16px 0 0;box-shadow:0 -10px 30px rgba(0,0,0,.4);padding:16px 16px 18px}
+.sheet .grab{width:40px;height:4px;border-radius:2px;background:var(--kraft-deep);margin:0 auto 12px}
+.sheet .ptag{display:inline-block;background:var(--gold);color:var(--ink);font-family:'Archivo Narrow';font-weight:700;
+  font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;padding:3px 9px;border-radius:3px;border:1.5px solid var(--ink)}
+.sheet pre{margin:11px 0 0;background:#fff;border:2px solid var(--ink);border-radius:5px;padding:11px 12px;
+  font-family:'Archivo';font-weight:500;font-size:11.5px;line-height:1.5;color:var(--ink);white-space:pre-wrap;box-shadow:3px 3px 0 rgba(15,60,39,.2)}
+.sheet pre b{font-weight:700}
+.sheet .note{margin-top:9px;font-family:'Archivo';font-weight:500;font-size:11px;color:var(--kraft-text)}
+.sheet .copy{display:block;width:100%;margin-top:9px;text-align:center;background:transparent;color:var(--ink);
+  border:2px dashed var(--ink);border-radius:5px;font-family:'Oswald';font-weight:600;font-size:13px;letter-spacing:.05em;text-transform:uppercase;padding:9px}
+
+/* return-as-owner screen bits */
+.banner{margin:12px 14px 0;background:var(--gold);color:var(--ink);border:2px solid var(--ink);border-radius:5px;
+  padding:10px 13px;box-shadow:3px 3px 0 var(--paper-edge);font-family:'Oswald';font-weight:700;font-size:14px;letter-spacing:.01em;display:flex;gap:9px;align-items:center}
+.ledger{margin:9px 14px 0;background:var(--cream);border:2px solid var(--ink);border-radius:5px;box-shadow:2px 2px 0 rgba(15,60,39,.28);overflow:hidden}
+.lrow{display:flex;align-items:center;gap:10px;padding:9px 13px;border-bottom:1.5px dashed var(--kraft-deep)}
+.lrow:last-child{border-bottom:0}
+.lcode{font-family:'Archivo Narrow';font-weight:700;font-size:15px;color:var(--ink);background:var(--cream-dim);border:1.5px solid var(--ink);border-radius:3px;padding:2px 8px}
+.lname{font-family:'Archivo';font-weight:500;font-size:12px;color:#46564b}
+.ltag{margin-left:auto;font-family:'Archivo Narrow';font-weight:700;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--keep);border:1.5px solid var(--keep);border-radius:3px;padding:2px 7px}
+.ltag.dup{color:var(--dupe);border-color:var(--dupe)}
+.share-cta{margin:14px 14px 0;display:flex;align-items:center;justify-content:center;gap:9px;
+  background:var(--keep);color:#fff;border:3px solid #0c1c14;border-radius:5px;
+  font-family:'Anton';font-size:17px;letter-spacing:.02em;text-transform:uppercase;padding:12px;box-shadow:4px 4px 0 var(--paper-edge)}
+.spine{flex:none;display:flex;background:var(--ink);border-top:3px solid var(--gold-deep)}
+.spine a{flex:1;text-align:center;padding:8px 4px 10px;color:rgba(244,236,216,.55);
+  font-family:'Archivo Narrow';font-weight:700;font-size:10px;letter-spacing:.06em;text-transform:uppercase;text-decoration:none}
+.spine a .ico{display:block;font-size:16px;margin-bottom:2px}
+.spine a.on{color:var(--gold);background:rgba(240,198,75,.08)}
+.empty-strip{flex:none;padding:7px 14px;background:rgba(240,198,75,.1);border-top:1px solid var(--line);
+  font-family:'Archivo Narrow';font-weight:700;font-size:11px;letter-spacing:.04em;text-transform:uppercase;color:var(--gold);text-align:center}
