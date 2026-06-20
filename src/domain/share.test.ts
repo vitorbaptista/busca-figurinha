@@ -8,6 +8,7 @@ import {
   readShareLink,
   previewTextFor,
   shareTextFor,
+  shareLinkFor,
   PREVIEW_LINK_PLACEHOLDER,
 } from './share';
 
@@ -22,6 +23,18 @@ describe('share links', () => {
     const link = buildShareLink('https://exemplo.com/app', payload, checklist);
 
     expect(link).toMatch(/^https:\/\/exemplo\.com\/app\?t=2/);
+    expect(readShareLink(link, checklist)).toEqual(payload);
+  });
+
+  it('shareLinkFor builds the same deep link the message carries, and it round-trips', () => {
+    // album-ordered so the decoded sets compare equal to the input
+    const payload: TradePayload = { repeats: ['MEX3', 'MEX6'], missing: ['CIV12'] };
+
+    const link = shareLinkFor(payload, checklist);
+
+    expect(link).toContain('?t='); // version-agnostic; the round-trip below is the real guard
+    // The QR encodes EXACTLY the link embedded in the WhatsApp message — they must never drift.
+    expect(shareTextFor(payload, checklist).text).toContain(link);
     expect(readShareLink(link, checklist)).toEqual(payload);
   });
 

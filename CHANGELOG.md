@@ -3,6 +3,14 @@
 Notable changes to the sticker scanner. Newest first. No formal releases yet (deploys on push to
 `main`), so entries are grouped by date. Keep this updated when you ship something notable.
 
+## 2026-06-20 — Trocar: QR Code pra trocar ao vivo
+
+### Added
+- **Um QR Code no fim da tela "Trocar"** (abaixo de "Copiar lista"), pensado pra quando você está
+  trocando figurinhas pessoalmente. É só mostrar o QR pra outra pessoa apontar a câmera do celular —
+  ela abre a sua lista na hora, igualzinho a quando alguém clica no link que você manda no WhatsApp
+  (é exatamente o mesmo link). Funciona 100% offline, sem digitar nada.
+
 ## 2026-06-20 — Trocar: link do WhatsApp muito mais curto
 
 ### Changed
