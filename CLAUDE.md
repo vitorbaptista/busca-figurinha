@@ -112,6 +112,18 @@ report, settings) are conventional. Reading these files in order explains the sy
   returns instantly. This is what keeps a busy multi-sticker frame fast.
 - **Camera frames are not mirrored** by `getUserMedia` (mirroring is only a display choice), so the
   OCR canvas reads correctly for the front camera with no flip.
+- **URL-hash routing has one writer, and it's `replaceState`.** `src/ui/routing.ts`'s `sectionUrl`
+  is the SOLE place the address bar is written; `app.tsx` calls it from a single `useEffect`. Don't
+  add a second `history.replaceState`/`pushState`/`location.hash =` site — two writers with
+  different URL shapes fight (this is why the old `clearTradeQuery` was folded in; the `?t=`
+  friend-link strip rides the same effect via its `dropQuery` arg). Use `replaceState`, **never**
+  `pushState`/`location.hash =`: tab switches must NOT pile up history (Back exits the app), and
+  `replaceState` doesn't fire `hashchange`, so there's no sync loop — there is deliberately **no
+  `hashchange` listener**. `sectionUrl` must keep `location.pathname` (the GH-Pages base path) and
+  `location.search` (the `?debug`/`?capture`/`?record` flags). The **`report` screen is ephemeral**
+  (built from an already-cleared session) so it can't be deep-linked: it writes `#escanear` and is
+  absent from the reverse map, so `#report` never parses back. Keep `routing.ts` pure (no `location`
+  access) so it unit-tests in node — see `routing.test.ts`.
 
 ## Hard-won lessons (read before "optimizing")
 
@@ -186,6 +198,13 @@ wired into Preact via `src/ui/hooks.ts`. A **scan session** (`src/domain/session
 read-only accumulator: scanning records nothing into the collection. Only the **report screen**
 commits the user's selected keepers into `collection` (persisted to IndexedDB). The 980-sticker
 album is built in `src/data/checklist.ts`; UI strings are in `src/i18n/pt.ts`.
+
+**Section routing lives in the URL hash** (`src/ui/routing.ts`). The active `screen` (the union in
+`src/ui/Nav.tsx`) is mirrored to a pt-BR hash slug (`scan↔#escanear`, `collection↔#colecao`,
+`trade↔#trocar`, `settings↔#ajustes`, `repeats↔#repetidas`) so a refresh or a shared link restores
+the section. `app.tsx` seeds the initial `screen` from `location.hash` (`screenFromHash`) and one
+`useEffect` writes the URL on every screen change via `sectionUrl(...)` — see the invariant below
+for the rules that keep this correct.
 
 ## Dev tooling (dev-only, excluded from the build)
 
