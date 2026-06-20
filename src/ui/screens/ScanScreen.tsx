@@ -16,6 +16,7 @@ import { createConfirmer } from '../../domain/confirm';
 import { allowCommit } from '../../domain/commitGate';
 import { createHybridOcrEngine as createOcrEngine } from '../../ocr/hybridEngine';
 import { createCameraSource } from '../../ocr/frameSource';
+import { useRoiViewport } from '../hooks/useRoiViewport';
 import { recognizeFrameInOrder, recognizeFrameCodeNet } from '../../ocr/recognize';
 import type { CodeNet } from '../../ocr/codeNetEngine';
 import { createAutoCapture } from '../../ocr/autoCapture';
@@ -457,6 +458,14 @@ export function ScanScreen({ session, collection, settings, onPersist, onFinish 
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [facing]);
+
+  // Make the mira window a viewport onto the detection ROI, so what the user frames in the slot is
+  // exactly the region the recognizer reads (CONFIG.detect.roiRect), not a centred crop of the frame.
+  useRoiViewport(
+    videoLayerRef,
+    () => sourceRef.current?.element as HTMLVideoElement | undefined,
+    [cameraState, facing],
+  );
 
   const flipCamera = () => {
     const next = facing === 'user' ? 'environment' : 'user';

@@ -591,11 +591,13 @@ button {
   border-radius: 6px;
 }
 .scan-video {
+  /* Position + size are set in JS (useRoiViewport) so the window is a VIEWPORT onto the detection
+     ROI (CONFIG.detect.roiRect): what you frame in the slot is exactly the region the recognizer
+     reads, and the small code shows zoomed in. The 100%/cover below is only the pre-JS fallback for
+     the first frame, before the video reports its dimensions. */
+  position: absolute;
   width: 100%;
   height: 100%;
-  /* cover: fill the small window with a centred crop of the frame (a viewfinder), rather
-     than letterboxing the whole frame down to a sliver. Detection still runs on the full
-     frame's ROI; this window is only a framing aid. */
   object-fit: cover;
 }
 .mira .corner {
