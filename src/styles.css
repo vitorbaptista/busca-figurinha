@@ -2118,3 +2118,122 @@ button {
     transition-duration: 0.01ms !important;
   }
 }
+
+/* ====================================================== Dataset capture (?capture) ======= */
+/* Gated dev tool, not the normal app. object-fit:contain + the JS-positioned .capture-reticle so
+   the framed pill lands exactly in the detection ROI (frames are reused for training/bench). */
+.capture-screen {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background: #0e1f17;
+  color: var(--cream, #f4ecd8);
+}
+.capture-video-wrap {
+  position: relative;
+  flex: 1;
+  min-height: 46vh;
+  overflow: hidden;
+  background: #14271e;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.capture-video-layer {
+  position: absolute;
+  inset: 0;
+}
+.capture-video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+.capture-reticle {
+  position: absolute;
+  box-sizing: border-box;
+  /* Fallback ~rect ROI; exact left/top/width/height are set in JS (useReticleAlignment). */
+  left: 18%;
+  top: 32%;
+  width: 64%;
+  height: 26%;
+  border: 3px dashed var(--gold, #d9b25a);
+  border-radius: 8px;
+  box-shadow: 0 0 0 2px rgba(14, 31, 23, 0.45);
+  z-index: 3;
+  pointer-events: none;
+}
+.capture-rec {
+  position: absolute;
+  top: calc(8px + env(safe-area-inset-top, 0px));
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 4;
+  background: rgba(178, 58, 30, 0.94);
+  color: #fff;
+  font: 600 13px/1 var(--font-head, system-ui);
+  letter-spacing: 0.04em;
+  padding: 5px 12px;
+  border-radius: 999px;
+}
+.capture-controls {
+  padding: 12px calc(12px + env(safe-area-inset-left, 0px)) calc(14px + env(safe-area-inset-bottom, 0px));
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.capture-row {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+.capture-input {
+  flex: 1;
+  min-width: 0;
+  padding: 11px 12px;
+  font: 600 16px var(--font-head, system-ui);
+  text-transform: uppercase;
+  border: 2px solid var(--gold, #d9b25a);
+  border-radius: 8px;
+  background: #1c3326;
+  color: var(--cream, #f4ecd8);
+}
+.capture-input:disabled {
+  opacity: 0.45;
+}
+.capture-neg {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 14px;
+  white-space: nowrap;
+}
+.capture-btn {
+  flex: 1;
+  padding: 13px 10px;
+  font: 600 15px var(--font-head, system-ui);
+  border: 2px solid var(--gold, #d9b25a);
+  border-radius: 8px;
+  background: #1c3326;
+  color: var(--cream, #f4ecd8);
+}
+.capture-btn.is-rec {
+  background: #b23a1e;
+  border-color: #b23a1e;
+  color: #fff;
+}
+.capture-btn.capture-danger {
+  border-color: #8a3b2a;
+  color: #e8b9ac;
+}
+.capture-stats {
+  font-size: 14px;
+  opacity: 0.92;
+}
+.capture-help {
+  font-size: 13px;
+  line-height: 1.35;
+  opacity: 0.8;
+  min-height: 1.2em;
+}

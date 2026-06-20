@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'preact/hooks';
+import type { FunctionComponent } from 'preact';
 import type { ScanRecord, ScanSession, SessionReport } from './types';
 import { checklist } from './data/checklist';
 import { createCollectionStore, idbStore } from './state/collection';
@@ -68,6 +69,21 @@ function clearTradeQuery(): void {
   history.replaceState(history.state, '', `${location.origin}${location.pathname}${location.hash}`);
 }
 
+// Gated dataset-capture tool, opened with ?capture (same obscurity as ?debug/?record — regular
+// users never see it). Lazy-loaded so the capture UI + its deps stay out of the normal bundle.
+const CAPTURE =
+  typeof location !== 'undefined' && new URLSearchParams(location.search).has('capture');
+
+function CaptureGate() {
+  const [Comp, setComp] = useState<FunctionComponent | null>(null);
+  useEffect(() => {
+    void import('./dev/capture/CaptureScreen').then((m) =>
+      setComp(() => m.CaptureScreen as FunctionComponent),
+    );
+  }, []);
+  return Comp ? <Comp /> : <div class="screen">carregando captura…</div>;
+}
+
 export function App() {
   useStore(collection);
   useStore(repeats);
@@ -99,6 +115,10 @@ export function App() {
     clearStoredSession();
     setReport(null);
   };
+
+  // Dataset-capture takeover (?capture). All hooks above run unconditionally first, so this
+  // conditional return is hook-safe (CAPTURE is constant for the page's lifetime).
+  if (CAPTURE) return <CaptureGate />;
 
   return (
     <div class="app">
