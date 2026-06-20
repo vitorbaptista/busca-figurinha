@@ -144,7 +144,9 @@ function extractPayloadValue(input: string): string | null {
   const trimmed = input.trim();
   if (!trimmed) return null;
 
-  if (!trimmed.includes('=') && trimmed.startsWith('1')) return trimmed;
+  // A bare payload value (no query syntax) — let decodePayload be the authority on its validity
+  // (it gates on the version char), so this stays correct across encoding-version bumps.
+  if (!trimmed.includes('=')) return trimmed;
 
   let query = trimmed;
   const queryStart = query.indexOf('?');

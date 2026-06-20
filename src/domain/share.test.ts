@@ -21,7 +21,7 @@ describe('share links', () => {
 
     const link = buildShareLink('https://exemplo.com/app', payload, checklist);
 
-    expect(link).toMatch(/^https:\/\/exemplo\.com\/app\?t=1/);
+    expect(link).toMatch(/^https:\/\/exemplo\.com\/app\?t=2/);
     expect(readShareLink(link, checklist)).toEqual(payload);
   });
 
@@ -36,6 +36,8 @@ describe('share links', () => {
       payload,
     );
     expect(readShareLink(`?t=${encoded}`, checklist)).toEqual(payload);
+    // A bare payload value pasted on its own (no ?t=) still decodes.
+    expect(readShareLink(encoded, checklist)).toEqual(payload);
     expect(readShareLink('?t=', checklist)).toBeNull();
     expect(readShareLink('?t=%%%%', checklist)).toBeNull();
     expect(readShareLink('https://exemplo.com/app?x=1', checklist)).toBeNull();

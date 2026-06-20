@@ -3,6 +3,17 @@
 Notable changes to the sticker scanner. Newest first. No formal releases yet (deploys on push to
 `main`), so entries are grouped by date. Keep this updated when you ship something notable.
 
+## 2026-06-20 — Trocar: link do WhatsApp muito mais curto
+
+### Changed
+- **O link "Enviar no WhatsApp" ficou bem menor.** Antes a lista viajava como dois mapas de bits do
+  álbum inteiro, então o link tinha sempre ~333 caracteres (aquele monte de `AAAA…____`), mesmo pra
+  quem só tinha umas poucas figurinhas. Agora cada lista é codificada do jeito mais curto possível
+  (lista enxuta pra poucas figurinhas, complemento pra quase tudo, mapa de bits só no pior caso): o
+  link de quem está começando o álbum caiu de **333 pra ~35 caracteres** (≈9× menor), e nunca fica
+  maior que antes. Todos os dados continuam dentro do link — nada se perde. Links antigos (do formato
+  anterior) não abrem mais a lista, mas nunca abrem uma lista **errada** (no máximo vêm vazios).
+
 ## 2026-06-20 — Repetidas vira aba + atalho "Editar" pra coleção
 
 ### Added
