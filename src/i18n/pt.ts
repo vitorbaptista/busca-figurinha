@@ -135,8 +135,6 @@ export const pt = {
     // Sender — "minhas repetidas (p/ trocar)"
     myRepeatsTitle: 'Minhas repetidas',
     myRepeatsEm: '(p/ trocar)',
-    removeRepeat: 'Já troquei',
-    removeRepeatLabel: (display: string) => `Tirar ${display} da lista de troca`,
     // Owner has an album but hasn't scanned any spares yet (distinct from the friend-match giveCta,
     // which implies a counterparty already on screen).
     repeatsPromptTitle: 'Tem figurinhas repetidas?',
@@ -147,7 +145,6 @@ export const pt = {
     // Sender — "o que eu preciso"
     needTitle: 'O que eu',
     needEm: 'preciso',
-    faltaTag: 'Falta',
     needEmpty: 'Você já tem todas as figurinhas! 🎉',
     // Collapsed group row: "faltam N" (N = missing stickers in the group, up to 80).
     groupFaltam: (n: number) => (n === 1 ? 'falta 1' : `faltam ${n}`),
