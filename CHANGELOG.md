@@ -6,10 +6,14 @@ Notable changes to the sticker scanner. Newest first. No formal releases yet (de
 ## 2026-06-20 — Escanear: tela sem rolagem + leitura que não desiste
 
 ### Fixed
-- **A tela "Escanear" não precisa mais de rolagem.** O contêiner usava `min-height: 100vh`, e no
-  celular `100vh` é maior que a área visível (conta o espaço atrás da barra do navegador) — então o
-  veredito fixo da base caía abaixo da dobra. Agora a tela usa `100dvh` (altura visível real) +
-  `overflow: hidden`, com a área da câmera flexível, então tudo cabe sem rolar.
+- **A tela "Escanear" não precisa mais de rolagem (de verdade agora).** O contêiner usava
+  `min-height: 100vh`, e no celular `100vh` é maior que a área visível (conta o espaço atrás da barra
+  do navegador) — então o veredito fixo da base caía abaixo da dobra. A primeira correção pôs a tela
+  em `100dvh` + `overflow: hidden`, mas isso só recorta o conteúdo DELA: o documento em volta
+  continuava rolando, porque os ancestrais do app (`#app`/`.app`) usam `height/min-height: 100%`, que
+  no celular é a viewport GRANDE (sem a barra) — mais alta que a área visível. Agora, enquanto a tela
+  de escanear está montada, a raiz do documento é travada em `100dvh` + `overflow: hidden`, então
+  nada rola e o veredito (GUARDAR / REPETIDA) sempre aparece. As outras telas (que rolam) não mudam.
 
 ### Changed
 - **O leitor nunca desiste de uma figurinha — e o "lido ✓" só aparece quando lê de verdade.** Antes,
