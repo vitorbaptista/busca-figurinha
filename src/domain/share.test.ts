@@ -50,7 +50,7 @@ describe('share links', () => {
     const message = buildShareMessage(payload, link, checklist);
 
     expect(message).toContain(link);
-    expect(message).toContain('🇲🇽 México (MEX): 3, 6');
+    expect(message).toContain('🇲🇽 MEX 3, 6');
     // No needs → no "Preciso" line, and the link is last.
     expect(message).not.toContain('Preciso');
     expect(message.trimEnd().endsWith(link)).toBe(true);
@@ -65,7 +65,10 @@ describe('share links', () => {
     const message = buildShareMessage(payload, link, checklist);
 
     expect(message).toContain('🔁 Tenho 1 figurinha repetida da Copa 2026 pra trocar!');
-    expect(message).toContain('📍 Preciso (2): CIV12, 00');
+    // The "Preciso" block mirrors the grouped "Tenho" layout: header + one compact line per team.
+    expect(message).toContain('📍 Preciso (2):');
+    expect(message).toContain('🇨🇮 CIV 12');
+    expect(message).toContain('⭐ FWC 00');
     expect(message).toContain(link);
   });
 
@@ -75,7 +78,8 @@ describe('share links', () => {
     const message = buildShareMessage(payload, link, checklist);
 
     expect(message).toContain('🔁 Tô montando meu álbum da Copa 2026!');
-    expect(message).toContain('📍 Preciso (2): CIV12, 00');
+    expect(message).toContain('📍 Preciso (2):');
+    expect(message).toContain('🇨🇮 CIV 12');
     expect(message).toContain(link);
     // No awkward "Tenho 0 …" / "Nenhuma repetida informada." when sharing a pure wishlist.
     expect(message).not.toContain('Tenho 0');
@@ -90,7 +94,8 @@ describe('preview text', () => {
     const preview = previewTextFor(payload, checklist);
     // Same body as the real message...
     expect(preview).toContain('🔁 Tenho 2 figurinhas repetidas da Copa 2026 pra trocar!');
-    expect(preview).toContain('📍 Preciso (2): CIV12, 00');
+    expect(preview).toContain('📍 Preciso (2):');
+    expect(preview).toContain('🇨🇮 CIV 12');
     // ...but the ~350-char base64 URL is replaced by the marker — no raw link to wrap/break.
     expect(preview).toContain(PREVIEW_LINK_PLACEHOLDER);
     expect(preview).not.toContain('?t=');

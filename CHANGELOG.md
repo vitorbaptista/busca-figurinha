@@ -12,6 +12,20 @@ Notable changes to the sticker scanner. Newest first. No formal releases yet (de
   histórico do navegador (o "Voltar" sai do app, não fica preso pulando entre abas). A tela de
   relatório é momentânea, então ao atualizar nela você volta para o "Escanear".
 
+## 2026-06-20 — Trocar: prévia da mensagem mais curta e organizada
+
+### Changed
+- **A "Prévia da mensagem" ficou mais curta e fácil de ler.** A seção "Preciso" deixou de ser uma
+  lista corrida (`MEX1, MEX2, MEX5, MEX7`) e agora segue o mesmo formato do "Tenho": **uma seleção por
+  linha, agrupada pelo grupo da Copa**, no formato compacto `🇲🇽 MEX 1, 2, 5, 7`. As seções especiais
+  (**Especiais** e **Coca-Cola**) vêm no fim. Como agora cada time vira uma única linha, mesmo uma
+  lista de "preciso" enorme cabe sem precisar cortar com "+N".
+- **A linha de cada time/seleção também encurtou no "Tenho":** de `🇲🇽 México (MEX): 3, 6` para
+  `🇲🇽 MEX 3, 6`. A bandeira + o cabeçalho do grupo já identificam o país, então o nome completo só
+  deixava a mensagem mais longa.
+- **Toda linha agora começa com um emoji:** as 48 seleções têm bandeira, "Especiais" usa ⭐ e a seção
+  **Coca-Cola** (que não é país, então não tem bandeira UTF-8) ganhou o copo 🥤.
+
 ## 2026-06-20 — Trocar: listas de figurinhas compactas (por seleção)
 
 ### Changed

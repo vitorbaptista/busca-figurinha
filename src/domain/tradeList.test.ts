@@ -20,6 +20,7 @@ describe('flagFor', () => {
     expect(flagFor('MEX')).toBe('🇲🇽');
     expect(flagFor('civ')).toBe('🇨🇮');
     expect(flagFor('FWC')).toBe('⭐');
+    expect(flagFor('CC')).toBe('🥤');
     expect(flagFor('ZZZ')).toBe('');
   });
 });
@@ -34,11 +35,11 @@ describe('formatTradeList and parseTradeList', () => {
 
     expect(formatted).toContain('🔁 Tenho 7 figurinhas repetidas da Copa 2026 pra trocar!');
     expect(formatted).toContain('Grupo A');
-    expect(formatted).toContain('🇲🇽 México (MEX): 3, 6, 10, 20');
+    expect(formatted).toContain('🇲🇽 MEX 3, 6, 10, 20');
     expect(formatted).toContain('Grupo E');
-    expect(formatted).toContain('🇨🇮 Costa do Marfim (CIV): 12');
+    expect(formatted).toContain('🇨🇮 CIV 12');
     expect(formatted).toContain('Especiais');
-    expect(formatted).toContain('⭐ Especiais (FWC): 00, 1');
+    expect(formatted).toContain('⭐ FWC 00, 1');
     expect(formatted).toContain('https://exemplo.com/app?t=abc');
 
     expect(parseTradeList(formatted, checklist)).toEqual([
@@ -94,18 +95,32 @@ describe('formatTradeList and parseTradeList', () => {
 });
 
 describe('formatNeeds', () => {
-  it('lists needed codes inline in album order', () => {
-    const line = formatNeeds(['CIV12', 'MEX3', 'MEX3', '00', 'ZZZ99'], checklist);
-    // De-duped, junk dropped, album order: México (group A) before Costa do Marfim (E), '00' special last.
-    expect(line).toBe('📍 Preciso (3): MEX3, CIV12, 00');
+  it('groups needed codes by album group, one team per line, compact and flagged', () => {
+    const block = formatNeeds(['CIV12', 'MEX3', 'MEX3', '00', 'ZZZ99'], checklist);
+    // De-duped, junk dropped, album order: México (group A) before Costa do Marfim (E), '00' (FWC) last.
+    expect(block).toBe(
+      ['📍 Preciso (3):', 'Grupo A', '🇲🇽 MEX 3', '', 'Grupo E', '🇨🇮 CIV 12', '', 'Especiais', '⭐ FWC 00'].join(
+        '\n',
+      ),
+    );
   });
 
-  it('caps the spelled-out list and collapses the rest to +N', () => {
-    const allCodes = checklist.entries.map((entry) => entry.code);
-    const total = checklist.entries.length;
-    const line = formatNeeds(allCodes, checklist, { cap: 3 });
-    expect(line.startsWith(`📍 Preciso (${total}): `)).toBe(true);
-    expect(line).toContain(`+${total - 3}`);
+  it('collapses many needs for one team into a single line and counts them all in the header', () => {
+    const allMexico = Array.from({ length: 20 }, (_, n) => `MEX${n + 1}`);
+    const block = formatNeeds(allMexico, checklist);
+    expect(block).toContain('📍 Preciso (20):');
+    // 20 codes, but a single compact team line — no per-code truncation.
+    expect(block).toContain('🇲🇽 MEX 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20');
+    expect(block).not.toContain('+');
+  });
+
+  it('puts the special sections last, each with its own glyph (Especiais ⭐, Coca-Cola 🥤)', () => {
+    const block = formatNeeds(['MEX3', 'FWC2', 'CC5'], checklist);
+    expect(block).toBe(
+      ['📍 Preciso (3):', 'Grupo A', '🇲🇽 MEX 3', '', 'Especiais', '⭐ FWC 2', '', 'Coca-Cola', '🥤 CC 5'].join(
+        '\n',
+      ),
+    );
   });
 
   it('returns an empty string when nothing is needed', () => {
