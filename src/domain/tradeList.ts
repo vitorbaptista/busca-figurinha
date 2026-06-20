@@ -10,9 +10,14 @@ export interface TradePayload {
   name?: string;
 }
 
-const VERSION = '1';
+const VERSION = '2';
 const SPECIAL_CODE = 'FWC';
 const NAME_PRESENT = 1;
+
+/** Per-field encoding modes (the first byte of each encoded field). */
+const FIELD_BITSET = 0; // raw ceil(total/8)-byte bitset (fixed size; caps the worst case)
+const FIELD_SPARSE = 1; // varint count + gap varints over the PRESENT indices (few codes set)
+const FIELD_DENSE = 2; // varint count + gap varints over the ABSENT indices (almost all set)
 const BASE64URL = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_';
 
 function canonicalFromInput(raw: string, checklist: Checklist): string | null {
@@ -189,12 +194,20 @@ function hasBit(bytes: Uint8Array, index: number): boolean {
   return (bytes[Math.floor(index / 8)] & (1 << (index % 8))) !== 0;
 }
 
-function bitsetFor(codes: Iterable<string>, checklist: Checklist): Uint8Array {
+/** The checklist entry indices the codes map to, ascending (album order). Canonicalized like the
+ *  rest of the module, so input order/dupes/FWC0 aliases all collapse to one stable index list. */
+function presentIndicesFor(codes: Iterable<string>, checklist: Checklist): number[] {
   const selected = canonicalCodeSet(codes, checklist);
-  const bytes = new Uint8Array(bitLength(checklist));
+  const indices: number[] = [];
   checklist.entries.forEach((entry, index) => {
-    if (selected.has(entry.code)) setBit(bytes, index);
+    if (selected.has(entry.code)) indices.push(index);
   });
+  return indices;
+}
+
+function bitsetFromIndices(present: number[], total: number): Uint8Array {
+  const bytes = new Uint8Array(Math.ceil(total / 8));
+  for (const index of present) setBit(bytes, index);
   return bytes;
 }
 
@@ -252,46 +265,158 @@ function emptyPayload(): TradePayload {
   return { repeats: [], missing: [] };
 }
 
-/** Compact, URL-safe encoding of a TradePayload for a share link's query (e.g. ?t=...). Encode the
- *  repeats and missing as bitsets over the checklist's canonical entry order (checklist.entries index),
- *  so the payload is tiny and order-stable; base64url (no padding, URL-safe alphabet). Prefix with a
- *  1-char version tag. `name` (if present) appended in a URL-safe way. decode is the exact inverse;
- *  decode must tolerate an unknown/garbage string by returning empty sets rather than throwing. */
+function pushVarint(out: number[], value: number): void {
+  let v = value;
+  while (v >= 0x80) {
+    out.push((v & 0x7f) | 0x80);
+    v >>>= 7;
+  }
+  out.push(v);
+}
+
+/** varint(count) followed by the gaps between consecutive ascending indices (delta − 1, so a run of
+ *  consecutive indices is a run of zero bytes). */
+function encodeGapList(indices: number[]): number[] {
+  const out: number[] = [];
+  pushVarint(out, indices.length);
+  let prev = -1;
+  for (const index of indices) {
+    pushVarint(out, index - prev - 1);
+    prev = index;
+  }
+  return out;
+}
+
+/** Encode one field (a set of checklist indices) as the SMALLEST of bitset / sparse / dense, prefixed
+ *  with its mode byte so the decoder is self-delimiting. Tie-break order is bitset < sparse < dense,
+ *  so an empty field is always SPARSE and a full field is always DENSE — output stays byte-stable. */
+function encodeField(present: number[], total: number): number[] {
+  const sparse = [FIELD_SPARSE, ...encodeGapList(present)];
+
+  const absent: number[] = [];
+  let p = 0;
+  for (let i = 0; i < total; i++) {
+    if (p < present.length && present[p] === i) p++;
+    else absent.push(i);
+  }
+  const dense = [FIELD_DENSE, ...encodeGapList(absent)];
+
+  const bitset = [FIELD_BITSET, ...bitsetFromIndices(present, total)];
+
+  let best = bitset;
+  if (sparse.length < best.length) best = sparse;
+  if (dense.length < best.length) best = dense;
+  return best;
+}
+
+/** Compact, URL-safe encoding of a TradePayload for a share link's query (e.g. ?t=...). Each of
+ *  repeats/missing is encoded over the checklist's canonical entry order (checklist.entries index) as
+ *  the smallest self-delimiting representation (see encodeField), so a sparse list or a near-full
+ *  wishlist both stay tiny — only a ~half-full set falls back to a bitset. base64url (no padding,
+ *  URL-safe alphabet), prefixed with a 1-char version tag; `name` (if present) is the trailing bytes.
+ *  decodePayload is the exact inverse and tolerates garbage by returning empty sets, never throwing. */
 export function encodePayload(p: TradePayload, checklist: Checklist): string {
-  const repeats = bitsetFor(p.repeats, checklist);
-  const missing = bitsetFor(p.missing, checklist);
-  const nameBytes = p.name === undefined ? new Uint8Array() : new TextEncoder().encode(p.name);
+  const total = checklist.entries.length;
+  const repeats = encodeField(presentIndicesFor(p.repeats, checklist), total);
+  const missing = encodeField(presentIndicesFor(p.missing, checklist), total);
+  const nameBytes = p.name === undefined ? [] : Array.from(new TextEncoder().encode(p.name));
   const flags = p.name === undefined ? 0 : NAME_PRESENT;
-  const body = new Uint8Array(1 + repeats.length + missing.length + nameBytes.length);
 
-  body[0] = flags;
-  body.set(repeats, 1);
-  body.set(missing, 1 + repeats.length);
-  body.set(nameBytes, 1 + repeats.length + missing.length);
-
+  const body = Uint8Array.from([flags, ...repeats, ...missing, ...nameBytes]);
   return `${VERSION}${base64UrlEncode(body)}`;
 }
 
+interface Cursor {
+  bytes: Uint8Array;
+  pos: number;
+}
+
+function readByte(c: Cursor): number {
+  if (c.pos >= c.bytes.length) throw new Error('eof');
+  return c.bytes[c.pos++];
+}
+
+function readVarint(c: Cursor): number {
+  let result = 0;
+  let shift = 0;
+  let byte: number;
+  do {
+    byte = readByte(c);
+    result |= (byte & 0x7f) << shift;
+    shift += 7;
+    if (shift > 35) throw new Error('varint too long');
+  } while (byte & 0x80);
+  return result >>> 0;
+}
+
+function readBytes(c: Cursor, n: number): Uint8Array {
+  if (c.pos + n > c.bytes.length) throw new Error('eof');
+  const out = c.bytes.slice(c.pos, c.pos + n);
+  c.pos += n;
+  return out;
+}
+
+/** Read a gap list (see encodeGapList) into ascending indices, rejecting anything that would walk an
+ *  index out of [0, total) — a corrupt body must fail loudly (→ empty payload) rather than yield a
+ *  shifted/wrong code. */
+function readGapList(c: Cursor, total: number): number[] {
+  const count = readVarint(c);
+  if (count > total) throw new Error('count too large');
+  const indices: number[] = [];
+  let prev = -1;
+  for (let i = 0; i < count; i++) {
+    const index = prev + 1 + readVarint(c);
+    if (index >= total) throw new Error('index out of range');
+    indices.push(index);
+    prev = index;
+  }
+  return indices;
+}
+
+/** Decode one self-delimiting field back to checklist codes (album order). Throws on an unknown mode
+ *  or any out-of-bounds read so the caller falls to an empty payload. */
+function decodeField(c: Cursor, checklist: Checklist): string[] {
+  const total = checklist.entries.length;
+  const mode = readByte(c);
+
+  if (mode === FIELD_BITSET) {
+    return codesFromBitset(readBytes(c, bitLength(checklist)), checklist);
+  }
+
+  let present: number[];
+  if (mode === FIELD_SPARSE) {
+    present = readGapList(c, total);
+  } else if (mode === FIELD_DENSE) {
+    const absent = new Set(readGapList(c, total));
+    present = [];
+    for (let i = 0; i < total; i++) if (!absent.has(i)) present.push(i);
+  } else {
+    throw new Error('unknown field mode');
+  }
+
+  return present.map((index) => checklist.entries[index].code);
+}
+
+/** Read a payload from an encoded `t` value. The leading version char is load-bearing: an older `'1'`
+ *  link no longer matches and decodes to an empty payload (a harmless miss) rather than being misread
+ *  as the v2 format and yielding WRONG codes. Unknown/garbage → empty payload, never throws. */
 export function decodePayload(s: string, checklist: Checklist): TradePayload {
+  const trimmed = s.trim();
+  if (!trimmed.startsWith(VERSION)) return emptyPayload();
+
   try {
-    const trimmed = s.trim();
-    if (!trimmed.startsWith(VERSION)) return emptyPayload();
-
     const bytes = base64UrlDecode(trimmed.slice(VERSION.length));
-    const bits = bitLength(checklist);
-    if (!bytes || bytes.length < 1 + bits * 2) return emptyPayload();
+    if (!bytes || bytes.length < 1) return emptyPayload();
 
-    const repeatsBytes = bytes.slice(1, 1 + bits);
-    const missingBytes = bytes.slice(1 + bits, 1 + bits * 2);
+    const c: Cursor = { bytes, pos: 0 };
+    const flags = readByte(c);
     const payload: TradePayload = {
-      repeats: codesFromBitset(repeatsBytes, checklist),
-      missing: codesFromBitset(missingBytes, checklist),
+      repeats: decodeField(c, checklist),
+      missing: decodeField(c, checklist),
     };
-
-    if ((bytes[0] & NAME_PRESENT) !== 0) {
-      payload.name = new TextDecoder().decode(bytes.slice(1 + bits * 2));
+    if ((flags & NAME_PRESENT) !== 0) {
+      payload.name = new TextDecoder().decode(readBytes(c, c.bytes.length - c.pos));
     }
-
     return payload;
   } catch {
     return emptyPayload();

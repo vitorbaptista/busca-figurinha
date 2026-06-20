@@ -139,7 +139,7 @@ describe('payload encoding', () => {
 
     const encoded = encodePayload(payload, checklist);
 
-    expect(encoded).toMatch(/^1[A-Za-z0-9_-]+$/);
+    expect(encoded).toMatch(/^2[A-Za-z0-9_-]+$/);
     expect(encoded).not.toContain('=');
     expect(decodePayload(encoded, checklist)).toEqual(payload);
   });
@@ -168,6 +168,70 @@ describe('payload encoding', () => {
   it('returns empty sets for garbage payloads instead of throwing', () => {
     expect(decodePayload('garbage', checklist)).toEqual({ repeats: [], missing: [] });
     expect(decodePayload('1%%%%', checklist)).toEqual({ repeats: [], missing: [] });
+    expect(decodePayload('2%%%%', checklist)).toEqual({ repeats: [], missing: [] });
+    expect(decodePayload('', checklist)).toEqual({ repeats: [], missing: [] });
+  });
+
+  it('shrinks the link dramatically for a fresh collector (few repeats, missing almost everything)', () => {
+    const all = checklist.entries.map((entry) => entry.code);
+    const payload: TradePayload = { repeats: all.slice(0, 10), missing: all.slice(10) };
+
+    const encoded = encodePayload(payload, checklist);
+
+    // The whole bug: the old fixed double-bitset was a flat 333 chars regardless of content.
+    expect(encoded.length).toBeLessThan(80);
+    expect(decodePayload(encoded, checklist)).toEqual(payload);
+  });
+
+  it('round-trips an empty payload to a tiny string', () => {
+    const encoded = encodePayload({ repeats: [], missing: [] }, checklist);
+    expect(encoded.length).toBeLessThan(16);
+    expect(decodePayload(encoded, checklist)).toEqual({ repeats: [], missing: [] });
+  });
+
+  it('round-trips the first and last checklist entries (index boundaries)', () => {
+    const first = checklist.entries[0].code;
+    const last = checklist.entries[checklist.entries.length - 1].code;
+    const payload: TradePayload = { repeats: [first, last], missing: [first] };
+
+    expect(decodePayload(encodePayload(payload, checklist), checklist)).toEqual(payload);
+  });
+
+  it('round-trips sparse and half-full shapes, and never grows past the old fixed size', () => {
+    const all = checklist.entries.map((entry) => entry.code);
+    const sparse: TradePayload = { repeats: all.slice(0, 15), missing: all.slice(20, 60) };
+    const half: TradePayload = { repeats: all.slice(0, 100), missing: all.slice(0, 490) };
+
+    expect(decodePayload(encodePayload(sparse, checklist), checklist)).toEqual(sparse);
+
+    const halfEncoded = encodePayload(half, checklist);
+    expect(decodePayload(halfEncoded, checklist)).toEqual(half);
+    // Worst (half/half) case falls back to bitset per field, so it stays ~the old size (never blows up).
+    expect(halfEncoded.length).toBeLessThan(360);
+  });
+
+  it('round-trips a multibyte (emoji) name', () => {
+    const payload: TradePayload = { repeats: ['MEX3'], missing: ['CIV12'], name: 'Zé 🇧🇷⚽' };
+    expect(decodePayload(encodePayload(payload, checklist), checklist)).toEqual(payload);
+  });
+
+  it('degrades an old v1 link to an EMPTY payload, never to wrong codes', () => {
+    // We dropped v1 support, but the version char must still keep an old `'1'` link from being
+    // misread as v2 and yielding confidently-wrong codes — it has to resolve to empty (a harmless
+    // miss). These are real v1 strings captured from the current checklist.
+    const V1A =
+      '1AQQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADAAAAQW5h';
+
+    expect(decodePayload(V1A, checklist)).toEqual({ repeats: [], missing: [] });
+  });
+
+  it('falls to an empty payload (never wrong codes) on a structurally corrupt v2 body', () => {
+    const all = checklist.entries.map((entry) => entry.code);
+    const valid = encodePayload({ repeats: all.slice(0, 10), missing: all.slice(10) }, checklist);
+
+    // Truncating the body mid-stream must not yield a partial/shifted set — it must decode to empty.
+    const truncated = valid.slice(0, valid.length - 4);
+    expect(decodePayload(truncated, checklist)).toEqual({ repeats: [], missing: [] });
   });
 });
 
