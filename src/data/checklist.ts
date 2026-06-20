@@ -90,9 +90,9 @@ const SPECIAL_CODE = 'FWC';
 // Coca-Cola exclusive section: CC1..CC12. These are NOT in the regular packs — they only come
 // behind the peel-back label of specially marked Coca-Cola bottles, and the album has a dedicated
 // Coca-Cola page for them, so they count toward completing the album.
-// Players (CC1..CC12), names as spelled in world-cup-2026-album-stickers.csv: Lamine Yamal,
-// Joshua Kimmich, Harry Kane, Santiago Giménez, Antonee Robinson, Jefferson Lerma, Edson Alvarez,
-// Virgil van Dijk, Alphonso Davies, Weston McKenny, Lautaro Martinez, Gabriel Magalhães.
+// Players (CC1..CC12): Lamine Yamal, Joshua Kimmich, Harry Kane, Santiago Giménez, Antonee Robinson,
+// Jefferson Lerma, Edson Álvarez, Virgil van Dijk, Alphonso Davies, Weston McKennie,
+// Lautaro Martínez, Gabriel Magalhães.
 const COKE_NAME = 'Coca-Cola';
 const COKE_CODE = 'CC';
 const COKE_COUNT = 12;
