@@ -9,19 +9,29 @@ Notable changes to the sticker scanner. Newest first. No formal releases yet (de
 - **A câmera agora aparece SÓ dentro da "mira" (o recorte), não na tela toda.** O vídeo é
   recortado à janela da figurinha; em volta fica a superfície verde escura do álbum. Acabou o
   **clarão branco** (a antiga camada de "luz de preenchimento" foi removida).
-- **Mira reposicionada para o meio-acima**, alinhada à ROI retangular de detecção
-  (0.18,0.32,0.82,0.58) — antes o reticle ficava no terço de baixo (resquício da faixa 0.67) e
-  não batia com onde o scanner realmente lê. (Resolve um item pendente do registro anterior.)
 - **Layout no estilo "Banca — Álbum de Papel"** (igual ao mockup): aba de seção no topo,
   contadores "Novas/Repetidas" e botões sobre a câmera, e um **veredito fixo na base** (GUARDAR /
   REPETIDA / NÃO LI) com a tira de "Últimas leituras" logo acima — no lugar do flash de tela cheia.
+- **A mira fica no meio-acima**, na região da ROI de detecção. Isso **substitui** a janela de
+  contorno sobre o vídeo inteiro + o posicionamento via JS do ajuste anterior ("a moldura aponta
+  para onde o leitor lê") — agora o vídeo é recortado direto na mira, então não há vídeo fora dela.
 
 ### Notes
 - **A luz de preenchimento (tela como ringue de luz) saiu** — era o que, segundo o CLAUDE.md,
   fazia a câmera frontal ler figurinhas de perto. **A validar no Pixel:** a nitidez da captura
-  frontal sem ela.
+  frontal sem ela, e se o recorte da mira enquadra a pílula dentro da área lida.
 - Entrada manual ("Digitar o código") agora fica num botão fixo na barra de cima **e** no card
   "Não li" (a rajada ao vivo é silenciosa em falhas, então o "Não li" quase não aparece sozinho).
+
+## 2026-06-20 — Scanner: a moldura "cole aqui" agora aponta para onde o leitor lê
+
+### Fixed
+- **Moldura alinhada com a região de detecção.** A janela "cole aqui" ficava no terço inferior da
+  tela, mas o leitor passou a procurar a pílula numa faixa superior-central (a ROI retangular onde
+  as figurinhas de fato aparecem nas capturas reais). A moldura agora é posicionada a partir da
+  MESMA ROI (`CONFIG.detect.roiRect`), mapeada pela área de vídeo com letterbox (`object-fit:
+  contain`) — então onde você encaixa a figurinha é exatamente onde o app lê. (Antes, seguir a
+  moldura colocava a figurinha fora da área lida.)
 
 ## 2026-06-20 — OCR: reconhecedor neural (codeNet) que supera o app nativo
 
