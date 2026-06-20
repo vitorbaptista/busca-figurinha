@@ -10,14 +10,14 @@ interface NavProps {
 const ITEMS: { screen: Screen; label: string; emoji: string }[] = [
   { screen: 'scan', label: pt.nav.scan, emoji: '📷' },
   { screen: 'collection', label: pt.nav.collection, emoji: '📚' },
+  { screen: 'repeats', label: pt.nav.repeats, emoji: '🔁' },
   { screen: 'trade', label: pt.nav.trade, emoji: '🤝' },
   { screen: 'settings', label: pt.nav.settings, emoji: '⚙️' },
 ];
 
 export function Nav({ current, onNavigate }: NavProps) {
-  // Report lives "inside" the scan flow; the manual repeats editor lives "inside" Trocar — keep the
-  // parent tab highlighted on each.
-  const active = current === 'report' ? 'scan' : current === 'repeats' ? 'trade' : current;
+  // Report lives "inside" the scan flow — keep the Escanear tab highlighted there.
+  const active = current === 'report' ? 'scan' : current;
 
   return (
     <nav class="nav">

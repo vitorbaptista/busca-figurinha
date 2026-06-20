@@ -7,6 +7,7 @@ export const pt = {
   nav: {
     scan: 'Escanear',
     collection: 'Coleção',
+    repeats: 'Repetidas',
     trade: 'Trocar',
     settings: 'Ajustes',
   },
@@ -151,6 +152,8 @@ export const pt = {
     // Sender — "o que eu preciso"
     needTitle: 'O que eu',
     needEm: 'preciso',
+    // Link into the Coleção screen, where ticking owned stickers shrinks this list.
+    editNeed: 'Editar',
     needEmpty: 'Você já tem todas as figurinhas! 🎉',
     // Collapsed group row: "faltam N" (N = missing stickers in the group, up to 80).
     groupFaltam: (n: number) => (n === 1 ? 'falta 1' : `faltam ${n}`),
