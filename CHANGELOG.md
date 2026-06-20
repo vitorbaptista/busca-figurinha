@@ -3,6 +3,15 @@
 Notable changes to the sticker scanner. Newest first. No formal releases yet (deploys on push to
 `main`), so entries are grouped by date. Keep this updated when you ship something notable.
 
+## 2026-06-20 — Links por seção (#trocar, #colecao…)
+
+### Added
+- **A seção atual agora fica no endereço (hash da URL).** Atualizar a página volta para a mesma
+  seção em vez de cair sempre no "Escanear", e dá pra abrir/compartilhar um link direto de cada
+  seção: `#escanear`, `#colecao`, `#trocar`, `#ajustes` e `#repetidas`. Trocar de aba não enche o
+  histórico do navegador (o "Voltar" sai do app, não fica preso pulando entre abas). A tela de
+  relatório é momentânea, então ao atualizar nela você volta para o "Escanear".
+
 ## 2026-06-20 — Escanear: tela sem rolagem + leitura que não desiste
 
 ### Fixed
