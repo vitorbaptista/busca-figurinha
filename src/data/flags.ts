@@ -7,6 +7,9 @@ const FLAGS_BY_TEAM_CODE: Record<string, string> = {
   BIH: '🇧🇦',
   BRA: '🇧🇷',
   CAN: '🇨🇦',
+  // Coca-Cola is a brand, not a country — no UTF-8 country flag exists, so its section gets a
+  // representative glyph (🥤) the same way "Especiais" (FWC) gets ⭐, so every line leads with one.
+  CC: '🥤',
   CIV: '🇨🇮',
   COD: '🇨🇩',
   COL: '🇨🇴',
