@@ -3,6 +3,26 @@
 Notable changes to the sticker scanner. Newest first. No formal releases yet (deploys on push to
 `main`), so entries are grouped by date. Keep this updated when you ship something notable.
 
+## 2026-06-20 — Tela "Escanear" refeita no estilo do álbum (vídeo só no recorte)
+
+### Changed
+- **A câmera agora aparece SÓ dentro da "mira" (o recorte), não na tela toda.** O vídeo é
+  recortado à janela da figurinha; em volta fica a superfície verde escura do álbum. Acabou o
+  **clarão branco** (a antiga camada de "luz de preenchimento" foi removida).
+- **Mira reposicionada para o meio-acima**, alinhada à ROI retangular de detecção
+  (0.18,0.32,0.82,0.58) — antes o reticle ficava no terço de baixo (resquício da faixa 0.67) e
+  não batia com onde o scanner realmente lê. (Resolve um item pendente do registro anterior.)
+- **Layout no estilo "Banca — Álbum de Papel"** (igual ao mockup): aba de seção no topo,
+  contadores "Novas/Repetidas" e botões sobre a câmera, e um **veredito fixo na base** (GUARDAR /
+  REPETIDA / NÃO LI) com a tira de "Últimas leituras" logo acima — no lugar do flash de tela cheia.
+
+### Notes
+- **A luz de preenchimento (tela como ringue de luz) saiu** — era o que, segundo o CLAUDE.md,
+  fazia a câmera frontal ler figurinhas de perto. **A validar no Pixel:** a nitidez da captura
+  frontal sem ela.
+- Entrada manual ("Digitar o código") agora fica num botão fixo na barra de cima **e** no card
+  "Não li" (a rajada ao vivo é silenciosa em falhas, então o "Não li" quase não aparece sozinho).
+
 ## 2026-06-20 — OCR: reconhecedor neural (codeNet) que supera o app nativo
 
 ### Added
