@@ -14,7 +14,7 @@ const CHROME =
 // Per-file viewport width chosen so the layout never wraps; fullPage captures the height.
 const SHOTS = [
   { file: '01-tela.html', out: '01-tela.png', width: 1380 },
-  { file: '02-jornada.html', out: '02-jornada.png', width: 1760 },
+  { file: '02-jornada.html', out: '02-jornada.png', width: 1940 },
   { file: '03-loop.html', out: '03-loop.png', width: 1260 },
 ];
 
