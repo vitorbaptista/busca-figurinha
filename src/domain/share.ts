@@ -64,6 +64,17 @@ export function shareTextFor(
   return { link, text: buildShareMessage(payload, link, checklist) };
 }
 
+/** Marker that stands in for the long deep link in the ON-SCREEN preview only. What's actually
+ *  shared/copied (shareTextFor) keeps the real link — the receiver loop depends on it. Without this
+ *  the preview would dump a ~350-char base64 URL that wraps over several lines and reads as broken. */
+export const PREVIEW_LINK_PLACEHOLDER = '🔗 (o link da sua lista vai junto)';
+
+/** The preview text: the real message, but with the raw URL replaced by a friendly marker. Reuses
+ *  buildShareMessage so the preview can never drift from the structure of what's sent. */
+export function previewTextFor(payload: TradePayload, checklist: Checklist): string {
+  return buildShareMessage(payload, PREVIEW_LINK_PLACEHOLDER, checklist);
+}
+
 export async function shareTrades(
   payload: TradePayload,
   checklist: Checklist,

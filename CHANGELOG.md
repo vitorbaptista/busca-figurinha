@@ -3,6 +3,16 @@
 Notable changes to the sticker scanner. Newest first. No formal releases yet (deploys on push to
 `main`), so entries are grouped by date. Keep this updated when you ship something notable.
 
+## 2026-06-20 — Trocar: prévia mais limpa + "O que eu preciso" recolhido por grupo
+
+### Changed
+- **Prévia da mensagem mais limpa.** A URL longa (um link enorme) não aparece mais crua na prévia —
+  no lugar entra um marcador "🔗 (o link da sua lista vai junto)". O link de verdade continua na
+  mensagem enviada e na cópia, então a troca de mão dupla com o amigo segue funcionando igual.
+- **"O que eu preciso" recolhido por grupo.** Em vez de despejar todas as figurinhas que faltam de
+  uma vez (num álbum meio cheio eram ~620 linhas), cada grupo do álbum (A–L, Especiais, Coca-Cola)
+  vira uma linha com "faltam N"; toque pra abrir e ver os códigos que faltam daquele grupo.
+
 ## 2026-06-20 — Tela "Escanear" refeita no estilo do álbum (vídeo só no recorte)
 
 ### Changed
@@ -67,8 +77,8 @@ Notable changes to the sticker scanner. Newest first. No formal releases yet (de
 - **Aba "Trocar" 🤝.** Mostra suas **repetidas** (que viram "pra trocar") e **tudo o que você
   ainda precisa**, agrupado por grupo do álbum, no estilo "Banca — Álbum de Papel".
 - **Compartilhar no WhatsApp.** Um botão gera a mensagem pronta — "Tenho pra trocar" (agrupado por
-  seleção, com bandeirinha) **e** "Preciso" — mais um link. A prévia na tela é exatamente o texto
-  que será enviado. Também dá pra **copiar a lista**.
+  seleção, com bandeirinha) **e** "Preciso" — mais um link. A prévia na tela mostra a mensagem que
+  será enviada. Também dá pra **copiar a lista**.
 - **Loop de troca de mão dupla.** Quando um amigo abre o seu link, ele cai direto numa tela que já
   mostra **o que ele pega de você** e **o que ele te dá** — e pode devolver a própria lista.
 - **Repetidas guardadas de verdade.** As figurinhas repetidas que você escaneia ficam salvas pra

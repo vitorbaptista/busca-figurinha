@@ -2,7 +2,14 @@ import { describe, expect, it } from 'vitest';
 import { checklist } from '../data/checklist';
 import type { TradePayload } from './tradeList';
 import { encodePayload } from './tradeList';
-import { buildShareLink, buildShareMessage, readShareLink } from './share';
+import {
+  buildShareLink,
+  buildShareMessage,
+  readShareLink,
+  previewTextFor,
+  shareTextFor,
+  PREVIEW_LINK_PLACEHOLDER,
+} from './share';
 
 describe('share links', () => {
   it('round-trips a payload through buildShareLink and readShareLink', () => {
@@ -60,5 +67,23 @@ describe('share links', () => {
     expect(message).toContain('🔁 Tenho 1 figurinha repetida da Copa 2026 pra trocar!');
     expect(message).toContain('📍 Preciso (2): CIV12, 00');
     expect(message).toContain(link);
+  });
+});
+
+describe('preview text', () => {
+  it('hides the raw deep link behind a friendly marker, while the real message keeps it', () => {
+    const payload: TradePayload = { repeats: ['MEX3', 'MEX6'], missing: ['CIV12', '00'] };
+
+    const preview = previewTextFor(payload, checklist);
+    // Same body as the real message...
+    expect(preview).toContain('🔁 Tenho 2 figurinhas repetidas da Copa 2026 pra trocar!');
+    expect(preview).toContain('📍 Preciso (2): CIV12, 00');
+    // ...but the ~350-char base64 URL is replaced by the marker — no raw link to wrap/break.
+    expect(preview).toContain(PREVIEW_LINK_PLACEHOLDER);
+    expect(preview).not.toContain('?t=');
+    expect(preview).not.toMatch(/https?:\/\//);
+
+    // What's actually shared/copied still carries the deep link so the receiver loop works.
+    expect(shareTextFor(payload, checklist).text).toContain('?t=');
   });
 });
