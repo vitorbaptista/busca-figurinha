@@ -5,11 +5,20 @@ import { pt } from '../../i18n/pt';
 interface ReportScreenProps {
   report: SessionReport;
   collection: CollectionStore;
+  /** Persist the scanned duplicates as tradeable spares — committed here (not at scan finish)
+   *  so it shares the same reversible "Adicionar à coleção" action and "Voltar" stays a no-op. */
+  onCommitRepeats: (codes: string[]) => void;
   onCommitted: () => void;
   onBack: () => void;
 }
 
-export function ReportScreen({ report, collection, onCommitted, onBack }: ReportScreenProps) {
+export function ReportScreen({
+  report,
+  collection,
+  onCommitRepeats,
+  onCommitted,
+  onBack,
+}: ReportScreenProps) {
   const { keepers, repeats, unknowns, scannedCount } = report;
 
   // Keepers default to checked: the user marks which they actually traded for.
@@ -31,6 +40,9 @@ export function ReportScreen({ report, collection, onCommitted, onBack }: Report
 
   const commit = () => {
     collection.setOwned(checked, true);
+    // Every scanned duplicate becomes a tradeable spare; the Trocar screen lets the user drop
+    // any they've since traded away. Committed alongside the keepers so both stores move together.
+    onCommitRepeats(repeats.map((e) => e.code));
     setDone(true);
     // Brief success state before handing back to the collection.
     window.setTimeout(onCommitted, 900);

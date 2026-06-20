@@ -74,6 +74,15 @@ describe('createCollectionStore', () => {
     expect(store.size()).toBe(0);
   });
 
+  it('loaded() is false until the initial idb read resolves, then true', async () => {
+    const kv = memoryStore();
+    await createCollectionStore(kv).ready; // seed something to read back
+    const store = createCollectionStore(kv);
+    expect(store.loaded()).toBe(false); // sync read before the async get resolves
+    await store.ready;
+    expect(store.loaded()).toBe(true);
+  });
+
   it('subscribe fires on mutation and unsubscribe stops it', () => {
     const store = createCollectionStore(memoryStore());
     const listener = vi.fn();

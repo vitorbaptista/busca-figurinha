@@ -175,6 +175,9 @@ export interface KeyValueStore {
 /** Reactive owned-codes store (see state/collection.ts: createCollectionStore). */
 export interface CollectionStore {
   readonly ready: Promise<void>;
+  /** True once the initial IndexedDB load has resolved — sync-readable so a screen can gate its
+   *  first paint (e.g. a shared trade link landing before `owned` is hydrated). */
+  loaded(): boolean;
   has(code: string): boolean;
   add(code: string): void;
   remove(code: string): void;
@@ -216,5 +219,8 @@ export interface BackupFile {
   version: 1;
   exportedAt: string;
   owned: string[];
+  /** Codes the user has a DUPLICATE of (their tradeable spares). Optional so backups
+   *  written before this field still import cleanly (treated as none). */
+  repeats?: string[];
   settings: Settings;
 }

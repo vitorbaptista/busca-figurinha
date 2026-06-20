@@ -5,12 +5,14 @@ import { useStore } from '../hooks';
 
 interface SettingsScreenProps {
   collection: CollectionStore;
+  /** The user's tradeable duplicates — backed up, restored and cleared alongside the collection. */
+  repeats: CollectionStore;
   settings: SettingsStore;
 }
 
 const APP_VERSION = '0.1.0';
 
-export function SettingsScreen({ collection, settings }: SettingsScreenProps) {
+export function SettingsScreen({ collection, repeats, settings }: SettingsScreenProps) {
   useStore(settings);
 
   const [notice, setNotice] = useState<{ kind: 'ok' | 'error'; text: string } | null>(null);
@@ -27,6 +29,7 @@ export function SettingsScreen({ collection, settings }: SettingsScreenProps) {
       version: 1,
       exportedAt: new Date().toISOString(),
       owned: collection.exportOwned(),
+      repeats: repeats.exportOwned(),
       settings: settings.get(),
     };
     const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' });
@@ -49,6 +52,13 @@ export function SettingsScreen({ collection, settings }: SettingsScreenProps) {
         throw new Error('invalid');
       }
       collection.importOwned(data.owned);
+      // Always rehydrate repeats from the backup (older backups have none → cleared), and keep the
+      // invariant that a tradeable spare is a sticker you own, so the trade list can't offer ghosts.
+      const ownedSet = new Set(data.owned);
+      const restoredRepeats = Array.isArray(data.repeats)
+        ? data.repeats.filter((code) => ownedSet.has(code))
+        : [];
+      repeats.importOwned(restoredRepeats);
       if (data.settings) settings.set(data.settings as Partial<Settings>);
       flash('ok', pt.settings.importDone);
     } catch {
@@ -59,6 +69,7 @@ export function SettingsScreen({ collection, settings }: SettingsScreenProps) {
   const onClear = () => {
     if (!confirm(pt.settings.clearConfirm)) return;
     collection.clear();
+    repeats.clear();
     flash('ok', pt.settings.clearDone);
   };
 
