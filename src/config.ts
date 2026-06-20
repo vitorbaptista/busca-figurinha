@@ -18,6 +18,21 @@ export const CONFIG = {
      *  (wrong) checklist code — a false positive. Tune DOWN against the bench + on-device
      *  use-case frames, never up past where 0 FP holds. */
     hybridFastConf: 70,
+    /** Confidence floor for the directed-confusion fallback (bestHighConfidenceConfusionMatch).
+     *  When a frame resolves NO code by normal (conservative) matching, each read at/above this
+     *  confidence gets one more chance via the curated glyph-confusion map (NJT→AUT, HSA→RSA…).
+     *  Set HIGH: the confusion map is aggressive (it reaches a real code through up to two
+     *  systematic letter swaps), so it must only ever see reads the recognizer is sure of — a
+     *  low-confidence garble must NOT be confusion-corrected, or a non-sticker frame could
+     *  manufacture a code (a false positive). Tune against bench:pixel: raise it if negatives
+     *  start resolving, lower it only while per-frame FP stays ~0. */
+    confusionMinConf: 78,
+    /** Confidence floor for the per-sticker EXACT-alias fallback (bestHighConfidenceExactAlias).
+     *  Lower than confusionMinConf because an exact garble→code alias is far more specific than
+     *  the confusion map AND carries a runtime collision guard (refuses a garble within one edit
+     *  of a different real code), so it tolerates a softer read. Still a gate: a near-noise read
+     *  must not trigger even an exact alias. Tune against bench:pixel FP. */
+    aliasMinConf: 55,
   },
   capture: {
     /** Frame must stay still this long before we OCR it. Kept short: the screen fill-light
@@ -55,8 +70,34 @@ export const CONFIG = {
      *  added back), so the crop step is unchanged. A pill ABOVE the band isn't detected — so
      *  this must stay aligned with where the reticle puts the sticker. NOTE: the static/video
      *  benches are NOT bottom-framed, so a non-zero value lowers their recall by construction;
-     *  validate this one LIVE, not against those benches. */
+     *  validate this one LIVE, not against those benches. Ignored when `roiRect` is set. */
     roiTopFraction: 0.67 as number,
+    /** Optional RECTANGULAR ROI (normalized 0..1 {left,top,right,bottom}), takes precedence
+     *  over roiTopFraction when non-null. The native recognizer's most-accurate config restricts
+     *  detection to a strip in the UPPER-MIDDLE of the frame (left 0.18, top 0.32, right 0.82,
+     *  bottom 0.58) — where a front-camera selfie capture actually holds the sticker — not the
+     *  bottom band. Detection runs on the cropped rectangle (scaled against the FULL frame's long
+     *  side so every DET_LONG-relative gate stays calibrated) and boxes are offset back to
+     *  full-frame coordinates. null = use the roiTopFraction band (back-compat default). Like the
+     *  bottom band, this is a USE-CASE knob: it tanks the static/video benches by construction and
+     *  must be validated against the real-frame pixel dataset / live, not those benches. */
+    roiRect: { left: 0.18, top: 0.32, right: 0.82, bottom: 0.58 } as {
+      left: number;
+      top: number;
+      right: number;
+      bottom: number;
+    } | null,
+    /** How much darker than its local background a pixel must be to count as pill foreground
+     *  (detection). Lower = catches lower-contrast pills (which otherwise segment into tiny
+     *  fragments → blank crops), at the cost of more card-texture noise components. Default 12
+     *  is the long-proven full-frame value; the real-frame dataset has soft, low-contrast pills
+     *  that shatter at 12. Tune against bench:pixel (recall vs per-frame FP) + npm run bench. */
+    fgDelta: 12 as number,
+    /** Cap on boxes OCR'd per frame (findCodeBoxes sorts best-first; the real code pill is
+     *  usually box[0]). Lower = faster + fewer spurious reads; higher = a bit more recall on
+     *  far/multi-up frames. 4 is the measured knee on the blurry video frames; the native's
+     *  tight-ROI config uses 2. See recognize.ts for the full rationale. */
+    maxBoxes: 4 as number,
   },
   match: {
     /** Max Levenshtein distance for an OCR token to snap to a real code. */

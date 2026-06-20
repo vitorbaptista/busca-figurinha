@@ -2,6 +2,8 @@ import { describe, expect, it } from 'vitest';
 import type { Checklist, ChecklistEntry } from '../types';
 import { checklist } from '../data/checklist';
 import {
+  bestHighConfidenceConfusionMatchFromText,
+  bestHighConfidenceExactAliasMatchFromText,
   bestMatchFromText,
   extractCodes,
   matchAllFromText,
@@ -89,18 +91,16 @@ describe('matchCode', () => {
     expect(r.raw).toBe('CIV12');
   });
 
-  it('corrects a one-edit OCR slip', () => {
-    const r = matchCode('C1V12', list);
-    expect(r.status).toBe('corrected');
-    expect(r.distance).toBe(1);
-    expect(r.entry?.code).toBe('CIV12');
-  });
-
-  it('corrects a letter-for-digit confusion within distance', () => {
-    const r = matchCode('EGYA', list); // 'A' read instead of '4'
-    expect(r.status).toBe('corrected');
-    expect(r.entry?.code).toBe('EGY4');
-    expect(r.distance).toBe(1);
+  it('auto-corrects ONLY the safe 0<->O confusion, never a blind letter substitution', () => {
+    // 0<->O is the one same-length confusion safe to auto-correct (a digit/letter twin).
+    const oList = makeChecklist(['POR10', 'CIV12']);
+    expect(matchCode('P0R10', oList).entry?.code).toBe('POR10'); // zero read for the letter O
+    // A blind single-letter substitution is NOT auto-corrected: it would manufacture a
+    // DIFFERENT real code from a garbled read (the false positive a trading app must avoid).
+    // Systematic letter confusions go through bestHighConfidenceConfusionMatchFromText instead.
+    expect(matchCode('C1V12', list).status).toBe('unknown'); // '1'->'I' is not a safe blind edit
+    expect(matchCode('GIV12', list).status).toBe('unknown'); // 'G'->'C' is not a safe blind edit
+    expect(matchCode('EGYA', list).status).toBe('unknown'); // 'A'->'4' letter-for-digit, not safe
   });
 
   it('returns unknown when nothing is close enough', () => {
@@ -111,24 +111,23 @@ describe('matchCode', () => {
     expect(r.raw).toBe('ZZZ99');
   });
 
-  it('respects a custom maxDistance', () => {
+  it('never blind-corrects a two-edit read', () => {
     expect(matchCode('CXX12', list, 1).status).toBe('unknown'); // 2 edits from CIV12
-    expect(matchCode('CXX12', list, 2).status).toBe('corrected');
+    expect(matchCode('CXX12', list, 2).status).toBe('unknown'); // still not a safe/curated edit
   });
 
-  it('prefers an equal-length candidate on a distance tie', () => {
-    // "FWC11" is distance 1 from "FWC1" (insertion) and distance 1 from "FWC11"
-    // when that exists; build a list where two candidates tie.
+  it('does not invent a code from a blind same-length substitution', () => {
+    // "FWC12" is one blind digit substitution from FWC11 — NOT auto-corrected (would be a
+    // wrong number, the worst kind of false positive). A miss is the safe outcome.
     const tie = makeChecklist(['FWC1', 'FWC11']);
-    // "FWC12" -> distance 1 to "FWC11" (same length) and distance 2 to "FWC1".
-    const r = matchCode('FWC12', tie, 1);
-    expect(r.entry?.code).toBe('FWC11');
+    expect(matchCode('FWC12', tie).status).toBe('unknown');
   });
 
-  it('only corrects to a UNIQUE near code; rejects ambiguous or short reads', () => {
-    // Unique single substitution is fixed (only CIV12 is one edit from GIV12).
-    expect(matchCode('GIV12', checklist).entry?.code).toBe('CIV12');
-    // "EGYA" is one edit from EGY1..EGY9 — ambiguous.
+  it('rejects ambiguous, blind-substitution, and too-short reads', () => {
+    // A blind letter substitution is never auto-corrected (GIV12 stays unknown — "G"->"C"
+    // is not a safe blind edit), so a garbled read can't snap to a different real code.
+    expect(matchCode('GIV12', checklist).status).toBe('unknown');
+    // "EGYA" is one edit from EGY1..EGY9 — ambiguous and not a safe edit anyway.
     expect(matchCode('EGYA', checklist).status).toBe('unknown');
     // "SE3" (3 chars) is too short to correct safely.
     expect(matchCode('SE3', checklist).status).toBe('unknown');
@@ -158,10 +157,48 @@ describe('matchCode', () => {
   it('works against the real baked-in checklist', () => {
     expect(matchCode('CIV12', checklist).status).toBe('exact');
     expect(matchCode('00', checklist).status).toBe('exact');
-    // A unique single substitution corrects (only CIV12 is one edit from GIV12).
-    expect(matchCode('GIV12', checklist).entry?.code).toBe('CIV12');
-    // Near-collisions make many 1-edit reads ambiguous → unknown (never a wrong guess).
+    // Thin-letter recovery still works on the real checklist: "BH12" restores the dropped I → BIH12
+    // (unambiguous — no same-number code is a substitution away). "CV12" is NOT a good example
+    // anymore: with Coca-Cola "CC12" in the list it's ambiguous (CIV12 via dropped-I vs CC12 via
+    // C/V confusion), so the never-guess rule makes it unknown — see the thin-letter test above.
+    expect(matchCode('BH12', checklist).entry?.code).toBe('BIH12');
+    expect(matchCode('CV12', checklist).status).toBe('unknown');
+    // A blind substitution is NEVER auto-corrected (no wrong guesses): GIV12/C1V12 stay unknown.
+    expect(matchCode('GIV12', checklist).status).toBe('unknown');
     expect(matchCode('C1V12', checklist).status).toBe('unknown');
+  });
+});
+
+describe('bestHighConfidenceConfusionMatchFromText (curated directed-confusion fallback)', () => {
+  it('recovers a code through known directed glyph confusions, number preserved', () => {
+    // "HSA 17" -> RSA17 (H read for R); "NJT 4" -> AUT4 (N for A, J for U). These systematic
+    // font confusions are NOT reachable by a blind matchCode substitution — only the curated map.
+    expect(bestHighConfidenceConfusionMatchFromText('HSA 17', checklist)?.entry?.code).toBe('RSA17');
+    expect(bestHighConfidenceConfusionMatchFromText('NJT 4', checklist)?.entry?.code).toBe('AUT4');
+  });
+
+  it('never changes the number, and rejects unknown glyph swaps', () => {
+    // "SWV 12" must NOT reach SWE12 (V->E is not a curated confusion) — the false positive guard.
+    expect(bestHighConfidenceConfusionMatchFromText('SWV 12', checklist)).toBeNull();
+    // No token / pure noise -> null.
+    expect(bestHighConfidenceConfusionMatchFromText('just words', checklist)).toBeNull();
+  });
+});
+
+describe('bestHighConfidenceExactAliasMatchFromText (per-sticker aliases, collision-guarded)', () => {
+  it('applies a safe alias whose target is the strictly-nearest real code', () => {
+    // "DXW4" is 2 edits from CUW4 and ≥3 from any other #4 code → safe.
+    expect(bestHighConfidenceExactAliasMatchFromText('DXW4', checklist)?.entry?.code).toBe('CUW4');
+  });
+
+  it('REFUSES an alias that collides with another real same-number code (the 0-FP guard)', () => {
+    // Each of these garbles is one edit from a DIFFERENT real code, so a different sticker could
+    // produce it — mapping it would be a false positive. All must return null.
+    expect(bestHighConfidenceExactAliasMatchFromText('NO2', checklist)).toBeNull(); // ~ real NOR2
+    expect(bestHighConfidenceExactAliasMatchFromText('SN10', checklist)).toBeNull(); // ~ real SEN10
+    expect(bestHighConfidenceExactAliasMatchFromText('TU10', checklist)).toBeNull(); // ~ real TUR10
+    expect(bestHighConfidenceExactAliasMatchFromText('SWV12', checklist)).toBeNull(); // ~ real SWE12
+    expect(bestHighConfidenceExactAliasMatchFromText('RO20', checklist)).toBeNull(); // ~ real CRO20
   });
 });
 
@@ -176,11 +213,11 @@ describe('bestMatchFromText', () => {
     expect(r?.entry?.code).toBe('CIV12');
   });
 
-  it('falls back to the closest correction', () => {
+  it('falls back to a thin-letter correction', () => {
     const list = makeChecklist(['CIV12']);
-    // 'CIW12' keeps a 3-letter prefix so extractCodes finds it, then matchCode
-    // corrects the W->V slip (one edit).
-    const r = bestMatchFromText('noise CIW12 more', list);
+    // 'CV12' is the dropped-thin-I reading of CIV12; matchCode restores it (the safe,
+    // font-specific correction). Blind letter substitutions are no longer auto-corrected.
+    const r = bestMatchFromText('noise CV12 more', list);
     expect(r?.status).toBe('corrected');
     expect(r?.entry?.code).toBe('CIV12');
   });
@@ -241,10 +278,10 @@ describe('matchLines', () => {
     expect(matchLines('EGY 4 7', checklist).map((r) => r.entry?.code)).toEqual(['EGY4']);
   });
 
-  it('corrects OCR slips on individual codes in a group', () => {
-    const text = 'GIV12 EGY4'; // "GIV12" is a one-edit slip of CIV12
+  it('corrects thin-letter slips on individual codes in a group', () => {
+    const text = 'BH12 EGY4'; // "BH12" is the dropped-thin-I reading of BIH12 (unambiguous)
     const codes = matchAllFromText(text, checklist).map((r) => r.entry?.code);
-    expect(codes).toContain('CIV12');
+    expect(codes).toContain('BIH12');
     expect(codes).toContain('EGY4');
   });
 });

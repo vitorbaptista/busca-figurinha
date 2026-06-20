@@ -1,7 +1,7 @@
 import { defineConfig, type Plugin } from 'vite';
 import preact from '@preact/preset-vite';
 import { VitePWA } from 'vite-plugin-pwa';
-import { mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { appendFileSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
 // GitHub Pages serves from a repo subpath. Set GH_PAGES=1 in CI to use it.
@@ -66,6 +66,144 @@ function captureSaver(): Plugin {
           res.statusCode = 404;
           res.end();
         }
+      });
+
+      // The labeled REAL-FRAME accuracy dataset (local artifacts; gitignored). Used by
+      // bench-pixel.html (dev-only, never built) to measure the real web pipeline against
+      // manually-verified Pixel frames. `/pixel/manifest` returns the ground-truth rows;
+      // `/pixel/frame?id=<frame_id>` serves that frame's full PNG; `/pixel/log` writes the
+      // report to captures/bench-pixel-results.md. Dataset dir is overridable via env so a
+      // future relabeled capture can be pointed at without code change.
+      const PIXEL_DATASET = resolve(
+        process.env.PIXEL_DATASET || 'captures/datasets/combined-live-20260616-20260617',
+      );
+      // Minimal CSV parse (the GT file has no quoted fields; notes use ';' not ','). Splits on
+      // commas, trims, and keeps only the leading expected columns so a stray trailing comma
+      // can't shift the indices that matter.
+      const parseGt = (): Array<Record<string, string>> => {
+        const text = readFileSync(resolve(PIXEL_DATASET, 'ground_truth_verification.csv'), 'utf8');
+        const lines = text.split(/\r?\n/).filter((l) => l.length > 0);
+        const header = lines[0].split(',');
+        return lines.slice(1).map((line) => {
+          const cells = line.split(',');
+          const row: Record<string, string> = {};
+          header.forEach((h, i) => (row[h.trim()] = (cells[i] ?? '').trim()));
+          return row;
+        });
+      };
+      server.middlewares.use('/pixel', (req, res) => {
+        const url = (req.url || '/').split('?')[0];
+        const query = new URLSearchParams((req.url || '').split('?')[1] || '');
+        if (url === '/manifest' || url === '/manifest/') {
+          try {
+            const rows = parseGt()
+              .filter((r) => r.status === 'confirmed' || r.status === 'not_sticker')
+              .map((r) => ({
+                frameId: r.frame_id,
+                verifiedCode: r.verified_code,
+                status: r.status,
+                split: r.split,
+                sourceDir: r.source_dir,
+                frameNumber: Number(r.frame_number),
+              }));
+            res.setHeader('Content-Type', 'application/json');
+            res.end(JSON.stringify(rows));
+          } catch (err) {
+            res.statusCode = 500;
+            res.end(String(err));
+          }
+          return;
+        }
+        if (url === '/frame' || url === '/frame/') {
+          // Resolve raw/<source_dir>/debug/frame-<n>/frame.png from the frame_id row.
+          const id = query.get('id') || '';
+          try {
+            const row = parseGt().find((r) => r.frame_id === id);
+            if (!row) {
+              res.statusCode = 404;
+              res.end();
+              return;
+            }
+            const safeDir = row.source_dir.replace(/\.\.+/g, '').replace(/[^a-z0-9._-]/gi, '');
+            const n = Number(row.frame_number);
+            const file = resolve(PIXEL_DATASET, 'raw', safeDir, 'debug', `frame-${n}`, 'frame.png');
+            const buf = readFileSync(file);
+            res.setHeader('Content-Type', 'image/png');
+            res.end(buf);
+          } catch {
+            res.statusCode = 404;
+            res.end();
+          }
+          return;
+        }
+        if (url === '/log') {
+          if (req.method !== 'POST') {
+            res.statusCode = 405;
+            res.end();
+            return;
+          }
+          let body = '';
+          req.on('data', (chunk) => (body += chunk));
+          req.on('end', () => {
+            try {
+              mkdirSync(resolve('captures'), { recursive: true });
+              writeFileSync(resolve('captures', 'bench-pixel-results.md'), body);
+              res.statusCode = 200;
+              res.end('ok');
+            } catch (err) {
+              res.statusCode = 500;
+              res.end(String(err));
+            }
+          });
+          return;
+        }
+        res.statusCode = 404;
+        res.end();
+      });
+
+      // Training-data sink (dev-only): the in-browser generator (src/dev/trainData.ts) POSTs
+      // batches of letterboxed grayscale crops + labels here; we append raw bytes to
+      // captures/train-data/<file>.bin (9216 u8 per record) and labels to <file>.labels.txt,
+      // for the tfjs-node trainer to read. ?reset=1 truncates first.
+      server.middlewares.use('/traindata/save', (req, res) => {
+        if (req.method !== 'POST') {
+          res.statusCode = 405;
+          res.end();
+          return;
+        }
+        let body = '';
+        req.on('data', (chunk) => (body += chunk));
+        req.on('end', () => {
+          try {
+            const { file, reset, records } = JSON.parse(body) as {
+              file: string;
+              reset?: boolean;
+              records: Array<{ label: string; b64: string }>;
+            };
+            const safe = (file || 'data').replace(/[^a-z0-9_-]/gi, '');
+            const dir = resolve('captures', 'train-data');
+            mkdirSync(dir, { recursive: true });
+            const binPath = resolve(dir, `${safe}.bin`);
+            const lblPath = resolve(dir, `${safe}.labels.txt`);
+            if (reset) {
+              writeFileSync(binPath, Buffer.alloc(0));
+              writeFileSync(lblPath, '');
+            }
+            const bins: Buffer[] = [];
+            let labels = '';
+            for (const r of records) {
+              bins.push(Buffer.from(r.b64, 'base64'));
+              labels += r.label + '\n';
+            }
+            appendFileSync(binPath, Buffer.concat(bins));
+            appendFileSync(lblPath, labels);
+            res.statusCode = 200;
+            res.end('ok');
+          } catch (err) {
+            res.statusCode = 500;
+            res.end(String(err));
+          }
+        });
       });
 
       // Benchmark report sink (separate from /__log so a bench run and a harness run
@@ -164,7 +302,9 @@ export default defineConfig({
       // Tesseract pulls its wasm/worker/lang data from a CDN at runtime; cache them
       // so the scanner keeps working offline after the first successful load.
       workbox: {
-        globPatterns: ['**/*.{js,css,html,svg,png,ico,woff2}'],
+        // Include the codeNet model (model.json + weights.bin) so the neural recognizer works
+        // offline after first load, like the rest of the app.
+        globPatterns: ['**/*.{js,css,html,svg,png,ico,woff2}', 'models/**/*.{json,bin}'],
         maximumFileSizeToCacheInBytes: 6 * 1024 * 1024,
         runtimeCaching: [
           {
