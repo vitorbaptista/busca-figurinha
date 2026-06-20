@@ -410,16 +410,49 @@ button {
   position: relative;
   flex: 1;
   min-height: 46vh;
-  /* White, not paper: the front camera faces the sticker AND so does the screen, so a
-     bright background turns the screen into a FILL LIGHT — more light means shorter
-     exposure (less motion blur) and better contrast, which is what actually makes the
-     code pill readable. This is a hard-won capture fix, NOT a style choice; keep it white
-     even though the rest of the app is album-green. */
-  background: #fff;
+  /* Dark album scan area so the live camera is clearly VISIBLE while framing. The bright
+     FILL LIGHT (the screen acts as a ring light for the close sticker — a hard-won capture
+     fix) is now the .scan-fill layer, which blooms warm-bright only while a sticker is being
+     read (.is-lighting). Dark idle → bright-on-read keeps the camera legible AND lights the
+     pill at the moment it's captured. */
+  background:
+    radial-gradient(125% 80% at 50% 38%, #26402f 0%, #14271e 55%, #0e1f17 100%);
   overflow: hidden;
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+/* The fill light. Transparent while framing (the dark camera shows through); blooms into a
+   warm, high-luminance backlight while a sticker is read — lighting the close sticker for the
+   front camera. Warm ivory/cream rather than clinical #fff: still very bright (so it works as a
+   ring light) but on-brand and easier on the eyes; brightest low-centre where the pill sits in
+   the reticle, fading to a soft gold rim. */
+.scan-fill {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  opacity: 0;
+  background:
+    radial-gradient(
+      135% 96% at 50% 70%,
+      rgba(255, 252, 244, 0.98) 0%,
+      rgba(252, 245, 228, 0.9) 30%,
+      rgba(245, 230, 196, 0.6) 55%,
+      rgba(236, 214, 166, 0.24) 74%,
+      rgba(214, 184, 138, 0.08) 88%,
+      transparent 96%
+    );
+  transition: opacity 170ms ease-out;
+}
+.scan-video-wrap.is-lighting .scan-fill {
+  opacity: 1;
+}
+@media (prefers-reduced-motion: reduce) {
+  .scan-fill {
+    transition: none;
+  }
 }
 .scan-video-layer {
   position: absolute;
@@ -451,8 +484,13 @@ button {
   transform: translate(-50%, -50%);
   border: 3px dashed var(--gold);
   border-radius: 8px;
-  box-shadow: 0 0 0 9999px #fff;
-  z-index: 2;
+  /* The gold "cole aqui" slot. A soft warm halo + a faint ink ring read it as a lit window
+     over the camera — no opaque flood, so the live feed stays fully visible while framing. */
+  box-shadow:
+    0 0 0 2px rgba(14, 31, 23, 0.45),
+    0 0 30px 6px rgba(244, 236, 216, 0.22),
+    inset 0 0 22px rgba(244, 236, 216, 0.14);
+  z-index: 3;
   animation: scan-breathe 2.4s ease-in-out infinite;
 }
 @keyframes scan-breathe {
@@ -492,6 +530,47 @@ button {
   max-width: 320px;
   font-weight: 500;
   line-height: 1.4;
+}
+
+/* Recording indicator (?record). */
+.scan-rec {
+  position: absolute;
+  top: calc(10px + env(safe-area-inset-top, 0px));
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 6;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(178, 58, 30, 0.94);
+  color: #fff;
+  font-family: var(--font-head);
+  font-weight: 600;
+  font-size: 13px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  padding: 5px 13px;
+  border-radius: 999px;
+  border: 2px solid rgba(255, 255, 255, 0.85);
+  box-shadow: 0 2px 9px rgba(0, 0, 0, 0.38);
+  pointer-events: none;
+}
+.scan-rec-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: #fff;
+  animation: rec-blink 1s steps(2) infinite;
+}
+@keyframes rec-blink {
+  50% {
+    opacity: 0.25;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .scan-rec-dot {
+    animation: none;
+  }
 }
 
 /* Debug-only readout (?debug). */

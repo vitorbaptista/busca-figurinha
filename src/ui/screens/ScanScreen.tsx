@@ -32,6 +32,10 @@ interface ScanScreenProps {
 // Opt-in debug readout (open with ?debug): shows raw OCR text + matched codes and
 // makes tapping the camera trigger an immediate capture. No effect without the flag.
 const DEBUG = typeof location !== 'undefined' && new URLSearchParams(location.search).has('debug');
+// Recording mode (?record), independent of ?debug: every frame the scanner reads is saved to the
+// dev server (./captures) in sequence, so a real scanning session can be replayed/benchmarked
+// offline. Off unless explicitly requested — debug must never silently record.
+const RECORD = typeof location !== 'undefined' && new URLSearchParams(location.search).has('record');
 
 type CameraState = 'loading' | 'ready' | 'denied';
 
@@ -56,6 +60,8 @@ export function ScanScreen({ session, collection, settings, onPersist, onFinish 
   // Serializes every OCR call (auto-capture, manual share one worker) so a
   // user-triggered read is queued behind a live one instead of being dropped.
   const recognizeChainRef = useRef<Promise<void>>(Promise.resolve());
+  // ?record: running count of saved frames, for ordered filenames (rec-0000.jpg, …).
+  const recSeqRef = useRef(0);
   // Per-sticker agreement across the burst of frames; reset when a new sticker settles.
   const confirmerRef = useRef(createConfirmer(CONFIG.match.confirmations));
   // When the last live code committed — a guard so a "new" code sooner than minRecaptureMs
@@ -85,6 +91,11 @@ export function ScanScreen({ session, collection, settings, onPersist, onFinish 
   const [debugText, setDebugText] = useState('');
   // Debug-only capture-loop heartbeat (a rotating spinner proves the loop is ticking).
   const [beat, setBeat] = useState('');
+  // Adaptive fill-light: false = dark, camera visible (framing); true = warm backlight bloom
+  // (a sticker is present and being read). Driven by the capture loop's phase via onTick.
+  const [lighting, setLighting] = useState(false);
+  // ?record: how many frames have been saved this session (shown in the REC badge).
+  const [recCount, setRecCount] = useState(0);
 
   // ---------- Result handling shared by all input paths ----------
 
@@ -265,7 +276,12 @@ export function ScanScreen({ session, collection, settings, onPersist, onFinish 
       const ocr = ocrRef.current;
       if (!ready || !ocr) return false;
       try {
-        if (DEBUG) postDebugImg('pixel-' + Date.now(), canvas);
+        if (RECORD) {
+          postDebugImg('rec-' + String(recSeqRef.current++).padStart(4, '0'), canvas);
+          setRecCount(recSeqRef.current);
+        } else if (DEBUG) {
+          postDebugImg('pixel-' + Date.now(), canvas);
+        }
         // Yield once so the camera preview can paint before the synchronous
         // detection work (cheap, but avoids a dropped frame on low-end phones).
         await new Promise((r) => setTimeout(r, 0));
@@ -397,24 +413,28 @@ export function ScanScreen({ session, collection, settings, onPersist, onFinish 
         // Debug heartbeat: a braille spinner that advances every tick (so a frozen loop is
         // obvious) plus the current phase — notably "lido ✓ — troque" when it's locked and
         // waiting for you to swap the sticker (the usual reason it looks "stopped").
-        onTick: DEBUG
-          ? (s) => {
-              const sp = '⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏'[s.tick % 10];
-              const label =
-                s.phase === 'waiting'
-                  ? 'aguardando figurinha'
-                  : s.phase === 'moving'
-                    ? `movendo ${Math.round(s.change * 100)}%`
-                    : s.phase === 'holding'
-                      ? `parado ${s.heldMs}ms`
-                      : s.phase === 'reading'
-                        ? 'lendo…'
-                        : s.phase === 'stalled'
-                          ? 'sem vídeo — reconectando'
-                          : 'lido ✓ — troque a figurinha';
-              setBeat(`${sp} ${label}`);
-            }
-          : undefined,
+        onTick: (s) => {
+          // Bloom the fill-light whenever a sticker is present (moving/holding/reading) and go
+          // dark when idle. Trigger on 'moving' — BEFORE it settles — so the brightness is
+          // already steady by 'holding'; a brightness change mid-settle would read as motion
+          // and reset the stability timer. (setLighting bails when unchanged, so this is cheap.)
+          setLighting(s.phase === 'moving' || s.phase === 'holding' || s.phase === 'reading');
+          if (!DEBUG) return;
+          const sp = '⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏'[s.tick % 10];
+          const label =
+            s.phase === 'waiting'
+              ? 'aguardando figurinha'
+              : s.phase === 'moving'
+                ? `movendo ${Math.round(s.change * 100)}%`
+                : s.phase === 'holding'
+                  ? `parado ${s.heldMs}ms`
+                  : s.phase === 'reading'
+                    ? 'lendo…'
+                    : s.phase === 'stalled'
+                      ? 'sem vídeo — reconectando'
+                      : 'lido ✓ — troque a figurinha';
+          setBeat(`${sp} ${label}`);
+        },
       });
       captureRef.current = capture;
       capture.start();
@@ -487,9 +507,21 @@ export function ScanScreen({ session, collection, settings, onPersist, onFinish 
         {announce}
       </p>
 
-      <div class="scan-video-wrap" onClick={DEBUG ? captureNow : undefined}>
+      <div
+        class={lighting ? 'scan-video-wrap is-lighting' : 'scan-video-wrap'}
+        onClick={DEBUG ? captureNow : undefined}
+      >
         {/* Camera <video> is appended here imperatively; Preact leaves it alone. */}
         <div class="scan-video-layer" ref={videoLayerRef} aria-hidden="true" />
+        {/* Fill-light layer: transparent while framing, warm bloom while reading (.is-lighting). */}
+        <div class="scan-fill" aria-hidden="true" />
+
+        {RECORD && (
+          <div class="scan-rec" role="status">
+            <span class="scan-rec-dot" aria-hidden="true" />
+            Gravando · {recCount}
+          </div>
+        )}
 
         {DEBUG && (
           <div class="debug-box">
