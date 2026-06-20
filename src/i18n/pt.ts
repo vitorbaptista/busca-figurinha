@@ -63,6 +63,7 @@ export const pt = {
     pageTitle: 'Escanear',
     pageSubtitle: 'Verso da figurinha',
     holdStill: 'Mostre o verso e segure parado',
+    reading: 'Lendo…',
     slotLabel: 'Cole aqui',
     recentCap: 'Últimas leituras',
     recentNew: 'Nova',
@@ -72,6 +73,11 @@ export const pt = {
     missSub: 'Não consegui ler o código. Aproxime e segure firme.',
     manualOpen: 'Digitar o código',
     manualCancel: 'Cancelar',
+    // The "this read is wrong" escape on a GUARDAR/REPETIDA card: undoes the scan and
+    // opens manual entry to type the right code.
+    wrong: 'Não é essa?',
+    wrongLabel: 'Marcar leitura como errada e digitar o código certo',
+    discarded: 'Leitura descartada',
   },
 
   report: {

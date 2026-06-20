@@ -45,8 +45,14 @@ type CameraState = 'loading' | 'ready' | 'denied';
 interface RecentScan {
   id: number;
   outcome: ScanOutcome;
+  /** Canonical code, so "Não é essa?" can drop the corrected read from this strip. */
+  code: string;
   label: string;
 }
+
+// Coarse, user-facing capture phase (derived from the autoCapture heartbeat). `reading`
+// covers "sticker held + OCR burst in flight" — what the scanner-sweep on the mira shows.
+type ScanPhase = 'idle' | 'reading';
 
 export function ScanScreen({ session, collection, settings, onPersist, onFinish }: ScanScreenProps) {
   // Dedicated, Preact-untouched layer for the <video>. Preact never renders
@@ -92,6 +98,10 @@ export function ScanScreen({ session, collection, settings, onPersist, onFinish 
   const [showManual, setShowManual] = useState(false);
   const [manualValue, setManualValue] = useState('');
   const [debugText, setDebugText] = useState('');
+  // Live "is it reading?" state for the normal (non-debug) UI — drives the mira scanner
+  // sweep. Deduped via a ref so the per-tick heartbeat only re-renders on a real change.
+  const [scanPhase, setScanPhase] = useState<ScanPhase>('idle');
+  const scanPhaseRef = useRef<ScanPhase>('idle');
   // Debug-only capture-loop heartbeat (a rotating spinner proves the loop is ticking).
   const [beat, setBeat] = useState('');
   // ?record: how many frames have been saved this session (shown in the REC badge).
@@ -139,7 +149,7 @@ export function ScanScreen({ session, collection, settings, onPersist, onFinish 
 
     if (items.length === 0) {
       clearMulti();
-      setVerdict({ outcome: 'unknown', display: '', teamName: '', key });
+      setVerdict({ outcome: 'unknown', code: '', display: '', teamName: '', key });
       setAnnounce(pt.scan.tryAgain + zwsp);
       return;
     }
@@ -152,7 +162,12 @@ export function ScanScreen({ session, collection, settings, onPersist, onFinish 
     }));
     setRecent((r) =>
       [
-        ...items.map((it, i) => ({ id: key * 100 + i, outcome: it.outcome, label: it.display })),
+        ...items.map((it, i) => ({
+          id: key * 100 + i,
+          outcome: it.outcome,
+          code: it.code,
+          label: it.display,
+        })),
         ...r,
       ].slice(0, 12),
     );
@@ -167,6 +182,7 @@ export function ScanScreen({ session, collection, settings, onPersist, onFinish 
       clearMulti();
       setVerdict({
         outcome: it.outcome,
+        code: it.code,
         display: it.display,
         teamName: it.teamName,
         key,
@@ -449,10 +465,16 @@ export function ScanScreen({ session, collection, settings, onPersist, onFinish 
           committedThisBurstRef.current = false;
         },
         onCapture: (frame) => recognizeCanvas(frame, { confirm: true, silent: true }),
-        // Debug heartbeat: a braille spinner that advances every tick (so a frozen loop is
-        // obvious) plus the current phase — notably "lido ✓ — troque" when it's locked and
-        // waiting for you to swap the sticker (the usual reason it looks "stopped").
+        // Surface the loop phase. Normal UI: a coarse idle/reading flag (deduped) that drives
+        // the mira scanner-sweep so the user can SEE it's reading — a held sticker (holding)
+        // and the OCR burst (reading) both count as "reading". Debug adds the full heartbeat.
         onTick: (s) => {
+          const phase: ScanPhase =
+            s.phase === 'holding' || s.phase === 'reading' ? 'reading' : 'idle';
+          if (phase !== scanPhaseRef.current) {
+            scanPhaseRef.current = phase;
+            setScanPhase(phase);
+          }
           if (!DEBUG) return;
           const sp = '⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏'[s.tick % 10];
           const label =
@@ -510,6 +532,29 @@ export function ScanScreen({ session, collection, settings, onPersist, onFinish 
     setShowManual(false);
   };
 
+  /** "Não é essa?" — the read on screen is wrong. Undo it so a confident misread never
+   *  reaches the report: drop the record from the session, uncount it, remove it from the
+   *  recent strip, clear the card, then open manual entry to type the right code. The
+   *  counter decrement is clamped (the session may hold records from a previous launch
+   *  that this run's counters never tallied) and only applied when a record was removed. */
+  const handleWrong = () => {
+    const v = verdict;
+    if (!v || !v.code) return;
+    if (session.removeByCode(v.code)) {
+      onPersist();
+      setCounters((c) => ({
+        neededCount: Math.max(0, c.neededCount - (v.outcome === 'needed' ? 1 : 0)),
+        repeatedCount: Math.max(0, c.repeatedCount - (v.outcome === 'owned' ? 1 : 0)),
+      }));
+    }
+    // Drop every "Últimas leituras" row for this code: the strip isn't deduped (re-scans prepend
+    // fresh rows), and the code is now fully gone from the session, so none should linger.
+    setRecent((r) => r.filter((x) => x.code !== v.code));
+    setVerdict(null);
+    setAnnounce(pt.scan.discarded);
+    setShowManual(true);
+  };
+
   /** Debug-only: ship a canvas to the dev server (./captures) so we can inspect
    *  real device frames and OCR crops offline. */
   const postDebugImg = (name: string, canvas: HTMLCanvasElement) => {
@@ -541,6 +586,13 @@ export function ScanScreen({ session, collection, settings, onPersist, onFinish 
   };
 
   // ---------- Render ----------
+
+  // The scanner-sweep / "Lendo…" state, gated only on OCR being up. Deliberately NOT gated on
+  // verdict/multi: the sweep runs on the mira even while a previous sticker's verdict is still
+  // docked below, so the user can see the NEXT sticker being read (the common sticker-after-
+  // sticker case). It clears itself — a committed read sends the loop to 'locked' → idle, and an
+  // empty or held-already-read mat is 'waiting'/'locked' → idle, so it is never falsely 'reading'.
+  const reading = scanPhase === 'reading' && ocrReady;
 
   return (
     <div class="screen scan-screen">
@@ -616,9 +668,12 @@ export function ScanScreen({ session, collection, settings, onPersist, onFinish 
 
         {cameraState !== 'denied' && (
           <div class="mira-wrap">
-            <div class="mira">
+            <div class={reading ? 'mira reading' : 'mira'}>
               {/* Camera <video> is appended here imperatively; Preact leaves it alone. */}
               <div class="scan-video-layer" ref={videoLayerRef} aria-hidden="true" />
+              {/* Scanner sweep — the visible "it's reading" signal (mounts fresh each read so
+                  the sweep restarts). Reduced-motion turns this into a still glow via CSS. */}
+              {reading && <span class="mira-scan" aria-hidden="true" />}
               <span class="corner tl" aria-hidden="true" />
               <span class="corner tr" aria-hidden="true" />
               <span class="corner bl" aria-hidden="true" />
@@ -626,9 +681,9 @@ export function ScanScreen({ session, collection, settings, onPersist, onFinish 
               {cameraState === 'loading' && <span class="cole">{pt.scan.slotLabel}</span>}
             </div>
             {ocrReady && !verdict && !multi && (
-              <span class="hint">
+              <span class={reading ? 'hint reading' : 'hint'}>
                 <span class="pulse" aria-hidden="true" />
-                {pt.scan.holdStill}
+                {reading ? pt.scan.reading : pt.scan.holdStill}
               </span>
             )}
           </div>
@@ -681,7 +736,11 @@ export function ScanScreen({ session, collection, settings, onPersist, onFinish 
             </>
           )}
           {verdict && !multi && (
-            <Verdict state={verdict} onManual={() => setShowManual(true)} />
+            <Verdict
+              state={verdict}
+              onManual={() => setShowManual(true)}
+              onWrong={handleWrong}
+            />
           )}
         </div>
       </div>

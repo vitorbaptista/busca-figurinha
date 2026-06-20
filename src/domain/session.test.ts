@@ -100,6 +100,35 @@ describe('createSession', () => {
     s.add(exact('CIV12'), false);
     expect(s.toJSON()).toEqual(s.records());
   });
+
+  describe('removeByCode', () => {
+    it('removes the record for a code and reports success', () => {
+      const s = createSession();
+      s.add(exact('CIV12'), false);
+      s.add(exact('EGY4'), true);
+
+      expect(s.removeByCode('CIV12')).toBe(true);
+      expect(s.records().map((r) => r.code)).toEqual(['EGY4']);
+    });
+
+    it('returns false when no record has that code', () => {
+      const s = createSession();
+      s.add(exact('CIV12'), false);
+      expect(s.removeByCode('EGY4')).toBe(false);
+      expect(s.records()).toHaveLength(1);
+    });
+
+    it('removes only the most recent matching record (so a re-scanned code uncounts once)', () => {
+      const s = createSession();
+      s.add(exact('CIV12'), false);
+      s.add(exact('EGY4'), true);
+      s.add(exact('CIV12'), false); // a second copy of CIV12
+
+      expect(s.removeByCode('CIV12')).toBe(true);
+      // one CIV12 remains, the older one
+      expect(s.records().map((r) => r.code)).toEqual(['CIV12', 'EGY4']);
+    });
+  });
 });
 
 describe('session report', () => {
