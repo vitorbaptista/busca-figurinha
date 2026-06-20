@@ -463,10 +463,10 @@ button {
   inset: 0;
   width: 100%;
   height: 100%;
-  /* contain, NOT cover: cover crops the frame (usually top+bottom) to fill the screen, so
-     the bottom you SEE isn't the bottom of the camera STREAM — which is exactly the band the
-     ROI detects. contain shows the whole frame (the letterbox fills with the white fill-light),
-     so the reticle's bottom third lines up with the detected bottom third. */
+  /* contain, NOT cover: cover crops the frame (usually top+bottom) to fill the screen, so the
+     part you SEE isn't the part the recognizer reads. contain shows the WHOLE frame (the letterbox
+     fills with the white fill-light), so the reticle — positioned in JS from the frame-normalized
+     detection ROI through this letterboxed rect — lines up exactly with the detected region. */
   object-fit: contain;
 }
 
@@ -476,12 +476,14 @@ button {
    and dashed edge echo the album's "cole aqui" slot. */
 .scan-frame {
   position: absolute;
-  /* In the BOTTOM THIRD of the view, matching the detection band (roiTopFraction 0.67). */
-  top: 83%;
-  left: 50%;
-  width: min(86vw, 360px);
-  height: min(42vw, 190px);
-  transform: translate(-50%, -50%);
+  box-sizing: border-box;
+  /* Position + size are set in JS (ScanScreen) from CONFIG.detect.roiRect mapped through the
+     letterboxed video rect, so the "cole aqui" window always matches the region the recognizer
+     reads. These percentages are only the pre-JS fallback — the rect ROI in the full-fill case. */
+  left: 18%;
+  top: 32%;
+  width: 64%;
+  height: 26%;
   border: 3px dashed var(--gold);
   border-radius: 8px;
   /* The gold "cole aqui" slot. A soft warm halo + a faint ink ring read it as a lit window

@@ -3,6 +3,16 @@
 Notable changes to the sticker scanner. Newest first. No formal releases yet (deploys on push to
 `main`), so entries are grouped by date. Keep this updated when you ship something notable.
 
+## 2026-06-20 — Scanner: a moldura "cole aqui" agora aponta para onde o leitor lê
+
+### Fixed
+- **Moldura alinhada com a região de detecção.** A janela "cole aqui" ficava no terço inferior da
+  tela, mas o leitor passou a procurar a pílula numa faixa superior-central (a ROI retangular onde
+  as figurinhas de fato aparecem nas capturas reais). A moldura agora é posicionada a partir da
+  MESMA ROI (`CONFIG.detect.roiRect`), mapeada pela área de vídeo com letterbox (`object-fit:
+  contain`) — então onde você encaixa a figurinha é exatamente onde o app lê. (Antes, seguir a
+  moldura colocava a figurinha fora da área lida.)
+
 ## 2026-06-20 — OCR: reconhecedor neural (codeNet) que supera o app nativo
 
 ### Added
