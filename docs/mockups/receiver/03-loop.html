@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>O loop viral — Trocar Figurinhas</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Oswald:wght@500;600;700&family=Archivo:wght@400;500;600;700&family=Archivo+Narrow:wght@600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="_base.css" />
+<style>
+  body{min-height:auto}
+  .loopwrap{max-width:1180px}
+  .flow{display:flex;align-items:stretch;gap:0;flex-wrap:nowrap;margin-top:8px}
+  .node{flex:1;background:var(--cream);color:var(--ink);border:3px solid var(--ink);border-radius:6px;
+    box-shadow:6px 6px 0 var(--paper-edge);padding:16px 14px 15px;position:relative;text-align:center;min-width:0}
+  .node .ic{font-size:32px;line-height:1;display:block;margin-bottom:8px}
+  .node .who{font-family:'Archivo Narrow';font-weight:700;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--dupe);margin-bottom:3px}
+  .node h3{font-family:'Oswald';font-weight:700;font-size:15px;letter-spacing:.01em;color:var(--ink);margin:0 0 5px;text-transform:uppercase}
+  .node p{font-family:'Archivo';font-weight:500;font-size:12px;line-height:1.45;color:#3a4a40}
+  .node .step{position:absolute;top:-12px;left:50%;transform:translateX(-50%);width:24px;height:24px;border-radius:50%;
+    background:var(--gold);color:var(--ink);border:2px solid var(--ink);display:flex;align-items:center;justify-content:center;font-family:'Anton';font-size:13px}
+  .arrow{flex:none;align-self:center;width:46px;display:flex;align-items:center;justify-content:center;color:var(--gold);font-size:30px;font-weight:700}
+  .node.hot{background:var(--paper);color:var(--cream);border-color:#0c1c14;box-shadow:6px 6px 0 rgba(240,198,75,.4)}
+  .node.hot .who{color:var(--gold)} .node.hot h3{color:#fff} .node.hot p{color:var(--cream)}
+  .return{margin:0 auto;margin-top:26px;max-width:980px;display:flex;align-items:center;gap:14px;
+    background:var(--ink);border:2px dashed var(--gold);border-radius:999px;padding:13px 22px}
+  .return .big{font-family:'Anton';font-size:26px;color:var(--gold);line-height:1;flex:none}
+  .return .tx{font-family:'Oswald';font-weight:600;font-size:15px;color:var(--cream);letter-spacing:.01em}
+  .return .tx b{color:var(--gold)}
+  .foot-note{margin:24px auto 0;max-width:980px;background:var(--cream);border:2px solid var(--ink);border-radius:5px;
+    box-shadow:4px 4px 0 var(--paper-edge);padding:13px 18px;display:flex;gap:12px;align-items:flex-start}
+  .foot-note .b{font-size:22px;flex:none}
+  .foot-note p{font-family:'Archivo';font-weight:500;font-size:13px;line-height:1.5;color:#243a2e}
+  .foot-note p b{color:var(--dupe)}
+  @media(max-width:1100px){.flow{flex-wrap:wrap}.arrow{display:none}.node{flex:1 1 260px;margin-bottom:14px}}
+</style>
+</head>
+<body>
+<div class="wrap loopwrap">
+  <header class="cap">
+    <div class="kick">Trocar Figurinhas · Copa 2026 · por que vira viral</div>
+    <h1>Cada link plantado vira um colecionador novo</h1>
+    <p>O link não é só uma lista: é a porta de entrada do app. Quem recebe vira dono de um álbum em
+    quatro toques e, ao escanear, vira quem espalha o próximo link.</p>
+  </header>
+
+  <div class="flow">
+    <div class="node">
+      <span class="step">1</span>
+      <span class="ic">🧑‍🦱</span>
+      <div class="who">Você</div>
+      <h3>Manda o link</h3>
+      <p>Escaneia suas repetidas e compartilha a lista no WhatsApp.</p>
+    </div>
+    <div class="arrow">➜</div>
+    <div class="node">
+      <span class="step">2</span>
+      <span class="ic">🧒</span>
+      <div class="who">Amigo (sem o app)</div>
+      <h3>Abre e confere</h3>
+      <p>Cai direto na sua lista. Sem login, sem escanear, sem baixar nada.</p>
+    </div>
+    <div class="arrow">➜</div>
+    <div class="node">
+      <span class="step">3</span>
+      <span class="ic">👆</span>
+      <div class="who">Amigo</div>
+      <h3>Toca o que serve</h3>
+      <p>Marca “quero” e “tenho” nas suas listas. O placar mostra a troca na hora.</p>
+    </div>
+    <div class="arrow">➜</div>
+    <div class="node hot">
+      <span class="step">4</span>
+      <span class="ic">🎉</span>
+      <div class="who">Amigo → dono</div>
+      <h3>Responde e ganha um álbum</h3>
+      <p>Manda a troca de volta. As escolhas ficam salvas: ele já é colecionador.</p>
+    </div>
+    <div class="arrow">➜</div>
+    <div class="node">
+      <span class="step">5</span>
+      <span class="ic">📷</span>
+      <div class="who">Novo dono</div>
+      <h3>Escaneia e espalha</h3>
+      <p>Completa o álbum e manda o próprio link pra outros amigos.</p>
+    </div>
+  </div>
+
+  <div class="return">
+    <span class="big">↻</span>
+    <span class="tx">E recomeça: cada novo dono planta links com <b>outros</b> amigos.</span>
+  </div>
+
+  <div class="foot-note">
+    <span class="b">🎯</span>
+    <p><b>Honestidade do loop:</b> um amigo que só responde devolve a troca pra você (que já usa o app),
+    então sozinho ele não multiplica. A multiplicação de verdade liga no passo 5, quando esse amigo
+    escaneia o próprio álbum e compartilha adiante. Por isso a retenção (sair com um álbum começado)
+    é o coração da estratégia, não a resposta única.</p>
+  </div>
+</div>
+</body>
+</html>

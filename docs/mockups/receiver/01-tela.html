@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>A tela única — Trocar com o amigo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Oswald:wght@500;600;700&family=Archivo:wght@400;500;600;700&family=Archivo+Narrow:wght@600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="_base.css" />
+<style>
+  .stage{display:flex;align-items:center;justify-content:center;gap:30px;margin-top:6px}
+  .col{display:flex;flex-direction:column;gap:20px;width:330px;flex:none}
+  .call{background:var(--cream);color:var(--ink);border:2px solid var(--ink);border-radius:6px;
+    box-shadow:5px 5px 0 var(--paper-edge);padding:13px 15px;position:relative}
+  .call .h{font-family:'Oswald';font-weight:700;font-size:14px;letter-spacing:.01em;text-transform:uppercase;color:var(--dupe);margin-bottom:4px;display:flex;align-items:center;gap:8px}
+  .call .h .dot{width:16px;height:16px;border-radius:4px;border:2px solid var(--ink);flex:none;display:inline-flex;align-items:center;justify-content:center;font-size:9px;font-weight:700}
+  .call .h .dot.q{background:var(--gold);color:var(--ink)} .call .h .dot.h{background:var(--keep);color:#fff}
+  .call p{font-family:'Archivo';font-weight:500;font-size:12.5px;line-height:1.5;color:#2c3c33}
+  .call.r::after{content:"➜";position:absolute;right:-26px;top:50%;transform:translateY(-50%);color:var(--gold);font-size:24px;font-weight:700}
+  .call.l::after{content:"➜";position:absolute;left:-26px;top:50%;transform:translateY(-50%) scaleX(-1);color:var(--gold);font-size:24px;font-weight:700}
+</style>
+</head>
+<body>
+<div class="wrap" style="max-width:1340px">
+  <header class="cap">
+    <div class="kick">Trocar Figurinhas · Copa 2026 · a tela única</div>
+    <h1>Toca, vê a troca, responde</h1>
+    <p>Uma só tela substitui a lista travada de hoje. O amigo que recebeu o link marca o que serve nas
+    duas listas, vê o placar da troca subir na hora e responde. Nada é gravado até ele enviar.</p>
+  </header>
+
+  <div class="stage">
+    <!-- left callouts -->
+    <div class="col">
+      <div class="call r">
+        <div class="h">Sem barreira</div>
+        <p>Cai direto na lista do amigo. Sem login, sem baixar, sem câmera. Já dá pra começar a tocar.</p>
+      </div>
+      <div class="call r">
+        <div class="h"><span class="dot q">✓</span> Quero</div>
+        <p>Toque nas repetidas do amigo que servem pra você. Viram a sua lista de “preciso”.</p>
+      </div>
+      <div class="call r">
+        <div class="h"><span class="dot h">✓</span> Tenho</div>
+        <p>Toque no que falta pro amigo e você tem repetida. Vira o que você oferece de volta.</p>
+      </div>
+    </div>
+
+    <!-- phone -->
+    <div class="device">
+      <div class="notch"></div>
+      <div class="screen">
+        <div class="statusbar"><span>9:41</span><span class="dots">📶 ▮▮▮ 84%</span></div>
+        <div class="pagetab"><span class="name">Trocar</span><span class="pg">com o Léo</span></div>
+        <div class="body">
+          <div class="scroll">
+            <div class="legend">
+              <i><span class="sw q">✓</span> quero</i>
+              <i><span class="sw h">✓</span> tenho</i>
+              <i><span class="sw" style="background:transparent;border-style:dashed;border-color:var(--kraft)"></span> toque</i>
+            </div>
+            <div class="sec-h"><span class="t">O que o Léo tem repetida 🔁</span><span class="rule"></span></div>
+            <div class="bulk"><button>Quero todas dele</button><button class="clear">Limpar tudo</button></div>
+            <div class="trow">
+              <div class="th"><span class="flag">🇧🇷</span><span class="tn">Brasil</span><span class="cnt">3 repetidas</span></div>
+              <div class="ncs"><span class="nc want">7</span><span class="nc">9</span><span class="nc want">14</span></div>
+            </div>
+            <div class="trow">
+              <div class="th"><span class="flag">🇲🇽</span><span class="tn">México</span><span class="cnt">2 repetidas</span></div>
+              <div class="ncs"><span class="nc want">3</span><span class="nc">10</span></div>
+            </div>
+            <div class="sec-h"><span class="t">O que falta pro Léo 📍</span><span class="rule"></span></div>
+            <div class="trow">
+              <div class="th"><span class="flag">🇦🇷</span><span class="tn">Argentina</span><span class="cnt">faltam 2</span></div>
+              <div class="ncs"><span class="nc have">4</span><span class="nc">12</span></div>
+            </div>
+            <div class="trow">
+              <div class="th"><span class="flag">🇫🇷</span><span class="tn">França</span><span class="cnt">falta 1</span></div>
+              <div class="ncs"><span class="nc have">9</span></div>
+            </div>
+          </div>
+          <div class="foot">
+            <div class="score"><span class="big">5</span><span class="lbl">Dá pra trocar!</span></div>
+            <div class="pega">Você pega 3 · você dá 2</div>
+            <div class="conv">🎉 Seu álbum já começou<span class="v">Ver</span></div>
+            <button class="btn-wa">📲 Responder no WhatsApp</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- right callouts -->
+    <div class="col">
+      <div class="call l">
+        <div class="h">Placar honesto</div>
+        <p>Soma só o que você tocou. Sem nada a dar, mostra “Você quer 3 do Léo”, nunca promete uma troca que não existe.</p>
+      </div>
+      <div class="call l">
+        <div class="h">Nada grava até enviar</div>
+        <p>Toque errado nunca vira figurinha-fantasma. A prévia confirma o que entra no seu álbum antes de ir pro WhatsApp.</p>
+      </div>
+      <div class="call l">
+        <div class="h">Vira dono</div>
+        <p>No pico da empolgação, o convite: o que você marcou fica salvo neste celular. Você já é colecionador.</p>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>
