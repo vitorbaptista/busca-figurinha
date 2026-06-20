@@ -1,6 +1,6 @@
 import { pt } from '../i18n/pt';
 
-export type Screen = 'scan' | 'report' | 'collection' | 'trade' | 'settings';
+export type Screen = 'scan' | 'report' | 'collection' | 'trade' | 'repeats' | 'settings';
 
 interface NavProps {
   current: Screen;
@@ -15,8 +15,9 @@ const ITEMS: { screen: Screen; label: string; emoji: string }[] = [
 ];
 
 export function Nav({ current, onNavigate }: NavProps) {
-  // The report screen lives "inside" the scan flow, so keep Scan highlighted there.
-  const active = current === 'report' ? 'scan' : current;
+  // Report lives "inside" the scan flow; the manual repeats editor lives "inside" Trocar — keep the
+  // parent tab highlighted on each.
+  const active = current === 'report' ? 'scan' : current === 'repeats' ? 'trade' : current;
 
   return (
     <nav class="nav">

@@ -1,10 +1,10 @@
-import { Fragment } from 'preact';
 import { useMemo, useState } from 'preact/hooks';
 import type { CollectionStore, TeamGroup } from '../../types';
 import { checklist } from '../../data/checklist';
 import { pt } from '../../i18n/pt';
 import { useStore } from '../hooks';
 import { ProgressBar } from '../components/ProgressBar';
+import { AlbumGrid } from '../components/AlbumGrid';
 
 interface CollectionScreenProps {
   collection: CollectionStore;
@@ -44,52 +44,16 @@ export function CollectionScreen({ collection }: CollectionScreenProps) {
       {teams.length === 0 ? (
         <p class="collection-empty">{pt.collection.noResults}</p>
       ) : (
-        <ul class="team-list">
-          {teams.map((team, i) => {
-            const ownedInTeam = team.entries.filter((e) => owned.has(e.code)).length;
-            // A "Grupo X" header before the first team of each group, mirroring the album.
-            const showGroupHeader = !!team.group && team.group !== teams[i - 1]?.group;
-            return (
-              <Fragment key={team.teamCode}>
-                {showGroupHeader && (
-                  <li class="group-header" aria-hidden="true">
-                    Grupo {team.group}
-                  </li>
-                )}
-                <li class="team">
-                {/* Every team stays expanded — no accordion — so you can tick stickers off
-                    straight down the list while looking at the album. */}
-                <div class="team-head team-head-static">
-                  <span class="team-name">{team.teamName}</span>
-                  <span
-                    class={`team-progress ${ownedInTeam === team.entries.length ? 'is-complete' : ''}`}
-                  >
-                    {pt.collection.teamProgress(ownedInTeam, team.entries.length)}
-                  </span>
-                </div>
-
-                <div class="chip-grid">
-                  {team.entries.map((e) => {
-                    const has = owned.has(e.code);
-                    const numberLabel = e.number === 0 ? '00' : String(e.number);
-                    return (
-                      <button
-                        key={e.code}
-                        class={`chip ${has ? 'chip-owned' : 'chip-needed'}`}
-                        onClick={() => collection.toggle(e.code)}
-                        aria-pressed={has}
-                        aria-label={`${e.display} ${has ? 'na coleção' : 'falta'}`}
-                      >
-                        {numberLabel}
-                      </button>
-                    );
-                  })}
-                </div>
-                </li>
-              </Fragment>
-            );
-          })}
-        </ul>
+        // Every team stays expanded — no accordion — so you tick stickers off straight down the list.
+        <AlbumGrid
+          teams={teams}
+          isOn={(code) => owned.has(code)}
+          onToggle={(code) => collection.toggle(code)}
+          onClass="chip-owned"
+          ariaLabel={(e, on) => `${e.display} ${on ? 'na coleção' : 'falta'}`}
+          teamCount={(n, total) => pt.collection.teamProgress(n, total)}
+          isTeamComplete={(n, total) => n === total}
+        />
       )}
     </div>
   );

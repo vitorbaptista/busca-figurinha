@@ -1523,6 +1523,36 @@ button {
   border-style: dashed;
   border-color: var(--kraft-deep);
 }
+/* Repetidas editor: a marked spare. Brick-orange like the REPETIDA verdict, plus a corner diamond
+   (the album's "repetida" shape) so it never reads by colour alone. */
+.chip-repeat {
+  position: relative;
+  background: var(--dupe);
+  border-color: var(--ink);
+  color: #fff;
+  box-shadow: 2px 2px 0 rgba(15, 60, 39, 0.45);
+}
+.chip-repeat::after {
+  content: '';
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 6px;
+  height: 6px;
+  background: var(--gold);
+  transform: rotate(45deg);
+}
+/* instruction line under the Repetidas header */
+.repeats-hint {
+  margin: 8px 0 0;
+  font-size: 0.9rem;
+  color: var(--text-dim);
+}
+/* "✏️ Editar" link on the right of the "Minhas repetidas" section head */
+.trade-edit {
+  flex: none;
+  white-space: nowrap;
+}
 
 /* ================================================== Settings screen ======= */
 
