@@ -1,6 +1,6 @@
 import { pt } from '../i18n/pt';
 
-export type Screen = 'scan' | 'report' | 'collection' | 'settings';
+export type Screen = 'scan' | 'report' | 'collection' | 'trade' | 'settings';
 
 interface NavProps {
   current: Screen;
@@ -10,6 +10,7 @@ interface NavProps {
 const ITEMS: { screen: Screen; label: string; emoji: string }[] = [
   { screen: 'scan', label: pt.nav.scan, emoji: '📷' },
   { screen: 'collection', label: pt.nav.collection, emoji: '📚' },
+  { screen: 'trade', label: pt.nav.trade, emoji: '🤝' },
   { screen: 'settings', label: pt.nav.settings, emoji: '⚙️' },
 ];
 

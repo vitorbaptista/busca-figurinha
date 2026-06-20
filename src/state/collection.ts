@@ -31,8 +31,10 @@ export function memoryStore(): KeyValueStore {
 export function createCollectionStore(kv: KeyValueStore, key = 'owned'): CollectionStore {
   const owned = new Set<string>();
   const listeners = new Set<() => void>();
+  let isLoaded = false;
 
   const ready = kv.get<string[]>(key).then((stored) => {
+    isLoaded = true;
     if (stored && stored.length) {
       for (const code of stored) owned.add(code);
       // Notify so any UI mounted before the async load finishes re-renders with
@@ -59,6 +61,7 @@ export function createCollectionStore(kv: KeyValueStore, key = 'owned'): Collect
 
   return {
     ready,
+    loaded: () => isLoaded,
     has: (code) => owned.has(code),
     add(code) {
       if (owned.has(code)) return;

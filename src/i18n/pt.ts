@@ -7,6 +7,7 @@ export const pt = {
   nav: {
     scan: 'Escanear',
     collection: 'Coleção',
+    trade: 'Trocar',
     settings: 'Ajustes',
   },
 
@@ -88,6 +89,60 @@ export const pt = {
     noResults: 'Nenhum time encontrado.',
     inCollection: 'na coleção',
     missing: 'falta',
+  },
+
+  trade: {
+    title: 'Trocar',
+    repeatsBadge: (n: number) => (n === 1 ? '1 repetida' : `${n} repetidas`),
+
+    // Empty state — the user hasn't scanned any duplicates yet.
+    emptyEmoji: '🔁',
+    emptyTitle: 'Monte sua lista de troca',
+    emptyText:
+      'Escaneie suas figurinhas. As repetidas (que você já tem) entram aqui automaticamente pra você trocar com a galera.',
+    emptyButton: 'Escanear repetidas',
+
+    // Sender — "minhas repetidas (p/ trocar)"
+    myRepeatsTitle: 'Minhas repetidas',
+    myRepeatsEm: '(p/ trocar)',
+    removeRepeat: 'Já troquei',
+    removeRepeatLabel: (display: string) => `Tirar ${display} da lista de troca`,
+
+    // Sender — "o que eu preciso"
+    needTitle: 'O que eu',
+    needEm: 'preciso',
+    faltaTag: 'Falta',
+    needEmpty: 'Você já tem todas as figurinhas! 🎉',
+
+    // Preview + actions
+    previewTag: 'Prévia da mensagem',
+    shareWhats: 'Enviar no WhatsApp',
+    copy: 'Copiar lista',
+    copied: 'Lista copiada!',
+    copyFail: 'Não consegui copiar. Use “Enviar no WhatsApp”.',
+
+    // Receiver — a friend opened your shared link
+    friendFallback: 'seu amigo',
+    receiverHero: (friend: string) => `Trocas com ${friend}`,
+    receiverWin: (n: number) =>
+      n === 0
+        ? 'Nada que sirva pra você agora.'
+        : n === 1
+          ? '1 figurinha serve pra você!'
+          : `${n} figurinhas servem pra você!`,
+    iCanGetTitle: 'Você pega',
+    iCanGiveTitle: 'Você dá',
+    iCanGetEmpty: 'Nada dessa lista que você precise.',
+    iCanGiveEmpty: 'Você não tem repetidas que ele(a) precisa.',
+    giveCtaTitle: 'Tem repetidas?',
+    giveCtaText: 'Escaneie as suas pra ver o que você pode dar em troca.',
+    giveCtaButton: 'Escanear repetidas',
+    shareBack: 'Compartilhar minha lista',
+    backToMine: 'Ver minha lista',
+
+    // Grouping (mirrors the album)
+    albumGroup: (g: string) => `Grupo ${g}`,
+    count: (n: number) => String(n),
   },
 
   settings: {

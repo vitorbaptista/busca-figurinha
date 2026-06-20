@@ -1437,6 +1437,371 @@ button {
   margin: 4px 0;
 }
 
+/* ===================================================== Trade screen ======= */
+/* "Trocar": your trade offer (repetidas to give + what you need) and a WhatsApp-shareable
+   message. Reuses the album's cream "trade slip" ledger, ink/gold ticket preview, and the
+   keep-green WhatsApp CTA. */
+
+.trade-screen {
+  max-width: 640px;
+  margin: 0 auto;
+}
+
+/* sticky header, mirrors the collection header */
+.trade-header {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  background: var(--paper-deep);
+  padding: calc(14px + var(--safe-top)) 16px 14px;
+  border-bottom: 3px solid var(--gold-deep);
+}
+.trade-header-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+.trade-badge {
+  font-family: var(--font-head);
+  font-weight: 700;
+  font-size: 0.9rem;
+  color: var(--ink);
+  background: var(--gold);
+  border: 2px solid var(--ink);
+  border-radius: var(--radius-pill);
+  padding: 3px 12px;
+  box-shadow: 2px 2px 0 var(--paper-edge);
+  white-space: nowrap;
+}
+
+.trade-body {
+  padding: 0 16px;
+}
+
+/* first-paint placeholder while the stores hydrate (a shared link can land here at startup) */
+.trade-loading {
+  display: flex;
+  justify-content: center;
+  padding: 64px 16px;
+}
+
+/* section header — "Minhas repetidas (p/ trocar)" / "O que eu preciso" */
+.sec-h {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin: 20px 0 0;
+}
+.sec-h .t {
+  font-family: var(--font-head);
+  font-weight: 700;
+  font-size: 1rem;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: var(--cream);
+  white-space: nowrap;
+}
+.sec-h .t .em {
+  color: var(--gold);
+}
+.sec-h .rule {
+  flex: 1;
+  height: 2px;
+  background: var(--line);
+}
+.trade-count {
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: 1.3rem;
+  line-height: 1;
+  color: var(--gold);
+}
+
+/* album group label inside "o que eu preciso" / the match lists */
+.trade-grp {
+  margin: 14px 0 0;
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: 1.3rem;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: var(--cream);
+  text-shadow: 2px 2px 0 var(--paper-edge);
+}
+
+/* the ledger — cream card with dashed kraft dividers, like a paper trade slip */
+.ledger {
+  margin: 9px 0 0;
+  background: var(--cream);
+  border: 2px solid var(--ink);
+  border-radius: var(--radius);
+  box-shadow: 2px 2px 0 rgba(15, 60, 39, 0.28);
+  overflow: hidden;
+}
+.lrow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 11px 14px;
+  border-bottom: 1.5px dashed var(--kraft-deep);
+}
+.lrow:last-child {
+  border-bottom: 0;
+}
+.lcode {
+  flex: none;
+  font-family: var(--font-head);
+  font-weight: 700;
+  font-size: 1.05rem;
+  color: var(--ink);
+  background: var(--cream-dim);
+  border: 1.5px solid var(--ink);
+  border-radius: var(--radius-sm);
+  padding: 2px 9px;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+.lname {
+  flex: 1;
+  min-width: 0;
+  font-size: 0.9rem;
+  color: #46564b;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+/* tag on the right — "Falta" (green) / "Você pega" (green) / "Você dá" (red) */
+.ltag {
+  flex: none;
+  font-family: var(--font-head);
+  font-weight: 700;
+  font-size: 0.72rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  border: 1.5px solid currentColor;
+  border-radius: var(--radius-sm);
+  padding: 2px 8px;
+  white-space: nowrap;
+}
+.ltag-falta {
+  color: var(--keep);
+}
+
+/* per-row "já troquei" remove on the repeats ledger (keeps a shared list from offering ghosts) */
+.lremove {
+  flex: none;
+  font-family: var(--font-head);
+  font-weight: 700;
+  font-size: 0.72rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--kraft-text);
+  background: var(--cream-dim);
+  border: 1.5px solid var(--kraft-deep);
+  border-radius: var(--radius-sm);
+  padding: 8px 12px;
+  min-height: 40px;
+  white-space: nowrap;
+  transition: background 0.12s ease, border-color 0.12s ease, color 0.12s ease;
+}
+.lremove:active {
+  background: var(--dupe-soft);
+  border-color: var(--dupe);
+  color: var(--dupe);
+}
+
+.trade-line-empty {
+  margin: 9px 0 0;
+  background: var(--cream);
+  border: 2px solid var(--ink);
+  border-radius: var(--radius);
+  padding: 14px 16px;
+  color: var(--kraft-text);
+  text-align: center;
+}
+
+/* shareable message preview — ink card, gold ticket tag, WYSIWYG of the real sent text */
+.preview {
+  position: relative;
+  margin: 24px 0 0;
+  background: var(--ink);
+  border: 2px solid var(--gold-deep);
+  border-radius: var(--radius);
+  padding: 16px 15px 15px;
+  color: var(--cream);
+}
+.preview .ptag {
+  position: absolute;
+  top: -11px;
+  left: 14px;
+  background: var(--gold);
+  color: var(--ink);
+  font-family: var(--font-head);
+  font-weight: 700;
+  font-size: 0.7rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 3px 9px;
+  border-radius: var(--radius-sm);
+  border: 1.5px solid var(--ink);
+}
+.preview-text {
+  margin: 4px 0 0;
+  font-family: var(--font);
+  font-size: 0.85rem;
+  line-height: 1.5;
+  color: #e7dcc2;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+/* actions */
+.trade-actions {
+  margin: 18px 0 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+/* WhatsApp send — the album's keep-green, full print-ticket treatment, biggest CTA */
+.btn-wa {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  background: var(--keep);
+  color: #fff;
+  border: 3px solid var(--ink);
+  border-radius: var(--radius);
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: 1.3rem;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  padding: 14px;
+  min-height: 56px;
+  box-shadow: 5px 5px 0 var(--paper-edge);
+  transition: transform 0.08s ease, box-shadow 0.08s ease, background 0.15s ease;
+}
+.btn-wa:active {
+  transform: translate(2px, 2px);
+  box-shadow: 3px 3px 0 var(--paper-edge);
+  background: #096e38;
+}
+.btn-wa .wa {
+  font-size: 1.3rem;
+}
+.btn-copy {
+  width: 100%;
+  text-align: center;
+  background: transparent;
+  color: var(--cream);
+  border: 2px dashed var(--cream);
+  border-radius: var(--radius);
+  font-family: var(--font-head);
+  font-weight: 600;
+  font-size: 0.95rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  padding: 12px;
+  min-height: 48px;
+  transition: background 0.12s ease;
+}
+.btn-copy:active {
+  background: rgba(244, 236, 216, 0.08);
+}
+
+/* empty state — no repeats scanned yet */
+.trade-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 8px;
+  padding: 36px 24px;
+  max-width: 460px;
+  margin: 0 auto;
+}
+.trade-empty-emoji {
+  font-size: 4rem;
+  line-height: 1;
+}
+.trade-empty h2 {
+  color: var(--cream);
+}
+.trade-empty p {
+  color: var(--text-dim);
+  margin: 0 0 8px;
+}
+
+/* toast notice (copied / shared feedback) */
+.trade-notice {
+  position: fixed;
+  left: 50%;
+  top: calc(12px + var(--safe-top));
+  transform: translateX(-50%);
+  z-index: 60;
+  background: var(--ink);
+  color: var(--cream);
+  border: 2px solid var(--gold-deep);
+  border-radius: var(--radius);
+  padding: 10px 16px;
+  font-family: var(--font-head);
+  font-weight: 600;
+  font-size: 0.95rem;
+  box-shadow: 3px 3px 0 var(--paper-edge);
+  animation: slide-in 0.2s ease;
+}
+
+/* receiver match header (a friend's shared list) */
+.trade-header-friend {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.trade-back {
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  background: none;
+  border: none;
+  color: var(--gold);
+  font-family: var(--font-head);
+  font-weight: 700;
+  font-size: 0.9rem;
+  padding: 6px 4px;
+  margin-left: -4px;
+}
+.trade-win {
+  margin: 0;
+  font-family: var(--font-head);
+  font-weight: 600;
+  font-size: 1rem;
+  color: var(--gold);
+}
+
+/* give-side CTA when the receiver has no repeats of their own yet */
+.trade-cta {
+  margin: 9px 0 0;
+  background: var(--cream);
+  border: 2px solid var(--ink);
+  border-radius: var(--radius);
+  box-shadow: 2px 2px 0 rgba(15, 60, 39, 0.28);
+  padding: 16px;
+  text-align: center;
+  color: var(--ink);
+}
+.trade-cta b {
+  font-family: var(--font-head);
+  font-size: 1.05rem;
+}
+.trade-cta p {
+  color: var(--kraft-text);
+  margin: 4px 0 12px;
+}
+
 /* --------------------------------------------------- Narrow phones ------- */
 @media (max-width: 340px) {
   body {

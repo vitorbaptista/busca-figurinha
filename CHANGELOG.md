@@ -3,6 +3,20 @@
 Notable changes to the sticker scanner. Newest first. No formal releases yet (deploys on push to
 `main`), so entries are grouped by date. Keep this updated when you ship something notable.
 
+## 2026-06-19 — Nova tela "Trocar" (montar e compartilhar troca)
+
+### Added
+- **Aba "Trocar" 🤝.** Mostra suas **repetidas** (que viram "pra trocar") e **tudo o que você
+  ainda precisa**, agrupado por grupo do álbum, no estilo "Banca — Álbum de Papel".
+- **Compartilhar no WhatsApp.** Um botão gera a mensagem pronta — "Tenho pra trocar" (agrupado por
+  seleção, com bandeirinha) **e** "Preciso" — mais um link. A prévia na tela é exatamente o texto
+  que será enviado. Também dá pra **copiar a lista**.
+- **Loop de troca de mão dupla.** Quando um amigo abre o seu link, ele cai direto numa tela que já
+  mostra **o que ele pega de você** e **o que ele te dá** — e pode devolver a própria lista.
+- **Repetidas guardadas de verdade.** As figurinhas repetidas que você escaneia ficam salvas pra
+  trocar a qualquer momento (entram no backup e somem em "Apagar tudo"). Já trocou uma? Toque em
+  **"Já troquei"** pra tirar da lista, pra ela nunca oferecer algo que você não tem mais.
+
 ## 2026-06-19 — Dados: figurinhas Coca-Cola (CC1–CC12)
 
 ### Added
