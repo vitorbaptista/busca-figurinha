@@ -118,6 +118,32 @@ report, settings) are conventional. Reading these files in order explains the sy
 (speed over real video frames), `npm run bench -- --latency-sharp` (the sharp single-sticker use-case).
 `scripts/bench.mjs` drives headless Chrome. ROI/use-case changes tank these by construction — see above.
 
+### Labeled real-Pixel-frame dataset — CHECK HERE FIRST for real use-case accuracy
+
+There is a **manually-verified dataset of real Pixel capture frames** under `captures/datasets/`.
+It lives in an artifacts dir (NOT `src/`), nothing in `package.json` runs it, and the metrics runner
+isn't committed — so a code search won't surface it and it's easy to miss (it was, for a whole
+session). **Before measuring accuracy on the real use-case, look here** — it has real device frames
+*with negatives* for false-positive testing, which `npm run bench`'s synthetic/centre-framed set and
+any one-off recorded video do not.
+
+- **Canonical set:** `captures/datasets/combined-live-20260616-20260617/` — 374 frames (216 confirmed
+  stickers + 157 not-sticker negatives), `train`/`val`/`test` split.
+- **Ground truth = `ground_truth_verification.csv`**, NOT the manifest's `ground_truth_code` (zeroed):
+  `status=confirmed` + `verified_code` ⇒ positive; `status=not_sticker` ⇒ negative. `dataset_manifest.csv`
+  carries paths + splits.
+- **Frame layout:** each `raw/<session>/debug/frame-N/` holds `frame.png` (full frame), `frame.pgm.gz`
+  (grayscale), `crop0..N.png` (detected crops).
+- **Prior results:** `<dataset>/benchmarks/*.md`. Best config there — a **rectangular ROI**
+  `roi=0.18,0.32,0.82,0.58` (x,y,w,h, NOT just `roiTopFraction`), `fastConf=70`, `maxBoxes=2`,
+  dark+light modes — hit **recall 75%, precision 100%, 0 FP** on real frames. (The live app still uses
+  the simpler bottom-band `roiTopFraction`; that rect-ROI crop is the "OCR only the shown scan window"
+  direction.) The JS-pipeline runner that produced these `.md`s was ephemeral / lived in the
+  `codex-native-detection-improvements` worktree — find or rebuild it before re-benchmarking.
+  `scripts/verify-pixel-dataset.mjs` is the manual labeling UI (`manual_verify.html`), not the runner.
+- **Grow it:** `?record` mode (separate from `?debug`) auto-saves every frame the scanner reads to
+  `captures/` as sequential `rec-NNNN.jpg` — scan a batch on the Pixel, then label + fold into a dataset.
+
 ## Data flow & state
 
 `src/types.ts` is the central contract — every module implements/consumes interfaces there. State
