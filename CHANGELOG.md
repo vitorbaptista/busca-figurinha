@@ -3,6 +3,15 @@
 Notable changes to the sticker scanner. Newest first. No formal releases yet (deploys on push to
 `main`), so entries are grouped by date. Keep this updated when you ship something notable.
 
+## 2026-06-20 — Trocar: "Minhas repetidas" agrupada por grupo do álbum
+
+### Changed
+- **"Minhas repetidas" agora vem agrupada por grupo do álbum** (Grupo A, B, …, depois as seções
+  especiais), igual a "O que eu preciso" — antes era uma lista solta de seleções. As duas listas da
+  aba **Trocar** ficaram com o mesmo visual.
+- **Os grupos de "O que eu preciso" agora ficam sempre abertos.** Saiu o expandir/recolher (e o
+  ▸/▾): a lista mostra de uma vez tudo que falta, sem precisar tocar grupo por grupo.
+
 ## 2026-06-20 — Trocar: QR Code pra trocar ao vivo
 
 ### Added

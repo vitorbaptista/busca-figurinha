@@ -56,17 +56,6 @@ export function TradeScreen({
     window.setTimeout(() => setNotice(null), 2800);
   };
 
-  // Which "O que eu preciso" album groups are expanded. Starts empty (all collapsed) so the section
-  // is a short list of group rows instead of every missing sticker (~620 rows on a half-full album).
-  const [openGroups, setOpenGroups] = useState<Set<string>>(() => new Set());
-  const toggleGroup = (label: string) =>
-    setOpenGroups((prev) => {
-      const next = new Set(prev);
-      if (next.has(label)) next.delete(label);
-      else next.add(label);
-      return next;
-    });
-
   // Gate the first paint until both stores have hydrated from IndexedDB. A friend opening a shared
   // ?t= link lands here immediately at startup; without this the match would briefly compute against
   // an empty `owned` and show an inflated "serve pra você" count before correcting itself.
@@ -164,7 +153,6 @@ export function TradeScreen({
     );
   }
 
-  const needGroups = groupByAlbum(missingCodes);
   // Always built — with no repeats the share is a "wishlist" (só "Preciso"), still worth sending.
   const previewText = previewTextFor(myPayload, checklist);
   // The exact deep link the WhatsApp message carries — encoded as a QR so someone trading in person
@@ -188,8 +176,8 @@ export function TradeScreen({
         </div>
       </header>
 
-      {/* Mockup order: minhas repetidas → o que eu preciso → prévia → ações. The "preciso" list is
-          collapsed by group, so the share actions below it stay within easy reach. */}
+      {/* Mockup order: minhas repetidas → o que eu preciso → prévia → ações. Both sticker lists share
+          the same grouped ledger (album group → team tallies), always expanded — no collapse. */}
       <div class="trade-body">
         <SectionHead
           lead={pt.trade.myRepeatsTitle}
@@ -201,11 +189,7 @@ export function TradeScreen({
           }
         />
         {hasRepeats ? (
-          <div class="ledger">
-            {splitByTeam(myRepeatEntries).map((team) => (
-              <TeamTally key={team[0].teamCode} entries={team} tone="have" />
-            ))}
-          </div>
+          <GroupedLedger codes={myRepeatCodes} tone="have" />
         ) : (
           <div class="trade-cta">
             <b>{pt.trade.repeatsPromptTitle}</b>
@@ -225,37 +209,10 @@ export function TradeScreen({
             </button>
           }
         />
-        {needGroups.length === 0 ? (
+        {missingCodes.length === 0 ? (
           <p class="trade-line-empty">{pt.trade.needEmpty}</p>
         ) : (
-          <div class="ledger need-list">
-            {needGroups.map((group) => {
-              const open = openGroups.has(group.label);
-              return (
-                <Fragment key={group.label}>
-                  <button
-                    type="button"
-                    class={`need-grp-row ${open ? 'is-open' : ''}`}
-                    onClick={() => toggleGroup(group.label)}
-                    aria-expanded={open}
-                  >
-                    <span class="ngname">{group.label}</span>
-                    <span class="ngcount">{pt.trade.groupFaltam(group.entries.length)}</span>
-                    <span class="ngcaret" aria-hidden="true">
-                      {open ? '▾' : '▸'}
-                    </span>
-                  </button>
-                  {open && (
-                    <div class="need-open">
-                      {splitByTeam(group.entries).map((team) => (
-                        <TeamTally key={team[0].teamCode} entries={team} tone="need" />
-                      ))}
-                    </div>
-                  )}
-                </Fragment>
-              );
-            })}
-          </div>
+          <GroupedLedger codes={missingCodes} tone="need" />
         )}
 
         <div class="preview">
@@ -436,6 +393,32 @@ function TeamTally({ entries, tone }: { entries: ChecklistEntry[]; tone: TallyTo
           </span>
         ))}
       </div>
+    </div>
+  );
+}
+
+/** The shared sticker list for "Minhas repetidas" (have) and "O que eu preciso" (need): one cream
+ *  ledger card, grouped by album group (Grupo A…, then specials), each group a static header (name +
+ *  per-group count) over its team tallies. Always expanded — both sections render through this so they
+ *  stay identical. Only the count wording/colour differs by tone: "faltam N" (green) vs "tenho N". */
+function GroupedLedger({ codes, tone }: { codes: Iterable<string>; tone: TallyTone }) {
+  return (
+    <div class="ledger grouped-ledger">
+      {groupByAlbum(codes).map((group) => (
+        <div class="grp" key={group.label}>
+          <div class="grp-head">
+            <span class="grp-name">{group.label}</span>
+            <span class={`grp-count grp-count-${tone}`}>
+              {tone === 'need'
+                ? pt.trade.groupFaltam(group.entries.length)
+                : pt.trade.groupTenho(group.entries.length)}
+            </span>
+          </div>
+          {splitByTeam(group.entries).map((team) => (
+            <TeamTally key={team[0].teamCode} entries={team} tone={tone} />
+          ))}
+        </div>
+      ))}
     </div>
   );
 }

@@ -1891,26 +1891,22 @@ html.scan-active body {
   text-shadow: 2px 2px 0 var(--paper-edge);
 }
 
-/* "O que eu preciso": album groups collapsed inside one cream card; tap a group to expand its
-   missing codes. `.need-list` reuses `.ledger` for the card; rows below set their own dividers. */
-.need-grp-row {
+/* "Minhas repetidas" + "O que eu preciso": album groups stacked inside one cream `.ledger` card,
+   always expanded. Each group is a static header band (name + per-group count) over its team
+   tallies; a solid ink rule opens each group after the first, like a ruled trade slip. The last
+   tally of each group drops its divider via the shared `.tally:last-child` rule below. */
+.grp + .grp .grp-head {
+  border-top: 2px solid var(--ink);
+}
+.grp-head {
   display: flex;
-  align-items: center;
+  align-items: baseline;
   gap: 10px;
-  width: 100%;
-  padding: 12px 14px;
-  min-height: 48px;
-  background: transparent;
-  border: 0;
-  border-bottom: 1.5px dashed var(--kraft-deep);
-  font: inherit;
-  text-align: left;
-  cursor: pointer;
-}
-.need-grp-row.is-open {
+  padding: 9px 14px;
   background: var(--cream-dim);
+  border-bottom: 1.5px dashed var(--kraft-deep);
 }
-.ngname {
+.grp-name {
   font-family: var(--font-head);
   font-weight: 700;
   font-size: 1rem;
@@ -1918,30 +1914,21 @@ html.scan-active body {
   text-transform: uppercase;
   color: var(--ink);
 }
-.ngcount {
+.grp-count {
   margin-left: auto;
   font-family: var(--font-head);
   font-weight: 700;
   font-size: 0.8rem;
   letter-spacing: 0.04em;
   text-transform: uppercase;
+  white-space: nowrap;
+}
+/* need = green (a sticker you still want, mirrors "guardar"); have = neutral kraft (a spare). */
+.grp-count-need {
   color: var(--keep);
 }
-.need-grp-row.is-open .ngcount {
+.grp-count-have {
   color: var(--kraft-text);
-}
-.ngcaret {
-  color: var(--kraft-deep);
-  font-weight: 700;
-  font-size: 0.9rem;
-}
-/* expanded group: a faint inset panel holding the team tallies of an open "preciso" group */
-.need-open {
-  background: rgba(15, 60, 39, 0.04); /* faint inset under an open group (--paper-edge at 4%) */
-  border-bottom: 1.5px dashed var(--kraft-deep);
-}
-.need-list > :last-child {
-  border-bottom: 0; /* no leftover divider at the card's bottom edge (collapsed group OR sticker row) */
 }
 
 /* the ledger — cream card with dashed kraft dividers, like a paper trade slip */
