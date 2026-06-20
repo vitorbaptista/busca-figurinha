@@ -3,6 +3,34 @@
 Notable changes to the sticker scanner. Newest first. No formal releases yet (deploys on push to
 `main`), so entries are grouped by date. Keep this updated when you ship something notable.
 
+## 2026-06-20 — OCR: reconhecedor neural (codeNet) que supera o app nativo
+
+### Added
+- **Reconhecedor neural "codeNet" treinado 100% em JS (sem Python).** Uma CNN de posição-fixa
+  (multi-cabeça, por slot) que lê o código do recorte BRUTO em tons de cinza — sem a
+  binarização otsu que estilhaçava as pílulas de baixo contraste. Treinada em tfjs-node
+  (dados sintéticos da fonte Anton + recortes reais) e executada no browser via tfjs
+  (carregada sob demanda; modelo de 1,5 MB pré-cacheado p/ funcionar offline). Decodificação
+  closed-set sobre os 980 códigos + porta de confiança (posterior/margem/hipótese-nula) =
+  trava de 0 falso-positivo.
+- **Pipeline em conjunto (ensemble):** o codeNet roda primeiro; o reconhecedor clássico
+  (glifo + tesseract) é o fallback só quando o codeNet não resolve nada — somando os acertos
+  complementares dos dois (ambos com trava de FP).
+
+### Changed
+- **ROI retangular** (0.18,0.32,0.82,0.58) virou o padrão de detecção: é onde as pílulas
+  realmente aparecem nas capturas reais (a faixa inferior 0.67 lia 0%).
+
+### Results / caveats
+- No dataset real de frames do Pixel (medido por `npm run bench:pixel -- --engine=ensemble`):
+  **recall 78,7% no dataset inteiro — supera o nativo (75,46%)** na mesma métrica; FP por frame
+  0,6% (<3%); held-out VAL 72,7% / TEST 50,0% (a generalização honesta; o número do dataset
+  inteiro é inflado pelo split de treino). Pipeline implantado lia 0% aqui; o clássico, ~51%.
+- A VALIDAR no Pixel: latência (~177ms no desktop headless; deve cair no device com WebGL —
+  há quantização/poda disponíveis), 1 held FP (erro de dígito do tesseract SCO16→SCO18, limite
+  conhecido do clássico), alinhar a moldura/reticle com a ROI retangular, +3 MB no 1º load.
+  Detalhes em `docs/web-ocr-accuracy.md`.
+
 ## 2026-06-19 — Nova tela "Trocar" (montar e compartilhar troca)
 
 ### Added
