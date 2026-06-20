@@ -155,8 +155,9 @@ export const pt = {
     // Link into the Coleção screen, where ticking owned stickers shrinks this list.
     editNeed: 'Editar',
     needEmpty: 'Você já tem todas as figurinhas! 🎉',
-    // Collapsed group row: "faltam N" (N = missing stickers in the group, up to 80).
+    // Per-group count in the grouped ledger: "faltam N" (preciso) / "tenho N" (repetidas).
     groupFaltam: (n: number) => (n === 1 ? 'falta 1' : `faltam ${n}`),
+    groupTenho: (n: number) => (n === 1 ? 'tenho 1' : `tenho ${n}`),
 
     // Preview + actions
     previewTag: 'Prévia da mensagem',
