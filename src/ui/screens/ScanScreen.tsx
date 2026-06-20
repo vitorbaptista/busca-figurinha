@@ -387,6 +387,22 @@ export function ScanScreen({ session, collection, settings, onPersist, onFinish 
     return job;
   };
 
+  // ---------- Lock the document to the visible viewport while scanning ----------
+
+  useEffect(() => {
+    // The scanner is a full-viewport view that must NEVER scroll — the bottom verdict
+    // (GUARDAR / REPETIDA) has to stay on screen. The screen itself is height:100dvh +
+    // overflow:hidden, but that only clips ITS OWN content: the shared shell ancestors
+    // (#app/.app) are sized to height/min-height:100%, which on mobile is the LARGE
+    // (url-bar-hidden) viewport — taller than the visible area 100dvh tracks. So the
+    // DOCUMENT scrolled around the screen and the verdict fell below the fold. Pin the
+    // root to the dynamic viewport + lock its overflow (see html.scan-active in styles.css)
+    // for as long as the scanner is mounted; other (scrolling) screens are untouched.
+    const root = document.documentElement;
+    root.classList.add('scan-active');
+    return () => root.classList.remove('scan-active');
+  }, []);
+
   // ---------- OCR lifecycle (independent of which camera is active) ----------
 
   useEffect(() => {

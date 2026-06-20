@@ -12,13 +12,30 @@ Notable changes to the sticker scanner. Newest first. No formal releases yet (de
   histórico do navegador (o "Voltar" sai do app, não fica preso pulando entre abas). A tela de
   relatório é momentânea, então ao atualizar nela você volta para o "Escanear".
 
+## 2026-06-20 — Trocar: listas de figurinhas compactas (por seleção)
+
+### Changed
+- **As seções "Minhas repetidas" e "O que eu preciso" agora mostram as figurinhas agrupadas por
+  seleção, não uma linha por figurinha.** Antes, cada figurinha ocupava uma linha inteira (com nome e
+  botão) — com 100+ repetidas a lista virava uma rolagem enorme. Agora cada seleção vira um bloquinho
+  com a bandeira + nome + total e os números soltos lado a lado (ex.: **🇲🇽 México · 3 4 8 12 17**),
+  que quebram em várias colunas. Cabe num celular de 320px e dá pra varrer a lista de relance. As que
+  você **tem** (repetidas, "você dá") aparecem em quadradinhos preenchidos; as que **faltam**
+  ("preciso", "você pega") em quadradinhos tracejados — a forma diferencia, nunca só a cor.
+- **Tirar uma repetida da lista agora é só pela tela "✏️ Editar"** (o álbum inteiro, é só tocar na
+  figurinha). O botão "Já troquei" por linha saiu junto com as linhas; a edição ficou num lugar só.
+
 ## 2026-06-20 — Escanear: tela sem rolagem + leitura que não desiste
 
 ### Fixed
-- **A tela "Escanear" não precisa mais de rolagem.** O contêiner usava `min-height: 100vh`, e no
-  celular `100vh` é maior que a área visível (conta o espaço atrás da barra do navegador) — então o
-  veredito fixo da base caía abaixo da dobra. Agora a tela usa `100dvh` (altura visível real) +
-  `overflow: hidden`, com a área da câmera flexível, então tudo cabe sem rolar.
+- **A tela "Escanear" não precisa mais de rolagem (de verdade agora).** O contêiner usava
+  `min-height: 100vh`, e no celular `100vh` é maior que a área visível (conta o espaço atrás da barra
+  do navegador) — então o veredito fixo da base caía abaixo da dobra. A primeira correção pôs a tela
+  em `100dvh` + `overflow: hidden`, mas isso só recorta o conteúdo DELA: o documento em volta
+  continuava rolando, porque os ancestrais do app (`#app`/`.app`) usam `height/min-height: 100%`, que
+  no celular é a viewport GRANDE (sem a barra) — mais alta que a área visível. Agora, enquanto a tela
+  de escanear está montada, a raiz do documento é travada em `100dvh` + `overflow: hidden`, então
+  nada rola e o veredito (GUARDAR / REPETIDA) sempre aparece. As outras telas (que rolam) não mudam.
 
 ### Changed
 - **O leitor nunca desiste de uma figurinha — e o "lido ✓" só aparece quando lê de verdade.** Antes,
