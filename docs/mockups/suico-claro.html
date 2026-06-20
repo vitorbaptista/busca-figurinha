@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Troca Figurinhas — Copa 2026 · Suíço Claro</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800&family=Archivo+Narrow:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    /* True off-white, chroma near 0 */
+    --paper:#f4f4f3;
+    --paper-2:#fafafa;
+    --ink:#161616;
+    --ink-2:#6f6f6f;
+    --ink-3:#a0a0a0;
+    --line:#dcdcda;
+    --line-2:#c9c9c6;
+    /* one disciplined accent — Swiss red */
+    --accent:#e8240c;
+    --keep:#161616;       /* verdict relies on weight, not green */
+    --ok:#1f7a3d;         /* used only with text/icon */
+    --bezel:#0d0d0d;
+    --r:18px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{background:var(--paper);color:var(--ink);
+    font-family:'Archivo',system-ui,sans-serif;-webkit-font-smoothing:antialiased;}
+  body{padding:40px 24px 80px;}
+
+  /* ---------- Page header band ---------- */
+  .masthead{max-width:1320px;margin:0 auto 44px;border-top:3px solid var(--ink);}
+  .masthead-row{display:grid;grid-template-columns:1fr;gap:0;padding-top:18px;}
+  @media(min-width:860px){.masthead-row{grid-template-columns:minmax(0,1fr) 460px;gap:64px;align-items:start}}
+  .kicker{font-family:'Archivo Narrow';font-weight:700;font-size:13px;letter-spacing:.12em;
+    text-transform:uppercase;color:var(--accent);display:flex;align-items:baseline;gap:14px;}
+  .kicker .app{color:var(--ink-2);}
+  .style-name{font-size:clamp(40px,7vw,76px);line-height:.94;font-weight:800;letter-spacing:-.025em;
+    margin:10px 0 0;}
+  .style-name em{font-style:normal;color:var(--accent);}
+  .rationale h2{font-family:'Archivo Narrow';font-weight:700;font-size:13px;letter-spacing:.1em;
+    text-transform:uppercase;color:var(--ink);padding-bottom:8px;margin-bottom:12px;
+    border-bottom:1px solid var(--line-2);}
+  .rationale p{font-size:15px;line-height:1.55;color:#2c2c2c;max-width:46ch;}
+
+  /* ---------- Phones layout ---------- */
+  .stage{max-width:1320px;margin:0 auto;display:flex;flex-wrap:wrap;gap:40px 48px;
+    justify-content:center;}
+  .col{width:390px;max-width:100%;}
+  .col-label{display:flex;align-items:baseline;justify-content:space-between;
+    border-bottom:1.5px solid var(--ink);padding-bottom:7px;margin-bottom:16px;}
+  .col-label .n{font-family:'Archivo Narrow';font-weight:700;font-size:12px;letter-spacing:.14em;
+    color:var(--accent);}
+  .col-label .t{font-weight:700;font-size:15px;letter-spacing:-.01em;}
+
+  /* ---------- Device frame ---------- */
+  .phone{width:390px;max-width:100%;height:840px;background:var(--bezel);border-radius:46px;
+    padding:11px;box-shadow:0 1px 0 #fff inset,0 26px 50px -28px rgba(0,0,0,.45);position:relative;}
+  .phone::after{content:"";position:absolute;left:50%;top:20px;transform:translateX(-50%);
+    width:108px;height:26px;background:#000;border-radius:14px;z-index:6;}
+  .screen{position:relative;width:100%;height:100%;background:var(--paper);border-radius:36px;
+    overflow:hidden;display:flex;flex-direction:column;}
+
+  /* ---------- Status bar ---------- */
+  .status{height:42px;flex:0 0 42px;display:flex;align-items:flex-end;justify-content:space-between;
+    padding:0 22px 6px;font-size:13px;font-weight:600;letter-spacing:-.01em;color:var(--ink);}
+  .status .right{display:flex;gap:6px;align-items:center;font-size:12px;}
+  .status.on-dark, .status.on-dark *{color:#fff;}
+
+  /* ---------- App chrome ---------- */
+  .appbar{display:flex;align-items:center;justify-content:space-between;padding:8px 20px 12px;}
+  .wordmark{font-family:'Archivo Narrow';font-weight:700;font-size:15px;letter-spacing:.04em;
+    text-transform:uppercase;display:flex;align-items:center;gap:8px;}
+  .wordmark .dot{width:9px;height:9px;background:var(--accent);display:inline-block;}
+  .appbar .meta{font-family:'Archivo Narrow';font-weight:600;font-size:12px;color:var(--ink-2);
+    letter-spacing:.06em;text-transform:uppercase;}
+
+  /* ================= SCREEN 1 — ESCANEAR ================= */
+  .s1{flex:1;display:flex;flex-direction:column;}
+  .viewport{position:relative;flex:1;background:#101010;overflow:hidden;}
+  /* camera "feed" — calm dark, fill-light vignette */
+  .feed{position:absolute;inset:0;
+    background:
+      radial-gradient(120% 90% at 50% 38%, #2a2a2c 0%, #1b1b1d 46%, #0c0c0d 100%);}
+  .feed::before{content:"";position:absolute;inset:0;
+    background:linear-gradient(115deg,rgba(255,255,255,.06),transparent 40%);}
+  .grain{position:absolute;inset:0;opacity:.05;
+    background-image:repeating-linear-gradient(0deg,#fff 0 1px,transparent 1px 3px);}
+  /* reticle */
+  .mira{position:absolute;left:50%;top:42%;transform:translate(-50%,-50%);
+    width:228px;height:150px;}
+  .mira .corner{position:absolute;width:30px;height:30px;border:2.5px solid #fff;}
+  .mira .tl{top:0;left:0;border-right:0;border-bottom:0;}
+  .mira .tr{top:0;right:0;border-left:0;border-bottom:0;}
+  .mira .bl{bottom:0;left:0;border-right:0;border-top:0;}
+  .mira .br{bottom:0;right:0;border-left:0;border-top:0;}
+  .mira .pill{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
+    background:#161616;color:#fff;border-radius:30px;padding:9px 18px;font-weight:700;
+    font-size:18px;letter-spacing:.06em;box-shadow:0 0 0 3px rgba(232,36,12,.9);}
+  .scanline{position:absolute;left:8px;right:8px;height:2px;background:var(--accent);top:14px;
+    animation:sweep 2.6s ease-in-out infinite;}
+  @keyframes sweep{0%,100%{top:14px}50%{top:134px}}
+  .hint{position:absolute;left:50%;top:calc(42% + 96px);transform:translateX(-50%);
+    color:#fff;font-weight:600;font-size:13px;letter-spacing:.01em;white-space:nowrap;
+    background:rgba(0,0,0,.42);padding:6px 13px;border-radius:20px;backdrop-filter:blur(2px);}
+  .flip{position:absolute;top:14px;right:14px;width:42px;height:42px;border-radius:50%;
+    background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.3);color:#fff;
+    display:flex;align-items:center;justify-content:center;font-size:18px;}
+  .counters{position:absolute;top:14px;left:14px;display:flex;gap:8px;}
+  .counter{background:rgba(0,0,0,.42);backdrop-filter:blur(2px);color:#fff;border-radius:10px;
+    padding:7px 11px;line-height:1;}
+  .counter b{font-size:18px;font-weight:800;letter-spacing:-.02em;}
+  .counter span{display:block;font-family:'Archivo Narrow';font-size:10px;letter-spacing:.1em;
+    text-transform:uppercase;opacity:.82;margin-top:3px;}
+  .counter.rep b{color:#ff9b8c;}
+
+  /* verdict slab — the hero */
+  .verdict{flex:0 0 auto;background:var(--accent);color:#fff;padding:22px 24px 20px;
+    position:relative;}
+  .verdict .row{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;}
+  .verdict .word{font-size:62px;line-height:.86;font-weight:800;letter-spacing:-.03em;}
+  .verdict .badge{flex:0 0 auto;border:2px solid #fff;border-radius:50%;width:46px;height:46px;
+    display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:800;
+    margin-top:4px;}
+  .verdict .sub{margin-top:14px;display:flex;align-items:baseline;gap:14px;
+    border-top:1px solid rgba(255,255,255,.4);padding-top:11px;}
+  .verdict .code{font-size:24px;font-weight:800;letter-spacing:.02em;}
+  .verdict .team{font-family:'Archivo Narrow';font-weight:600;font-size:15px;letter-spacing:.02em;
+    text-transform:uppercase;opacity:.95;}
+  .verdict .flag{margin-left:auto;font-family:'Archivo Narrow';font-size:11px;font-weight:600;
+    letter-spacing:.1em;text-transform:uppercase;opacity:.85;align-self:flex-end;}
+
+  /* recent strip */
+  .recent{flex:0 0 auto;background:var(--paper);padding:13px 20px 16px;border-top:0;}
+  .recent .lbl{font-family:'Archivo Narrow';font-weight:700;font-size:11px;letter-spacing:.12em;
+    text-transform:uppercase;color:var(--ink-2);margin-bottom:9px;}
+  .recent ul{list-style:none;display:flex;flex-direction:column;}
+  .recent li{display:flex;align-items:baseline;justify-content:space-between;padding:8px 0;
+    border-top:1px solid var(--line);font-size:15px;}
+  .recent li:first-child{border-top:0;}
+  .recent li .c{font-weight:700;letter-spacing:.01em;}
+  .recent li .tag{font-family:'Archivo Narrow';font-weight:600;font-size:11px;letter-spacing:.08em;
+    text-transform:uppercase;color:var(--ink-2);}
+  .recent li .tag.nova{color:var(--accent);}
+
+  /* ================= SCREEN 2 — ÁLBUM ================= */
+  .s2{flex:1;overflow:hidden;display:flex;flex-direction:column;}
+  .scroll{flex:1;overflow:hidden;padding:0 20px;}
+  .progress-head{padding:4px 0 18px;border-bottom:2px solid var(--ink);margin-bottom:18px;}
+  .progress-head .big{display:flex;align-items:baseline;gap:10px;}
+  .progress-head .num{font-size:54px;font-weight:800;letter-spacing:-.03em;line-height:.9;}
+  .progress-head .den{font-size:22px;font-weight:600;color:var(--ink-2);}
+  .progress-head .lab{font-family:'Archivo Narrow';font-weight:600;font-size:12px;
+    letter-spacing:.08em;text-transform:uppercase;color:var(--ink-2);margin-left:auto;align-self:flex-end;}
+  .bar{height:10px;background:#e4e4e2;margin-top:14px;position:relative;}
+  .bar i{position:absolute;left:0;top:0;bottom:0;width:42%;background:var(--accent);}
+  .bar .pct{position:absolute;right:0;top:-22px;font-weight:700;font-size:13px;}
+
+  .group-h{display:flex;align-items:baseline;gap:10px;margin:2px 0 12px;}
+  .group-h .g{font-family:'Archivo Narrow';font-weight:700;font-size:13px;letter-spacing:.14em;
+    text-transform:uppercase;background:var(--ink);color:#fff;padding:4px 9px;}
+  .group-h .gt{font-size:13px;color:var(--ink-2);font-weight:500;}
+
+  .team{padding:13px 0;border-top:1px solid var(--line);}
+  .team:first-of-type{border-top:0;}
+  .team .tr{display:flex;align-items:center;gap:12px;}
+  .team .name{font-weight:700;font-size:16px;letter-spacing:-.01em;}
+  .team .frac{margin-left:auto;font-family:'Archivo Narrow';font-weight:700;font-size:14px;
+    letter-spacing:.04em;color:var(--ink-2);}
+  .team .done{color:var(--ok);font-weight:700;}
+  .team .chk{color:var(--ok);font-weight:800;}
+  .tbar{height:5px;background:#e4e4e2;margin-top:9px;position:relative;}
+  .tbar i{position:absolute;left:0;top:0;bottom:0;background:var(--ink);}
+  .tbar.full i{background:var(--ok);width:100%;}
+
+  /* expanded grid */
+  .expanded{margin-top:14px;}
+  .chips{display:grid;grid-template-columns:repeat(10,1fr);gap:6px;}
+  .chip{aspect-ratio:1;display:flex;align-items:center;justify-content:center;font-size:11px;
+    font-weight:700;position:relative;border-radius:4px;}
+  .chip.have{background:var(--ink);color:#fff;}
+  .chip.have::after{content:"✓";position:absolute;top:1px;right:3px;font-size:8px;color:#fff;opacity:.9;}
+  .chip.need{background:transparent;border:1.5px dashed var(--line-2);color:var(--ink-3);}
+  .chip-key{display:flex;gap:16px;margin-top:11px;font-family:'Archivo Narrow';font-size:11px;
+    font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-2);}
+  .chip-key span{display:flex;align-items:center;gap:6px;}
+  .key-have{width:14px;height:14px;background:var(--ink);border-radius:3px;position:relative;}
+  .key-have::after{content:"✓";position:absolute;inset:0;color:#fff;font-size:9px;
+    display:flex;align-items:center;justify-content:center;}
+  .key-need{width:14px;height:14px;border:1.5px dashed var(--line-2);border-radius:3px;}
+
+  .special-row{margin-top:16px;padding:13px 14px;background:var(--ink);color:#fff;
+    display:flex;align-items:center;gap:12px;}
+  .special-row .fwc{font-family:'Archivo Narrow';font-weight:800;letter-spacing:.12em;font-size:13px;
+    border:1.5px solid rgba(255,255,255,.6);padding:3px 8px;}
+  .special-row .lbl2{font-size:14px;font-weight:600;}
+  .special-row .frac2{margin-left:auto;font-family:'Archivo Narrow';font-weight:700;font-size:15px;
+    color:var(--accent);background:#fff;padding:3px 9px;}
+
+  /* ================= SCREEN 3 — TROCAR ================= */
+  .s3{flex:1;overflow:hidden;display:flex;flex-direction:column;padding:0 20px;}
+  .sec-h{font-family:'Archivo Narrow';font-weight:700;font-size:13px;letter-spacing:.1em;
+    text-transform:uppercase;color:var(--ink);padding:14px 0 9px;border-bottom:1.5px solid var(--ink);
+    display:flex;align-items:baseline;justify-content:space-between;}
+  .sec-h .qt{color:var(--ink-2);font-size:12px;letter-spacing:.06em;}
+  .dupes{list-style:none;margin-bottom:6px;}
+  .dupes li{display:flex;align-items:center;gap:12px;padding:11px 0;border-bottom:1px solid var(--line);}
+  .dupes .code{font-weight:700;font-size:17px;letter-spacing:.01em;width:88px;}
+  .dupes .cnt{margin-left:auto;font-family:'Archivo Narrow';font-weight:700;font-size:15px;
+    background:var(--ink);color:#fff;padding:3px 9px;letter-spacing:.04em;}
+  .dupes .qty{font-family:'Archivo Narrow';font-size:12px;font-weight:600;color:var(--ink-2);
+    letter-spacing:.06em;text-transform:uppercase;}
+  .need-list{list-style:none;display:flex;flex-wrap:wrap;gap:8px;padding:14px 0 4px;}
+  .need-list li{border:1.5px solid var(--accent);color:var(--accent);font-weight:700;
+    padding:7px 13px;font-size:15px;letter-spacing:.02em;}
+
+  /* preview card */
+  .preview{margin:16px 0 0;background:var(--paper-2);border:1px solid var(--line-2);padding:14px 15px;}
+  .preview .ph{display:flex;align-items:center;gap:8px;margin-bottom:9px;}
+  .preview .ph .wa{width:18px;height:18px;border-radius:50%;background:#25d366;display:inline-block;
+    position:relative;}
+  .preview .ph .wa::after{content:"";position:absolute;left:5px;top:5px;width:8px;height:8px;
+    border:1.5px solid #fff;border-radius:50%;border-bottom-color:transparent;transform:rotate(40deg);}
+  .preview .ph .who{font-weight:700;font-size:13px;}
+  .preview .ph .src{font-family:'Archivo Narrow';font-size:10px;letter-spacing:.08em;
+    text-transform:uppercase;color:var(--ink-2);margin-left:auto;}
+  .preview .msg{font-size:13.5px;line-height:1.5;color:#2a2a2a;}
+  .preview .msg b{font-weight:700;}
+
+  .actions{margin-top:auto;padding:16px 0 18px;display:flex;flex-direction:column;gap:10px;}
+  .btn{display:flex;align-items:center;justify-content:center;gap:10px;height:54px;
+    font-weight:700;font-size:17px;letter-spacing:.01em;border:1.5px solid var(--ink);}
+  .btn-primary{background:var(--accent);border-color:var(--accent);color:#fff;}
+  .btn-primary .wa{width:20px;height:20px;border-radius:50%;background:#fff;position:relative;}
+  .btn-primary .wa::after{content:"";position:absolute;left:5px;top:5px;width:9px;height:9px;
+    border:1.5px solid var(--accent);border-radius:50%;border-bottom-color:transparent;transform:rotate(40deg);}
+  .btn-ghost{background:transparent;color:var(--ink);}
+
+  /* tab bar shared */
+  .tabbar{flex:0 0 60px;display:flex;border-top:1px solid var(--line-2);background:var(--paper);}
+  .tabbar a{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
+    gap:3px;font-family:'Archivo Narrow';font-weight:600;font-size:10px;letter-spacing:.08em;
+    text-transform:uppercase;color:var(--ink-3);text-decoration:none;padding-bottom:6px;}
+  .tabbar a .ic{font-size:17px;line-height:1;}
+  .tabbar a.active{color:var(--ink);}
+  .tabbar a.active .ic{color:var(--accent);}
+  .tabbar a.active{box-shadow:inset 0 2px 0 var(--accent);}
+
+  .foot{max-width:1320px;margin:48px auto 0;border-top:1px solid var(--line-2);padding-top:14px;
+    display:flex;justify-content:space-between;font-family:'Archivo Narrow';font-size:11px;
+    font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3);}
+</style>
+</head>
+<body>
+
+  <header class="masthead">
+    <div class="masthead-row">
+      <div>
+        <div class="kicker">Mockup de estilo<span class="app">Troca Figurinhas · Copa 2026</span></div>
+        <h1 class="style-name">Suíço <em>Claro</em></h1>
+      </div>
+      <div class="rationale">
+        <h2>Por que este estilo serve o usuário</h2>
+        <p>Tela clara, grade rígida e uma única cor de destaque deixam a resposta acima de
+        tudo: o veredito GUARDAR/REPETIDA salta em vermelho mesmo sob sol forte, sem ruído ao
+        redor. A calma não é blandura, é foco. Tudo o que não é a resposta recua, então a
+        criança lê o resultado num piscar, com a mão tremendo na rua.</p>
+      </div>
+    </div>
+  </header>
+
+  <main class="stage">
+
+    <!-- ====================== SCREEN 1 ====================== -->
+    <section class="col">
+      <div class="col-label"><span class="n">ESCANEAR</span><span class="t">Leitura ao vivo</span></div>
+      <div class="phone"><div class="screen">
+        <div class="status on-dark">
+          <span>9:41</span>
+          <span class="right">5G · 84%</span>
+        </div>
+
+        <div class="s1">
+          <div class="viewport">
+            <div class="feed"></div>
+            <div class="grain"></div>
+
+            <div class="counters">
+              <div class="counter"><b>23</b><span>novas</span></div>
+              <div class="counter rep"><b>8</b><span>repetidas</span></div>
+            </div>
+            <div class="flip" title="Virar câmera">🔄</div>
+
+            <div class="mira">
+              <span class="corner tl"></span><span class="corner tr"></span>
+              <span class="corner bl"></span><span class="corner br"></span>
+              <div class="scanline"></div>
+              <div class="pill">CIV 12</div>
+            </div>
+            <div class="hint">Mostre o verso e segure parado</div>
+          </div>
+
+          <!-- HERO verdict -->
+          <div class="verdict">
+            <div class="row">
+              <div class="word">GUARDAR</div>
+              <div class="badge">✓</div>
+            </div>
+            <div class="sub">
+              <span class="code">CIV 12</span>
+              <span class="team">Costa do Marfim</span>
+              <span class="flag">Você precisa</span>
+            </div>
+          </div>
+
+          <div class="recent">
+            <div class="lbl">Últimas leituras</div>
+            <ul>
+              <li><span class="c">CIV 12</span><span class="tag nova">Nova</span></li>
+              <li><span class="c">BRA 04</span><span class="tag">Repetida</span></li>
+              <li><span class="c">ARG 11</span><span class="tag nova">Nova</span></li>
+            </ul>
+          </div>
+        </div>
+
+        <nav class="tabbar">
+          <a class="active"><span class="ic">◎</span>Escanear</a>
+          <a><span class="ic">▦</span>Álbum</a>
+          <a><span class="ic">⇄</span>Trocar</a>
+        </nav>
+      </div></div>
+    </section>
+
+    <!-- ====================== SCREEN 2 ====================== -->
+    <section class="col">
+      <div class="col-label"><span class="n">ÁLBUM</span><span class="t">Coleção</span></div>
+      <div class="phone"><div class="screen">
+        <div class="status">
+          <span>9:41</span>
+          <span class="right">5G · 84%</span>
+        </div>
+        <div class="appbar">
+          <div class="wordmark"><span class="dot"></span>Troca Figurinhas</div>
+          <div class="meta">Copa 2026</div>
+        </div>
+
+        <div class="s2"><div class="scroll">
+          <div class="progress-head">
+            <div class="big">
+              <span class="num">412</span><span class="den">/ 980</span>
+              <span class="lab">Faltam 568</span>
+            </div>
+            <div class="bar"><i></i><span class="pct">42%</span></div>
+          </div>
+
+          <div class="group-h"><span class="g">Grupo A</span><span class="gt">4 seleções</span></div>
+
+          <div class="team">
+            <div class="tr"><span class="name">Brasil</span><span class="frac">18 / 20</span></div>
+            <div class="tbar"><i style="width:90%"></i></div>
+          </div>
+
+          <div class="team">
+            <div class="tr"><span class="name">Argentina</span>
+              <span class="frac done">20 / 20 <span class="chk">✓</span> completa</span></div>
+            <div class="tbar full"><i></i></div>
+          </div>
+
+          <div class="team">
+            <div class="tr"><span class="name">França</span><span class="frac">12 / 20</span></div>
+            <div class="tbar"><i style="width:60%"></i></div>
+          </div>
+
+          <!-- expanded team -->
+          <div class="team">
+            <div class="tr"><span class="name">Costa do Marfim</span><span class="frac">9 / 20</span></div>
+            <div class="tbar"><i style="width:45%"></i></div>
+            <div class="expanded">
+              <div class="chips">
+                <div class="chip have">1</div><div class="chip have">2</div><div class="chip need">3</div>
+                <div class="chip have">4</div><div class="chip have">5</div><div class="chip need">6</div>
+                <div class="chip have">7</div><div class="chip need">8</div><div class="chip have">9</div>
+                <div class="chip need">10</div><div class="chip have">11</div><div class="chip need">12</div>
+                <div class="chip need">13</div><div class="chip have">14</div><div class="chip need">15</div>
+                <div class="chip need">16</div><div class="chip have">17</div><div class="chip need">18</div>
+                <div class="chip need">19</div><div class="chip need">20</div>
+              </div>
+              <div class="chip-key">
+                <span><i class="key-have"></i>Tenho</span>
+                <span><i class="key-need"></i>Falta</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="special-row">
+            <span class="fwc">FWC</span>
+            <span class="lbl2">Especiais</span>
+            <span class="frac2">6 / 20</span>
+          </div>
+        </div></div>
+
+        <nav class="tabbar">
+          <a><span class="ic">◎</span>Escanear</a>
+          <a class="active"><span class="ic">▦</span>Álbum</a>
+          <a><span class="ic">⇄</span>Trocar</a>
+        </nav>
+      </div></div>
+    </section>
+
+    <!-- ====================== SCREEN 3 ====================== -->
+    <section class="col">
+      <div class="col-label"><span class="n">TROCAR</span><span class="t">Compartilhar</span></div>
+      <div class="phone"><div class="screen">
+        <div class="status">
+          <span>9:41</span>
+          <span class="right">5G · 84%</span>
+        </div>
+        <div class="appbar">
+          <div class="wordmark"><span class="dot"></span>Troca Figurinhas</div>
+          <div class="meta">Minha lista</div>
+        </div>
+
+        <div class="s3">
+          <div class="sec-h">Minhas repetidas (para trocar)<span class="qt">8 figs</span></div>
+          <ul class="dupes">
+            <li><span class="code">BRA 04</span><span class="qty">repetida</span><span class="cnt">×3</span></li>
+            <li><span class="code">ARG 11</span><span class="qty">repetida</span><span class="cnt">×2</span></li>
+            <li><span class="code">FRA 07</span><span class="qty">repetida</span><span class="cnt">×2</span></li>
+            <li><span class="code">FWC 03</span><span class="qty">especial</span><span class="cnt">×1</span></li>
+          </ul>
+
+          <div class="sec-h">O que eu preciso<span class="qt">3 figs</span></div>
+          <ul class="need-list">
+            <li>CIV 12</li><li>MEX 15</li><li>JPN 02</li>
+          </ul>
+
+          <div class="preview">
+            <div class="ph"><span class="wa"></span><span class="who">Mensagem p/ o amigo</span>
+              <span class="src">Prévia</span></div>
+            <div class="msg">Oi! <b>Tenho p/ trocar:</b> BRA04 ×3, ARG11 ×2, FRA07 ×2, FWC03 ×1.
+            <b>Preciso:</b> CIV12, MEX15, JPN02. Bora trocar? 🔁</div>
+          </div>
+
+          <div class="actions">
+            <a class="btn btn-primary"><span class="wa"></span>Enviar no WhatsApp</a>
+            <a class="btn btn-ghost">Copiar lista</a>
+          </div>
+        </div>
+
+        <nav class="tabbar">
+          <a><span class="ic">◎</span>Escanear</a>
+          <a><span class="ic">▦</span>Álbum</a>
+          <a class="active"><span class="ic">⇄</span>Trocar</a>
+        </nav>
+      </div></div>
+    </section>
+
+  </main>
+
+  <footer class="foot">
+    <span>Suíço Claro — Swiss / International</span>
+    <span>Off-white · Archivo · um acento vermelho · grade rígida</span>
+  </footer>
+
+</body>
+</html>

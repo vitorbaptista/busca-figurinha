@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Troca Figurinhas — Verde &amp; Amarelo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Archivo:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  :root{
+    /* Canarinho triad */
+    --green-900:#063b22;
+    --green-800:#0a4d2c;
+    --green-700:#0e6638;
+    --green-600:#118744;
+    --green-500:#1aa253;
+    --green-field:#0c5a32;
+    --yellow:#ffd400;
+    --yellow-deep:#f2b705;
+    --yellow-soft:#fff0a8;
+    --blue:#1a2b6b;
+    --blue-700:#243a8f;
+    --blue-bright:#2f4fd6;
+    --cream:#fbf7e9;
+    --ink:#08240f;
+    --white:#ffffff;
+    --rep:#c8401f;        /* repetida - warm clay, readable */
+    --rep-deep:#9c2f12;
+  }
+
+  *{box-sizing:border-box;margin:0;padding:0}
+
+  body{
+    font-family:'Archivo',system-ui,sans-serif;
+    background:
+      radial-gradient(circle at 18% 8%, rgba(255,212,0,.16), transparent 42%),
+      radial-gradient(circle at 86% 92%, rgba(26,43,107,.34), transparent 46%),
+      linear-gradient(160deg,var(--green-800) 0%, var(--green-900) 60%, #042415 100%);
+    color:var(--white);
+    min-height:100vh;
+    padding:40px 20px 64px;
+    -webkit-font-smoothing:antialiased;
+  }
+
+  /* ---------- page header band ---------- */
+  .pagehead{
+    max-width:1280px;
+    margin:0 auto 40px;
+    position:relative;
+    border:3px solid var(--yellow);
+    border-radius:26px;
+    padding:34px 38px 32px;
+    background:
+      linear-gradient(115deg, rgba(8,45,26,.55), rgba(4,33,21,.85)),
+      repeating-linear-gradient(135deg, transparent 0 36px, rgba(255,212,0,.05) 36px 38px);
+    overflow:hidden;
+  }
+  .pagehead::after{
+    content:"";
+    position:absolute;right:-60px;top:-60px;width:240px;height:240px;
+    background:radial-gradient(circle, rgba(255,212,0,.22), transparent 70%);
+    pointer-events:none;
+  }
+  .kicker-row{display:flex;align-items:center;gap:14px;margin-bottom:10px}
+  .ball{width:30px;height:30px;border-radius:50%;background:var(--yellow);position:relative;flex:none;box-shadow:0 0 0 3px var(--green-900)}
+  .ball::before{content:"";position:absolute;inset:7px;border-radius:50%;background:var(--blue)}
+  .pagehead h1{
+    font-family:'Anton',sans-serif;
+    font-weight:400;
+    font-size:clamp(38px,6vw,68px);
+    line-height:.92;
+    letter-spacing:.5px;
+    text-transform:uppercase;
+    color:var(--white);
+  }
+  .pagehead h1 em{font-style:normal;color:var(--yellow)}
+  .pagehead .appname{
+    font-size:13px;font-weight:800;letter-spacing:.18em;text-transform:uppercase;
+    color:var(--yellow);
+  }
+  .rationale{
+    margin-top:18px;max-width:760px;
+  }
+  .rationale h2{
+    font-size:14px;font-weight:800;color:var(--yellow);margin-bottom:6px;
+  }
+  .rationale p{font-size:15.5px;line-height:1.6;color:#eafbef;font-weight:500}
+
+  /* ---------- phone rail ---------- */
+  .rail{
+    max-width:1320px;margin:0 auto;
+    display:flex;flex-wrap:wrap;gap:40px;justify-content:center;align-items:flex-start;
+  }
+  .phone{
+    width:390px;flex:none;
+    background:#03150c;
+    border-radius:46px;
+    padding:12px;
+    box-shadow:
+      0 0 0 2px rgba(255,212,0,.18),
+      0 40px 70px -28px rgba(0,0,0,.7);
+    position:relative;
+  }
+  .screen{
+    border-radius:36px;overflow:hidden;
+    height:816px;
+    background:var(--cream);
+    position:relative;
+    display:flex;flex-direction:column;
+  }
+  .label{
+    text-align:center;margin-top:16px;
+    font-size:12px;font-weight:800;letter-spacing:.16em;text-transform:uppercase;color:var(--yellow);
+  }
+
+  /* status bar */
+  .statusbar{
+    display:flex;justify-content:space-between;align-items:center;
+    padding:11px 22px 7px;font-size:13px;font-weight:700;flex:none;
+  }
+  .statusbar .dots{display:flex;gap:5px;align-items:center}
+  .statusbar .sig{display:inline-block;width:16px;height:11px;
+    background:linear-gradient(to right, currentColor 70%, rgba(0,0,0,.25) 70%);border-radius:1px}
+  .statusbar .batt{width:22px;height:11px;border:1.5px solid currentColor;border-radius:3px;position:relative;padding:1.5px}
+  .statusbar .batt::after{content:"";position:absolute;right:-3px;top:3px;width:2px;height:5px;background:currentColor;border-radius:0 1px 1px 0}
+  .statusbar .batt i{display:block;height:100%;width:78%;background:currentColor;border-radius:1px}
+
+  /* bottom tab bar */
+  .tabs{
+    flex:none;display:flex;background:var(--green-900);
+    padding:10px 8px calc(10px + env(safe-area-inset-bottom));
+    border-top:3px solid var(--yellow);
+  }
+  .tab{flex:1;text-align:center;color:#9fceb1;font-size:11px;font-weight:700;letter-spacing:.03em}
+  .tab .ic{display:block;font-size:21px;line-height:1;margin-bottom:3px}
+  .tab.active{color:var(--yellow)}
+
+  /* ============ SCREEN 1 — ESCANEAR ============ */
+  .s1{background:#04130b;color:var(--white)}
+  .s1 .statusbar{color:var(--white)}
+  .cam{
+    position:relative;flex:1;overflow:hidden;
+    background:
+      radial-gradient(circle at 50% 38%, #16412a 0%, #0a2718 55%, #051710 100%);
+  }
+  /* faint sticker render */
+  .sticker-ghost{
+    position:absolute;left:50%;top:38%;transform:translate(-50%,-50%) rotate(-3deg);
+    width:178px;height:230px;border-radius:12px;
+    background:linear-gradient(150deg,#cfd6c2,#aeb79c);
+    box-shadow:0 18px 40px rgba(0,0,0,.45);opacity:.9;
+  }
+  .sticker-ghost::before{
+    content:"PANINI";position:absolute;top:14px;left:0;right:0;text-align:center;
+    font-family:'Anton';font-size:13px;letter-spacing:3px;color:#5d6b4d;opacity:.6;
+  }
+  .sticker-ghost .pill{
+    position:absolute;left:50%;bottom:22px;transform:translateX(-50%);
+    background:#1c2417;color:#e9eddf;font-family:'Anton';font-size:15px;letter-spacing:2px;
+    padding:5px 13px;border-radius:5px;
+  }
+  /* reticle */
+  .mira{
+    position:absolute;left:50%;top:38%;transform:translate(-50%,-50%);
+    width:236px;height:288px;border-radius:18px;pointer-events:none;
+  }
+  .mira span{position:absolute;width:38px;height:38px;border:4px solid var(--yellow);border-radius:4px}
+  .mira span:nth-child(1){top:-3px;left:-3px;border-right:0;border-bottom:0}
+  .mira span:nth-child(2){top:-3px;right:-3px;border-left:0;border-bottom:0}
+  .mira span:nth-child(3){bottom:-3px;left:-3px;border-right:0;border-top:0}
+  .mira span:nth-child(4){bottom:-3px;right:-3px;border-left:0;border-top:0}
+  .scanline{
+    position:absolute;left:6px;right:6px;height:3px;border-radius:3px;top:14%;
+    background:linear-gradient(90deg,transparent,var(--yellow),transparent);
+    opacity:.85;
+    animation:scan 2.4s ease-in-out infinite;
+  }
+  @keyframes scan{0%,100%{top:10%}50%{top:86%}}
+
+  .hint{
+    position:absolute;left:50%;top:calc(38% + 168px);transform:translateX(-50%);
+    background:rgba(4,19,11,.78);border:1.5px solid rgba(255,212,0,.5);
+    color:#fff;font-size:13.5px;font-weight:600;
+    padding:8px 16px;border-radius:999px;white-space:nowrap;backdrop-filter:blur(2px);
+  }
+
+  /* top hud */
+  .hud{
+    position:absolute;top:12px;left:14px;right:14px;display:flex;justify-content:space-between;align-items:flex-start;gap:8px;
+  }
+  .counters{display:flex;gap:8px}
+  .counter{
+    background:rgba(4,19,11,.7);border:1.5px solid rgba(255,255,255,.14);
+    border-radius:12px;padding:7px 12px;text-align:center;backdrop-filter:blur(3px);
+  }
+  .counter b{display:block;font-family:'Anton';font-size:22px;line-height:1}
+  .counter.new b{color:var(--yellow)}
+  .counter.rep b{color:#ffb59c}
+  .counter span{font-size:10.5px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:#cfe6d6}
+  .flip{
+    width:46px;height:46px;border-radius:50%;flex:none;
+    background:rgba(4,19,11,.7);border:1.5px solid rgba(255,255,255,.2);
+    color:var(--yellow);font-size:21px;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(3px);
+  }
+
+  /* VERDICT hero */
+  .verdict{
+    position:absolute;left:14px;right:14px;bottom:118px;
+    border-radius:24px;overflow:hidden;
+    box-shadow:0 -10px 40px rgba(0,0,0,.5);
+    animation:pop .34s cubic-bezier(.16,1,.3,1) both;
+  }
+  @keyframes pop{from{transform:translateY(16px) scale(.96);opacity:0}to{transform:none;opacity:1}}
+  .verdict-top{
+    background:linear-gradient(135deg,var(--green-500),var(--green-700));
+    padding:20px 22px 18px;position:relative;
+    border:3px solid var(--yellow);border-bottom:0;
+    border-radius:24px 24px 0 0;
+  }
+  .verdict-top::after{
+    content:"⚽";position:absolute;right:18px;top:14px;font-size:30px;filter:drop-shadow(0 2px 3px rgba(0,0,0,.4))
+  }
+  .verdict-tag{font-size:12px;font-weight:800;letter-spacing:.16em;text-transform:uppercase;color:#d9ffe6}
+  .verdict-top h2{
+    font-family:'Anton';font-size:64px;line-height:.86;letter-spacing:1px;color:#fff;margin:2px 0 4px;
+    text-shadow:0 3px 0 rgba(0,0,0,.18);
+  }
+  .verdict-sub{font-size:14px;font-weight:600;color:#eafff1}
+  .verdict-meta{
+    background:#04130b;border:3px solid var(--yellow);border-top:0;border-radius:0 0 24px 24px;
+    display:flex;align-items:center;gap:14px;padding:13px 22px;
+  }
+  .codechip{
+    font-family:'Anton';font-size:26px;letter-spacing:2px;color:#04130b;
+    background:var(--yellow);padding:6px 14px;border-radius:8px;
+  }
+  .verdict-meta .team{font-size:16px;font-weight:700;color:#fff}
+  .verdict-meta .team small{display:block;font-size:11px;font-weight:600;color:#9fceb1;letter-spacing:.04em;text-transform:uppercase}
+
+  /* recent strip */
+  .recent{
+    position:absolute;left:0;right:0;bottom:14px;padding:0 14px;
+  }
+  .recent .rt{font-size:11px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:#9fceb1;margin-bottom:7px;padding-left:2px}
+  .recent .row{display:flex;gap:8px;overflow:hidden}
+  .pillread{
+    flex:none;display:flex;align-items:center;gap:7px;
+    background:rgba(4,19,11,.66);border:1.5px solid rgba(255,255,255,.14);
+    border-radius:999px;padding:6px 12px 6px 8px;font-size:12.5px;font-weight:700;
+  }
+  .pillread .c{font-family:'Anton';letter-spacing:1px;font-size:13px}
+  .dot{width:8px;height:8px;border-radius:50%;flex:none}
+  .dot.n{background:var(--yellow)}
+  .dot.r{background:var(--rep)}
+  .pillread .st.n{color:var(--yellow)}
+  .pillread .st.r{color:#ffb59c}
+
+  /* ============ SCREEN 2 — ÁLBUM ============ */
+  .s2{background:var(--cream);color:var(--ink)}
+  .s2 .statusbar{color:var(--green-900)}
+  .s2 .scroll{flex:1;overflow:hidden;padding:0 18px 14px}
+  .alb-head{
+    background:linear-gradient(150deg,var(--green-600),var(--green-800));
+    color:#fff;border-radius:22px;padding:20px 20px 22px;margin:2px 0 18px;
+    border:3px solid var(--yellow);position:relative;overflow:hidden;
+  }
+  .alb-head::after{content:"";position:absolute;right:-30px;bottom:-40px;width:150px;height:150px;background:radial-gradient(circle,rgba(255,212,0,.22),transparent 70%)}
+  .alb-head .lab{font-size:12px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--yellow)}
+  .alb-head .big{font-family:'Anton';font-size:54px;line-height:.9;margin:4px 0 2px}
+  .alb-head .big small{font-family:'Archivo';font-size:20px;font-weight:700;color:#cdeed8}
+  .progress{height:16px;border-radius:999px;background:rgba(0,0,0,.28);margin-top:14px;overflow:hidden;border:1.5px solid rgba(255,255,255,.25)}
+  .progress i{display:block;height:100%;width:42%;border-radius:999px;background:linear-gradient(90deg,var(--yellow),var(--yellow-deep));position:relative}
+  .alb-head .falta{display:flex;justify-content:space-between;margin-top:8px;font-size:13px;font-weight:700;color:#eafff1}
+  .alb-head .falta b{color:var(--yellow)}
+
+  .grouphdr{
+    display:flex;align-items:center;gap:10px;margin:6px 0 12px;
+  }
+  .grouphdr .gtag{font-family:'Anton';font-size:22px;letter-spacing:1px;color:#fff;background:var(--blue);padding:4px 14px;border-radius:8px}
+  .grouphdr .line{flex:1;height:3px;background:repeating-linear-gradient(90deg,var(--green-600) 0 10px, transparent 10px 16px);border-radius:2px}
+
+  .team{
+    background:#fff;border:2px solid #e4e0cc;border-radius:16px;padding:12px 14px;margin-bottom:10px;
+  }
+  .team.done{border-color:var(--green-500);background:linear-gradient(120deg,#f3fff7,#fff)}
+  .team .tr{display:flex;align-items:center;justify-content:space-between;gap:10px}
+  .team .nm{font-size:16px;font-weight:800;color:var(--ink);display:flex;align-items:center;gap:8px}
+  .team .flagdot{width:22px;height:16px;border-radius:3px;flex:none;border:1px solid rgba(0,0,0,.12)}
+  .team .frac{font-family:'Anton';font-size:18px;letter-spacing:1px;color:var(--green-800)}
+  .team .frac.full{color:var(--green-600)}
+  .team .frac .chk{color:var(--green-600);font-size:14px;font-weight:900}
+  .tbar{height:9px;border-radius:999px;background:#ece8d6;margin-top:9px;overflow:hidden}
+  .tbar i{display:block;height:100%;border-radius:999px;background:linear-gradient(90deg,var(--green-500),var(--green-700))}
+  .tbar i.f{background:linear-gradient(90deg,var(--yellow-deep),var(--green-600))}
+
+  /* expanded grid */
+  .team.open{border-color:var(--yellow-deep);box-shadow:0 6px 18px -8px rgba(14,102,56,.4)}
+  .chipgrid{display:grid;grid-template-columns:repeat(5,1fr);gap:7px;margin-top:12px}
+  .chip{
+    aspect-ratio:1/1;border-radius:9px;display:flex;flex-direction:column;align-items:center;justify-content:center;
+    font-weight:800;font-size:13px;line-height:1;
+  }
+  .chip.have{background:var(--green-700);color:#fff;border:2px solid var(--green-700)}
+  .chip.have .mk{font-size:13px;color:var(--yellow);font-weight:900;margin-top:2px}
+  .chip.need{background:#fff;color:#8a8a72;border:2px dashed #c7c2a8}
+  .chip.need .mk{font-size:11px;color:#b3ad90;margin-top:2px;font-weight:700}
+
+  .specials{
+    margin-top:4px;background:linear-gradient(120deg,#fff7d6,#fff);
+    border:2px solid var(--yellow-deep);border-radius:16px;padding:12px 14px;
+    display:flex;align-items:center;justify-content:space-between;
+  }
+  .specials .nm{font-size:15px;font-weight:800;color:var(--green-900);display:flex;align-items:center;gap:8px}
+  .specials .star{font-size:18px}
+  .specials .frac{font-family:'Anton';font-size:18px;color:var(--yellow-deep);-webkit-text-stroke:.4px var(--green-900);letter-spacing:1px}
+
+  /* ============ SCREEN 3 — TROCAR ============ */
+  .s3{background:var(--green-field);color:#fff}
+  .s3 .statusbar{color:#fff}
+  .s3 .scroll{flex:1;overflow:hidden;padding:6px 18px 14px}
+  .s3 h2.sec{
+    font-family:'Anton';font-size:23px;letter-spacing:.5px;margin:14px 0 12px;color:#fff;display:flex;align-items:center;gap:9px;
+  }
+  .s3 h2.sec .ic{font-size:19px}
+  .s3 h2.sec.need{color:var(--yellow)}
+
+  .swap{
+    background:#fff;border-radius:14px;padding:11px 13px;margin-bottom:9px;
+    display:flex;align-items:center;justify-content:space-between;color:var(--ink);
+    border:2px solid transparent;
+  }
+  .swap .code{font-family:'Anton';font-size:21px;letter-spacing:1.5px;color:var(--green-900)}
+  .qty{
+    display:flex;align-items:center;gap:7px;font-weight:800;font-size:13px;color:var(--green-800);
+  }
+  .qty b{
+    font-family:'Anton';font-size:16px;background:var(--yellow);color:var(--green-900);
+    padding:3px 11px;border-radius:8px;letter-spacing:1px;
+  }
+  .swap.want{background:rgba(255,255,255,.1);border:1.5px dashed rgba(255,212,0,.6)}
+  .swap.want .code{color:#fff}
+  .swap.want .tagn{font-size:11px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--yellow);background:rgba(255,212,0,.16);padding:4px 10px;border-radius:999px}
+
+  /* share card preview */
+  .preview{
+    margin:16px 0 4px;border-radius:18px;overflow:hidden;
+    border:3px solid var(--yellow);
+  }
+  .preview .pv-h{
+    background:#075e35;padding:9px 14px;font-size:12px;font-weight:800;letter-spacing:.05em;
+    color:var(--yellow);display:flex;align-items:center;gap:8px;
+  }
+  .preview .pv-h .wa{width:18px;height:18px;border-radius:50%;background:#25d366;display:flex;align-items:center;justify-content:center;font-size:11px}
+  .preview .bubble{
+    background:#dcf8c6;color:#0c2114;padding:14px 15px 16px;font-size:13.5px;line-height:1.5;font-weight:500;position:relative;
+  }
+  .preview .bubble strong{color:#075e35}
+  .preview .bubble .hdr{font-weight:800;color:#063b22;margin-bottom:6px;display:block;font-size:14px}
+  .preview .bubble .time{display:block;text-align:right;font-size:10.5px;color:#5b7a59;margin-top:8px;font-weight:600}
+
+  .actions{padding:4px 18px calc(16px);}
+  .btn-wa{
+    display:flex;align-items:center;justify-content:center;gap:10px;width:100%;
+    background:#25d366;color:#04130b;font-family:'Archivo';font-weight:900;font-size:18px;
+    border:none;border-radius:16px;padding:16px;letter-spacing:.3px;
+    box-shadow:0 8px 0 #128c3e, 0 12px 24px -8px rgba(0,0,0,.5);
+  }
+  .btn-wa .ic{font-size:22px}
+  .btn-copy{
+    display:flex;align-items:center;justify-content:center;gap:9px;width:100%;margin-top:11px;
+    background:transparent;color:#fff;font-weight:700;font-size:15px;
+    border:2px solid rgba(255,212,0,.7);border-radius:14px;padding:13px;
+  }
+  .btn-copy .ic{color:var(--yellow);font-size:18px}
+
+  @media (max-width:520px){
+    .phone{width:100%;max-width:390px}
+    .pagehead{padding:24px}
+  }
+</style>
+</head>
+<body>
+
+  <header class="pagehead">
+    <div class="kicker-row">
+      <span class="ball"></span>
+      <span class="appname">Troca Figurinhas · Copa 2026</span>
+    </div>
+    <h1>Verde <em>&amp;</em> Amarelo</h1>
+    <div class="rationale">
+      <h2>Por que este estilo serve o usuário</h2>
+      <p>A camisa da Seleção é a interface mais reconhecível do Brasil — verde no campo, amarelo na
+      jogada decisiva, azul na profundidade. Quando o app grita <strong>GUARDAR</strong>, a criança
+      sente um gol: alegria instantânea, sem ler nada. As cores são tão familiares que o veredito é
+      lido num piscar de olho, mesmo em tela pequena ao sol do recreio.</p>
+    </div>
+  </header>
+
+  <div class="rail">
+
+    <!-- ============ SCREEN 1 — ESCANEAR ============ -->
+    <div>
+      <div class="phone">
+        <div class="screen s1">
+          <div class="statusbar">
+            <span>9:41</span>
+            <span class="dots"><span class="sig"></span><span style="font-weight:800">5G</span><span class="batt"><i></i></span></span>
+          </div>
+
+          <div class="cam">
+            <div class="hud">
+              <div class="counters">
+                <div class="counter new"><b>23</b><span>novas</span></div>
+                <div class="counter rep"><b>8</b><span>repetidas</span></div>
+              </div>
+              <button class="flip" aria-label="Virar câmera">🔄</button>
+            </div>
+
+            <div class="sticker-ghost"><span class="pill">CIV 12</span></div>
+
+            <div class="mira">
+              <span></span><span></span><span></span><span></span>
+              <div class="scanline"></div>
+            </div>
+            <div class="hint">Mostre o verso e segure parado</div>
+
+            <!-- HERO VERDICT -->
+            <div class="verdict">
+              <div class="verdict-top">
+                <div class="verdict-tag">É sua? Guarda essa!</div>
+                <h2>GUARDAR</h2>
+                <div class="verdict-sub">Figurinha nova na sua coleção</div>
+              </div>
+              <div class="verdict-meta">
+                <span class="codechip">CIV 12</span>
+                <span class="team">Costa do Marfim<small>Grupo F</small></span>
+              </div>
+            </div>
+
+            <div class="recent">
+              <div class="rt">Últimas leituras</div>
+              <div class="row">
+                <div class="pillread"><span class="dot n"></span><span class="c">CIV 12</span><span class="st n">nova</span></div>
+                <div class="pillread"><span class="dot r"></span><span class="c">BRA 04</span><span class="st r">repetida</span></div>
+                <div class="pillread"><span class="dot n"></span><span class="c">ARG 11</span><span class="st n">nova</span></div>
+              </div>
+            </div>
+          </div>
+
+          <nav class="tabs">
+            <div class="tab active"><span class="ic">📷</span>Escanear</div>
+            <div class="tab"><span class="ic">📒</span>Álbum</div>
+            <div class="tab"><span class="ic">🤝</span>Trocar</div>
+          </nav>
+        </div>
+      </div>
+      <div class="label">1 · Escanear</div>
+    </div>
+
+    <!-- ============ SCREEN 2 — ÁLBUM ============ -->
+    <div>
+      <div class="phone">
+        <div class="screen s2">
+          <div class="statusbar">
+            <span>9:41</span>
+            <span class="dots"><span class="sig"></span><span style="font-weight:800">5G</span><span class="batt"><i></i></span></span>
+          </div>
+
+          <div class="scroll">
+            <div class="alb-head">
+              <div class="lab">Meu álbum</div>
+              <div class="big">412<small> / 980</small></div>
+              <div class="progress"><i></i></div>
+              <div class="falta"><span>42% completo</span><span>Faltam <b>568</b></span></div>
+            </div>
+
+            <div class="grouphdr">
+              <span class="gtag">Grupo A</span>
+              <span class="line"></span>
+            </div>
+
+            <!-- Brasil (expanded) -->
+            <div class="team open">
+              <div class="tr">
+                <span class="nm"><span class="flagdot" style="background:linear-gradient(#159a3f 0 45%,#ffd400 45% 55%,#159a3f 55%)"></span>Brasil</span>
+                <span class="frac">18/20</span>
+              </div>
+              <div class="tbar"><i style="width:90%"></i></div>
+              <div class="chipgrid">
+                <div class="chip have">1<span class="mk">✓</span></div>
+                <div class="chip have">2<span class="mk">✓</span></div>
+                <div class="chip have">3<span class="mk">✓</span></div>
+                <div class="chip need">4<span class="mk">falta</span></div>
+                <div class="chip have">5<span class="mk">✓</span></div>
+                <div class="chip have">6<span class="mk">✓</span></div>
+                <div class="chip have">7<span class="mk">✓</span></div>
+                <div class="chip have">8<span class="mk">✓</span></div>
+                <div class="chip have">9<span class="mk">✓</span></div>
+                <div class="chip have">10<span class="mk">✓</span></div>
+                <div class="chip have">11<span class="mk">✓</span></div>
+                <div class="chip have">12<span class="mk">✓</span></div>
+                <div class="chip have">13<span class="mk">✓</span></div>
+                <div class="chip have">14<span class="mk">✓</span></div>
+                <div class="chip need">15<span class="mk">falta</span></div>
+                <div class="chip have">16<span class="mk">✓</span></div>
+                <div class="chip have">17<span class="mk">✓</span></div>
+                <div class="chip have">18<span class="mk">✓</span></div>
+                <div class="chip have">19<span class="mk">✓</span></div>
+                <div class="chip have">20<span class="mk">✓</span></div>
+              </div>
+            </div>
+
+            <!-- Argentina (complete) -->
+            <div class="team done">
+              <div class="tr">
+                <span class="nm"><span class="flagdot" style="background:linear-gradient(#74acdf 0 33%,#fff 33% 66%,#74acdf 66%)"></span>Argentina</span>
+                <span class="frac full">20/20 <span class="chk">✓ completa</span></span>
+              </div>
+              <div class="tbar"><i class="f" style="width:100%"></i></div>
+            </div>
+
+            <!-- França -->
+            <div class="team">
+              <div class="tr">
+                <span class="nm"><span class="flagdot" style="background:linear-gradient(90deg,#1a2b6b 0 33%,#fff 33% 66%,#c8401f 66%)"></span>França</span>
+                <span class="frac">12/20</span>
+              </div>
+              <div class="tbar"><i style="width:60%"></i></div>
+            </div>
+
+            <!-- Costa do Marfim -->
+            <div class="team">
+              <div class="tr">
+                <span class="nm"><span class="flagdot" style="background:linear-gradient(90deg,#f77f00 0 33%,#fff 33% 66%,#159a3f 66%)"></span>Costa do Marfim</span>
+                <span class="frac">9/20</span>
+              </div>
+              <div class="tbar"><i style="width:45%"></i></div>
+            </div>
+
+            <div class="specials">
+              <span class="nm"><span class="star">⭐</span>Especiais FWC</span>
+              <span class="frac">6/20</span>
+            </div>
+          </div>
+
+          <nav class="tabs">
+            <div class="tab"><span class="ic">📷</span>Escanear</div>
+            <div class="tab active"><span class="ic">📒</span>Álbum</div>
+            <div class="tab"><span class="ic">🤝</span>Trocar</div>
+          </nav>
+        </div>
+      </div>
+      <div class="label">2 · Álbum</div>
+    </div>
+
+    <!-- ============ SCREEN 3 — TROCAR ============ -->
+    <div>
+      <div class="phone">
+        <div class="screen s3">
+          <div class="statusbar">
+            <span>9:41</span>
+            <span class="dots"><span class="sig"></span><span style="font-weight:800">5G</span><span class="batt"><i></i></span></span>
+          </div>
+
+          <div class="scroll">
+            <h2 class="sec"><span class="ic">🔁</span>Minhas repetidas (para trocar)</h2>
+            <div class="swap"><span class="code">BRA 04</span><span class="qty">tenho <b>×3</b></span></div>
+            <div class="swap"><span class="code">ARG 11</span><span class="qty">tenho <b>×2</b></span></div>
+            <div class="swap"><span class="code">FRA 07</span><span class="qty">tenho <b>×2</b></span></div>
+            <div class="swap"><span class="code">FWC 03</span><span class="qty">tenho <b>×1</b></span></div>
+
+            <h2 class="sec need"><span class="ic">🎯</span>O que eu preciso</h2>
+            <div class="swap want"><span class="code">CIV 12</span><span class="tagn">procuro</span></div>
+            <div class="swap want"><span class="code">MEX 15</span><span class="tagn">procuro</span></div>
+            <div class="swap want"><span class="code">JPN 02</span><span class="tagn">procuro</span></div>
+
+            <div class="preview">
+              <div class="pv-h"><span class="wa">✆</span>Prévia do recado</div>
+              <div class="bubble">
+                <span class="hdr">Bora trocar figurinha? 🇧🇷</span>
+                Tenho p/ trocar: <strong>BRA04 ×3, ARG11 ×2, FRA07 ×2, FWC03 ×1</strong>.
+                Preciso: <strong>CIV12, MEX15, JPN02</strong>.
+                <span class="time">agora ✓✓</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="actions">
+            <button class="btn-wa"><span class="ic">✆</span>Enviar no WhatsApp</button>
+            <button class="btn-copy"><span class="ic">⧉</span>Copiar lista</button>
+          </div>
+
+          <nav class="tabs">
+            <div class="tab"><span class="ic">📷</span>Escanear</div>
+            <div class="tab"><span class="ic">📒</span>Álbum</div>
+            <div class="tab active"><span class="ic">🤝</span>Trocar</div>
+          </nav>
+        </div>
+      </div>
+      <div class="label">3 · Trocar</div>
+    </div>
+
+  </div>
+</body>
+</html>

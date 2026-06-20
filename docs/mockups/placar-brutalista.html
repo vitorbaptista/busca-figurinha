@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Placar Brutalista — Troca Figurinhas Copa 2026</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=DM+Mono:wght@400;500&family=Hanken+Grotesk:wght@500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#0a0a0a;
+    --paper:#f2f0e9;
+    --line:#0a0a0a;
+    --acc:#d6ff00;        /* electric lime — the ONE accent */
+    --acc-ink:#0a0a0a;
+    --dim:#3a3a36;
+    --panel:#ffffff;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{background:var(--ink);color:var(--ink)}
+  body{
+    font-family:'Hanken Grotesk',sans-serif;
+    background:
+      repeating-linear-gradient(0deg,transparent 0 38px, rgba(255,255,255,.03) 38px 39px),
+      var(--ink);
+    padding:32px 20px 80px;
+    -webkit-font-smoothing:antialiased;
+  }
+  .mono{font-family:'DM Mono',monospace}
+  .led{font-family:'Archivo Black',sans-serif;letter-spacing:-.02em;line-height:.82}
+
+  /* ---- HEADER BAND ---- */
+  .masthead{
+    max-width:1280px;margin:0 auto 36px;
+    border:3px solid var(--paper);
+    background:var(--ink);
+    color:var(--paper);
+  }
+  .masthead-top{
+    display:flex;justify-content:space-between;align-items:stretch;
+    border-bottom:3px solid var(--paper);
+  }
+  .mh-tag{
+    font-family:'DM Mono',monospace;font-size:12px;letter-spacing:.18em;
+    padding:10px 16px;border-right:3px solid var(--paper);
+    display:flex;align-items:center;white-space:nowrap;
+  }
+  .mh-live{
+    margin-left:auto;font-family:'DM Mono',monospace;font-size:12px;letter-spacing:.18em;
+    padding:10px 16px;border-left:3px solid var(--paper);
+    background:var(--acc);color:var(--acc-ink);display:flex;align-items:center;gap:8px;
+  }
+  .mh-live::before{content:"";width:9px;height:9px;background:var(--acc-ink);
+    animation:blink 1.1s steps(1) infinite}
+  @keyframes blink{50%{opacity:0}}
+  .masthead-body{padding:22px 18px 24px;display:flex;flex-wrap:wrap;gap:24px;align-items:flex-end}
+  .style-name{
+    font-family:'Archivo Black',sans-serif;
+    font-size:clamp(40px,7vw,86px);line-height:.84;letter-spacing:-.03em;
+    text-transform:uppercase;color:var(--paper);
+  }
+  .style-name b{color:var(--acc);-webkit-text-stroke:0}
+  .rationale{flex:1;min-width:280px;max-width:560px;border-left:3px solid var(--paper);padding-left:18px}
+  .rationale h2{
+    font-family:'DM Mono',monospace;font-size:12px;letter-spacing:.16em;
+    text-transform:uppercase;color:var(--acc);margin-bottom:8px;
+  }
+  .rationale p{font-size:14.5px;line-height:1.55;color:#d9d7cf}
+
+  /* ---- PHONE GRID ---- */
+  .stage{max-width:1280px;margin:0 auto;display:flex;flex-wrap:wrap;gap:34px;justify-content:center}
+  .phone{
+    width:390px;height:842px;flex:0 0 auto;
+    background:var(--ink);
+    border:4px solid var(--paper);
+    padding:9px;position:relative;
+  }
+  .phone::after{ /* device label */
+    content:attr(data-label);position:absolute;left:0;right:0;bottom:-30px;
+    text-align:center;font-family:'DM Mono',monospace;font-size:11px;letter-spacing:.22em;
+    color:var(--paper);
+  }
+  .screen{width:100%;height:100%;background:var(--paper);overflow:hidden;position:relative;
+    display:flex;flex-direction:column}
+
+  /* status bar */
+  .statusbar{
+    height:30px;flex:0 0 auto;background:var(--ink);color:var(--paper);
+    display:flex;align-items:center;justify-content:space-between;
+    padding:0 14px;font-family:'DM Mono',monospace;font-size:12px;letter-spacing:.05em;
+  }
+  .statusbar .sb-r{display:flex;gap:10px;align-items:center}
+
+  /* tab bar (bottom) */
+  .tabbar{
+    flex:0 0 auto;background:var(--ink);display:flex;border-top:3px solid var(--paper);
+  }
+  .tabbar a{
+    flex:1;text-align:center;padding:11px 4px 12px;text-decoration:none;
+    font-family:'DM Mono',monospace;font-size:11px;letter-spacing:.12em;
+    color:#8c8a83;border-right:1px solid #2a2a27;
+  }
+  .tabbar a:last-child{border-right:0}
+  .tabbar a .ic{display:block;font-size:17px;margin-bottom:3px;line-height:1}
+  .tabbar a.on{background:var(--acc);color:var(--acc-ink);font-weight:500}
+  .tabbar a.on .ic{color:var(--acc-ink)}
+
+  .body{flex:1 1 auto;overflow:hidden;display:flex;flex-direction:column;min-height:0}
+
+  /* ============ SCREEN 1 — ESCANEAR ============ */
+  .cam{
+    position:relative;flex:1 1 auto;min-height:0;
+    background:
+      repeating-linear-gradient(135deg,#1b1b18 0 9px,#161613 9px 18px);
+    overflow:hidden;
+  }
+  .cam-top{
+    position:absolute;top:0;left:0;right:0;z-index:4;
+    display:flex;justify-content:space-between;align-items:flex-start;padding:10px;
+  }
+  .counters{display:flex;gap:0;border:2px solid var(--paper)}
+  .ctr{padding:6px 11px;display:flex;flex-direction:column;align-items:center;line-height:1;background:rgba(10,10,10,.78)}
+  .ctr+.ctr{border-left:2px solid var(--paper)}
+  .ctr .n{font-family:'Archivo Black';font-size:22px;color:var(--paper)}
+  .ctr.pos .n{color:var(--acc)}
+  .ctr .l{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.14em;color:#cfcdc6;margin-top:4px}
+  .flip{
+    width:42px;height:42px;border:2px solid var(--paper);background:rgba(10,10,10,.78);
+    color:var(--paper);font-size:19px;display:flex;align-items:center;justify-content:center;
+  }
+
+  .reticle{
+    position:absolute;left:50%;top:43%;transform:translate(-50%,-50%);
+    width:230px;height:150px;z-index:2;
+  }
+  .reticle .corner{position:absolute;width:30px;height:30px;border:3px solid var(--acc)}
+  .reticle .c1{top:0;left:0;border-right:0;border-bottom:0}
+  .reticle .c2{top:0;right:0;border-left:0;border-bottom:0}
+  .reticle .c3{bottom:0;left:0;border-right:0;border-top:0}
+  .reticle .c4{bottom:0;right:0;border-left:0;border-top:0}
+  .reticle .scanline{position:absolute;left:0;right:0;height:2px;background:var(--acc);
+    top:0;animation:sweep 1.8s ease-in-out infinite}
+  @keyframes sweep{0%,100%{top:6%}50%{top:94%}}
+  .hint{
+    position:absolute;left:50%;top:calc(43% + 92px);transform:translateX(-50%);z-index:3;
+    background:var(--ink);color:var(--paper);font-family:'DM Mono',monospace;
+    font-size:11px;letter-spacing:.06em;padding:6px 10px;white-space:nowrap;border:1px solid var(--acc);
+  }
+
+  /* the verdict — the hero */
+  .verdict{
+    position:absolute;left:0;right:0;bottom:0;z-index:5;
+    background:var(--acc);color:var(--acc-ink);
+    border-top:4px solid var(--ink);
+    padding:14px 16px 16px;
+  }
+  .verdict .vrow{display:flex;justify-content:space-between;align-items:center;
+    font-family:'DM Mono',monospace;font-size:11px;letter-spacing:.16em;margin-bottom:2px}
+  .verdict .vrow .ok{background:var(--ink);color:var(--acc);padding:3px 7px}
+  .verdict .word{
+    font-family:'Archivo Black';font-size:74px;line-height:.86;letter-spacing:-.035em;
+    text-transform:uppercase;
+  }
+  .verdict .meta{display:flex;justify-content:space-between;align-items:flex-end;margin-top:6px;
+    border-top:2px solid var(--ink);padding-top:8px}
+  .verdict .code{font-family:'Archivo Black';font-size:30px;letter-spacing:.02em}
+  .verdict .team{font-family:'Hanken Grotesk';font-weight:700;font-size:16px;text-align:right;max-width:55%}
+
+  .strip{
+    flex:0 0 auto;background:var(--ink);padding:9px 10px 10px;
+  }
+  .strip h3{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.2em;color:#8c8a83;margin-bottom:7px}
+  .strip ul{list-style:none;display:flex;flex-direction:column;gap:0;border:1px solid #2a2a27}
+  .strip li{
+    display:flex;justify-content:space-between;align-items:center;
+    padding:7px 10px;border-bottom:1px solid #2a2a27;color:var(--paper);
+    font-family:'DM Mono',monospace;font-size:13px;letter-spacing:.04em;
+  }
+  .strip li:last-child{border-bottom:0}
+  .strip .tag{font-size:10px;letter-spacing:.14em;padding:2px 6px}
+  .strip .tag.nova{background:var(--acc);color:var(--acc-ink)}
+  .strip .tag.rep{border:1px solid #6d6b64;color:#b8b6af}
+
+  /* ============ SCREEN 2 — ÁLBUM ============ */
+  .scrollwrap{flex:1 1 auto;overflow-y:auto;background:var(--paper)}
+  .scrollwrap::-webkit-scrollbar{width:0}
+
+  .progblock{background:var(--ink);color:var(--paper);padding:16px 16px 18px}
+  .progblock .lbl{font-family:'DM Mono',monospace;font-size:11px;letter-spacing:.2em;color:#9c9a93}
+  .bigcount{font-family:'Archivo Black';font-size:78px;line-height:.82;letter-spacing:-.04em;margin:6px 0 2px}
+  .bigcount span{color:#54524c;font-size:46px}
+  .bigcount em{color:var(--acc);font-style:normal}
+  .progbar{height:20px;border:2px solid var(--paper);margin-top:12px;position:relative;background:#141411}
+  .progbar i{position:absolute;left:0;top:0;bottom:0;width:42%;
+    background:repeating-linear-gradient(135deg,var(--acc) 0 7px,#aacc00 7px 14px)}
+  .progmeta{display:flex;justify-content:space-between;font-family:'DM Mono',monospace;
+    font-size:12px;letter-spacing:.08em;margin-top:9px}
+  .progmeta .faltam{color:var(--acc)}
+
+  .grphead{
+    background:var(--acc);color:var(--acc-ink);
+    font-family:'Archivo Black';font-size:18px;letter-spacing:.02em;text-transform:uppercase;
+    padding:8px 16px;border-top:3px solid var(--ink);border-bottom:3px solid var(--ink);
+    display:flex;justify-content:space-between;align-items:center;
+  }
+  .grphead .gm{font-family:'DM Mono',monospace;font-size:11px;letter-spacing:.1em}
+
+  .team{border-bottom:2px solid var(--ink)}
+  .team-row{display:flex;align-items:center;gap:12px;padding:12px 16px;background:var(--panel)}
+  .team-row .nm{font-family:'Hanken Grotesk';font-weight:700;font-size:16px;flex:1}
+  .team-row .cnt{font-family:'Archivo Black';font-size:17px;letter-spacing:.01em}
+  .team-row .mini{width:64px;height:11px;border:2px solid var(--ink);position:relative;background:#fff}
+  .team-row .mini i{position:absolute;left:0;top:0;bottom:0;background:var(--ink)}
+  .team-row.done{background:var(--ink);color:var(--paper)}
+  .team-row.done .mini{border-color:var(--paper)}
+  .team-row.done .mini i{background:var(--acc);width:100%!important}
+  .team-row.done .chk{color:var(--acc);font-family:'DM Mono';font-size:11px;letter-spacing:.12em}
+
+  .chips{background:var(--paper);padding:13px 16px 16px;border-top:2px dashed var(--ink)}
+  .chips .ct{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.18em;color:var(--dim);margin-bottom:10px}
+  .grid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}
+  .chip{
+    aspect-ratio:1/1;border:2px solid var(--ink);display:flex;align-items:center;justify-content:center;
+    position:relative;font-family:'DM Mono',monospace;font-size:13px;background:#fff;color:var(--ink);
+  }
+  .chip.have{background:var(--ink);color:var(--acc)}
+  .chip.have::after{content:"✓";position:absolute;top:1px;right:3px;font-size:11px;color:var(--acc)}
+  .chip.have .num{color:var(--paper);font-weight:500}
+  .chip.need{border-style:dashed;color:#5a584f;background:#e7e5dd}
+  .chip.need::after{content:"·";position:absolute;top:-2px;right:5px;font-size:18px;color:#9a988f}
+
+  .fwc-row{display:flex;align-items:center;gap:12px;padding:12px 16px;background:var(--panel);
+    border-top:3px solid var(--ink);border-bottom:2px solid var(--ink)}
+  .fwc-row .star{font-family:'Archivo Black';font-size:13px;background:var(--ink);color:var(--acc);padding:3px 7px;letter-spacing:.06em}
+  .fwc-row .nm{font-family:'Hanken Grotesk';font-weight:700;font-size:16px;flex:1}
+  .fwc-row .cnt{font-family:'Archivo Black';font-size:17px}
+
+  /* ============ SCREEN 3 — TROCAR ============ */
+  .sec-h{
+    background:var(--ink);color:var(--paper);padding:13px 16px;
+    border-bottom:3px solid var(--ink);
+  }
+  .sec-h .k{font-family:'DM Mono',monospace;font-size:11px;letter-spacing:.2em;color:var(--acc)}
+  .sec-h .t{font-family:'Archivo Black';font-size:21px;letter-spacing:-.01em;margin-top:3px;text-transform:uppercase}
+
+  .trade-list{list-style:none}
+  .trade-list li{
+    display:flex;align-items:center;gap:12px;padding:13px 16px;
+    border-bottom:2px solid var(--ink);background:var(--panel);
+  }
+  .trade-list .cd{font-family:'Archivo Black';font-size:20px;flex:1;letter-spacing:.01em}
+  .trade-list .x{font-family:'Archivo Black';font-size:24px;background:var(--ink);color:var(--acc);
+    padding:4px 12px;min-width:54px;text-align:center}
+  .trade-list.need li .cd{color:var(--ink)}
+  .trade-list.need .pill{font-family:'DM Mono';font-size:11px;letter-spacing:.14em;
+    border:2px solid var(--ink);padding:4px 9px}
+
+  .preview{margin:0;padding:16px;background:var(--paper);border-bottom:3px solid var(--ink)}
+  .preview .pv-k{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.18em;color:var(--dim);margin-bottom:8px}
+  .pv-card{border:3px solid var(--ink);background:#fff}
+  .pv-head{background:var(--acc);color:var(--acc-ink);padding:7px 11px;
+    font-family:'DM Mono',monospace;font-size:11px;letter-spacing:.1em;
+    display:flex;justify-content:space-between;border-bottom:3px solid var(--ink)}
+  .pv-body{padding:11px;font-family:'DM Mono',monospace;font-size:12.5px;line-height:1.6;color:var(--ink)}
+  .pv-body b{font-weight:500}
+  .pv-body .lab{color:var(--dim)}
+
+  .actions{padding:16px;background:var(--ink);display:flex;flex-direction:column;gap:10px}
+  .btn-wa{
+    display:flex;align-items:center;justify-content:center;gap:10px;
+    background:var(--acc);color:var(--acc-ink);border:3px solid var(--paper);
+    font-family:'Archivo Black';font-size:19px;letter-spacing:-.01em;text-transform:uppercase;
+    padding:16px;text-decoration:none;
+  }
+  .btn-wa .wa{font-size:21px}
+  .btn-copy{
+    display:flex;align-items:center;justify-content:center;gap:8px;
+    background:transparent;color:var(--paper);border:2px solid var(--paper);
+    font-family:'DM Mono',monospace;font-size:13px;letter-spacing:.14em;text-transform:uppercase;
+    padding:12px;text-decoration:none;
+  }
+
+  @media (max-width:480px){
+    body{padding:18px 8px 60px}
+    .phone{transform:scale(.92);transform-origin:top center}
+  }
+</style>
+</head>
+<body>
+
+  <!-- ===== HEADER BAND ===== -->
+  <header class="masthead">
+    <div class="masthead-top">
+      <div class="mh-tag">TROCA FIGURINHAS · COPA 2026</div>
+      <div class="mh-live">ON-DEVICE · OFFLINE</div>
+    </div>
+    <div class="masthead-body">
+      <div class="style-name">PLACAR<br><b>BRUTALISTA</b></div>
+      <div class="rationale">
+        <h2>Por que este estilo serve o usuário</h2>
+        <p>A resposta é um placar: GUARDAR ou REPETIDA aparece gigante, em alto contraste, legível
+        no sol e à distância de um braço. Tipografia pesada e regras grossas viram o sistema inteiro
+        — nada de enfeite, só o número e o veredito. Funciona de relance, com uma mão, em qualquer
+        celular fraco, porque é um instrumento de leitura, não um app fofo.</p>
+      </div>
+    </div>
+  </header>
+
+  <!-- ===== PHONES ===== -->
+  <div class="stage">
+
+    <!-- ===================== SCREEN 1 — ESCANEAR ===================== -->
+    <div class="phone" data-label="01 · ESCANEAR">
+      <div class="screen">
+        <div class="statusbar">
+          <span>20:14</span>
+          <span class="sb-r"><span>5G</span><span>87%</span></span>
+        </div>
+
+        <div class="body">
+          <div class="cam">
+            <div class="cam-top">
+              <div class="counters">
+                <div class="ctr pos"><span class="n">23</span><span class="l">NOVAS</span></div>
+                <div class="ctr"><span class="n">8</span><span class="l">REPETIDAS</span></div>
+              </div>
+              <div class="flip" title="Trocar câmera">🔄</div>
+            </div>
+
+            <div class="reticle">
+              <div class="corner c1"></div><div class="corner c2"></div>
+              <div class="corner c3"></div><div class="corner c4"></div>
+              <div class="scanline"></div>
+            </div>
+            <div class="hint">Mostre o verso e segure parado</div>
+
+            <!-- HERO VERDICT -->
+            <div class="verdict">
+              <div class="vrow">
+                <span>VEREDITO</span>
+                <span class="ok">VOCÊ PRECISA ✓</span>
+              </div>
+              <div class="word">GUARDAR</div>
+              <div class="meta">
+                <span class="code">CIV 12</span>
+                <span class="team">Costa do Marfim</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="strip">
+            <h3>ÚLTIMAS LEITURAS</h3>
+            <ul>
+              <li><span>CIV 12</span><span class="tag nova">NOVA</span></li>
+              <li><span>BRA 04</span><span class="tag rep">REPETIDA</span></li>
+              <li><span>ARG 11</span><span class="tag nova">NOVA</span></li>
+            </ul>
+          </div>
+        </div>
+
+        <nav class="tabbar">
+          <a class="on" href="#"><span class="ic">▣</span>ESCANEAR</a>
+          <a href="#"><span class="ic">▤</span>ÁLBUM</a>
+          <a href="#"><span class="ic">⇄</span>TROCAR</a>
+        </nav>
+      </div>
+    </div>
+
+    <!-- ===================== SCREEN 2 — ÁLBUM ===================== -->
+    <div class="phone" data-label="02 · ÁLBUM">
+      <div class="screen">
+        <div class="statusbar">
+          <span>20:15</span>
+          <span class="sb-r"><span>5G</span><span>87%</span></span>
+        </div>
+
+        <div class="body">
+          <div class="scrollwrap">
+            <div class="progblock">
+              <div class="lbl">PROGRESSO DO ÁLBUM</div>
+              <div class="bigcount">412<span> / 980</span></div>
+              <div class="progbar"><i></i></div>
+              <div class="progmeta">
+                <span>42% COMPLETO</span>
+                <span class="faltam">FALTAM 568</span>
+              </div>
+            </div>
+
+            <div class="grphead">GRUPO A <span class="gm">4 SELEÇÕES</span></div>
+
+            <div class="team">
+              <div class="team-row">
+                <span class="nm">Brasil</span>
+                <span class="mini"><i style="width:90%"></i></span>
+                <span class="cnt">18/20</span>
+              </div>
+            </div>
+
+            <div class="team">
+              <div class="team-row done">
+                <span class="nm">Argentina</span>
+                <span class="chk">COMPLETA</span>
+                <span class="mini"><i></i></span>
+                <span class="cnt">20/20 ✓</span>
+              </div>
+            </div>
+
+            <div class="team">
+              <div class="team-row">
+                <span class="nm">França</span>
+                <span class="mini"><i style="width:60%"></i></span>
+                <span class="cnt">12/20</span>
+              </div>
+            </div>
+
+            <!-- expanded team -->
+            <div class="team">
+              <div class="team-row" style="background:var(--acc);">
+                <span class="nm">Costa do Marfim ▾</span>
+                <span class="mini"><i style="width:45%"></i></span>
+                <span class="cnt">9/20</span>
+              </div>
+              <div class="chips">
+                <div class="ct">✓ = TENHO · ⋯ = FALTA</div>
+                <div class="grid">
+                  <div class="chip have"><span class="num">1</span></div>
+                  <div class="chip have"><span class="num">2</span></div>
+                  <div class="chip need">3</div>
+                  <div class="chip have"><span class="num">4</span></div>
+                  <div class="chip have"><span class="num">5</span></div>
+                  <div class="chip need">6</div>
+                  <div class="chip have"><span class="num">7</span></div>
+                  <div class="chip need">8</div>
+                  <div class="chip have"><span class="num">9</span></div>
+                  <div class="chip have"><span class="num">10</span></div>
+                  <div class="chip need">11</div>
+                  <div class="chip need">12</div>
+                  <div class="chip need">13</div>
+                  <div class="chip have"><span class="num">14</span></div>
+                  <div class="chip need">15</div>
+                  <div class="chip have"><span class="num">16</span></div>
+                  <div class="chip need">17</div>
+                  <div class="chip need">18</div>
+                  <div class="chip need">19</div>
+                  <div class="chip need">20</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="fwc-row">
+              <span class="star">FWC</span>
+              <span class="nm">Especiais FWC</span>
+              <span class="mini" style="width:64px;height:11px;border:2px solid var(--ink);position:relative;display:inline-block">
+                <i style="position:absolute;left:0;top:0;bottom:0;background:var(--ink);width:30%"></i>
+              </span>
+              <span class="cnt">6/20</span>
+            </div>
+          </div>
+        </div>
+
+        <nav class="tabbar">
+          <a href="#"><span class="ic">▣</span>ESCANEAR</a>
+          <a class="on" href="#"><span class="ic">▤</span>ÁLBUM</a>
+          <a href="#"><span class="ic">⇄</span>TROCAR</a>
+        </nav>
+      </div>
+    </div>
+
+    <!-- ===================== SCREEN 3 — TROCAR ===================== -->
+    <div class="phone" data-label="03 · TROCAR">
+      <div class="screen">
+        <div class="statusbar">
+          <span>20:16</span>
+          <span class="sb-r"><span>5G</span><span>87%</span></span>
+        </div>
+
+        <div class="body">
+          <div class="scrollwrap">
+            <div class="sec-h">
+              <div class="k">PARA TROCAR</div>
+              <div class="t">Minhas repetidas</div>
+            </div>
+            <ul class="trade-list">
+              <li><span class="cd">BRA 04</span><span class="x">×3</span></li>
+              <li><span class="cd">ARG 11</span><span class="x">×2</span></li>
+              <li><span class="cd">FRA 07</span><span class="x">×2</span></li>
+              <li><span class="cd">FWC 03</span><span class="x">×1</span></li>
+            </ul>
+
+            <div class="sec-h">
+              <div class="k">ATRÁS DESTAS</div>
+              <div class="t">O que eu preciso</div>
+            </div>
+            <ul class="trade-list need">
+              <li><span class="cd">CIV 12</span><span class="pill">FALTA</span></li>
+              <li><span class="cd">MEX 15</span><span class="pill">FALTA</span></li>
+              <li><span class="cd">JPN 02</span><span class="pill">FALTA</span></li>
+            </ul>
+
+            <div class="preview">
+              <div class="pv-k">PRÉVIA DA MENSAGEM</div>
+              <div class="pv-card">
+                <div class="pv-head"><span>WHATSAPP</span><span>1 CARTÃO</span></div>
+                <div class="pv-body">
+                  <span class="lab">Tenho p/ trocar:</span><br>
+                  <b>BRA04 ×3 · ARG11 ×2 · FRA07 ×2 · FWC03 ×1</b><br><br>
+                  <span class="lab">Preciso:</span><br>
+                  <b>CIV12 · MEX15 · JPN02</b>
+                </div>
+              </div>
+            </div>
+
+            <div class="actions">
+              <a class="btn-wa" href="#"><span class="wa">✆</span>Enviar no WhatsApp</a>
+              <a class="btn-copy" href="#">⧉ COPIAR LISTA</a>
+            </div>
+          </div>
+        </div>
+
+        <nav class="tabbar">
+          <a href="#"><span class="ic">▣</span>ESCANEAR</a>
+          <a href="#"><span class="ic">▤</span>ÁLBUM</a>
+          <a class="on" href="#"><span class="ic">⇄</span>TROCAR</a>
+        </nav>
+      </div>
+    </div>
+
+  </div>
+</body>
+</html>
