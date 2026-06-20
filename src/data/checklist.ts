@@ -1,7 +1,8 @@
 import type { Checklist, ChecklistEntry, StickerType, TeamGroup } from '../types';
 
-// Official Panini FIFA World Cup 2026 album: 48 teams × 20 stickers + 20 special
-// "FWC" stickers = 980 total. Codes are FIFA 3-letter team abbreviations + number,
+// Official Panini FIFA World Cup 2026 album: 48 teams × 20 stickers + 20 special "FWC"
+// stickers = 980, plus 12 Coca-Cola exclusive "CC" stickers = 992 total. Codes are FIFA
+// 3-letter team abbreviations + number,
 // matching the codes printed on the back of each sticker (e.g. "CIV 12", "EGY 4").
 // Cross-verified across the official Panini pack-contents page and three secondary
 // checklists. Team names are Portuguese (Brazil edition). Edit here to correct data.
@@ -86,6 +87,16 @@ const ALBUM_GROUPS: { group: string; codes: string[] }[] = [
 const SPECIAL_NAME = 'Especiais';
 const SPECIAL_CODE = 'FWC';
 
+// Coca-Cola exclusive section: CC1..CC12. These are NOT in the regular packs — they only come
+// behind the peel-back label of specially marked Coca-Cola bottles, and the album has a dedicated
+// Coca-Cola page for them, so they count toward completing the album.
+// Players (CC1..CC12): Lamine Yamal, Joshua Kimmich, Harry Kane, Santiago Giménez, Antonee Robinson,
+// Jefferson Lerma, Edson Álvarez, Virgil van Dijk, Alphonso Davies, Weston McKennie,
+// Lautaro Martínez, Gabriel Magalhães.
+const COKE_NAME = 'Coca-Cola';
+const COKE_CODE = 'CC';
+const COKE_COUNT = 12;
+
 function teamEntries(team: RawTeam): ChecklistEntry[] {
   const entries: ChecklistEntry[] = [];
   for (let n = 1; n <= team.count; n++) {
@@ -112,6 +123,21 @@ function specialEntries(): ChecklistEntry[] {
       display: `${SPECIAL_CODE} ${n}`,
       teamCode: SPECIAL_CODE,
       teamName: SPECIAL_NAME,
+      number: n,
+      type: 'special',
+    });
+  }
+  return entries;
+}
+
+function cocaColaEntries(): ChecklistEntry[] {
+  const entries: ChecklistEntry[] = [];
+  for (let n = 1; n <= COKE_COUNT; n++) {
+    entries.push({
+      code: `${COKE_CODE}${n}`,
+      display: `${COKE_CODE} ${n}`,
+      teamCode: COKE_CODE,
+      teamName: COKE_NAME,
       number: n,
       type: 'special',
     });
@@ -146,8 +172,14 @@ function build(): Checklist {
     entries: specialEntries(),
   };
 
-  // Teams in album/group order, specials last.
-  const teams: TeamGroup[] = [...teamGroups, specials];
+  const cocaCola: TeamGroup = {
+    teamCode: COKE_CODE,
+    teamName: COKE_NAME,
+    entries: cocaColaEntries(),
+  };
+
+  // Teams in album/group order, specials then the Coca-Cola section last.
+  const teams: TeamGroup[] = [...teamGroups, specials, cocaCola];
 
   const entries = teams.flatMap((g) => g.entries);
   const byCode = new Map(entries.map((e) => [e.code, e]));

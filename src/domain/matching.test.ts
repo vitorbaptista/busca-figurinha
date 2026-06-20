@@ -139,7 +139,12 @@ describe('matchCode', () => {
     // the engine never drops a bold letter, the missing char can only be the thin
     // "I" — so "CV12" restores to CIV12 even though CPV12 also exists (reaching it
     // would require dropping a bold "P", which never happens).
-    expect(matchCode('CV12', checklist).entry?.code).toBe('CIV12');
+    const thinOnly = makeChecklist(['CIV12', 'CPV12']);
+    expect(matchCode('CV12', thinOnly).entry?.code).toBe('CIV12');
+    // NOTE: against the real baked-in checklist, "CV12" is now ambiguous — the
+    // Coca-Cola sticker "CC12" is a single substitution away (V→C), tying with the
+    // thin-letter restore to CIV12 — so the real list returns unknown (never guesses).
+    expect(matchCode('CV12', checklist).status).toBe('unknown');
     // A garbled-but-PRESENT middle char stays ambiguous: "C1V12" could be CIV12 or
     // CPV12 (we can't tell an "I" from a "P" in that slot).
     expect(matchCode('C1V12', checklist).status).toBe('unknown');
