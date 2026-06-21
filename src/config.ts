@@ -114,22 +114,13 @@ export const CONFIG = {
      *  recall on multi-up/tilted frames at crop-count cost. 0 → fall back to the plain upright+flip
      *  path (no jitter). */
     ttaMaxBoxes: 3 as number,
-    // (ttaJitters/ttaHighVotes/ttaMargin below are tuned for the <0.1% false-positive requirement.)
     /** Jitter variants per box (first N of [identity, upscale, downscale, shift+, shift−, vstretch]).
      *  The downscale variant (N≥3) is the high-value one — it rescues small/far pills. Each box
-     *  contributes ttaJitters upright crops + 1 flip, so crops ≈ ttaMaxBoxes·(ttaJitters+1). More
-     *  looks give a genuinely-read pill more high-confidence votes (clearing ttaHighVotes) while a
-     *  confident hallucination stays at 1 — so 4 lifts recall at fixed 0 FP; 6 starts re-admitting a
-     *  hallucination's 2nd correlated vote, so 4 is the knee. */
-    ttaJitters: 4 as number,
-    /** A code must be the argmax of ≥ this many crops (posterior ≥ttaSoft) to be eligible. */
+     *  contributes ttaJitters upright crops + 1 flip, so crops ≈ ttaMaxBoxes·(ttaJitters+1). */
+    ttaJitters: 3 as number,
+    /** A code must be the argmax of ≥ this many crops to be eligible (the agreement FP guard). */
     ttaVotes: 2 as number,
-    /** ...AND of ≥ this many HIGH-confidence crops (posterior ≥ttaHigh). This is the strongest guard
-     *  against confident hallucinations: the model emits a wrong code like GER4→EGY4@0.97 on only ONE
-     *  crop (the rest scatter), so requiring ≥2 high-confidence agreeing crops rejects it while a
-     *  genuinely-read pill clears it on several crops. The dominant false-positive lever. */
-    ttaHighVotes: 2 as number,
-    /** A crop "votes" for its code above this posterior; "high-votes" (the guard above) above ttaHigh. */
+    /** A crop "votes" for its code above this posterior; "high-votes" (the ranking key) above ttaHigh. */
     ttaSoft: 0.2,
     ttaHigh: 0.8,
     /** Accept gates on the winning code: peak single-crop posterior ≥ ttaPost AND peak margin
@@ -139,7 +130,7 @@ export const CONFIG = {
      *  forces the winning code to genuinely beat "nothing here" on at least one crop. Must match the
      *  value the accuracy bench validates at 0 FP. */
     ttaPost: 0.5,
-    ttaMargin: 1.0,
+    ttaMargin: 0.5,
   },
   match: {
     /** Max Levenshtein distance for an OCR token to snap to a real code. */

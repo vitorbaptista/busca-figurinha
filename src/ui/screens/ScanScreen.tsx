@@ -75,12 +75,9 @@ export function ScanScreen({
   const videoLayerRef = useRef<HTMLDivElement>(null);
   const ocrRef = useRef<OcrEngine | null>(null);
   const ocrInitRef = useRef<Promise<boolean> | null>(null);
-  // Neural recognizer (codeNet), lazy-loaded in the background. It is the ONLY committing recognizer
-  // (its multi-crop agreement gating holds the <0.1% false-positive bar); the classical hybrid commits
-  // only as a last resort if codeNet permanently fails to load. While codeNet is still loading we
-  // ABSTAIN rather than let the hybrid's tesseract digit-misreads commit a wrong code.
+  // Neural recognizer (codeNet), lazy-loaded in the background; the ensemble cascade uses it
+  // once ready and falls back to the hybrid alone until then / if it fails to load.
   const codeNetRef = useRef<CodeNet | null>(null);
-  const codeNetFailedRef = useRef(false);
   const sourceRef = useRef<ReturnType<typeof createCameraSource> | null>(null);
   const captureRef = useRef<AutoCapture | null>(null);
   const multiTimerRef = useRef<number | undefined>(undefined);
@@ -297,8 +294,7 @@ export function ScanScreen({
           });
         })
         .catch(() => {
-          /* codeNet unavailable (offline first-load, slow net, etc.) → classical last resort */
-          codeNetFailedRef.current = true;
+          /* codeNet unavailable (offline first-load, slow net, etc.) → hybrid-only */
         });
     }
     // Race init against a timeout so a blocked/slow CDN (school/kid networks) can't
@@ -357,20 +353,17 @@ export function ScanScreen({
         // OCR instead of ~11. The cross-frame confirmer still gathers every sticker in a
         // multi-sticker hold as the burst progresses; the single-shot debug-tap path keeps
         // stopOnFirstCode=false so one static frame of several backs surfaces them all.
-        // codeNet is the ONLY committing recognizer: the neural recognizer (reads the RAW grayscale
-        // crop) with multi-crop agreement voting, tuned for a <0.1% false-positive rate
-        // (CONFIG.codenet). The classical hybrid is NOT a fallback — its tesseract digit misreads
-        // (e.g. SCO16→SCO18, 0→9) are exactly the wrong-code commits we must avoid, and codeNet
-        // abstaining is preferable to a confident wrong read (a wrong sticker costs a real trade).
-        // While codeNet is still loading we ABSTAIN (no commit); the hybrid commits ONLY if codeNet
-        // permanently failed to load (rare: offline first-load) — a dead scanner is worse than its
-        // low classical FP rate, and after first load the model is precached so this never triggers.
+        // Ensemble cascade: the neural codeNet (reads the RAW grayscale crop, strong on the
+        // low-contrast pills) runs first; the classical hybrid is the fallback only when codeNet
+        // resolves nothing — combining their complementary hits. Both are 0-FP-gated. Until
+        // codeNet finishes loading (or if it failed), this is the hybrid alone.
         const cn = codeNetRef.current;
-        const out = cn?.ready()
+        let out = cn?.ready()
           ? await recognizeFrameCodeNet(cn, canvas, checklist, /* stopOnFirstCode */ opts.confirm)
-          : codeNetFailedRef.current
-            ? await recognizeFrameInOrder(ocr, canvas, checklist, opts.confirm)
-            : { resolved: [], reads: [], crops: 0, scoredReads: [] };
+          : await recognizeFrameInOrder(ocr, canvas, checklist, opts.confirm);
+        if (cn?.ready() && out.resolved.length === 0) {
+          out = await recognizeFrameInOrder(ocr, canvas, checklist, opts.confirm);
+        }
         const { resolved, reads, crops } = out;
         const rawText = reads.join(' | ');
 
