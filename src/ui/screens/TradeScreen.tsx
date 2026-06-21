@@ -1,8 +1,9 @@
 import { type ComponentChildren } from 'preact';
-import { useEffect, useState } from 'preact/hooks';
-import type { ChecklistEntry, CollectionStore } from '../../types';
+import { useEffect, useRef, useState } from 'preact/hooks';
+import type { ChecklistEntry, CollectionStore, SettingsStore } from '../../types';
 import { checklist } from '../../data/checklist';
 import { flagFor } from '../../data/flags';
+import { sanitizeName } from '../../domain/name';
 import type { TradePayload } from '../../domain/tradeList';
 import {
   toggleCode,
@@ -31,6 +32,8 @@ interface TradeScreenProps {
   repeats: CollectionStore;
   /** The user's wishlist (codes they want) — seeded when they tap a friend's spares on a shared link. */
   wants: CollectionStore;
+  /** App settings — used here to read/capture the user's name so every shared link is signed. */
+  settings: SettingsStore;
   /** A friend's decoded list, when the user arrived via a shared ?t= link. */
   friendPayload: TradePayload | null;
   onShare: (payload: TradePayload) => Promise<ShareTradesResult>;
@@ -53,6 +56,7 @@ export function TradeScreen({
   collection,
   repeats,
   wants,
+  settings,
   friendPayload,
   onShare,
   onClearFriend,
@@ -67,6 +71,37 @@ export function TradeScreen({
   const flash = (text: string) => {
     setNotice(text);
     window.setTimeout(() => setNotice(null), 2800);
+  };
+
+  // The current user's name (sanitized), signed into every outgoing link so the receiver sees who it's
+  // from. Read at share time. A one-time sheet captures it before the first share (see withName).
+  const userName = () => sanitizeName(settings.get().name) || undefined;
+
+  // One-time "Como te chamam?" capture, at the share moment (NOT onboarding — a ?t= friend skips it).
+  // `withName` runs `action` directly if a name is set or the user already chose to skip this session;
+  // otherwise it opens the sheet and runs the pending action once they save or skip.
+  const [namePrompted, setNamePrompted] = useState(false);
+  const [nameSheet, setNameSheet] = useState<{ run: () => void } | null>(null);
+  const [nameDraft, setNameDraft] = useState('');
+  // Latch so a synchronous double-tap on Salvar/Pular can't fire the pending share twice (state updates
+  // are async, so both taps would otherwise read a non-null nameSheet before the re-render clears it).
+  const resolvingRef = useRef(false);
+  const withName = (action: () => void) => {
+    if (sanitizeName(settings.get().name) || namePrompted) action();
+    else {
+      resolvingRef.current = false;
+      setNameDraft('');
+      setNameSheet({ run: action });
+    }
+  };
+  const resolveName = (save: boolean) => {
+    if (resolvingRef.current) return;
+    resolvingRef.current = true;
+    if (save) settings.set({ name: sanitizeName(nameDraft) });
+    setNamePrompted(true);
+    const pending = nameSheet?.run;
+    setNameSheet(null);
+    pending?.();
   };
 
   // Gate the first paint until both stores have hydrated from IndexedDB. A friend opening a shared
@@ -95,16 +130,24 @@ export function TradeScreen({
   const myPayload: TradePayload = {
     repeats: [...myRepeatCodes],
     missing: missingCodes,
+    name: userName(),
   };
 
+  // Read the name FRESH at send time (`userName()`), not from the render-captured `myPayload`: when the
+  // name sheet captures a name and then runs this share in the same tick, `settings.set` has already
+  // updated synchronously, so this first signed share carries the just-typed name.
   const share = async () => {
-    const result = await onShare(myPayload);
+    const result = await onShare({ ...myPayload, name: userName() });
     if (result === 'copied') flash(pt.trade.copied);
     else if (result === 'unavailable') flash(pt.trade.copyFail);
   };
 
   const copy = async () => {
-    flash((await copyTradeList(myPayload, checklist)) ? pt.trade.copied : pt.trade.copyFail);
+    flash(
+      (await copyTradeList({ ...myPayload, name: userName() }, checklist))
+        ? pt.trade.copied
+        : pt.trade.copyFail,
+    );
   };
 
   // The receiver tapped "tenho"/"quero" on a friend's link and hit Responder. DEFERRED WRITE: commit
@@ -119,7 +162,7 @@ export function TradeScreen({
     // The wishlist is persisted now so a returning user keeps it; surfacing it (a curated "preciso")
     // is a follow-up that pairs with the own-offer return screen — see issue #29.
     for (const code of want) wants.add(code);
-    void onShare(shareBackPayload(have, want)).then((result) => {
+    void onShare(shareBackPayload(have, want, userName())).then((result) => {
       if (result === 'unavailable') flash(pt.trade.copyFail);
     });
   };
@@ -139,20 +182,48 @@ export function TradeScreen({
     );
   }
 
+  // The one-time "Como te chamam?" sheet, rendered alongside whichever share surface is active.
+  const nameSheetEl = nameSheet ? (
+    <div class="name-overlay" role="dialog" aria-modal="true" aria-label={pt.trade.namePromptTitle}>
+      <div class="name-card">
+        <h2>{pt.trade.namePromptTitle}</h2>
+        <p>{pt.trade.namePromptText}</p>
+        <input
+          class="name-input"
+          type="text"
+          value={nameDraft}
+          maxLength={24}
+          placeholder={pt.trade.namePlaceholder}
+          autofocus
+          onInput={(e) => setNameDraft((e.currentTarget as HTMLInputElement).value)}
+        />
+        <button class="btn btn-primary btn-block" onClick={() => resolveName(true)}>
+          {pt.trade.namePromptSave}
+        </button>
+        <button class="link-btn name-skip" onClick={() => resolveName(false)}>
+          {pt.trade.namePromptSkip}
+        </button>
+      </div>
+    </div>
+  ) : null;
+
   // ---- A friend's shared list is open: the tappable two-way match ----
   if (friendPayload) {
     return (
-      <FriendMatch
-        // Keyed on the link so a different friend's payload forces a fresh mount (selections/responded
-        // never leak between links) rather than reusing this instance's one-shot state.
-        key={friendDraftKey(friendPayload)}
-        friendPayload={friendPayload}
-        myRepeatCodes={myRepeatCodes}
-        notice={notice}
-        onRespond={respondToFriend}
-        onClearFriend={onClearFriend}
-        onGoScan={onGoScan}
-      />
+      <>
+        <FriendMatch
+          // Keyed on the link so a different friend's payload forces a fresh mount (selections/responded
+          // never leak between links) rather than reusing this instance's one-shot state.
+          key={friendDraftKey(friendPayload)}
+          friendPayload={friendPayload}
+          myRepeatCodes={myRepeatCodes}
+          notice={notice}
+          onRespond={(have, want) => withName(() => respondToFriend(have, want))}
+          onClearFriend={onClearFriend}
+          onGoScan={onGoScan}
+        />
+        {nameSheetEl}
+      </>
     );
   }
 
@@ -260,13 +331,13 @@ export function TradeScreen({
         </div>
 
         <div class="trade-actions">
-          <button class="btn-wa" onClick={share}>
+          <button class="btn-wa" onClick={() => withName(share)}>
             <span class="wa" aria-hidden="true">
               📲
             </span>{' '}
             {pt.trade.shareWhats}
           </button>
-          <button class="btn-copy" onClick={copy}>
+          <button class="btn-copy" onClick={() => withName(copy)}>
             {pt.trade.copy}
           </button>
         </div>
@@ -279,6 +350,7 @@ export function TradeScreen({
           <p class="trade-qr-hint">{pt.trade.qrHint}</p>
         </section>
       </div>
+      {nameSheetEl}
     </div>
   );
 }
@@ -307,7 +379,9 @@ function FriendMatch({
   onClearFriend,
   onGoScan,
 }: FriendMatchProps) {
-  const friendName = friendPayload.name?.trim() || pt.trade.friendFallback;
+  // Sanitize the RECEIVED name too (a hand-crafted/old ?t= link could carry a huge or control-char
+  // name straight into the title) — reuses the same helper that cleans our own outgoing name.
+  const friendName = sanitizeName(friendPayload.name) || pt.trade.friendFallback;
   const draftKey = friendDraftKey(friendPayload);
 
   // Restore an in-progress draft (survives a low-end-Android WebView remount) only if it's for THIS

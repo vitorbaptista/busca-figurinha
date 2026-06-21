@@ -3,6 +3,13 @@
 Notable changes to the sticker scanner. Newest first. No formal releases yet (deploys on push to
 `main`), so entries are grouped by date. Keep this updated when you ship something notable.
 
+## 2026-06-21 — Trocar: sua lista vai assinada com seu nome
+
+### Added
+- **Agora dá pra botar seu nome**, e ele vai junto em toda lista que você compartilha — quem recebe vê
+  "Trocar com **Léo**" em vez de "seu amigo". Na primeira vez que você compartilhar, o app pergunta
+  *"Como te chamam?"* (dá pra pular). Pra mudar depois, tem o campo **"Seu nome"** lá nos **Ajustes**.
+
 ## 2026-06-20 — Instale na tela inicial: cara de app de verdade
 
 ### Added

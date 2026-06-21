@@ -188,6 +188,7 @@ export function App() {
           collection={collection}
           repeats={repeats}
           wants={wants}
+          settings={settings}
           friendPayload={friendPayload}
           onShare={(payload) => shareTrades(payload, checklist)}
           onClearFriend={() => setFriendPayload(null)}

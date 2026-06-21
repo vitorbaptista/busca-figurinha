@@ -127,6 +127,23 @@ export function SettingsScreen({
       )}
 
       <section class="settings-group">
+        <h2>{pt.settings.nameLabel}</h2>
+        <div class="settings-row">
+          <span class="settings-row-emoji">🙂</span>
+          <input
+            class="settings-name-input"
+            type="text"
+            maxLength={24}
+            value={current.name ?? ''}
+            placeholder={pt.settings.namePlaceholder}
+            aria-label={pt.settings.nameLabel}
+            onInput={(e) => settings.set({ name: (e.currentTarget as HTMLInputElement).value })}
+          />
+        </div>
+        <p class="settings-name-hint">{pt.settings.nameHint}</p>
+      </section>
+
+      <section class="settings-group">
         <h2>{pt.settings.data}</h2>
         <button class="settings-row settings-action" onClick={onExport}>
           <span class="settings-row-emoji">⬇️</span>
