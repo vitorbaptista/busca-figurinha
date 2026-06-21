@@ -111,8 +111,9 @@ export function createAutoCapture(deps: AutoCaptureDeps): AutoCapture {
         if (stillSince === null) stillSince = Date.now();
         else if (
           Date.now() - stillSince >= stabilityMs &&
-          // Cooldown: a "new" sticker sooner than this since the last read can't be a real
-          // swap — it's the same one re-triggering, so ignore it until enough time passes.
+          // Inter-scan cooldown: hold off starting the next burst until minRecaptureMs has elapsed
+          // since the last read — paces consecutive scans and stops the same sticker from
+          // re-registering before it's swapped.
           Date.now() - lastCaptureAt >= CONFIG.capture.minRecaptureMs
         ) {
           await capture();

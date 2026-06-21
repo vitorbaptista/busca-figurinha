@@ -1,9 +1,9 @@
 // The live burst can commit SEVERAL co-present stickers across the frames of ONE hold:
 // the confirmer reaches its threshold for each sticker on whatever frame it settles, so
 // stickers that share a hold often commit a frame or two apart. The commit cooldown
-// (CONFIG.capture.minRecaptureMs) exists to reject a SEPARATE hold that re-triggers the
-// SAME physical sticker too soon to be a real swap — NOT to suppress additional stickers
-// seen together in the same burst. So the cooldown gates only the FIRST commit of a
+// (CONFIG.capture.minRecaptureMs) paces consecutive scans: it rejects a SEPARATE hold that
+// re-triggers the SAME physical sticker sooner than that interval — NOT to suppress additional
+// stickers seen together in the same burst. So the cooldown gates only the FIRST commit of a
 // burst; once a burst has committed, the codes it confirms afterwards are genuinely
 // co-present and commit without the gate. The 2-frame confirmer (CONFIG.match.confirmations)
 // stays the within-burst guard against a transient misread.

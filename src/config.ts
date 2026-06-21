@@ -54,11 +54,12 @@ export const CONFIG = {
     burstFrames: 6,
     /** Small gap between burst frames so the preview can paint between reads. */
     burstIntervalMs: 35,
-    /** Minimum time between two consecutive captures (ms). A person needs more than this
-     *  to physically swap stickers, so a "new" read sooner than this is almost certainly the
-     *  SAME sticker re-triggering (a flicker re-arm) — bogus. The loop won't fire again until
-     *  this has elapsed since the last capture, on top of the motion re-arm. */
-    minRecaptureMs: 250,
+    /** Minimum time between two consecutive scans (ms) — a deliberate pace. After a sticker
+     *  reads, the loop won't start or commit the next scan until this elapses: the SAME sticker
+     *  can't re-register and the user gets a beat to see GUARDAR/REPETIDA before the next lands.
+     *  Also paces retries of a present-but-unread sticker (~one burst per interval). Gates only a
+     *  new hold's first commit — co-present stickers in one hold still post together. */
+    minRecaptureMs: 1000,
   },
   detect: {
     /** Restrict pill detection to a BOTTOM vertical band of the frame: rows

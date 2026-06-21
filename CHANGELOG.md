@@ -3,6 +3,13 @@
 Notable changes to the sticker scanner. Newest first. No formal releases yet (deploys on push to
 `main`), so entries are grouped by date. Keep this updated when you ship something notable.
 
+## 2026-06-21 — Escanear: uma pausinha entre uma figurinha e a próxima
+
+### Changed
+- Depois de ler uma figurinha, o app agora **espera ~1 segundo** antes de ler a próxima. Assim ele
+  não registra a mesma duas vezes sem querer e você tem um tempinho pra ver se deu **GUARDAR** ou
+  **REPETIDA** antes de trocar.
+
 ## 2026-06-21 — Coleção: importar a lista de outro app (sem escanear tudo de novo)
 
 ### Added
