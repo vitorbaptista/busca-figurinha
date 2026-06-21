@@ -89,7 +89,7 @@ export function ScanScreen({
   // Per-sticker agreement across the burst of frames; reset when a new sticker settles.
   const confirmerRef = useRef(createConfirmer(CONFIG.match.confirmations));
   // When the last live code committed — a guard so a "new" code sooner than minRecaptureMs
-  // (faster than a person can swap stickers) is dropped as bogus.
+  // (the deliberate inter-scan pace) is dropped as bogus.
   const lastCommitAtRef = useRef(0);
   // Whether the current burst (one sticker hold) has already committed a code. The commit
   // cooldown gates only a burst's FIRST commit, so co-present stickers that confirm a frame
@@ -381,12 +381,11 @@ export function ScanScreen({
           // confirmation (nothing new AND we've committed at least one).
           stopBurst = confirmerRef.current.committedCount() > 0 && newly.length === 0;
 
-          // Commit cooldown: a person can't swap stickers faster than minRecaptureMs, so a
-          // FRESH hold committing sooner than that after the last is almost certainly the SAME
-          // sticker re-triggering — drop it. But a second code confirmed LATER IN THE SAME
-          // burst is a genuinely co-present sticker (the confirmer settles them a frame apart),
-          // so the gate applies only to the burst's first commit; within-burst misreads are
-          // already rejected by the 2-frame confirmer.
+          // Commit cooldown (minRecaptureMs): a FRESH hold committing sooner than the inter-scan
+          // pace after the last commit is almost certainly the SAME sticker re-triggering — drop
+          // it. But a second code confirmed LATER IN THE SAME burst is a genuinely co-present
+          // sticker (the confirmer settles them a frame apart), so the gate applies only to the
+          // burst's first commit; within-burst misreads are already rejected by the 2-frame confirmer.
           if (toCommit.length > 0) {
             const now = Date.now();
             const state = {
