@@ -1,6 +1,13 @@
 import { pt } from '../i18n/pt';
 
-export type Screen = 'scan' | 'report' | 'collection' | 'trade' | 'repeats' | 'settings';
+export type Screen =
+  | 'scan'
+  | 'report'
+  | 'collection'
+  | 'trade'
+  | 'repeats'
+  | 'conferir'
+  | 'settings';
 
 interface NavProps {
   current: Screen;
@@ -16,8 +23,8 @@ const ITEMS: { screen: Screen; label: string; emoji: string }[] = [
 ];
 
 export function Nav({ current, onNavigate }: NavProps) {
-  // Report lives "inside" the scan flow — keep the Escanear tab highlighted there.
-  const active = current === 'report' ? 'scan' : current;
+  // Report lives "inside" the scan flow (Escanear tab); Conferir is launched from Trocar (Trocar tab).
+  const active = current === 'report' ? 'scan' : current === 'conferir' ? 'trade' : current;
 
   return (
     <nav class="nav">

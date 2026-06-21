@@ -3257,3 +3257,189 @@ html.scan-active body {
   color: var(--ink);
   margin: 0 0 16px;
 }
+
+/* ===== Conferir figurinhas (scan the other person's pile) ===== */
+/* Entry CTA at the top of Trocar */
+.conferir-cta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  text-align: left;
+  margin: 0 0 14px;
+  padding: 13px 15px;
+  background: var(--gold);
+  color: var(--ink);
+  border: 2.5px solid var(--ink);
+  border-radius: var(--radius);
+  box-shadow: 4px 4px 0 var(--paper-edge);
+  cursor: pointer;
+}
+.conferir-cta:active {
+  transform: translate(2px, 2px);
+  box-shadow: 2px 2px 0 var(--paper-edge);
+}
+.conferir-cta-emoji {
+  flex: none;
+  font-size: 1.7rem;
+}
+.conferir-cta-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.conferir-cta-text b {
+  font-family: var(--font-head);
+  font-weight: 700;
+  font-size: 1.02rem;
+  line-height: 1.1;
+}
+.conferir-cta-text small {
+  font-size: 0.82rem;
+  color: var(--kraft-text);
+}
+
+/* Back button in the camera top bar */
+.conferir-back {
+  background: rgba(15, 60, 39, 0.55);
+  color: var(--cream);
+  border: 1.5px solid var(--cream);
+  border-radius: var(--radius-pill);
+  font-family: var(--font-head);
+  font-weight: 700;
+  font-size: 0.85rem;
+  padding: 7px 14px;
+  min-height: 38px;
+  cursor: pointer;
+}
+.conferir-back:active {
+  transform: scale(0.96);
+}
+
+/* The Conferir verdict — docked card, mirrors the album .verdict but trade-framed (PEGA/DEIXA). */
+.conferir-verdict {
+  position: relative;
+  z-index: 5;
+  background: var(--keep);
+  border-top: 5px solid var(--ink);
+  padding: 16px 20px 18px;
+  color: var(--cream);
+  box-shadow: 0 -6px 0 rgba(15, 60, 39, 0.45), 0 -16px 22px rgba(0, 0, 0, 0.35);
+  animation: verdict-in 0.18s ease-out;
+}
+@media (prefers-reduced-motion: reduce) {
+  .conferir-verdict {
+    animation: none;
+  }
+}
+.conferir-verdict::before {
+  content: '';
+  position: absolute;
+  top: -5px;
+  left: 0;
+  right: 0;
+  height: 5px;
+  background: repeating-linear-gradient(90deg, var(--gold) 0 14px, var(--ink) 14px 22px);
+}
+.cv-head {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.cv-mark {
+  flex: none;
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  background: var(--gold);
+  color: var(--ink);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font);
+  font-weight: 700;
+  font-size: 1.6rem;
+  line-height: 1;
+  border: 3px solid var(--ink);
+  box-shadow: 3px 3px 0 var(--paper-edge);
+}
+.cv-word {
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: clamp(2.4rem, 12vw, 3.5rem);
+  line-height: 0.82;
+  text-transform: uppercase;
+  color: #fff;
+  letter-spacing: 0.005em;
+  text-shadow: 3px 3px 0 var(--paper-edge);
+}
+.cv-body {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 7px 11px;
+  margin-top: 13px;
+}
+.cv-code {
+  font-family: var(--font-head);
+  font-weight: 700;
+  font-size: 1.4rem;
+  letter-spacing: 0.02em;
+  background: var(--cream);
+  color: var(--ink);
+  padding: 3px 13px 2px;
+  border-radius: 6px;
+}
+.cv-team {
+  font-family: var(--font-head);
+  font-weight: 600;
+  font-size: 1.05rem;
+  color: var(--cream);
+}
+.cv-sub {
+  width: 100%;
+  font-size: 0.92rem;
+  color: rgba(244, 236, 216, 0.92);
+}
+/* take-friends keeps the keep-green surface but leads with the gold ribbon. */
+.cv-radar {
+  margin-top: 12px;
+  background: var(--gold);
+  color: var(--ink);
+  border: 2px solid var(--ink);
+  border-radius: var(--radius-pill);
+  padding: 8px 14px;
+  font-family: var(--font-head);
+  font-weight: 700;
+  font-size: 0.98rem;
+  text-align: center;
+  overflow-wrap: anywhere;
+  box-shadow: 0 2px 0 rgba(0, 0, 0, 0.28);
+}
+/* JÁ TENHO — calm dupe-toned skip card (nothing to grab). */
+.cv-skip {
+  background: var(--dupe);
+}
+.cv-skip .cv-mark {
+  background: var(--cream);
+}
+.cv-skip .cv-sub {
+  color: rgba(244, 236, 216, 0.92);
+}
+/* NÃO LI — neutral kraft miss (never red/green), carries the manual-entry escape. */
+.cv-miss {
+  background: var(--miss);
+  color: var(--ink);
+}
+.cv-miss .cv-mark {
+  background: var(--ink);
+  color: var(--miss);
+}
+.cv-miss .cv-word {
+  color: var(--ink);
+  text-shadow: none;
+}
+.cv-miss .cv-sub {
+  color: var(--kraft-text);
+}
