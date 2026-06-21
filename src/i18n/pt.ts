@@ -172,6 +172,13 @@ export const pt = {
     copied: 'Lista copiada!',
     copyFail: 'Não consegui copiar. Use “Enviar no WhatsApp”.',
 
+    // One-time "your name" capture at the share moment, so every link goes signed ("Trocar com o Léo").
+    namePromptTitle: 'Como te chamam?',
+    namePromptText: 'Pra galera saber quem mandou a lista. Dá pra mudar depois nos Ajustes.',
+    namePlaceholder: 'Seu nome ou apelido',
+    namePromptSave: 'Salvar e enviar',
+    namePromptSkip: 'Mandar sem nome',
+
     // QR Code — for trading in person: show it and the other person opens your list with the camera.
     qrTag: 'Trocar ao vivo',
     qrHint:
@@ -229,6 +236,9 @@ export const pt = {
 
   settings: {
     title: 'Ajustes',
+    nameLabel: 'Seu nome',
+    namePlaceholder: 'Seu nome ou apelido',
+    nameHint: 'Aparece pra quem recebe sua lista ("Trocar com Léo").',
     data: 'Meus dados',
     export: 'Exportar coleção',
     exportHint: 'Baixa um arquivo de backup com a sua coleção.',

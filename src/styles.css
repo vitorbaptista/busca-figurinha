@@ -2770,3 +2770,82 @@ html.scan-active body {
   opacity: 0.8;
   min-height: 1.2em;
 }
+
+/* ===== "Seu nome" — settings field + the one-time share-moment capture sheet ===== */
+.settings-name-input {
+  flex: 1;
+  min-width: 0;
+  font-family: var(--font);
+  font-size: 1rem;
+  color: var(--ink);
+  background: var(--cream);
+  border: 2px solid var(--ink);
+  border-radius: var(--radius-sm);
+  padding: 10px 12px;
+  min-height: 44px;
+}
+.settings-name-input::placeholder {
+  color: var(--kraft-text);
+}
+.settings-name-hint {
+  margin: 8px 2px 0;
+  font-size: 0.85rem;
+  color: var(--kraft-text);
+}
+
+.name-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 70;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  padding-bottom: calc(20px + var(--safe-bottom));
+  background: rgba(15, 60, 39, 0.62);
+}
+.name-card {
+  width: 100%;
+  max-width: 360px;
+  background: var(--cream);
+  color: var(--ink);
+  border: 3px solid var(--ink);
+  border-radius: var(--radius);
+  box-shadow: 6px 6px 0 var(--paper-edge);
+  padding: 20px 18px;
+}
+.name-card h2 {
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: 1.7rem;
+  text-transform: uppercase;
+  color: var(--paper);
+  margin: 0 0 6px;
+}
+.name-card p {
+  font-size: 0.9rem;
+  color: var(--kraft-text);
+  margin: 0 0 14px;
+}
+.name-input {
+  width: 100%;
+  font-family: var(--font);
+  font-size: 1.05rem;
+  color: var(--ink);
+  background: #fff;
+  border: 2px solid var(--ink);
+  border-radius: var(--radius-sm);
+  padding: 12px 13px;
+  min-height: 48px;
+  margin-bottom: 14px;
+}
+.name-input::placeholder {
+  color: var(--kraft-text);
+}
+.name-skip {
+  display: block;
+  width: 100%;
+  text-align: center;
+  margin-top: 10px;
+  min-height: 44px;
+}
