@@ -3,6 +3,21 @@
 Notable changes to the sticker scanner. Newest first. No formal releases yet (deploys on push to
 `main`), so entries are grouped by date. Keep this updated when you ship something notable.
 
+## 2026-06-20 — Trocar: quem abre seu link monta a troca tocando
+
+### Added
+- **Abriu o link de um amigo? Dá pra montar a troca na hora, sem escanear nada.** A tela mostra as
+  repetidas e as faltas do amigo: você toca **"quero"** no que serve pra você e **"tenho"** no que
+  você tem repetida, e um placar mostra na hora quantas figurinhas dá pra trocar ("Dá pra trocar
+  5!"). Tem ainda o atalho **"Quero todas dele"**. No **"Responder no WhatsApp"**, o que você marcou
+  fica salvo neste celular (o começo do seu álbum) e a troca combinada volta pro amigo como um link.
+- **Sua listinha de desejos fica guardada** no aparelho (entra no backup, some no "Apagar tudo"),
+  pra você voltar depois, montar o álbum e trocar com mais gente.
+
+### Changed
+- A tela de quem recebe um link deixou de ser só uma lista pra ler: agora é **tocável**, com placar
+  de troca ao vivo, e a barra de navegação fica escondida nela pra caber em telas pequenas (320px).
+
 ## 2026-06-20 — Trocar: títulos de seção fixos ao rolar
 
 ### Changed

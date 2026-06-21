@@ -1,9 +1,19 @@
-import { Fragment, type ComponentChildren } from 'preact';
+import { type ComponentChildren } from 'preact';
 import { useEffect, useState } from 'preact/hooks';
 import type { ChecklistEntry, CollectionStore } from '../../types';
 import { checklist } from '../../data/checklist';
 import { flagFor } from '../../data/flags';
-import { matchTrades, type TradePayload } from '../../domain/tradeList';
+import type { TradePayload } from '../../domain/tradeList';
+import {
+  toggleCode,
+  tradeScore,
+  shareBackPayload,
+  prefilledHave,
+  isEmptyFriendLink,
+  friendDraftKey,
+  serializeDraft,
+  parseDraft,
+} from '../../domain/friendTrade';
 import {
   previewTextFor,
   copyTradeList,
@@ -19,6 +29,8 @@ interface TradeScreenProps {
   collection: CollectionStore;
   /** The user's saved duplicates (tradeable spares). */
   repeats: CollectionStore;
+  /** The user's wishlist (codes they want) — seeded when they tap a friend's spares on a shared link. */
+  wants: CollectionStore;
   /** A friend's decoded list, when the user arrived via a shared ?t= link. */
   friendPayload: TradePayload | null;
   onShare: (payload: TradePayload) => Promise<ShareTradesResult>;
@@ -40,6 +52,7 @@ interface AlbumGroup {
 export function TradeScreen({
   collection,
   repeats,
+  wants,
   friendPayload,
   onShare,
   onClearFriend,
@@ -94,6 +107,23 @@ export function TradeScreen({
     flash((await copyTradeList(myPayload, checklist)) ? pt.trade.copied : pt.trade.copyFail);
   };
 
+  // The receiver tapped "tenho"/"quero" on a friend's link and hit Responder. DEFERRED WRITE: commit
+  // everything now (not on each tap) so a mis-tap that's never sent can't seed a ghost. "tenho" →
+  // repeats + owned (the spare-implies-ownership invariant); "quero" → the wishlist. The share-back is
+  // the COMBINED trade only (shareBackPayload), never the auto-computed matchTrades superset.
+  const respondToFriend = (have: string[], want: string[]) => {
+    for (const code of have) {
+      repeats.add(code);
+      collection.add(code);
+    }
+    // The wishlist is persisted now so a returning user keeps it; surfacing it (a curated "preciso")
+    // is a follow-up that pairs with the own-offer return screen — see issue #29.
+    for (const code of want) wants.add(code);
+    void onShare(shareBackPayload(have, want)).then((result) => {
+      if (result === 'unavailable') flash(pt.trade.copyFail);
+    });
+  };
+
   if (!loaded) {
     return (
       <div class="screen trade-screen">
@@ -109,16 +139,17 @@ export function TradeScreen({
     );
   }
 
-  // ---- A friend's shared list is open: show the two-way match ----
+  // ---- A friend's shared list is open: the tappable two-way match ----
   if (friendPayload) {
     return (
       <FriendMatch
+        // Keyed on the link so a different friend's payload forces a fresh mount (selections/responded
+        // never leak between links) rather than reusing this instance's one-shot state.
+        key={friendDraftKey(friendPayload)}
         friendPayload={friendPayload}
-        owned={owned}
         myRepeatCodes={myRepeatCodes}
-        hasMyRepeats={myRepeatEntries.length > 0}
         notice={notice}
-        onShareBack={share}
+        onRespond={respondToFriend}
         onClearFriend={onClearFriend}
         onGoScan={onGoScan}
       />
@@ -254,34 +285,139 @@ export function TradeScreen({
 
 interface FriendMatchProps {
   friendPayload: TradePayload;
-  owned: Set<string>;
   myRepeatCodes: Set<string>;
-  hasMyRepeats: boolean;
   notice: string | null;
-  onShareBack: () => void;
+  /** Commit the receiver's selections and share the combined trade back (deferred write, in TradeScreen). */
+  onRespond: (have: string[], want: string[]) => void;
   onClearFriend: () => void;
   onGoScan: () => void;
 }
 
+/** Single localStorage key holding the in-progress draft (one link at a time). */
+const DRAFT_KEY = 'tradeDraft';
+
+/** The tappable cold-receiver screen. Tap the friend's spares you want ("quero") and their needs you
+ *  have ("tenho"); a live scoreboard sums the trade; Responder commits the selections (deferred) and
+ *  shares the combined trade back. All the logic lives in domain/friendTrade (tested); this is wiring. */
 function FriendMatch({
   friendPayload,
-  owned,
   myRepeatCodes,
-  hasMyRepeats,
   notice,
-  onShareBack,
+  onRespond,
   onClearFriend,
   onGoScan,
 }: FriendMatchProps) {
   const friendName = friendPayload.name?.trim() || pt.trade.friendFallback;
-  const { iCanGet, iCanGive } = matchTrades({
-    me: { owned, repeats: myRepeatCodes },
-    friend: friendPayload,
-    checklist,
+  const draftKey = friendDraftKey(friendPayload);
+
+  // Restore an in-progress draft (survives a low-end-Android WebView remount) only if it's for THIS
+  // link, so a different friend's link never restores stale picks. Read once on mount (lazy init).
+  const [restored] = useState(() => {
+    if (typeof localStorage === 'undefined') return null;
+    const draft = parseDraft(localStorage.getItem(DRAFT_KEY));
+    return draft && draft.key === draftKey ? draft : null;
   });
 
+  // One-shot init is safe: TradeScreen only mounts FriendMatch after the `loaded` gate, so `repeats`
+  // are hydrated and prefilledHave is correct on first paint.
+  const [want, setWant] = useState<Set<string>>(() => new Set(restored?.want ?? []));
+  const [have, setHave] = useState<Set<string>>(
+    () => new Set(restored?.have ?? prefilledHave(friendPayload.missing, myRepeatCodes)),
+  );
+  const [responded, setResponded] = useState(false);
+
+  const saveDraft = (h: Set<string>, w: Set<string>) => {
+    if (typeof localStorage === 'undefined') return;
+    try {
+      localStorage.setItem(DRAFT_KEY, serializeDraft(draftKey, h, w));
+    } catch {
+      /* storage full/evicted — the draft is a nicety, not load-bearing. */
+    }
+  };
+  const clearDraft = () => {
+    if (typeof localStorage === 'undefined') return;
+    try {
+      localStorage.removeItem(DRAFT_KEY);
+    } catch {
+      /* ignore */
+    }
+  };
+
+  // Each toggle builds a NEW Set (toggleCode) — Preact bails on an in-place mutation and the chip
+  // would freeze. saveDraft uses the unchanged other set from this render's closure. Once responded,
+  // the selections are committed and the draft is cleared, so taps no-op (don't resurrect the draft).
+  const toggleWant = (code: string) => {
+    if (responded) return;
+    setWant((prev) => {
+      const next = toggleCode(prev, code);
+      saveDraft(have, next);
+      return next;
+    });
+  };
+  const toggleHave = (code: string) => {
+    if (responded) return;
+    setHave((prev) => {
+      const next = toggleCode(prev, code);
+      saveDraft(next, want);
+      return next;
+    });
+  };
+  const wantEverything = () => {
+    if (responded) return;
+    setWant(() => {
+      const next = new Set(friendPayload.repeats);
+      saveDraft(have, next);
+      return next;
+    });
+  };
+  const clearWant = () => {
+    if (responded) return;
+    setWant(() => {
+      const next = new Set<string>();
+      saveDraft(have, next);
+      return next;
+    });
+  };
+
+  const respond = () => {
+    clearDraft();
+    setResponded(true);
+    onRespond([...have], [...want]);
+  };
+
+  // A link with nothing to compare (name-only, or an album-complete sharer). Guarded AFTER the hooks
+  // so hook order stays stable.
+  if (isEmptyFriendLink(friendPayload)) {
+    return (
+      <div class="screen trade-screen">
+        {notice && (
+          <div class="trade-notice" role="status" aria-live="polite">
+            {notice}
+          </div>
+        )}
+        <header class="trade-header">
+          <div class="trade-header-row">
+            <h1>{pt.trade.title}</h1>
+          </div>
+        </header>
+        <section class="trade-empty">
+          <div class="trade-empty-emoji" aria-hidden="true">
+            🔁
+          </div>
+          <h2>{pt.trade.emptyLinkTitle}</h2>
+          <p>{pt.trade.emptyLinkText}</p>
+          <button class="btn btn-primary btn-block" onClick={onGoScan}>
+            {pt.trade.emptyLinkButton}
+          </button>
+        </section>
+      </div>
+    );
+  }
+
+  const score = tradeScore(want, have);
+
   return (
-    <div class="screen trade-screen">
+    <div class="screen trade-screen trade-screen-friend">
       {notice && (
         <div class="trade-notice" role="status" aria-live="polite">
           {notice}
@@ -292,68 +428,121 @@ function FriendMatch({
         <button class="trade-back" onClick={onClearFriend}>
           ← {pt.trade.backToMine}
         </button>
-        <h1>{pt.trade.receiverHero(friendName)}</h1>
-        <p class="trade-win">{pt.trade.receiverWin(iCanGet.length)}</p>
+        <h1>{pt.trade.friendTradeTitle(friendName)}</h1>
+        <p class="trade-guide">{pt.trade.friendGuide}</p>
       </header>
 
-      <div class="trade-body">
-        <SectionHead lead={pt.trade.iCanGetTitle} count={iCanGet.length} />
-        <MatchGroups entries={iCanGet} emptyText={pt.trade.iCanGetEmpty} tone="need" />
+      <div class="trade-body trade-body-friend">
+        <div class="trade-legend" aria-hidden="true">
+          <span>
+            <i class="leg-sw leg-want">✓</i> {pt.trade.chipWant}
+          </span>
+          <span>
+            <i class="leg-sw leg-have">✓</i> {pt.trade.chipHave}
+          </span>
+          <span>
+            <i class="leg-sw leg-tap" /> {pt.trade.legendTap}
+          </span>
+        </div>
 
-        <SectionHead lead={pt.trade.iCanGiveTitle} count={hasMyRepeats ? iCanGive.length : undefined} />
-        {hasMyRepeats ? (
-          <MatchGroups entries={iCanGive} emptyText={pt.trade.iCanGiveEmpty} tone="have" />
-        ) : (
-          <div class="trade-cta">
-            <b>{pt.trade.giveCtaTitle}</b>
-            <p>{pt.trade.giveCtaText}</p>
-            <button class="btn btn-primary btn-block" onClick={onGoScan}>
-              {pt.trade.giveCtaButton}
+        <SectionHead lead={`${pt.trade.friendHasTitle(friendName)} 🔁`} />
+        <div class="trade-bulk">
+          <button class="bulk-btn" onClick={wantEverything}>
+            {pt.trade.wantAll}
+          </button>
+          {want.size > 0 && (
+            <button class="bulk-btn bulk-clear" onClick={clearWant}>
+              {pt.trade.clearSel}
+            </button>
+          )}
+        </div>
+        <SelectableList codes={friendPayload.repeats} selected={want} kind="want" onToggle={toggleWant} />
+
+        <SectionHead lead={`${pt.trade.friendNeedsTitle(friendName)} 📍`} />
+        <SelectableList codes={friendPayload.missing} selected={have} kind="have" onToggle={toggleHave} />
+      </div>
+
+      <div class="friend-foot">
+        {responded ? (
+          <div class="friend-converted">
+            <span class="conv-msg">🎉 {pt.trade.albumStarted}</span>
+            <button class="conv-see" onClick={onClearFriend}>
+              {pt.trade.backToMine}
             </button>
           </div>
-        )}
-
-        {hasMyRepeats && (
-          <div class="trade-actions">
-            <button class="btn-wa" onClick={onShareBack}>
+        ) : (
+          <>
+            <div class="friend-score">
+              {score.twoWay ? (
+                <span class="score-trade">{pt.trade.scoreTrade(score.total)}</span>
+              ) : (
+                <span class="score-recv">{pt.trade.scoreReceiveOnly(score.p, friendName)}</span>
+              )}
+            </div>
+            {score.twoWay && <div class="friend-pega">{pt.trade.scorePega(score.p, score.d)}</div>}
+            <button class="btn-wa" disabled={!score.canRespond} onClick={respond}>
               <span class="wa" aria-hidden="true">
                 📲
               </span>{' '}
-              {pt.trade.shareBack}
+              {pt.trade.respond}
             </button>
-          </div>
+          </>
         )}
       </div>
     </div>
   );
 }
 
-function MatchGroups({
-  entries,
-  emptyText,
-  tone,
+/** One tappable list (a friend's spares OR their needs) as album-grouped team tallies whose numbers are
+ *  toggle buttons. `kind` picks the selected style (want = gold, have = green); meaning is carried by
+ *  ✓ + fill-vs-dashed shape + the section heading, never colour alone. */
+function SelectableList({
+  codes,
+  selected,
+  kind,
+  onToggle,
 }: {
-  entries: ChecklistEntry[];
-  emptyText: string;
-  tone: TallyTone;
+  codes: string[];
+  selected: Set<string>;
+  kind: 'want' | 'have';
+  onToggle: (code: string) => void;
 }) {
-  if (entries.length === 0) return <p class="trade-line-empty">{emptyText}</p>;
-
-  // No colour coding: the "Você pega" / "Você dá" section headers already label each list, and the
-  // pills carry their have/need meaning by fill vs. dashed slot — never by colour alone.
+  const label = kind === 'want' ? pt.trade.chipWant : pt.trade.chipHave;
   return (
-    <>
-      {groupByAlbum(entries.map((e) => e.code)).map((group) => (
-        <Fragment key={group.label}>
-          <div class="trade-grp">{group.label}</div>
-          <div class="ledger">
-            {splitByTeam(group.entries).map((team) => (
-              <TeamTally key={team[0].teamCode} entries={team} tone={tone} />
-            ))}
+    <div class="ledger grouped-ledger">
+      {groupByAlbum(codes).map((group) => (
+        <div class="grp" key={group.label}>
+          <div class="grp-head">
+            <span class="grp-name">{group.label}</span>
           </div>
-        </Fragment>
+          {splitByTeam(group.entries).map((team) => (
+            <div class="tally" key={team[0].teamCode}>
+              <div class="tally-head">
+                <span class="tally-team">{teamLabel(team[0])}</span>
+              </div>
+              <div class="tally-nums tally-select">
+                {team.map((entry) => {
+                  const on = selected.has(entry.code);
+                  const num = entry.number === 0 ? '00' : entry.number;
+                  return (
+                    <button
+                      key={entry.code}
+                      type="button"
+                      class={`sel-num${on ? ` is-${kind}` : ''}`}
+                      aria-pressed={on}
+                      aria-label={`${entry.teamName} ${num}${on ? ` (${label})` : ''}`}
+                      onClick={() => onToggle(entry.code)}
+                    >
+                      {num}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          ))}
+        </div>
       ))}
-    </>
+    </div>
   );
 }
 

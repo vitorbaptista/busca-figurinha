@@ -7,12 +7,14 @@ interface SettingsScreenProps {
   collection: CollectionStore;
   /** The user's tradeable duplicates — backed up, restored and cleared alongside the collection. */
   repeats: CollectionStore;
+  /** The user's wishlist (seeded from a friend's link) — backed up, restored and cleared too. */
+  wants: CollectionStore;
   settings: SettingsStore;
 }
 
 const APP_VERSION = '0.1.0';
 
-export function SettingsScreen({ collection, repeats, settings }: SettingsScreenProps) {
+export function SettingsScreen({ collection, repeats, wants, settings }: SettingsScreenProps) {
   useStore(settings);
 
   const [notice, setNotice] = useState<{ kind: 'ok' | 'error'; text: string } | null>(null);
@@ -30,6 +32,7 @@ export function SettingsScreen({ collection, repeats, settings }: SettingsScreen
       exportedAt: new Date().toISOString(),
       owned: collection.exportOwned(),
       repeats: repeats.exportOwned(),
+      wants: wants.exportOwned(),
       settings: settings.get(),
     };
     const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' });
@@ -59,6 +62,8 @@ export function SettingsScreen({ collection, repeats, settings }: SettingsScreen
         ? data.repeats.filter((code) => ownedSet.has(code))
         : [];
       repeats.importOwned(restoredRepeats);
+      // A wishlist is by definition not-owned, so it's restored as-is (no owned-filter like repeats).
+      wants.importOwned(Array.isArray(data.wants) ? data.wants : []);
       if (data.settings) settings.set(data.settings as Partial<Settings>);
       flash('ok', pt.settings.importDone);
     } catch {
@@ -70,6 +75,7 @@ export function SettingsScreen({ collection, repeats, settings }: SettingsScreen
     if (!confirm(pt.settings.clearConfirm)) return;
     collection.clear();
     repeats.clear();
+    wants.clear();
     flash('ok', pt.settings.clearDone);
   };
 

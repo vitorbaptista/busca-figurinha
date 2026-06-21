@@ -244,5 +244,9 @@ export interface BackupFile {
   /** Codes the user has a DUPLICATE of (their tradeable spares). Optional so backups
    *  written before this field still import cleanly (treated as none). */
   repeats?: string[];
+  /** Codes the user WANTS (their wishlist, seeded by tapping a friend's spares). Optional like
+   *  repeats; restored as-is (no owned-filter). It isn't pruned when a sticker is later obtained, so
+   *  a future consumer should intersect with "not owned" at read time. */
+  wants?: string[];
   settings: Settings;
 }
