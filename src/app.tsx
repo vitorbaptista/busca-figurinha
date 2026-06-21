@@ -167,6 +167,8 @@ export function App() {
         <ScanScreen
           session={session}
           collection={collection}
+          repeats={repeats}
+          friendLists={friendLists}
           settings={settings}
           onPersist={() => persistSession(session)}
           onFinish={finishSession}

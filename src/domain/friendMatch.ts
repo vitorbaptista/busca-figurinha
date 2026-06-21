@@ -23,6 +23,17 @@ export function givableTo(friend: FriendList, myRepeatCodes: Set<string>): strin
   return friend.needs.filter((code) => myRepeatCodes.has(code));
 }
 
+/** Radar: the names of active saved friends who need a just-scanned code I can GIVE (it's one of my
+ *  spares). Thin wrapper over the same 0-FP gate, so the live "📌 serve pro {nome}" ribbon can never
+ *  point at a sticker I don't have a spare of (e.g. my only owned copy). */
+export function radarFriendNames(
+  code: string,
+  myRepeatCodes: Set<string>,
+  friends: FriendList[],
+): string[] {
+  return friendCanReceive({ code, myRepeatCodes, friends }).map((f) => f.name);
+}
+
 export interface GiveBreakdown {
   /** Their needs I hold as spares — what I can hand over now (the only thing the give UI offers). */
   canGive: string[];

@@ -9,6 +9,9 @@ export interface VerdictState {
   display: string;
   /** Team name shown under the code. */
   teamName: string;
+  /** Radar (UI-only, never persisted): saved friends this read serves — non-empty only for a real
+   *  spare (repeats∩owned a friend needs). Drives the "📌 serve pro {nome}" ribbon. */
+  serves?: string[];
   /** Bumped each time so a repeated identical outcome still re-triggers the animation. */
   key: number;
 }
@@ -30,7 +33,7 @@ export function Verdict({
   onManual: () => void;
   onWrong: () => void;
 }) {
-  const { outcome, display, teamName } = state;
+  const { outcome, display, teamName, serves } = state;
 
   if (outcome === 'unknown') {
     return (
@@ -77,6 +80,11 @@ export function Verdict({
           <span class="verdict-sub">{rep ? pt.scan.ownedHint : pt.scan.neededSub}</span>
         </div>
       </div>
+      {serves && serves.length > 0 && (
+        <div class="verdict-radar" role="note">
+          📌 {pt.scan.radarServes(serves)}
+        </div>
+      )}
     </div>
   );
 }

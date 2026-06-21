@@ -13,6 +13,8 @@ import { CONFIG } from '../../config';
 import { checklist } from '../../data/checklist';
 import { pt } from '../../i18n/pt';
 import { matchCode } from '../../domain/matching';
+import { radarFriendNames } from '../../domain/friendMatch';
+import type { FriendListsStore } from '../../state/friendLists';
 import { createConfirmer } from '../../domain/confirm';
 import { allowCommit } from '../../domain/commitGate';
 import { createHybridOcrEngine as createOcrEngine } from '../../ocr/hybridEngine';
@@ -28,6 +30,10 @@ import { MultiResult, type ScanResultItem } from '../components/MultiResult';
 interface ScanScreenProps {
   session: ScanSession;
   collection: CollectionStore;
+  /** The user's tradeable spares — to flag (radar) when a scanned spare serves a saved friend. */
+  repeats: CollectionStore;
+  /** Saved friend lists — radar source for the "📌 serve pro {nome}" verdict ribbon. */
+  friendLists: FriendListsStore;
   settings: SettingsStore;
   onPersist: () => void;
   onFinish: () => void;
@@ -55,7 +61,15 @@ interface RecentScan {
 // covers "sticker held + OCR burst in flight" — what the scanner-sweep on the mira shows.
 type ScanPhase = 'idle' | 'reading';
 
-export function ScanScreen({ session, collection, settings, onPersist, onFinish }: ScanScreenProps) {
+export function ScanScreen({
+  session,
+  collection,
+  repeats,
+  friendLists,
+  settings,
+  onPersist,
+  onFinish,
+}: ScanScreenProps) {
   // Dedicated, Preact-untouched layer for the <video>. Preact never renders
   // children into it, so mounting the camera element by hand is safe.
   const videoLayerRef = useRef<HTMLDivElement>(null);
@@ -119,6 +133,16 @@ export function ScanScreen({ session, collection, settings, onPersist, onFinish 
    *  match is the confidence signal. We deliberately do NOT gate on Tesseract's
    *  whole-frame mean confidence: the sticker back is full of noisy legal text
    *  that drags that number down and would reject good reads. */
+  // Radar: the saved friends a just-scanned spare serves. Reads the stores imperatively at commit time
+  // (a verdict is a snapshot — no subscription, no extra re-renders in the hot scan screen) and
+  // short-circuits when no friends are saved, so a friendless user pays nothing.
+  const radarServesFor = (code: string): string[] => {
+    const friends = friendLists.active();
+    if (friends.length === 0) return [];
+    const myRepeatCodes = new Set([...repeats.codes()].filter((c) => collection.has(c)));
+    return radarFriendNames(code, myRepeatCodes, friends);
+  };
+
   const handleMatches = (matches: MatchResult[]) => {
     flashCounter.current += 1;
     const key = flashCounter.current;
@@ -175,10 +199,16 @@ export function ScanScreen({ session, collection, settings, onPersist, onFinish 
         ...r,
       ].slice(0, 12),
     );
+    // Radar for the single-verdict case: which saved friends this read serves. Only fires for a real
+    // spare (repeats∩owned via radarFriendNames), so a GUARDAR or a single-copy owned read never tells
+    // a kid to give it away. Computed once and reused for the spoken announce + the verdict ribbon.
+    const serves = items.length === 1 ? radarServesFor(items[0].code) : [];
     setAnnounce(
       items
         .map((it) => `${it.outcome === 'owned' ? pt.scan.owned : pt.scan.needed}: ${it.display}`)
-        .join('. ') + zwsp,
+        .join('. ') +
+        (serves.length > 0 ? `. ${pt.scan.radarServes(serves)}` : '') +
+        zwsp,
     );
 
     if (items.length === 1) {
@@ -189,6 +219,7 @@ export function ScanScreen({ session, collection, settings, onPersist, onFinish 
         code: it.code,
         display: it.display,
         teamName: it.teamName,
+        serves,
         key,
       });
     } else {

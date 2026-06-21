@@ -2987,3 +2987,32 @@ html.scan-active body {
   opacity: 0.5;
   cursor: default;
 }
+
+/* ===== Radar ribbon on the scan verdict ("📌 serve pro João") ===== */
+.verdict-radar {
+  margin-top: 12px;
+  background: var(--gold);
+  color: var(--ink);
+  border: 2px solid var(--ink);
+  border-radius: var(--radius-pill);
+  padding: 8px 14px;
+  font-family: var(--font-head);
+  font-weight: 700;
+  font-size: 0.98rem;
+  letter-spacing: 0.01em;
+  text-align: center;
+  overflow-wrap: anywhere;
+  box-shadow: 0 2px 0 rgba(0, 0, 0, 0.28);
+  animation: radar-pop 0.22s ease-out 0.04s both;
+}
+@keyframes radar-pop {
+  from {
+    opacity: 0;
+    transform: scale(0.9) translateY(4px);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .verdict-radar {
+    animation: none;
+  }
+}
