@@ -12,20 +12,25 @@ import * as tf from '@tensorflow/tfjs';
 import type { Checklist } from '../types';
 import { letterboxGray, toFloatInput, INPUT_W, INPUT_H, ALPHABET, BLANK } from './codeImage';
 
-export interface CodeNetResult {
-  /** Best closed-set code, or '' when the gates reject (a confident miss). */
-  code: string;
-  posterior: number; // 0..1
-  margin: number; // log-prob gap to runner-up
+/** Raw (UNGATED) closed-set scoring of a crop — `rawCode` is always the argmax closed-set code
+ *  even when the gates would reject it. The multi-crop TTA recognizer (recognizeFrameCodeNet) votes
+ *  across crop variants and applies the posterior/margin gate to the AGGREGATE rather than per-crop. */
+export interface CodeNetScored {
+  rawCode: string;
+  posterior: number;
+  margin: number; // log-prob gap of the best code over max(runner-up, all-blank "no code")
   meanLogProb: number;
+  /** Top-K closed-set codes with their posteriors (descending) — built ONLY when `wantTop` is set
+   *  (the dev bench's soft-voting mode); the live path never reads it, so it isn't computed there. */
+  top?: Array<{ code: string; posterior: number }>;
 }
 
 export interface CodeNet {
   init(modelUrl: string): Promise<void>;
   ready(): boolean;
-  /** Recognize prepared RAW crops (each letterboxed internally). Stops nothing — returns one
-   *  result per crop in order. */
-  recognize(crops: HTMLCanvasElement[]): Promise<CodeNetResult[]>;
+  /** Recognize prepared RAW crops (each letterboxed internally). Returns the UNGATED best code +
+   *  scores per crop, in order (one batched predict). `wantTop` additionally fills `top` (dev only). */
+  recognizeScored(crops: HTMLCanvasElement[], wantTop?: boolean): Promise<CodeNetScored[]>;
 }
 
 /** Gates ported from the native closed-set CTC decoder. Tunable against bench:pixel for the
@@ -66,7 +71,7 @@ export function createCodeNet(checklist: Checklist): CodeNet {
 
     ready: () => model !== null,
 
-    async recognize(crops) {
+    async recognizeScored(crops, wantTop = false) {
       if (!model || crops.length === 0) return [];
       const B = crops.length;
       const buf = new Float32Array(B * INPUT_H * INPUT_W);
@@ -82,16 +87,20 @@ export function createCodeNet(checklist: Checklist): CodeNet {
 
       const NC = ALPHABET.length + 1;
       const stride = maxlen * NC;
-      const results: CodeNetResult[] = [];
+      const results: CodeNetScored[] = [];
       for (let b = 0; b < B; b++) {
         // log-probs for this sample
         const lp = new Float32Array(stride);
         for (let i = 0; i < stride; i++) lp[i] = Math.log(Math.max(1e-8, probs[b * stride + i]));
-        // score every code
+        // score every code, tracking the best/second and a small top-K (for soft-voting TTA).
         let best = -Infinity;
         let bestCode = '';
         let second = -Infinity;
         const all: number[] = [];
+        const K = 5;
+        // top-K only when the caller wants it (dev soft-voting bench) — the live path discards it,
+        // so we skip the per-code insertion-sort on the latency-critical path.
+        const topK: Array<{ code: string; sc: number }> = [];
         for (const { code, idx } of codes) {
           if (idx.length > maxlen) continue;
           let sc = 0;
@@ -107,6 +116,12 @@ export function createCodeNet(checklist: Checklist): CodeNet {
           } else if (sc > second) {
             second = sc;
           }
+          if (wantTop && (topK.length < K || sc > topK[topK.length - 1].sc)) {
+            let ins = topK.length;
+            while (ins > 0 && topK[ins - 1].sc < sc) ins--;
+            topK.splice(ins, 0, { code, sc });
+            if (topK.length > K) topK.pop();
+          }
         }
         // NULL hypothesis: score the all-blank sequence (model trained to predict blank on
         // non-pills). Folding it into the denominator makes a non-sticker crop — where blank
@@ -118,11 +133,9 @@ export function createCodeNet(checklist: Checklist): CodeNet {
         const posterior = Math.exp(best - denom);
         const margin = best - Math.max(second, blankScore); // also require beating "no code"
         const meanLogProb = best / maxlen;
-        const pass =
-          posterior >= CODENET_GATES.minPosterior &&
-          margin >= CODENET_GATES.minMargin &&
-          meanLogProb >= CODENET_GATES.minMeanLogProb;
-        results.push({ code: pass ? bestCode : '', posterior, margin, meanLogProb });
+        const scored: CodeNetScored = { rawCode: bestCode, posterior, margin, meanLogProb };
+        if (wantTop) scored.top = topK.map((t) => ({ code: t.code, posterior: Math.exp(t.sc - denom) }));
+        results.push(scored);
       }
       return results;
     },

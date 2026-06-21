@@ -228,3 +228,75 @@ reported with both numbers + this caveat. Next: ensemble cascade (codeNet→hybr
 
 - The dataset is one capture regime. ROI / use-case wins must be re-confirmed live on the
   Pixel (the shipping reticle position may need to move with the ROI). Flagged per change.
+
+## Session 2026-06-20 — retrain on expanded dataset + multi-crop TTA (goal: VAL recall 90% @ ≤100ms)
+
+**Context shift:** the dataset GREW (now TRAIN 208 / VAL 36 / TEST 36 positives; +123/10/24 neg) and added a
+NEW hard regime (`cap20260620-1705-*`: handheld, motion-blurred, sticker held low/off-centre, the special
+**FWC** layout). All prior recall numbers are stale. The committed codeNet model was trained BEFORE this growth.
+
+**Diagnosis:** with FULL-FRAME detection + maxBoxes=6 + the ensemble, recall was 38.9% with det:0boxes=0 /
+crop:0ink=0 → **detection is NOT the bottleneck; the recognizer is** (22/36 misses are ocr blank/nomatch/misread).
+Full-frame HURT (clutter → misreads). So a tight ROI is right; the lever is a better recognizer.
+
+**What moved recall (VAL / TEST per-frame, 0 neg FP unless noted):**
+| config | VAL | TEST | neg FP | latency (headless CPU) |
+|---|---|---|---|---|
+| hybrid (shipped classical) | 30.6% | 27.8% | 0 | ~48ms |
+| codeNet **retrained** (no TTA) | 50.0% | 41.7% | **5/24 ✗** | ~200ms |
+| ensemble retrained | 61.1% | 58.3% | **5/24 ✗** | ~240ms |
+| **codeNet + multi-crop TTA (agreement vote)** | **72.2%** | 44.4% | 0 ✓ | **~1.27s ✗** |
+| codeNet-TTA maxBoxes=2 | 63.9% | 38.9% | 0 ✓ | ~0.6s |
+
+- **Retraining on the expanded data is the big win** (codeNet 19→50% VAL): the new regime is now in TRAIN.
+  `scripts/build-train-data.mjs` (rebuilt syn=10k + real harvest) → `scripts/ml/train.cjs` (50 epochs, real×12).
+  Best checkpoint valExact=0.625. Artifact: `captures/codenet-retrained/` (NOT shipped; live model reverted).
+- **The retrained model alone VIOLATES 0-FP** (5/24 neg FP on TEST — over-confident closed-set on non-pills).
+  **Multi-crop TTA agreement is what restores 0-FP**: per frame, score several jittered/flipped crops of each
+  pill, accept the code ≥N crops agree on (rank by high-conf votes then peak posterior). New dev tooling in
+  `benchPixel.ts` (`--engine=codenet-tta|ensemble-tta`, `--recenter`, `--gatePost/Margin/MLP`, `--model/model2`,
+  `--ttaMode=soft`), `recognizeScored`+top-K added to `codeNetEngine.ts` (behavior-neutral for prod `recognize`).
+- **What did NOT help:** motion-blur/downscale augmentation (`--augment=1`, net wash, as docs predicted);
+  2-model ensemble (weaker aug model adds nothing); soft (posterior-sum) voting (digit confusions are confident);
+  bigger input (source pills are already low-res — blur, not resolution, is the limit).
+- **Recenter-on-pill** (`--recenter=1`, per product-owner "assume correct ROI"): no-regression recentre of
+  mis-aimed frames into the ROI. Removes the det:0boxes artifact but those frames (URU2-c2) are unreadable blur
+  even centred → no recall gain here; correct for a fair metric + future data.
+
+**Conclusion — 90% per-frame VAL is not reachable on this data.** Honest held-out (TEST) ceiling ≈ 45–60%;
+the inflated VAL 72.2% is checkpoint+param tuning on VAL (large VAL/TEST gap). Remaining misses are
+information-limited: heavy motion blur, confident digit confusion (AUT8→AUT4, MEX19→MEX15), special FWC layout.
+Matches codex's 65–75% estimate and the prior ~61% ceiling. **Real win available:** retrain + agreement-TTA
+roughly DOUBLES recall (TEST 28→~44–58%, VAL 31→64–72%) at 0 neg FP / 0 held-FP — but TTA is ~1.3s on headless
+CPU and must be **validated/optimised LIVE on the Pixel** (device WebGL ≈5× faster; tune `maxBoxes`/jitters)
+before shipping. Levers to break the ceiling: MORE real labeled data (the documented #1, declined this session)
+or per-HOLD/burst scoring (the live app already aggregates frames; declined — user wants strict per-frame).
+
+### UPDATE (same session) — product-owner reframing → SHIPPED a ~2× recall win
+Two clarifications changed the plan: (a) **"overfit to all possible codes is fine"** (the output space is
+the fixed 980-code album) → regenerated synth with FULL per-code coverage (25k, ~21/code) + real-matching
+degradation (directional motion blur, small-pill downscale) and retrained (`--posRepeat=18`): **val_exact
+0.625 → 0.6875**, and it generalises better to TEST. (b) **FP budget relaxed to <3% per-frame** (ideally
+<1%) if recall improves a lot. The over-confident-on-negatives problem (5/24 neg FP no-TTA) is still best
+handled by TTA AGREEMENT, but the agreement can now be a LIGHT batched config instead of the 1.3s full one.
+
+**SHIPPED config:** v2 model (`public/models/codenet`) + **multi-crop TTA ported into production**
+`recognizeFrameCodeNet` (one batched predict: `CONFIG.codenet.ttaMaxBoxes=3` × `ttaJitters=3` upright
+variants + flip → ~12 crops; accept the code ≥`ttaVotes` crops agree on, rank by high-conf votes then peak
+posterior). ScanScreen's ensemble cascade (codeNet-TTA → hybrid fallback) is unchanged in shape.
+
+| path | VAL | TEST (honest) | held-FP | per-frame neg FP | OCR ms (headless CPU) |
+|---|---|---|---|---|---|
+| shipped hybrid (before) | 30.6% | 27.8% | 0 | 0 | ~35 |
+| codeNet-TTA → hybrid (light mb2×3jit) | 63.9% | 47.2% | 0 | val 1/10, test 0/24 | ~285 |
+| **codeNet-TTA → hybrid (SHIPPED, mb3×3jit)** | **72.2%** | **50.0%** | **0** | val 1/10, test 0/24 | ~465–630 |
+| codeNet-TTA full (mb4×6jit) | 75.0% | 52.8% | 0 | val 1/10, test 0/24 | ~1270 |
+
+- **2.4× VAL / 1.8× TEST recall** (VAL 31→72%, TEST 28→50%) at **0 held-FP / 0 held-NEG** (the shipping
+  confirmer guard). Per-frame wrong-on-pos exists (digit confusions) but is transient → never confirms.
+  `npm run build` clean.
+- **Latency caveat (MUST validate on Pixel):** the OCR ms is ONE batched predict; headless CPU runs the batch
+  sequentially (slow), device WebGL in parallel (much faster). Tunable via `CONFIG.codenet` — bump toward the
+  full config (→75% VAL) if the device handles it; lower `ttaMaxBoxes`/`ttaJitters` for low-end phones (≤250ms).
+- **90% per-frame VAL remains unreachable** on this data (information-limited blur / 8↔4,9↔5 digit confusion /
+  FWC layout). The honest TEST ceiling is ~50%. Artifacts: `captures/codenet-v2` (shipped), `codenet-retrained`.

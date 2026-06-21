@@ -25,12 +25,15 @@
 // Output: Markdown → captures/bench-pixel-results.md (POST /pixel/log) + the page.
 
 import { findCodeBoxes, codeCropCandidates, rawCropCandidates } from '../ocr/locate';
+import type { CodeBox } from '../ocr/locate';
 import { createHybridOcrEngine } from '../ocr/hybridEngine';
 import { recognizeFrameInOrder, recognizeFrameCodeNet } from '../ocr/recognize';
-import { createCodeNet } from '../ocr/codeNetEngine';
+import { createCodeNet, CODENET_GATES } from '../ocr/codeNetEngine';
+import type { CodeNet } from '../ocr/codeNetEngine';
 import { createConfirmer } from '../domain/confirm';
 import { checklist } from '../data/checklist';
 import { extractCodes } from '../domain/matching';
+import type { MatchResult } from '../types';
 import { CONFIG } from '../config';
 
 const Q = new URLSearchParams(location.search);
@@ -48,6 +51,16 @@ const cfg = CONFIG as unknown as {
     maxBoxes: number;
     fgDelta: number;
   };
+  codenet: {
+    ttaEnabled: boolean;
+    ttaMaxBoxes: number;
+    ttaJitters: number;
+    ttaVotes: number;
+    ttaSoft: number;
+    ttaHigh: number;
+    ttaPost: number;
+    ttaMargin: number;
+  };
 };
 if (Q.has('fgDelta')) cfg.detect.fgDelta = Number(Q.get('fgDelta'));
 if (Q.has('roiTop')) {
@@ -60,6 +73,19 @@ if (Q.has('roiRect')) {
 }
 if (Q.has('fastConf')) cfg.ocr.hybridFastConf = Number(Q.get('fastConf'));
 if (Q.has('maxBoxes')) cfg.detect.maxBoxes = Number(Q.get('maxBoxes'));
+// codeNet legacy gate overrides (kept for reference; CODENET_GATES is no longer on the live path).
+if (Q.has('gatePost')) CODENET_GATES.minPosterior = Number(Q.get('gatePost'));
+if (Q.has('gateMargin')) CODENET_GATES.minMargin = Number(Q.get('gateMargin'));
+if (Q.has('gateMLP')) CODENET_GATES.minMeanLogProb = Number(Q.get('gateMLP'));
+// Production codeNet-TTA knobs (CONFIG.codenet): driving these lets `--engine=codenet`/`ensemble`
+// sweep the EXACT shipped recognizeFrameCodeNet path on the dataset (no prod/bench drift).
+if (Q.has('ttaMaxBoxes')) cfg.codenet.ttaMaxBoxes = Number(Q.get('ttaMaxBoxes'));
+if (Q.has('ttaJit')) cfg.codenet.ttaJitters = Number(Q.get('ttaJit'));
+if (Q.has('ttaVotes')) cfg.codenet.ttaVotes = Number(Q.get('ttaVotes'));
+if (Q.has('ttaSoft')) cfg.codenet.ttaSoft = Number(Q.get('ttaSoft'));
+if (Q.has('ttaHigh')) cfg.codenet.ttaHigh = Number(Q.get('ttaHigh'));
+if (Q.has('ttaPost')) cfg.codenet.ttaPost = Number(Q.get('ttaPost'));
+if (Q.has('ttaMargin')) cfg.codenet.ttaMargin = Number(Q.get('ttaMargin'));
 const SPLIT = (Q.get('split') || 'all').toLowerCase();
 const LIMIT = Q.has('limit') ? Number(Q.get('limit')) : Infinity;
 const NOTE = Q.get('note') || '';
@@ -114,6 +140,160 @@ async function loadImage(url: string): Promise<HTMLCanvasElement> {
   return c;
 }
 
+// ---- Multi-crop test-time augmentation (TTA) for codeNet (dev experiment) ----
+// Within ONE frame, give the recognizer several looks at each detected pill — upright + flip raw
+// crops PLUS jittered re-crops at a few scales/offsets — score them UNGATED, and accept the
+// closed-set code the most crops independently agree on (with an aggregate posterior/margin gate).
+// Agreement is the 0-FP guard: noise crops scatter across random codes and rarely agree ≥N times,
+// while a real pill's code recurs across its variants — so a LOWER per-crop bar buys recall without
+// manufacturing codes on negatives. This is strictly per-frame (uses only that frame's pixels).
+const TTA_POST = Q.has('ttaPost') ? Number(Q.get('ttaPost')) : 0.5;
+const TTA_VOTES = Q.has('ttaVotes') ? Number(Q.get('ttaVotes')) : 2;
+const TTA_MARGIN = Q.has('ttaMargin') ? Number(Q.get('ttaMargin')) : 0.5;
+const TTA_SOFT = Q.has('ttaSoft') ? Number(Q.get('ttaSoft')) : 0.2; // a crop "votes" above this posterior
+const TTA_HIGH = Q.has('ttaHigh') ? Number(Q.get('ttaHigh')) : 0.8; // a crop "high-votes" above this posterior
+const TTA_MODE = (Q.get('ttaMode') || 'hard').toLowerCase(); // 'hard' (argmax votes) | 'soft' (posterior-sum)
+
+function jitterBox(b: CodeBox, sx: number, sy: number, dx: number, dy: number): CodeBox {
+  const cx = b.x + b.w / 2;
+  const cy = b.y + b.h / 2;
+  const w = b.w * sx;
+  const h = b.h * sy;
+  return { ...b, x: cx - w / 2 + b.w * dx, y: cy - h / 2 + b.h * dy, w, h, pillW: b.pillW * Math.min(sx, sy) };
+}
+
+const TTA_JITTERS_ALL = [
+  { sx: 1, sy: 1, dx: 0, dy: 0 },
+  { sx: 1.18, sy: 1.18, dx: 0, dy: 0 },
+  { sx: 0.88, sy: 0.9, dx: 0, dy: 0 },
+  { sx: 1.12, sy: 1.0, dx: 0.05, dy: 0 },
+  { sx: 1.12, sy: 1.0, dx: -0.05, dy: 0 },
+  { sx: 1.0, sy: 1.2, dx: 0, dy: 0.04 },
+];
+// ?ttaJit=N → use the first N jitter variants (fewer crops = faster; for the ≤250ms budget).
+const TTA_JITTERS = Q.has('ttaJit')
+  ? TTA_JITTERS_ALL.slice(0, Math.max(1, Number(Q.get('ttaJit'))))
+  : TTA_JITTERS_ALL;
+
+async function recognizeFrameCodeNetTTA(
+  models: CodeNet[],
+  frame: HTMLCanvasElement,
+  onDetected?: () => void,
+): Promise<{ resolved: MatchResult[]; reads: string[]; crops: number; scoredReads: [] }> {
+  const boxes = findCodeBoxes(frame).slice(0, CONFIG.detect.maxBoxes);
+  onDetected?.();
+  const crops: HTMLCanvasElement[] = [];
+  for (const box of boxes) {
+    for (const j of TTA_JITTERS) {
+      const raws = rawCropCandidates(frame, jitterBox(box, j.sx, j.sy, j.dx, j.dy));
+      if (raws[0]) crops.push(raws[0]);
+    }
+    const raws = rawCropCandidates(frame, box);
+    if (raws[1]) crops.push(raws[1]); // un-jittered 180° flip (orientation ambiguity)
+  }
+  if (!crops.length) return { resolved: [], reads: [], crops: 0, scoredReads: [] };
+  // Score every crop with every model; votes accumulate across models AND crop variants, so a code
+  // both models read confidently dominates, and a single model's idiosyncratic confusion is outvoted.
+  const scored = (await Promise.all(models.map((m) => m.recognizeScored(crops, TTA_MODE === 'soft')))).flat();
+  const agg = new Map<string, { votes: number; highVotes: number; maxPost: number; maxMargin: number; postSum: number }>();
+  const bump = (code: string, post: number, margin: number) => {
+    const a = agg.get(code) ?? { votes: 0, highVotes: 0, maxPost: 0, maxMargin: -Infinity, postSum: 0 };
+    if (post >= TTA_SOFT) a.votes++;
+    if (post >= TTA_HIGH) a.highVotes++;
+    a.maxPost = Math.max(a.maxPost, post);
+    a.maxMargin = Math.max(a.maxMargin, margin);
+    a.postSum += post;
+    agg.set(code, a);
+  };
+  const reads: string[] = [];
+  for (const s of scored) {
+    if (!s.rawCode) continue;
+    if (s.posterior >= TTA_SOFT) reads.push(`${s.rawCode}@${s.posterior.toFixed(2)}`);
+    if (TTA_MODE === 'soft') {
+      // Soft voting: every top-K candidate of every crop accumulates its posterior. A correct code
+      // that is consistently the RUNNER-UP (e.g. AUT8 behind AUT4) builds a high posterior-sum and
+      // can overtake the locally-preferred wrong code.
+      for (const t of s.top ?? []) bump(t.code, t.posterior, -Infinity);
+    } else {
+      bump(s.rawCode, s.posterior, s.margin); // hard voting: only the per-crop argmax
+    }
+  }
+  // FP guard = agreement: a code must appear (≥TTA_SOFT posterior) in ≥TTA_VOTES crops to be
+  // eligible (noise scatters, so it rarely agrees). HARD mode ranks eligible codes by high-conf
+  // vote count then peak posterior (a real pill read confidently beats a spurious soft-vote pileup,
+  // and several high-conf reads beat a 1.0-tie). SOFT mode ranks by posterior-sum (rewards a
+  // consistent runner-up). maxMargin gate applies only in hard mode (soft has no per-code margin).
+  let bestCode = '';
+  let bestHigh = -1;
+  let bestPost = -1;
+  let bestSum = -1;
+  for (const [code, a] of agg) {
+    if (a.votes < TTA_VOTES) continue;
+    if (TTA_MODE === 'soft') {
+      if (a.postSum > bestSum) {
+        bestSum = a.postSum;
+        bestCode = code;
+      }
+    } else if (a.highVotes > bestHigh || (a.highVotes === bestHigh && a.maxPost > bestPost)) {
+      bestHigh = a.highVotes;
+      bestPost = a.maxPost;
+      bestCode = code;
+    }
+  }
+  const resolved: MatchResult[] = [];
+  if (bestCode) {
+    const a = agg.get(bestCode)!;
+    const entry = checklist.byCode.get(bestCode);
+    if (entry && a.maxPost >= TTA_POST && (TTA_MODE === 'soft' || a.maxMargin >= TTA_MARGIN)) {
+      resolved.push({ raw: bestCode, status: 'exact', entry, distance: 0 });
+    }
+  }
+  return { resolved, reads, crops: crops.length, scoredReads: [] };
+}
+
+// ---- Recenter-on-pill (?recenter=1): simulate correct aiming ----
+// In production a reticle constrains WHERE the user places the sticker (== the ROI), so a frame
+// whose pill landed outside the ROI is a mis-aim that won't happen live. Per the product owner
+// ("assume the user put the image in the correct ROI"), we recover those frames by translating the
+// frame so its pill sits at the ROI centre — WITHOUT penalising or altering frames that already
+// aimed well (no-regression): we only recenter when fixed-ROI detection finds NO confident pill,
+// and we locate the pill from a FULL-FRAME detection pass (the strongest pill-shaped blob — exactly
+// what the reticle + user align). Frames with a good in-ROI box are returned untouched.
+const RECENTER = Q.has('recenter') && Q.get('recenter') !== '0';
+const RECENTER_MIN_SCORE = 0.7;
+
+function recenterOnPill(frame: HTMLCanvasElement): HTMLCanvasElement {
+  // Already well-aimed? (a confident pill in the current ROI) → leave untouched.
+  const inRoi = findCodeBoxes(frame).slice(0, CONFIG.detect.maxBoxes);
+  if (inRoi.some((b) => b.score >= RECENTER_MIN_SCORE)) return frame;
+  // Mis-aimed: find the pill anywhere via a full-frame detection pass.
+  const savedRect = cfg.detect.roiRect;
+  const savedTop = cfg.detect.roiTopFraction;
+  cfg.detect.roiRect = null;
+  cfg.detect.roiTopFraction = 0;
+  const all = findCodeBoxes(frame);
+  cfg.detect.roiRect = savedRect;
+  cfg.detect.roiTopFraction = savedTop;
+  if (!all.length) return frame;
+  all.sort((a, b) => b.score - a.score);
+  const b = all[0];
+  if (b.score < RECENTER_MIN_SCORE) return frame; // no confident pill anywhere → leave as-is
+  const roi = cfg.detect.roiRect;
+  const tcx = (roi ? (roi.left + roi.right) / 2 : 0.5) * frame.width;
+  const tcy = (roi ? (roi.top + roi.bottom) / 2 : 0.45) * frame.height;
+  const dx = Math.round(tcx - (b.x + b.w / 2));
+  const dy = Math.round(tcy - (b.y + b.h / 2));
+  if (Math.abs(dx) < 2 && Math.abs(dy) < 2) return frame;
+  const out = document.createElement('canvas');
+  out.width = frame.width;
+  out.height = frame.height;
+  const ctx = out.getContext('2d', { willReadFrequently: true });
+  if (!ctx) return frame;
+  ctx.drawImage(frame, 0, 0); // base fill so exposed edges aren't black (no fake dark blobs)
+  ctx.drawImage(frame, dx, dy); // shifted: the pill now sits at the ROI centre
+  return out;
+}
+
 type MissStage = 'det:0boxes' | 'crop:0ink' | 'ocr:misread' | 'ocr:nomatch' | 'ocr:blank';
 
 interface FrameResult {
@@ -143,9 +323,16 @@ const ENGINE = (Q.get('engine') || 'hybrid').toLowerCase(); // 'hybrid' | 'coden
   const ocr = createHybridOcrEngine();
   await ocr.init();
   const codeNet = createCodeNet(checklist);
-  if (ENGINE === 'codenet' || ENGINE === 'ensemble') {
+  const ttaModels = [codeNet];
+  if (ENGINE !== 'hybrid') {
     status.textContent = 'loading codeNet…';
-    await codeNet.init('/models/codenet/model.json');
+    await codeNet.init(Q.get('model') || '/models/codenet/model.json');
+    // Optional second model for multi-model TTA voting (?model2=…).
+    if (Q.has('model2')) {
+      const cn2 = createCodeNet(checklist);
+      await cn2.init(Q.get('model2')!);
+      ttaModels.push(cn2);
+    }
   }
 
 
@@ -254,7 +441,8 @@ const ENGINE = (Q.get('engine') || 'hybrid').toLowerCase(); // 'hybrid' | 'coden
   for (let i = 0; i < manifest.length; i++) {
     const row = manifest[i];
     status.textContent = `frame ${i + 1}/${manifest.length} (${row.frameId})…`;
-    const frame = await loadImage(`/pixel/frame?id=${encodeURIComponent(row.frameId)}`);
+    let frame = await loadImage(`/pixel/frame?id=${encodeURIComponent(row.frameId)}`);
+    if (RECENTER) frame = recenterOnPill(frame);
 
     const t0 = performance.now();
     let t1 = t0;
@@ -268,6 +456,28 @@ const ENGINE = (Q.get('engine') || 'hybrid').toLowerCase(); // 'hybrid' | 'coden
       codes = out.resolved.map((m) => m.entry!.code);
       reads = out.reads;
       crops = out.crops;
+    } else if (ENGINE === 'codenet-tta') {
+      const out = await recognizeFrameCodeNetTTA(ttaModels, frame, () => {
+        t1 = performance.now();
+      });
+      codes = out.resolved.map((m) => m.entry!.code);
+      reads = out.reads;
+      crops = out.crops;
+    } else if (ENGINE === 'ensemble-tta') {
+      // codeNet TTA first; classical hybrid only when TTA resolves nothing.
+      const cn = await recognizeFrameCodeNetTTA(ttaModels, frame, () => {
+        t1 = performance.now();
+      });
+      if (cn.resolved.length) {
+        codes = cn.resolved.map((m) => m.entry!.code);
+        reads = cn.reads;
+        crops = cn.crops;
+      } else {
+        const hy = await recognizeFrameInOrder(ocr, frame, checklist, true);
+        codes = hy.resolved.map((m) => m.entry!.code);
+        reads = [...cn.reads, ...hy.reads];
+        crops = cn.crops + hy.crops;
+      }
     } else if (ENGINE === 'ensemble') {
       // Cascade: codeNet (strong on raw crops) first; only if it resolves nothing, fall back to
       // the classical hybrid. Combines complementary hits while paying the hybrid only on misses.

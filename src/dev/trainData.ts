@@ -103,10 +103,11 @@ function renderSynthetic(code: string | null): HTMLCanvasElement {
   }
 
   // ---- Augment into the output crop with ctx filters (blur/contrast/brightness) + rotation ----
-  const angle = (rnd(-4, 4) * Math.PI) / 180;
-  const blurPx = Math.random() < 0.5 ? rnd(0.15, 1.1) : 0;
-  const contrast = rnd(0.75, 1.35);
-  const bright = rnd(0.85, 1.15);
+  const angle = (rnd(-5, 5) * Math.PI) / 180;
+  // Heavier defocus range — the real hand-held frames are softer than the old 0.15–1.1.
+  const blurPx = Math.random() < 0.6 ? rnd(0.2, 2.2) : 0;
+  const contrast = rnd(0.7, 1.4);
+  const bright = rnd(0.8, 1.2);
   const out = blank(W, H);
   const octx = out.getContext('2d', { willReadFrequently: true })!;
   octx.fillStyle = `rgb(${cardGray},${cardGray},${cardGray})`;
@@ -117,6 +118,26 @@ function renderSynthetic(code: string | null): HTMLCanvasElement {
   octx.drawImage(base, -W / 2, -H / 2);
   octx.setTransform(1, 0, 0, 1, 0, 0);
   octx.filter = 'none';
+
+  // Directional motion blur (hand shake along the code) — the dominant real degradation. Composite
+  // a few faint shifted copies to smear horizontally (and occasionally vertically).
+  if (Math.random() < 0.45) {
+    const k = ri(2, 8);
+    const vert = Math.random() < 0.25;
+    octx.globalAlpha = 1 / (k + 1);
+    for (let s = 1; s <= k; s++) octx.drawImage(out, vert ? 0 : s, vert ? s : 0);
+    octx.globalAlpha = 1;
+  }
+  // Small/far pill: lose thin-stroke detail via downscale→upscale (real pills are only 22–48px tall).
+  if (Math.random() < 0.45) {
+    const f = rnd(0.32, 0.72);
+    const tmp = blank(Math.max(8, Math.round(W * f)), Math.max(4, Math.round(H * f)));
+    const tctx = tmp.getContext('2d', { willReadFrequently: true })!;
+    tctx.imageSmoothingEnabled = true;
+    tctx.drawImage(out, 0, 0, tmp.width, tmp.height);
+    octx.imageSmoothingEnabled = true;
+    octx.drawImage(tmp, 0, 0, W, H);
+  }
 
   // Sensor noise.
   const sigma = Math.random() < 0.5 ? rnd(2, 9) : 0;
@@ -166,10 +187,24 @@ async function loadImage(url: string): Promise<HTMLCanvasElement> {
       first = false;
       batch = [];
     };
+    // FULL closed-set coverage: cycle EVERY code (re-shuffled each pass) so each of the 980 album
+    // codes is rendered ~equally often — "overfit to all possible codes" is the goal (the output
+    // space is the fixed album, and at inference we only ever see one of these). Per-code variety
+    // (each rendered many times with independent augmentation) teaches the code, not a single render.
+    let pass: string[] = [];
+    let ci = 0;
     while (made < COUNT) {
-      // ~12% negatives, else a random code.
-      const neg = Math.random() < 0.12;
-      const code = neg ? null : pick(codes);
+      // ~16% negatives (card/logo/fine-print — teach the recognizer to REJECT non-pills, the FP guard).
+      const neg = Math.random() < 0.16;
+      let code: string | null = null;
+      if (!neg) {
+        if (ci >= pass.length) {
+          pass = [...codes];
+          for (let i = pass.length - 1; i > 0; i--) { const j = ri(0, i); [pass[i], pass[j]] = [pass[j], pass[i]]; }
+          ci = 0;
+        }
+        code = pass[ci++];
+      }
       const crop = renderSynthetic(code);
       const buf = letterboxGray(crop);
       batch.push({ label: neg ? '__neg__' : code!, b64: uint8ToB64(buf) });

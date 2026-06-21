@@ -99,6 +99,39 @@ export const CONFIG = {
      *  tight-ROI config uses 2. See recognize.ts for the full rationale. */
     maxBoxes: 4 as number,
   },
+  codenet: {
+    /** Multi-crop test-time augmentation (TTA) for the neural recognizer. Within ONE frame the
+     *  recognizer scores several looks at each detected pill — jittered re-crops at a few
+     *  scales/offsets + the 180° flip — in a single batched predict, then accepts the closed-set
+     *  code the most crops AGREE on. Agreement is the false-positive guard (noise scatters across
+     *  random codes and rarely agrees ≥ttaVotes times) AND the recall lever (a soft/small pill that
+     *  one crop misreads is recovered by another). All crops go in ONE tfjs predict, so on a
+     *  WebGL/WebGPU device the cost is ~one batched inference; on CPU it scales with the crop count,
+     *  so these knobs trade recall for latency. Validate on-device and dial DOWN if too slow on a
+     *  low-end phone (the ceiling is ~250ms): lower ttaMaxBoxes/ttaJitters first. */
+    ttaEnabled: true,
+    /** Detected boxes (best-first) to apply TTA to. The real pill is box[0]; extra boxes add
+     *  recall on multi-up/tilted frames at crop-count cost. 0 → fall back to the plain upright+flip
+     *  path (no jitter). */
+    ttaMaxBoxes: 3 as number,
+    /** Jitter variants per box (first N of [identity, upscale, downscale, shift+, shift−, vstretch]).
+     *  The downscale variant (N≥3) is the high-value one — it rescues small/far pills. Each box
+     *  contributes ttaJitters upright crops + 1 flip, so crops ≈ ttaMaxBoxes·(ttaJitters+1). */
+    ttaJitters: 3 as number,
+    /** A code must be the argmax of ≥ this many crops to be eligible (the agreement FP guard). */
+    ttaVotes: 2 as number,
+    /** A crop "votes" for its code above this posterior; "high-votes" (the ranking key) above ttaHigh. */
+    ttaSoft: 0.2,
+    ttaHigh: 0.8,
+    /** Accept gates on the winning code: peak single-crop posterior ≥ ttaPost AND peak margin
+     *  (log-prob gap of the code over the runner-up AND over the all-blank "no code" hypothesis)
+     *  ≥ ttaMargin. The margin gate is the real false-positive guard — jittered crops are
+     *  near-duplicate pixels so their agreement is correlated, not independent; margin is what
+     *  forces the winning code to genuinely beat "nothing here" on at least one crop. Must match the
+     *  value the accuracy bench validates at 0 FP. */
+    ttaPost: 0.5,
+    ttaMargin: 0.5,
+  },
   match: {
     /** Max Levenshtein distance for an OCR token to snap to a real code. */
     maxDistance: 1,
