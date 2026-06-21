@@ -113,41 +113,64 @@ export function TradeScreen({
   // "Salvar a lista do amigo": confirm/edit the friend's name (prefilled from the link), then save (or
   // update an existing friend matched by normalized name). The store canonicalizes the needs. Never
   // saves an empty name.
-  const [saveSheet, setSaveSheet] = useState<{ needs: string[] } | null>(null);
+  const [saveSheet, setSaveSheet] = useState<
+    | { phase: 'name'; needs: string[] }
+    | { phase: 'collision'; needs: string[]; name: string }
+    | null
+  >(null);
   const [saveNameDraft, setSaveNameDraft] = useState('');
   const openSaveFriend = () => {
     if (!friendPayload) return;
     setSaveNameDraft(sanitizeName(friendPayload.name) || '');
-    setSaveSheet({ needs: friendPayload.missing });
+    setSaveSheet({ phase: 'name', needs: friendPayload.missing });
   };
-  const confirmSaveFriend = () => {
+  // On submit: a brand-new name saves straight away; a name that matches a saved friend asks
+  // update-or-new (never silently overwrites the wrong friend — two friends can share a name).
+  const submitSaveName = () => {
+    if (saveSheet?.phase !== 'name') return;
     const name = sanitizeName(saveNameDraft);
-    if (!name || !saveSheet) return;
-    const existing = friendLists.findByNormalizedName(name);
-    if (existing.length === 1) {
-      friendLists.updateNeeds(existing[0].id, saveSheet.needs);
-      flash(pt.trade.friendUpdated(name));
+    if (!name) return;
+    if (friendLists.findByNormalizedName(name).length > 0) {
+      setSaveSheet({ phase: 'collision', needs: saveSheet.needs, name });
     } else {
       friendLists.add({ name, needs: saveSheet.needs, source: 'link' });
       flash(pt.trade.friendSaved(name));
+      setSaveSheet(null);
+    }
+  };
+  const saveAsUpdate = () => {
+    if (saveSheet?.phase !== 'collision') return;
+    const match = friendLists.findByNormalizedName(saveSheet.name)[0];
+    if (match) {
+      friendLists.updateNeeds(match.id, saveSheet.needs);
+      flash(pt.trade.friendUpdated(saveSheet.name));
     }
     setSaveSheet(null);
   };
+  const saveAsNew = () => {
+    if (saveSheet?.phase !== 'collision') return;
+    friendLists.add({ name: saveSheet.name, needs: saveSheet.needs, source: 'link' });
+    flash(pt.trade.friendSaved(saveSheet.name));
+    setSaveSheet(null);
+  };
 
-  // Gate the first paint until both stores have hydrated from IndexedDB. A friend opening a shared
+  // Gate the first paint until the stores have hydrated from IndexedDB. A friend opening a shared
   // ?t= link lands here immediately at startup; without this the match would briefly compute against
-  // an empty `owned` and show an inflated "serve pra você" count before correcting itself.
-  const [loaded, setLoaded] = useState(() => collection.loaded() && repeats.loaded());
+  // an empty `owned` and show an inflated "serve pra você" count before correcting itself. friendLists
+  // is gated too so the "Listas de amigos" section paints with the rest instead of popping in.
+  const [loaded, setLoaded] = useState(
+    () => collection.loaded() && repeats.loaded() && friendLists.loaded(),
+  );
   useEffect(() => {
     if (loaded) return;
     let active = true;
-    void Promise.all([collection.ready, repeats.ready]).then(() => {
+    void Promise.all([collection.ready, repeats.ready, friendLists.ready]).then(() => {
       if (active) setLoaded(true);
     });
     return () => {
       active = false;
     };
-  }, [loaded, collection, repeats]);
+  }, [loaded, collection, repeats, friendLists]);
 
   const owned = collection.codes();
   // A tradeable spare must be a sticker you still own — un-owning one in Coleção doesn't touch the
@@ -237,31 +260,50 @@ export function TradeScreen({
     </div>
   ) : null;
 
-  // "De quem é essa lista?" — confirm the friend's name before saving their list.
+  // "De quem é essa lista?" — name the friend before saving; if the name matches a saved friend,
+  // ask update-or-new so two friends who share a name can't clobber each other.
   const saveSheetEl = saveSheet ? (
     <div class="name-overlay" role="dialog" aria-modal="true" aria-label={pt.trade.saveFriendTitle}>
       <div class="name-card">
-        <h2>{pt.trade.saveFriendTitle}</h2>
-        <p>{pt.trade.saveFriendText(saveSheet.needs.length)}</p>
-        <input
-          class="name-input"
-          type="text"
-          value={saveNameDraft}
-          maxLength={24}
-          placeholder={pt.trade.saveFriendPlaceholder}
-          autofocus
-          onInput={(e) => setSaveNameDraft((e.currentTarget as HTMLInputElement).value)}
-        />
-        <button
-          class="btn btn-primary btn-block"
-          disabled={!sanitizeName(saveNameDraft)}
-          onClick={confirmSaveFriend}
-        >
-          {pt.trade.saveFriendSave}
-        </button>
-        <button class="link-btn name-skip" onClick={() => setSaveSheet(null)}>
-          {pt.trade.saveFriendCancel}
-        </button>
+        {saveSheet.phase === 'name' ? (
+          <>
+            <h2>{pt.trade.saveFriendTitle}</h2>
+            <p>{pt.trade.saveFriendText(saveSheet.needs.length)}</p>
+            <input
+              class="name-input"
+              type="text"
+              value={saveNameDraft}
+              maxLength={24}
+              placeholder={pt.trade.saveFriendPlaceholder}
+              autofocus
+              onInput={(e) => setSaveNameDraft((e.currentTarget as HTMLInputElement).value)}
+            />
+            <button
+              class="btn btn-primary btn-block"
+              disabled={!sanitizeName(saveNameDraft)}
+              onClick={submitSaveName}
+            >
+              {pt.trade.saveFriendSave}
+            </button>
+            <button class="link-btn name-skip" onClick={() => setSaveSheet(null)}>
+              {pt.trade.saveFriendCancel}
+            </button>
+          </>
+        ) : (
+          <>
+            <h2>{pt.trade.saveCollisionTitle(saveSheet.name)}</h2>
+            <p>{pt.trade.saveCollisionText}</p>
+            <button class="btn btn-primary btn-block" onClick={saveAsUpdate}>
+              {pt.trade.saveCollisionUpdate(saveSheet.name)}
+            </button>
+            <button class="btn btn-ghost btn-block" onClick={saveAsNew}>
+              {pt.trade.saveCollisionNew}
+            </button>
+            <button class="link-btn name-skip" onClick={() => setSaveSheet(null)}>
+              {pt.trade.saveFriendCancel}
+            </button>
+          </>
+        )}
       </div>
     </div>
   ) : null;
