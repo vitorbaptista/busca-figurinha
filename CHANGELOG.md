@@ -3,6 +3,21 @@
 Notable changes to the sticker scanner. Newest first. No formal releases yet (deploys on push to
 `main`), so entries are grouped by date. Keep this updated when you ship something notable.
 
+## 2026-06-20 — Ajustes: versão real do app (não mais "0.1.0" fixo)
+
+### Changed
+- A tela de **Ajustes** agora mostra a versão de verdade: **`Versão 0.1.0 (a1b2c3d)`** — o número
+  semver (de `package.json`) mais o **hash curto do commit**, gerados na hora do build. Antes o
+  `0.1.0` estava chumbado no código e nunca mudava; agora o hash troca a cada deploy, então dá pra
+  saber exatamente qual build a pessoa está usando (útil pra relatar problema), mesmo sem subir o
+  semver.
+
+### Notes
+- O semver continua sendo bumpado à mão no `package.json` quando você quiser marcar um lançamento; o
+  hash se vira sozinho.
+- Por ser um PWA com cache (service worker em `autoUpdate`), logo depois de um deploy a pessoa pode
+  ver por um instante o hash do build anterior até o app se atualizar na próxima abertura.
+
 ## 2026-06-20 — Escanear: reconhecimento de códigos muito melhor (rede neural retreinada + votação)
 
 ### Changed
