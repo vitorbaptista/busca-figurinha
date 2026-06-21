@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Caçar uma lista — escanear pra achar as do amigo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Oswald:wght@500;600;700&family=Archivo:wght@400;500;600;700&family=Archivo+Narrow:wght@600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="_base.css" />
+<style>
+  /* hunt context bar (replaces the page-tab while hunting) */
+  .huntbar { flex:none; display:flex; align-items:center; justify-content:space-between; gap:8px; padding:9px 14px; background:var(--ink); color:var(--cream); border-bottom:3px solid var(--gold-deep); }
+  .huntbar .exit { font-family:'Archivo Narrow'; font-weight:700; font-size:10px; letter-spacing:.08em; text-transform:uppercase; color:var(--cream); border:1.5px solid rgba(244,236,216,.5); border-radius:3px; padding:4px 8px; background:transparent; }
+  .huntbar .who { font-family:'Oswald'; font-weight:700; font-size:13px; letter-spacing:.02em; color:var(--gold); flex:1; text-align:center; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .huntbar .tally { font-family:'Archivo Narrow'; font-weight:700; font-size:11px; color:var(--cream); white-space:nowrap; }
+  .huntbar .tally b { font-family:'Anton'; font-size:17px; color:var(--gold); vertical-align:-1px; }
+  /* camera */
+  .cam { position:relative; flex:1; overflow:hidden; background:radial-gradient(circle at 50% 38%, #2a3b33 0%, #12211a 70%); display:flex; flex-direction:column; }
+  .cam::after { content:""; position:absolute; inset:0; background-image:radial-gradient(rgba(255,255,255,.05) 1px,transparent 1px); background-size:4px 4px; opacity:.5; }
+  .mira-wrap { position:absolute; top:34%; left:50%; transform:translate(-50%,-50%); z-index:3; width:210px; text-align:center; }
+  .mira { width:210px; height:140px; border:3px dashed var(--cream); border-radius:8px; position:relative; background:rgba(244,236,216,.06); }
+  .mira .corner { position:absolute; width:18px; height:18px; border:3px solid var(--gold); }
+  .mira .tl{top:-3px;left:-3px;border-right:0;border-bottom:0}.mira .tr{top:-3px;right:-3px;border-left:0;border-bottom:0}
+  .mira .bl{bottom:-3px;left:-3px;border-right:0;border-top:0}.mira .br{bottom:-3px;right:-3px;border-left:0;border-top:0}
+  .mira .cole { position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); font-family:'Archivo Narrow'; font-weight:700; font-size:10px; letter-spacing:.18em; text-transform:uppercase; color:rgba(244,236,216,.6); }
+  .hint { position:absolute; top:calc(34% + 92px); left:50%; transform:translateX(-50%); z-index:3; background:var(--ink); color:var(--cream); font-family:'Oswald'; font-weight:600; font-size:12px; padding:6px 13px; border-radius:3px; border:2px solid var(--gold-deep); white-space:nowrap; }
+  /* verdict (hero) — copied idiom from the scan flash */
+  .verdict { position:absolute; left:0; right:0; bottom:0; z-index:5; background:var(--keep); border-top:5px solid var(--ink); padding:16px 18px 18px; color:var(--cream); box-shadow:0 -6px 0 rgba(15,60,39,.45), 0 -16px 22px rgba(0,0,0,.35); }
+  .verdict::before { content:""; position:absolute; top:-5px; left:0; right:0; height:5px; background:repeating-linear-gradient(90deg,var(--gold) 0 14px,var(--ink) 14px 22px); }
+  .verdict-head { display:flex; align-items:center; gap:13px; }
+  .verdict-mark { flex:none; width:44px; height:44px; border-radius:50%; background:var(--gold); color:var(--ink); display:flex; align-items:center; justify-content:center; font-family:'Archivo'; font-weight:700; font-size:27px; border:3px solid var(--ink); box-shadow:3px 3px 0 var(--paper-edge); }
+  .verdict-word { font-family:'Anton'; font-size:50px; line-height:.82; text-transform:uppercase; color:#fff; letter-spacing:.005em; text-shadow:3px 3px 0 var(--paper-edge); }
+  .verdict-info { display:flex; flex-wrap:wrap; align-items:center; gap:7px 11px; margin-top:13px; }
+  .verdict-code { font-family:'Archivo Narrow'; font-weight:700; font-size:23px; letter-spacing:.02em; background:var(--cream); color:var(--ink); padding:3px 12px 2px; border-radius:3px; border:2px solid var(--ink); }
+  .verdict-team { font-family:'Oswald'; font-weight:600; font-size:16px; color:#fff; }
+  .verdict-sub { width:100%; font-family:'Archivo Narrow'; font-weight:700; font-size:10.5px; letter-spacing:.14em; text-transform:uppercase; color:rgba(244,236,216,.9); }
+  /* skip variant — neutral kraft, never the brick red */
+  .verdict.skip { background:var(--miss); color:var(--ink); border-top-color:var(--ink); }
+  .verdict.skip::before { background:repeating-linear-gradient(90deg,var(--ink) 0 14px,var(--miss) 14px 22px); }
+  .verdict.skip .verdict-mark { background:var(--cream); color:var(--ink); }
+  .verdict.skip .verdict-word { color:var(--ink); text-shadow:3px 3px 0 rgba(255,255,255,.45); font-size:40px; }
+  .verdict.skip .verdict-sub { color:#3a2c12; }
+  /* end state */
+  .done { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:24px; background:radial-gradient(circle at 50% 36%, #2bd06f 0%, var(--keep) 60%); }
+  .done .trophy { font-size:58px; }
+  .done h2 { font-family:'Anton'; font-weight:400; font-size:42px; line-height:.95; text-transform:uppercase; color:#fff; text-shadow:3px 3px 0 var(--paper-edge); margin:8px 0 6px; }
+  .done p { font-family:'Oswald'; font-weight:600; font-size:15px; color:#eafff0; margin:0 0 24px; }
+  .done .b1 { width:100%; background:var(--gold); color:var(--ink); border:3px solid var(--ink); border-radius:5px; font-family:'Anton'; font-size:18px; text-transform:uppercase; padding:13px; box-shadow:5px 5px 0 var(--paper-edge); }
+  .done .b2 { margin-top:10px; width:100%; background:transparent; color:#fff; border:2px dashed #fff; border-radius:5px; font-family:'Oswald'; font-weight:600; font-size:13px; text-transform:uppercase; padding:11px; }
+  /* entry CTA on the friend screen */
+  .friendcta { flex:1; display:flex; flex-direction:column; padding:14px; }
+  .fc-head { background:var(--cream); border:3px solid var(--ink); border-radius:6px; box-shadow:6px 6px 0 var(--paper-edge); padding:14px 16px; }
+  .fc-head .k { font-family:'Archivo Narrow'; font-weight:700; font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:var(--dupe); }
+  .fc-head h3 { font-family:'Anton'; font-weight:400; font-size:26px; line-height:1; text-transform:uppercase; color:var(--paper); margin:5px 0 0; }
+  .fc-head p { font-family:'Archivo'; font-weight:500; font-size:12.5px; color:#3a4a40; margin:8px 0 0; }
+  .hunt-cta { margin:16px 0 0; display:flex; align-items:center; justify-content:center; gap:9px; width:100%; background:var(--gold); color:var(--ink); border:3px solid var(--ink); border-radius:5px; font-family:'Anton'; font-size:18px; text-transform:uppercase; padding:14px; box-shadow:5px 5px 0 var(--paper-edge); }
+  .hunt-sub { text-align:center; margin:10px 4px 0; font-family:'Archivo'; font-weight:500; font-size:11.5px; color:rgba(244,236,216,.8); }
+  .steplab2 { margin:16px auto 0; text-align:center; width:360px; flex:none; }
+  .steplab2 .n { display:inline-flex; align-items:center; gap:9px; background:var(--cream); color:var(--ink); border:2px solid var(--ink); border-radius:999px; padding:7px 16px 7px 8px; box-shadow:3px 3px 0 var(--paper-edge); }
+  .steplab2 .n b { width:26px; height:26px; border-radius:50%; background:var(--gold); color:var(--ink); border:2px solid var(--ink); display:flex; align-items:center; justify-content:center; font-family:'Anton'; font-size:15px; }
+  .steplab2 .n span { font-family:'Oswald'; font-weight:700; font-size:13px; text-transform:uppercase; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="cap">
+    <div class="kick">Troca Figurinhas · Copa 2026 · proposta</div>
+    <h1>Caçar uma lista no maço</h1>
+    <p>Seu amigo precisa de 50 figurinhas e você tem um maço enorme na mão. Carregue a lista dele,
+    entre no modo caça e escaneie uma por uma: o app grita <strong>SEPARA!</strong> quando a figurinha
+    é da lista. É o mesmo escâner de sempre, só num modo de busca — não mexe na sua coleção.</p>
+  </header>
+
+  <div class="phones">
+
+    <!-- 1 · CARREGA A LISTA (do amigo) -->
+    <div>
+      <div class="device"><div class="notch"></div><div class="screen">
+        <div class="statusbar"><span>9:41</span><span class="dots">📶 ▮▮▮ 84%</span></div>
+        <div class="pagetab"><span class="name">Trocar</span><span class="pg">com o João</span></div>
+        <div class="body"><div class="friendcta">
+          <div class="fc-head">
+            <div class="k">A lista do João</div>
+            <h3>O João precisa de 47</h3>
+            <p>Você tem um maço pra conferir? Deixa o app achar as 47 dele pra você no meio da pilha.</p>
+          </div>
+          <button class="hunt-cta">🎯 Caçar as 47 que o João precisa</button>
+          <div class="hunt-sub">Some da câmera quando você acha todas. Não mexe na sua coleção.</div>
+        </div></div>
+      </div></div>
+      <div class="steplab2"><span class="n"><b>1</b><span>Carrega a lista do amigo</span></span></div>
+    </div>
+
+    <!-- 2 · SEPARA! (match) -->
+    <div>
+      <div class="device"><div class="notch"></div><div class="screen">
+        <div class="statusbar"><span>9:41</span><span class="dots">📶 ▮▮▮ 84%</span></div>
+        <div class="huntbar"><button class="exit">✕ Sair</button><span class="who">🎯 Lista do João</span><span class="tally">achei <b>12</b> de 47</span></div>
+        <div class="body"><div class="cam">
+          <div class="mira-wrap"><div class="mira"><span class="corner tl"></span><span class="corner tr"></span><span class="corner bl"></span><span class="corner br"></span><span class="cole">Cole aqui</span></div></div>
+          <div class="verdict">
+            <div class="verdict-head"><span class="verdict-mark">✓</span><div class="verdict-word">Separa!</div></div>
+            <div class="verdict-info"><span class="verdict-code">CIV 12</span><span class="verdict-team">Costa do Marfim</span><span class="verdict-sub">Essa é da lista — nº 12 de 47</span></div>
+          </div>
+        </div></div>
+      </div></div>
+      <div class="steplab2"><span class="n"><b>2</b><span>"Separa!" = é da lista</span></span></div>
+    </div>
+
+    <!-- 3 · NÃO É DESSA (skip) -->
+    <div>
+      <div class="device"><div class="notch"></div><div class="screen">
+        <div class="statusbar"><span>9:41</span><span class="dots">📶 ▮▮▮ 84%</span></div>
+        <div class="huntbar"><button class="exit">✕ Sair</button><span class="who">🎯 Lista do João</span><span class="tally">achei <b>12</b> de 47</span></div>
+        <div class="body"><div class="cam">
+          <div class="mira-wrap"><div class="mira"><span class="corner tl"></span><span class="corner tr"></span><span class="corner bl"></span><span class="corner br"></span><span class="cole">Cole aqui</span></div></div>
+          <div class="verdict skip">
+            <div class="verdict-head"><span class="verdict-mark">–</span><div class="verdict-word">Não é dessa</div></div>
+            <div class="verdict-info"><span class="verdict-code">BRA 7</span><span class="verdict-team">Brasil</span><span class="verdict-sub">Não tá na lista — pode passar</span></div>
+          </div>
+        </div></div>
+      </div></div>
+      <div class="steplab2"><span class="n"><b>3</b><span>Calmo: não é da lista</span></span></div>
+    </div>
+
+    <!-- 4 · ACHEI TODAS -->
+    <div>
+      <div class="device"><div class="notch"></div><div class="screen">
+        <div class="statusbar"><span>9:41</span><span class="dots">📶 ▮▮▮ 84%</span></div>
+        <div class="huntbar"><button class="exit">✕ Sair</button><span class="who">🎯 Lista do João</span><span class="tally">achei <b>47</b> de 47</span></div>
+        <div class="body"><div class="done">
+          <div class="trophy">🏆</div>
+          <h2>Achei todas!</h2>
+          <p>As 47 figurinhas do João tão na pilha 🎉</p>
+          <button class="b1">Concluir caça</button>
+          <button class="b2">Caçar outra lista</button>
+        </div></div>
+      </div></div>
+      <div class="steplab2"><span class="n"><b>4</b><span>Achou as 47: bora trocar</span></span></div>
+    </div>
+
+  </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Importar lista de outro app — Troca Figurinhas</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Oswald:wght@500;600;700&family=Archivo:wght@400;500;600;700&family=Archivo+Narrow:wght@600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="_base.css" />
+<style>
+  .body-pad { padding: 14px; display: flex; flex-direction: column; gap: 0; }
+  .intro { font-family:'Archivo'; font-weight:500; font-size:12.5px; line-height:1.5; color:var(--cream); margin:2px 2px 12px; }
+  /* segmented bucket toggle */
+  .seg { display:flex; gap:0; border:2px solid var(--ink); border-radius:5px; overflow:hidden; box-shadow:3px 3px 0 var(--paper-edge); }
+  .seg button { flex:1; font-family:'Oswald'; font-weight:700; font-size:13px; letter-spacing:.04em; text-transform:uppercase; padding:11px 6px; background:var(--cream); color:var(--kraft-text); border:0; border-right:2px solid var(--ink); }
+  .seg button:last-child { border-right:0; }
+  .seg button.on { background:var(--gold); color:var(--ink); }
+  .seg-lbl { font-family:'Archivo Narrow'; font-weight:700; font-size:9.5px; letter-spacing:.1em; text-transform:uppercase; color:var(--text-dim); margin:12px 2px 6px; }
+  /* textarea card */
+  .ta { background:var(--cream); border:2px solid var(--ink); border-radius:5px; box-shadow:4px 4px 0 var(--paper-edge); padding:12px 13px; min-height:150px; color:#7c705a; font-family:'Archivo'; font-weight:500; font-size:12.5px; line-height:1.55; }
+  .ta b { color:var(--ink); }
+  .paste-btn { margin-top:10px; width:100%; text-align:center; background:transparent; color:var(--cream); border:2px dashed var(--cream); border-radius:5px; font-family:'Oswald'; font-weight:600; font-size:12.5px; letter-spacing:.04em; text-transform:uppercase; padding:10px; }
+  .load-btn { margin-top:12px; display:flex; align-items:center; justify-content:center; gap:9px; width:100%; background:var(--gold); color:var(--ink); border:3px solid var(--ink); border-radius:5px; font-family:'Anton'; font-size:19px; letter-spacing:.02em; text-transform:uppercase; padding:13px; box-shadow:5px 5px 0 var(--paper-edge); }
+  /* preview card */
+  .pcard { background:var(--cream); border:3px solid var(--ink); border-radius:6px; box-shadow:6px 6px 0 var(--paper-edge); padding:16px; color:var(--ink); }
+  .pcard .ok { font-family:'Oswald'; font-weight:700; font-size:15px; color:var(--keep); display:flex; align-items:center; gap:8px; }
+  .pcard .big { font-family:'Anton'; font-size:64px; line-height:.9; color:var(--paper); margin:10px 0 0; }
+  .pcard .big small { font-family:'Oswald'; font-weight:600; font-size:16px; color:var(--kraft-text); margin-left:8px; }
+  .pcard .unrec { margin-top:12px; font-family:'Archivo Narrow'; font-weight:700; font-size:12px; letter-spacing:.04em; text-transform:uppercase; color:var(--kraft-text); border-top:1.5px dashed var(--kraft-deep); padding-top:10px; }
+  .pcard .dest { margin-top:10px; background:var(--cream-dim); border:1.5px solid var(--kraft-deep); border-radius:4px; padding:9px 11px; font-family:'Archivo'; font-weight:600; font-size:12.5px; color:#3a4a40; }
+  .pcard .dest small { display:block; font-weight:500; color:var(--kraft-text); margin-top:2px; }
+  .add-btn { margin-top:14px; display:flex; align-items:center; justify-content:center; gap:9px; width:100%; background:var(--keep); color:#fff; border:3px solid var(--ink); border-radius:5px; font-family:'Anton'; font-size:19px; text-transform:uppercase; padding:13px; box-shadow:5px 5px 0 var(--paper-edge); }
+  .rev-btn { margin-top:10px; width:100%; text-align:center; background:transparent; color:var(--cream); border:2px dashed var(--cream); border-radius:5px; font-family:'Oswald'; font-weight:600; font-size:13px; letter-spacing:.05em; text-transform:uppercase; padding:10px; }
+  /* success */
+  .succ { display:flex; flex-direction:column; align-items:center; text-align:center; padding:40px 16px 0; }
+  .succ .mark { width:74px; height:74px; border-radius:50%; background:var(--keep); color:#fff; border:3px solid var(--ink); box-shadow:4px 4px 0 var(--paper-edge); display:flex; align-items:center; justify-content:center; font-family:'Archivo'; font-weight:700; font-size:40px; }
+  .succ h2 { font-family:'Anton'; font-weight:400; font-size:30px; line-height:1; text-transform:uppercase; color:var(--cream); margin:18px 0 6px; }
+  .succ p { font-family:'Oswald'; font-weight:600; font-size:15px; color:var(--gold); margin:0 0 22px; }
+  .succ .b1 { width:100%; background:var(--gold); color:var(--ink); border:3px solid var(--ink); border-radius:5px; font-family:'Anton'; font-size:18px; text-transform:uppercase; padding:13px; box-shadow:5px 5px 0 var(--paper-edge); }
+  .succ .b2 { margin-top:10px; width:100%; background:transparent; color:var(--cream); border:2px dashed var(--cream); border-radius:5px; font-family:'Oswald'; font-weight:600; font-size:13px; text-transform:uppercase; padding:11px; }
+  .steplab2 { margin:16px auto 0; text-align:center; width:360px; flex:none; }
+  .steplab2 .n { display:inline-flex; align-items:center; gap:9px; background:var(--cream); color:var(--ink); border:2px solid var(--ink); border-radius:999px; padding:7px 16px 7px 8px; box-shadow:3px 3px 0 var(--paper-edge); }
+  .steplab2 .n b { width:26px; height:26px; border-radius:50%; background:var(--gold); color:var(--ink); border:2px solid var(--ink); display:flex; align-items:center; justify-content:center; font-family:'Anton'; font-size:15px; }
+  .steplab2 .n span { font-family:'Oswald'; font-weight:700; font-size:13px; text-transform:uppercase; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="cap">
+    <div class="kick">Troca Figurinhas · Copa 2026 · proposta</div>
+    <h1>Importar a lista de outro app</h1>
+    <p>Muita gente já controla o álbum em outro app e manda a lista no grupo do WhatsApp. Em vez de
+    marcar tudo na mão, é só colar o texto: a gente lê os códigos e bota na sua coleção (ou na sua
+    lista de desejos). Reaproveita o parser que já está sendo feito.</p>
+  </header>
+
+  <div class="phones">
+
+    <!-- 1 · COLE -->
+    <div>
+      <div class="device"><div class="notch"></div><div class="screen">
+        <div class="statusbar"><span>9:41</span><span class="dots">📶 ▮▮▮ 84%</span></div>
+        <div class="pagetab"><span class="name">Importar</span><span class="pg">de outro app</span></div>
+        <div class="body"><div class="body-pad">
+          <div class="intro">Cole o texto do grupo e diga se é o que você <b>tem</b> ou o que <b>precisa</b>.</div>
+          <div class="seg-lbl">Esta lista é…</div>
+          <div class="seg"><button class="on">✓ Tenho</button><button>Preciso</button></div>
+          <div class="seg-lbl">Cole o texto</div>
+          <div class="ta">Tenho: <b>BRA 3, 6, 10, 20</b><br>CIV 8, 12<br>MEX 1, 4, 9<br>ARG 5, 11, 14, 18<br>FRA 2, 7, 13…</div>
+          <button class="paste-btn">📋 Colar da área de transferência</button>
+          <button class="load-btn">⬇️ Carregar lista</button>
+        </div></div>
+      </div></div>
+      <div class="steplab2"><span class="n"><b>1</b><span>Cole e escolha o destino</span></span></div>
+    </div>
+
+    <!-- 2 · CONFERE -->
+    <div>
+      <div class="device"><div class="notch"></div><div class="screen">
+        <div class="statusbar"><span>9:41</span><span class="dots">📶 ▮▮▮ 84%</span></div>
+        <div class="pagetab"><span class="name">Importar</span><span class="pg">confere</span></div>
+        <div class="body"><div class="body-pad">
+          <div class="pcard">
+            <div class="ok">✓ Encontrei sua lista!</div>
+            <div class="big">187<small>reconhecidas</small></div>
+            <div class="dest">Vão pra 📚 Minha coleção<small>Junta com o que você já tem — não apaga nada.</small></div>
+            <div class="unrec">▸ 4 não reconhecidas (XYZ 9, BRA 999…)</div>
+          </div>
+          <button class="add-btn">➕ Adicionar 187</button>
+          <button class="rev-btn">← Voltar e revisar</button>
+        </div></div>
+      </div></div>
+      <div class="steplab2"><span class="n"><b>2</b><span>Confere antes de salvar</span></span></div>
+    </div>
+
+    <!-- 3 · PRONTO -->
+    <div>
+      <div class="device"><div class="notch"></div><div class="screen">
+        <div class="statusbar"><span>9:41</span><span class="dots">📶 ▮▮▮ 84%</span></div>
+        <div class="pagetab"><span class="name">Importar</span><span class="pg">pronto</span></div>
+        <div class="body"><div class="succ">
+          <div class="mark">✓</div>
+          <h2>Pronto!</h2>
+          <p>187 figurinhas foram pra sua coleção</p>
+          <button class="b1">📚 Ver na coleção</button>
+          <button class="b2">Colar outra lista</button>
+        </div></div>
+      </div></div>
+      <div class="steplab2"><span class="n"><b>3</b><span>Cai na coleção montada</span></span></div>
+    </div>
+
+  </div>
+</div>
+</body>
+</html>
