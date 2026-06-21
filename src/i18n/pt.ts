@@ -98,6 +98,12 @@ export const pt = {
     // Repeats-only session (nothing new to keep): the CTA still has to commit the spares.
     saveRepeats: (n: number) =>
       n === 1 ? 'Guardar 1 repetida pra trocar' : `Guardar ${n} repetidas pra trocar`,
+    // Mixed session: the commit always saves the checked keepers AND every repeat, so the CTA
+    // has to name both — otherwise it reads as if only the news (or only the repetidas) are saved.
+    addBoth: (keepers: number, repeats: number) =>
+      `Salvar ${keepers} ${keepers === 1 ? 'nova' : 'novas'} + ${repeats} ${
+        repeats === 1 ? 'repetida' : 'repetidas'
+      }`,
     back: 'Voltar a escanear',
     added: 'Adicionadas à coleção!',
     repeatsSaved: 'Repetidas guardadas pra trocar!',

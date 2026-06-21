@@ -2,6 +2,17 @@ import { useMemo, useState } from 'preact/hooks';
 import type { CollectionStore, SessionReport } from '../../types';
 import { pt } from '../../i18n/pt';
 
+/** The commit CTA's label. `commit` ALWAYS saves both the checked keepers and every scanned
+ *  repeat, so when both are present the label must name both — otherwise it reads as if only
+ *  the keepers (or only the repetidas) get saved, and the user un-checks the news to "reach"
+ *  the repetidas. */
+export function commitLabel(checkedCount: number, repeatsCount: number): string {
+  if (checkedCount > 0 && repeatsCount > 0) return pt.report.addBoth(checkedCount, repeatsCount);
+  if (checkedCount > 0) return pt.report.add(checkedCount);
+  if (repeatsCount > 0) return pt.report.saveRepeats(repeatsCount);
+  return pt.report.addEmpty;
+}
+
 interface ReportScreenProps {
   report: SessionReport;
   collection: CollectionStore;
@@ -141,11 +152,7 @@ export function ReportScreen({
           onClick={commit}
           disabled={checkedCount === 0 && repeats.length === 0}
         >
-          {checkedCount > 0
-            ? pt.report.add(checkedCount)
-            : repeats.length > 0
-              ? pt.report.saveRepeats(repeats.length)
-              : pt.report.addEmpty}
+          {commitLabel(checkedCount, repeats.length)}
         </button>
         <button class="btn btn-ghost btn-block" onClick={onBack}>
           {pt.report.back}
