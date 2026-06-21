@@ -12,9 +12,10 @@ Notable changes to the sticker scanner. Newest first. No formal releases yet (de
 ### Added
 - **Contador enquanto você confere:** mostra quantas figurinhas tem **pra você** (que você precisa) e
   quantas **pros amigos** (que um amigo salvo precisa), conforme você passa o maço.
-- **Salvar na coleção:** depois de trocar, um toque em **"💾 Salvar N na coleção"** bota de uma vez todas
-  as que eram pra você (você pegou na troca) na sua coleção — sem re-escanear. As dos amigos não entram
-  (não são suas pra guardar).
+- **Salvar na coleção:** depois de trocar, **"💾 Salvar na coleção"** abre uma listinha das que eram pra
+  você pra você **marcar só as que pegou de verdade** ("Pegou quais?") e botar na sua coleção de uma vez —
+  sem re-escanear. As que você só olhou (não pegou) ficam de fora, e as dos amigos não entram (não são suas
+  pra guardar).
 
 ## 2026-06-21 — Resumo do escaneamento: botão pra guardar só as novas
 

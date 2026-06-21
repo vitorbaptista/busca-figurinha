@@ -3365,6 +3365,64 @@ html.scan-active body {
   text-align: center;
 }
 
+/* "Pegou quais?" — per-item review before saving to the album (reuses .name-overlay/.name-card) */
+.conferir-review .review-list {
+  max-height: 46vh;
+  overflow-y: auto;
+  margin: 4px 0 14px;
+  border: 2px dashed var(--kraft-deep);
+  border-radius: var(--radius);
+}
+.review-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 10px 12px;
+  background: transparent;
+  border: 0;
+  border-bottom: 1.5px dashed var(--kraft-deep);
+  cursor: pointer;
+  text-align: left;
+}
+.review-row:last-child {
+  border-bottom: 0;
+}
+.review-check {
+  flex: none;
+  width: 26px;
+  height: 26px;
+  border-radius: 6px;
+  border: 2px solid var(--ink);
+  background: var(--cream);
+  color: var(--keep);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+}
+.review-row.is-on .review-check {
+  background: var(--keep);
+  color: var(--cream);
+}
+.review-code {
+  font-family: var(--font-head);
+  font-weight: 700;
+  font-size: 1.05rem;
+  letter-spacing: 0.02em;
+  color: var(--ink);
+}
+.review-team {
+  font-size: 0.9rem;
+  color: var(--kraft-text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.review-row:not(.is-on) {
+  opacity: 0.6;
+}
+
 /* The Conferir verdict — docked card, mirrors the album .verdict but trade-framed (PEGA/DEIXA). */
 .conferir-verdict {
   position: relative;

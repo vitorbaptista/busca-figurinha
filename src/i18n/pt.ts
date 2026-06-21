@@ -110,6 +110,16 @@ export const pt = {
     save: (n: number) => (n === 1 ? 'Salvar 1 na coleção' : `Salvar ${n} na coleção`),
     saved: (n: number) =>
       n === 1 ? '1 figurinha salva na coleção! ✓' : `${n} figurinhas salvas na coleção! ✓`,
+    // Per-item review before saving — scanning ≠ trading, so confirm which you actually took.
+    reviewTitle: 'Pegou quais?',
+    reviewSub: 'Marque só as que você pegou de verdade na troca. As outras ficam de fora.',
+    reviewSave: (n: number) =>
+      n === 0
+        ? 'Salvar na coleção'
+        : n === 1
+          ? 'Salvar 1 na coleção'
+          : `Salvar ${n} na coleção`,
+    reviewCancel: 'Agora não',
   },
 
   report: {

@@ -110,15 +110,31 @@ export function ConferirScreen({ collection, friendLists, settings, onBack }: Co
     setAnnounce(`${entry.display}: ${who}${zwsp}`);
   };
 
-  // The ONE write in this screen — explicit + user-initiated (you actually did the trade): add the
-  // stickers you needed to your album. Same trust bar as the album scanner's report commit (the reads
-  // are confirmer-gated) and reversible in Coleção. The friend-takes are NOT saved (not yours to keep).
-  const saveTaken = () => {
+  // Tapping "Salvar" opens a per-item review (NOT a blind save-all): scanning a sticker only means you
+  // LOOKED at it, not that you traded for it — so the user confirms which ones they actually took before
+  // any get marked owned. Mirrors the album report's checked-keeper gate; preserves the cardinal rule
+  // (never mark a sticker owned that you don't physically have). Friend-takes are never offered here.
+  const [reviewSelected, setReviewSelected] = useState<Set<string> | null>(null);
+  const openReview = () => {
     if (takenForMe.size === 0) return;
-    const n = takenForMe.size;
-    collection.setOwned([...takenForMe], true);
+    setReviewSelected(new Set(takenForMe));
+  };
+  const toggleReview = (code: string) =>
+    setReviewSelected((s) => {
+      if (!s) return s;
+      const next = new Set(s);
+      if (next.has(code)) next.delete(code);
+      else next.add(code);
+      return next;
+    });
+  // Confirm: add ONLY the still-checked ones (the stickers you actually took), then end the session.
+  const confirmSave = () => {
+    if (!reviewSelected) return;
+    const codes = [...reviewSelected];
+    if (codes.length > 0) collection.setOwned(codes, true);
+    setReviewSelected(null);
     setTakenForMe(new Set());
-    flash(pt.conferir.saved(n));
+    if (codes.length > 0) flash(pt.conferir.saved(codes.length));
   };
 
   // ---------- OCR engine init (codeNet ensemble + hybrid), identical 0-FP discipline ----------
@@ -436,13 +452,54 @@ export function ConferirScreen({ collection, friendLists, settings, onBack }: Co
             </div>
           )}
           {takenForMe.size > 0 && (
-            <button class="conferir-save" onClick={saveTaken}>
+            <button class="conferir-save" onClick={openReview}>
               💾 {pt.conferir.save(takenForMe.size)}
             </button>
           )}
           {verdict && <ConferirVerdict state={verdict} onManual={() => setShowManual(true)} />}
         </div>
       </div>
+
+      {reviewSelected !== null && (
+        <div class="name-overlay" role="dialog" aria-modal="true" aria-label={pt.conferir.reviewTitle}>
+          <div class="name-card conferir-review">
+            <h2>{pt.conferir.reviewTitle}</h2>
+            <p>{pt.conferir.reviewSub}</p>
+            <div class="review-list">
+              {checklist.entries
+                .filter((e) => takenForMe.has(e.code))
+                .map((e) => {
+                  const on = reviewSelected.has(e.code);
+                  return (
+                    <button
+                      key={e.code}
+                      type="button"
+                      class={`review-row${on ? ' is-on' : ''}`}
+                      aria-pressed={on}
+                      onClick={() => toggleReview(e.code)}
+                    >
+                      <span class="review-check" aria-hidden="true">
+                        {on ? '✓' : ''}
+                      </span>
+                      <span class="review-code">{e.display}</span>
+                      <span class="review-team">{e.teamName}</span>
+                    </button>
+                  );
+                })}
+            </div>
+            <button
+              class="btn btn-primary btn-block"
+              disabled={reviewSelected.size === 0}
+              onClick={confirmSave}
+            >
+              {pt.conferir.reviewSave(reviewSelected.size)}
+            </button>
+            <button class="link-btn name-skip" onClick={() => setReviewSelected(null)}>
+              {pt.conferir.reviewCancel}
+            </button>
+          </div>
+        </div>
+      )}
 
       {showManual && (
         <div class="manual-sheet">
