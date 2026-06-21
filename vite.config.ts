@@ -339,18 +339,46 @@ export default defineConfig({
         ],
       },
       manifest: {
+        // A FIXED install-identity key, emitted verbatim. Unlike start_url/scope (which are
+        // relative and resolve against the manifest URL), id has no base to resolve against, so
+        // pinning it keeps the installed-app identity stable even if start_url ever changes (a
+        // changed id would orphan the existing install).
+        id: '/busca-figurinha/',
         name: 'Troca Figurinhas — Copa 2026',
         short_name: 'Figurinhas',
         description: 'Escaneie figurinhas da Copa 2026 e saiba na hora quais guardar.',
         lang: 'pt-BR',
+        categories: ['sports', 'utilities'],
+        // Relative; they resolve against the manifest's own URL (served under the base), so they
+        // become /busca-figurinha/ in CI and / in dev — no hardcoded base, no per-build rewrite.
+        scope: '.',
+        start_url: '.',
         theme_color: '#0b7d3b',
-        background_color: '#0f1115',
+        // The app's actual first-paint colour (--paper-deep in styles.css), so the launch splash
+        // → app transition has no colour flash. Was #0f1115 (near-black), which flashed.
+        background_color: '#185438',
         display: 'standalone',
         orientation: 'portrait',
         icons: [
           { src: 'icons/icon-192.png', sizes: '192x192', type: 'image/png' },
           { src: 'icons/icon-512.png', sizes: '512x512', type: 'image/png' },
           { src: 'icons/icon-maskable-512.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
+        ],
+        // Long-press the launcher icon → jump straight into a section. Hash deep links are read on
+        // cold start by screenFromHash (app.tsx); each needs its own icon or launchers show a blank.
+        shortcuts: [
+          {
+            name: 'Escanear figurinha',
+            short_name: 'Escanear',
+            url: './#escanear',
+            icons: [{ src: 'icons/shortcut-scan-96.png', sizes: '96x96', type: 'image/png' }],
+          },
+          {
+            name: 'Trocar figurinhas',
+            short_name: 'Trocar',
+            url: './#trocar',
+            icons: [{ src: 'icons/shortcut-trade-96.png', sizes: '96x96', type: 'image/png' }],
+          },
         ],
       },
     }),

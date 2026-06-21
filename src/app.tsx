@@ -11,6 +11,8 @@ import { useStore } from './ui/hooks';
 import { Nav, type Screen } from './ui/Nav';
 import { screenFromHash, sectionUrl } from './ui/routing';
 import { Onboarding } from './ui/Onboarding';
+import { InstallPrompt } from './ui/InstallPrompt';
+import { usePwaInstall } from './ui/usePwaInstall';
 import { ScanScreen } from './ui/screens/ScanScreen';
 import { ReportScreen } from './ui/screens/ReportScreen';
 import { TradeScreen } from './ui/screens/TradeScreen';
@@ -96,7 +98,14 @@ export function App() {
   const [report, setReport] = useState<SessionReport | null>(null);
   const [friendPayload, setFriendPayload] = useState<TradePayload | null>(initialFriendPayload);
 
+  // PWA install flow. The hook lives here at the root because `beforeinstallprompt` fires early
+  // (before lazily-mounted screens exist); its result is passed down to Ajustes. `installOpen`
+  // is 'auto' (the one-time nudge) or 'manual' (reopened from Ajustes) so dismiss can differ.
+  const pwa = usePwaInstall();
+  const [installOpen, setInstallOpen] = useState<'auto' | 'manual' | null>(null);
+
   const onboarded = settings.get().onboarded;
+  const installDismissed = settings.get().installDismissed;
 
   // Mirror the active section into the URL hash so a refresh/shared link restores it, and (once a
   // ?t= friend link has been read into state) strip that query so a reload doesn't re-open the
@@ -107,6 +116,24 @@ export function App() {
     if (typeof history === 'undefined' || typeof location === 'undefined') return;
     history.replaceState(history.state, '', sectionUrl(location, screen, !!initialFriendPayload));
   }, [screen]);
+
+  // Auto-show the install nudge once, after onboarding, when the app is actually installable and
+  // hasn't been dismissed. NOT on the scan screen — that's the camera surface, where an overlay
+  // would fight the permission prompt and interrupt scanning; the nudge waits for an idle moment
+  // (any other tab). `?? 'auto'` never clobbers a 'manual' open already in progress.
+  useEffect(() => {
+    if (onboarded && !installDismissed && !pwa.isStandalone && pwa.invite !== 'none' && screen !== 'scan') {
+      setInstallOpen((cur) => cur ?? 'auto');
+    }
+  }, [onboarded, installDismissed, pwa.isStandalone, pwa.invite, screen]);
+
+  /** Close the install sheet and stop auto-nagging — once the user has seen the invite (whether
+   *  the auto nudge or one they opened from Ajustes), don't pop it again. They can still install
+   *  any time from the Ajustes row, which ignores `installDismissed`. */
+  const closeInstall = () => {
+    settings.set({ installDismissed: true });
+    setInstallOpen(null);
+  };
 
   /** Build the report, end the current scan session, and move to the report screen. */
   const finishSession = () => {
@@ -179,7 +206,15 @@ export function App() {
       )}
 
       {screen === 'settings' && (
-        <SettingsScreen collection={collection} repeats={repeats} wants={wants} settings={settings} />
+        <SettingsScreen
+          collection={collection}
+          repeats={repeats}
+          wants={wants}
+          settings={settings}
+          installInvite={pwa.invite}
+          isStandalone={pwa.isStandalone}
+          onOpenInstall={() => setInstallOpen('manual')}
+        />
       )}
 
       {/* Hide the bottom nav while a friend's shared list is open: the receiver has no tabs to use
@@ -192,6 +227,16 @@ export function App() {
           move), so it appears the moment they tap "Escanear". */}
       {!onboarded && !(initialFriendPayload && screen === 'trade') && (
         <Onboarding onDone={() => settings.set({ onboarded: true })} />
+      )}
+
+      {/* Install nudge. Only once onboarded and actually installable; hidden behind a friend's
+          shared list (same as the nav). `kind` is the capability the hook resolved. */}
+      {installOpen && onboarded && pwa.invite !== 'none' && !(friendPayload && screen === 'trade') && (
+        <InstallPrompt
+          kind={pwa.invite === 'ios-steps' ? 'ios-steps' : 'prompt'}
+          onInstall={() => void pwa.promptInstall().then(closeInstall)}
+          onDismiss={closeInstall}
+        />
       )}
     </div>
   );

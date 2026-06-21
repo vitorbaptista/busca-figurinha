@@ -10,6 +10,11 @@
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <!-- iOS uses apple-touch-icon (a PNG) for "Adicionar à Tela de Início"; it ignores the SVG
+         favicon, so without this the home-screen icon would be a screenshot of the page. The
+         href stays RELATIVE so it resolves under the GH-Pages base (/busca-figurinha/). -->
+    <meta name="apple-mobile-web-app-title" content="Figurinhas" />
+    <link rel="apple-touch-icon" href="icons/apple-touch-icon-180.png" />
     <link rel="icon" type="image/svg+xml" href="icons/icon.svg" />
     <title>Troca Figurinhas — Copa 2026</title>
   </head>

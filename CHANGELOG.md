@@ -3,6 +3,21 @@
 Notable changes to the sticker scanner. Newest first. No formal releases yet (deploys on push to
 `main`), so entries are grouped by date. Keep this updated when you ship something notable.
 
+## 2026-06-20 — Instale na tela inicial: cara de app de verdade
+
+### Added
+- **Agora dá pra instalar o app na tela inicial.** No **Android**, aparece um convite "Instalar app"
+  (e tem também em **Ajustes**) que coloca o Troca Figurinhas na tela inicial e abre em tela cheia,
+  sem a barra do navegador — igual a um aplicativo. No **iPhone**, o mesmo convite mostra os 2 passos
+  ("Compartilhar → Adicionar à Tela de Início"), já que o iOS não tem instalação automática.
+- **Ícone de app correto no iPhone** (`apple-touch-icon`): antes o iOS usava um print da tela como
+  ícone; agora usa o ícone do app. E o nome na tela inicial fica curto: **"Figurinhas"**.
+- **Atalhos no ícone** (segurar o ícone do app): **Escanear** e **Trocar** abrem direto na seção.
+
+### Fixed
+- **Sem mais piscada preta ao abrir o app instalado.** A cor de fundo da tela de abertura (splash)
+  passou a ser o verde do app (era quase-preta), então a transição abertura → app fica contínua.
+
 ## 2026-06-20 — Nome do grupo fica fixo ao rolar (Coleção, Repetidas e Trocar)
 
 ### Changed
