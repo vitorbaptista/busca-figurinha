@@ -19,6 +19,7 @@
 import type { OcrEngine, MatchResult, Checklist } from '../types';
 import type { CodeNet } from './codeNetEngine';
 import { findCodeBoxes, codeCropSource, cropHasOcrInk, rawCropCandidates } from './locate';
+import type { CodeBox } from './locate';
 import {
   bestMatchFromText,
   bestHighConfidenceConfusionMatchFromText,
@@ -250,12 +251,36 @@ export async function recognizeFrameInOrder(
   return { resolved, reads, crops, scoredReads: scored };
 }
 
+/** TTA jitter variants (relative scale/offset of a detected box). Order matters: the first three
+ *  — identity, slight upscale, downscale — carry the recall; the downscale rescues small/far pills.
+ *  CONFIG.codenet.ttaJitters selects how many to use (crop count vs latency). */
+const TTA_JITTERS: ReadonlyArray<{ sx: number; sy: number; dx: number; dy: number }> = [
+  { sx: 1, sy: 1, dx: 0, dy: 0 },
+  { sx: 1.18, sy: 1.18, dx: 0, dy: 0 },
+  { sx: 0.88, sy: 0.9, dx: 0, dy: 0 },
+  { sx: 1.12, sy: 1.0, dx: 0.05, dy: 0 },
+  { sx: 1.12, sy: 1.0, dx: -0.05, dy: 0 },
+  { sx: 1.0, sy: 1.2, dx: 0, dy: 0.04 },
+];
+
+function jitterBox(b: CodeBox, j: { sx: number; sy: number; dx: number; dy: number }): CodeBox {
+  const cx = b.x + b.w / 2;
+  const cy = b.y + b.h / 2;
+  const w = b.w * j.sx;
+  const h = b.h * j.sy;
+  return { ...b, x: cx - w / 2 + b.w * j.dx, y: cy - h / 2 + b.h * j.dy, w, h, pillW: b.pillW * Math.min(j.sx, j.sy) };
+}
+
 /**
- * Recognize a frame with the neural codeNet recognizer instead of the glyph/tesseract hybrid.
- * Detection is unchanged (findCodeBoxes, best-first); each box's RAW de-rotated crops
- * (upright + 180° flip — NOT otsu-binarized) go to codeNet's closed-set decoder, which already
- * gates on confidence and only ever returns a real checklist code. Stop-on-first when
- * stopOnFirstCode (the live burst / latency path). The downstream confirmer still guards FPs.
+ * Recognize a frame with the neural codeNet recognizer (the otsu-free path that survives the
+ * low-contrast/blurry pills). Detection is unchanged (findCodeBoxes, best-first). The recognizer
+ * reads RAW de-rotated grayscale crops; with multi-crop TTA (CONFIG.codenet.ttaEnabled) it scores
+ * several jittered looks at each pill PLUS the 180° flip in ONE batched tfjs predict, then commits
+ * the closed-set code the most crops AGREE on. Agreement is the false-positive guard (a non-pill's
+ * crops scatter across random codes and rarely agree) AND a recall lever (a soft crop one variant
+ * misreads is recovered by another). Falls back to the plain upright+flip path when TTA is off.
+ * Stop-on-first (single best code) when stopOnFirstCode (the live burst / latency path). The
+ * downstream multi-frame confirmer still guards committed FPs.
  */
 export async function recognizeFrameCodeNet(
   codeNet: CodeNet,
@@ -266,33 +291,76 @@ export async function recognizeFrameCodeNet(
 ): Promise<RecognizeOutcome> {
   const boxes = findCodeBoxes(frame).slice(0, CONFIG.detect.maxBoxes || MAX_BOXES_DEFAULT);
   onDetected?.();
+  const cfg = CONFIG.codenet;
   const resolved: MatchResult[] = [];
   const seen = new Set<string>();
   const reads: string[] = [];
-  let crops = 0;
-  // Raw crops per box: [upright, flip]. Recognize in ROUNDS batched ACROSS boxes — round 0 is
-  // every box's upright crop in ONE tfjs predict, round 1 the flips — so a clean frame pays a
-  // single predict (vs one per box). Stop after a round resolves a code (live/latency path).
-  const cands = boxes.map((b) => rawCropCandidates(frame, b));
-  const maxRounds = Math.max(0, ...cands.map((c) => c.length));
-  for (let round = 0; round < maxRounds; round++) {
-    const batch = cands.map((c) => c[round]).filter(Boolean) as HTMLCanvasElement[];
-    if (!batch.length) continue;
-    crops += batch.length;
-    const results = await codeNet.recognize(batch); // in box-score order (batch built that way)
-    for (const r of results) {
-      if (!r.code) continue;
-      reads.push(`${r.code}@${r.posterior.toFixed(2)}`);
-      const entry = checklist.byCode.get(r.code);
-      if (entry && !seen.has(r.code)) {
-        seen.add(r.code);
-        resolved.push({ raw: r.code, status: 'exact', entry, distance: 0 });
-        // Live/latency path: trust only the FIRST (best-box) passing code — a stable spurious
-        // lower-ranked box must not slip in as a co-present sticker. Recall mode keeps them all.
-        if (stopOnFirstCode) break;
+
+  // Build a crop set PER box (best-first by detection score). With TTA each box contributes a few
+  // jittered upright looks + the flip; without, the plain upright+flip. We keep them grouped by box
+  // so aggregation/commit stays PER box — a lower-ranked clutter box must never out-vote the real
+  // top box (the long-standing "trust the best box first" guarantee).
+  const useTta = cfg.ttaEnabled && cfg.ttaMaxBoxes > 0;
+  const considered = useTta ? boxes.slice(0, cfg.ttaMaxBoxes) : boxes;
+  const jitters = TTA_JITTERS.slice(0, Math.max(1, cfg.ttaJitters));
+  const perBox = considered.map((box) => {
+    const cs: HTMLCanvasElement[] = [];
+    if (useTta) {
+      for (const j of jitters) {
+        const raw = rawCropCandidates(frame, jitterBox(box, j))[0];
+        if (raw) cs.push(raw);
+      }
+      const flip = rawCropCandidates(frame, box)[1];
+      if (flip) cs.push(flip); // 180° flip resolves the upright/upside-down ambiguity
+    } else {
+      for (const c of rawCropCandidates(frame, box)) if (c) cs.push(c);
+    }
+    return cs;
+  });
+  const flat = perBox.flat();
+  if (!flat.length) return { resolved, reads, crops: 0, scoredReads: [] };
+
+  // ALL crops in ONE batched predict (cheap on a WebGL device), then scores split back per box.
+  const scoredFlat = await codeNet.recognizeScored(flat);
+  let off = 0;
+  // For each box, aggregate its crops by closed-set code and pick the best ELIGIBLE one. Eligible =
+  // agreed on by ≥ttaVotes crops AND peak posterior ≥ttaPost AND peak margin ≥ttaMargin. The margin
+  // gate is the real FP guard (jitter agreement is correlated, not independent — it can't be trusted
+  // alone); margin forces the code to beat the all-blank "no code" hypothesis on some crop. Among a
+  // box's eligible codes, rank by high-confidence votes then peak posterior.
+  const bestPerBox = perBox.map((cs) => {
+    const slice = scoredFlat.slice(off, off + cs.length);
+    off += cs.length;
+    const agg = new Map<string, { votes: number; highVotes: number; maxPost: number; maxMargin: number }>();
+    for (const s of slice) {
+      if (!s.rawCode) continue;
+      if (s.posterior >= cfg.ttaSoft) reads.push(`${s.rawCode}@${s.posterior.toFixed(2)}`);
+      const a = agg.get(s.rawCode) ?? { votes: 0, highVotes: 0, maxPost: 0, maxMargin: -Infinity };
+      if (s.posterior >= cfg.ttaSoft) a.votes++;
+      if (s.posterior >= cfg.ttaHigh) a.highVotes++;
+      a.maxPost = Math.max(a.maxPost, s.posterior);
+      a.maxMargin = Math.max(a.maxMargin, s.margin);
+      agg.set(s.rawCode, a);
+    }
+    let best: { code: string; highVotes: number; maxPost: number } | null = null;
+    for (const [code, a] of agg) {
+      if (a.votes < cfg.ttaVotes || a.maxPost < cfg.ttaPost || a.maxMargin < cfg.ttaMargin) continue;
+      if (!best || a.highVotes > best.highVotes || (a.highVotes === best.highVotes && a.maxPost > best.maxPost)) {
+        best = { code, highVotes: a.highVotes, maxPost: a.maxPost };
       }
     }
-    if (resolved.length && stopOnFirstCode) break;
+    return best;
+  });
+
+  // Commit in detection-rank order (box[0] first). stopOnFirstCode (live burst / latency) takes the
+  // first box that yields an eligible code; recall mode keeps every distinct code.
+  for (const b of bestPerBox) {
+    if (!b) continue;
+    const entry = checklist.byCode.get(b.code);
+    if (!entry || seen.has(b.code)) continue;
+    seen.add(b.code);
+    resolved.push({ raw: b.code, status: 'exact', entry, distance: 0 });
+    if (stopOnFirstCode) break;
   }
-  return { resolved, reads, crops, scoredReads: [] };
+  return { resolved, reads, crops: flat.length, scoredReads: [] };
 }
