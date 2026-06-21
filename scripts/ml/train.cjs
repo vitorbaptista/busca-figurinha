@@ -90,77 +90,32 @@ function batchTensors(items) {
   };
 }
 
-/** Random augmentation per batch so the heavily-repeated real crops look different every epoch —
- *  the key to generalizing across frames of the same sticker instead of MEMORIZING the few train
- *  crops. Beyond photometric (brightness/contrast/noise) this simulates the REAL failure modes the
- *  held-out frames exhibit: small/far pills (downscale→upscale loses thin-stroke detail) and
- *  hand-held camera shake (horizontal motion blur along the text). Mild + probabilistic so it
- *  doesn't over-degrade the already-soft real crops (which would hurt 0-FP calibration). Applied to
- *  training batches only. */
+/** Random photometric augmentation per batch (brightness/contrast/noise) so the heavily-repeated
+ *  real crops look different every epoch — the key to generalizing across frames of the same
+ *  sticker instead of MEMORIZING the few train crops. Applied to training batches only. */
 function augment(xs) {
   return tf.tidy(() => {
     const B = xs.shape[0];
-    let x = xs;
-    // Small-pill simulation: downscale then upscale, so thin strokes wash out like a far pill.
-    if (Math.random() < 0.5) {
-      const k = 1.6 + Math.random() * 2.0; // 1.6×–3.6× shrink
-      const dh = Math.max(8, Math.round(H / k));
-      const dw = Math.max(24, Math.round(W / k));
-      x = tf.image.resizeBilinear(x, [dh, dw]);
-      x = tf.image.resizeBilinear(x, [H, W]);
-    }
-    // Horizontal motion blur (camera shake along the code text): box-average over a few px.
-    if (Math.random() < 0.45) {
-      const klen = 3 + Math.floor(Math.random() * 7); // 3–9 px
-      const kernel = tf.ones([1, klen, 1, 1]).div(klen);
-      x = tf.conv2d(x, kernel, 1, 'same');
-    }
-    // Defocus blur (vertical+horizontal small gaussian-ish box): occasional, gentle.
-    if (Math.random() < 0.25) {
-      const kernel = tf.ones([3, 3, 1, 1]).div(9);
-      x = tf.conv2d(x, kernel, 1, 'same');
-    }
-    const bright = tf.randomUniform([B, 1, 1, 1], -0.14, 0.14);
-    const contrast = tf.randomUniform([B, 1, 1, 1], 0.75, 1.3);
-    const mean = x.mean([1, 2, 3], true);
-    return x.sub(mean).mul(contrast).add(mean).add(bright).add(tf.randomNormal(x.shape, 0, 0.05)).clipByValue(0, 1);
+    const bright = tf.randomUniform([B, 1, 1, 1], -0.12, 0.12);
+    const contrast = tf.randomUniform([B, 1, 1, 1], 0.8, 1.25);
+    const mean = xs.mean([1, 2, 3], true);
+    return xs.sub(mean).mul(contrast).add(mean).add(bright).add(tf.randomNormal(xs.shape, 0, 0.05)).clipByValue(0, 1);
   });
 }
 
-// --bigModel=1 uses a wider conv stack + BatchNorm — more capacity & better fine-grained digit
-// separation (the 9↔5 / 8↔4 confusions on readable pills are a capacity problem). BN normalizes
-// activations so the readable-but-slightly-degraded val digits land where train taught them.
-const BIG = arg('bigModel', 0);
 function buildModel() {
   const inp = tf.input({ shape: [H, W, 1] });
   let x = inp;
-  if (BIG) {
-    const block = (f) => {
-      x = tf.layers.conv2d({ filters: f, kernelSize: 3, padding: 'same', useBias: false }).apply(x);
-      x = tf.layers.batchNormalization().apply(x);
-      x = tf.layers.reLU().apply(x);
-      x = tf.layers.maxPooling2d({ poolSize: [2, 2] }).apply(x);
-    };
-    block(32);  // 16x64
-    block(64);  // 8x32
-    block(96);  // 4x16
-    block(128); // 2x8
-    x = tf.layers.flatten().apply(x);
-    x = tf.layers.dropout({ rate: 0.35 }).apply(x);
-    x = tf.layers.dense({ units: Math.max(DENSE, 384), activation: 'relu' }).apply(x);
-    x = tf.layers.dropout({ rate: 0.35 }).apply(x);
-  } else {
-    const conv = (f) => tf.layers.conv2d({ filters: f, kernelSize: 3, padding: 'same', activation: 'relu' });
-    const pool = () => tf.layers.maxPooling2d({ poolSize: [2, 2] });
-    x = pool().apply(conv(16).apply(x));   // 16x64
-    x = pool().apply(conv(32).apply(x));   // 8x32
-    x = pool().apply(conv(64).apply(x));   // 4x16
-    x = pool().apply(conv(64).apply(x));   // 2x8
-    x = tf.layers.flatten().apply(x);
-    x = tf.layers.dropout({ rate: 0.3 }).apply(x);
-    x = tf.layers.dense({ units: DENSE, activation: 'relu' }).apply(x);
-    x = tf.layers.dropout({ rate: 0.3 }).apply(x);
-  }
+  const conv = (f) => tf.layers.conv2d({ filters: f, kernelSize: 3, padding: 'same', activation: 'relu' });
+  const pool = () => tf.layers.maxPooling2d({ poolSize: [2, 2] });
+  x = pool().apply(conv(16).apply(x));   // 16x64
+  x = pool().apply(conv(32).apply(x));   // 8x32
+  x = pool().apply(conv(64).apply(x));   // 4x16
+  x = pool().apply(conv(64).apply(x));   // 2x8
+  x = tf.layers.flatten().apply(x);
+  x = tf.layers.dropout({ rate: 0.3 }).apply(x);
+  x = tf.layers.dense({ units: DENSE, activation: 'relu' }).apply(x);
+  x = tf.layers.dropout({ rate: 0.3 }).apply(x);
   x = tf.layers.dense({ units: MAXLEN * NUM_CLASSES }).apply(x);
   x = tf.layers.reshape({ targetShape: [MAXLEN, NUM_CLASSES] }).apply(x);
   const out = tf.layers.softmax({ axis: -1 }).apply(x);
