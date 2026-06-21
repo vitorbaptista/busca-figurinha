@@ -21,6 +21,7 @@ import { useRoiViewport } from '../hooks/useRoiViewport';
 import { recognizeFrameInOrder, recognizeFrameCodeNet } from '../../ocr/recognize';
 import type { CodeNet } from '../../ocr/codeNetEngine';
 import { createAutoCapture } from '../../ocr/autoCapture';
+import { createScreenWakeLock } from '../wakeLock';
 import { Verdict, type VerdictState } from '../components/Verdict';
 import { MultiResult, type ScanResultItem } from '../components/MultiResult';
 
@@ -417,6 +418,17 @@ export function ScanScreen({ session, collection, settings, onPersist, onFinish 
     const root = document.documentElement;
     root.classList.add('scan-active');
     return () => root.classList.remove('scan-active');
+  }, []);
+
+  // ---------- Keep the screen awake while scanning ----------
+
+  useEffect(() => {
+    // Otherwise the phone dims/locks mid-scan — interrupting the hands-free loop, pausing the
+    // camera, and killing the fill-light. Re-acquired automatically on return to the tab; released
+    // when the scanner unmounts (navigating to another section). Silent no-op where unsupported.
+    const wake = createScreenWakeLock();
+    wake.acquire();
+    return () => wake.release();
   }, []);
 
   // ---------- OCR lifecycle (independent of which camera is active) ----------

@@ -3,6 +3,15 @@
 Notable changes to the sticker scanner. Newest first. No formal releases yet (deploys on push to
 `main`), so entries are grouped by date. Keep this updated when you ship something notable.
 
+## 2026-06-20 — A tela fica acesa enquanto você escaneia
+
+### Added
+- **A tela do celular não apaga mais sozinha enquanto você escaneia.** Antes, se você demorava um
+  pouco com a figurinha na frente da câmera, o celular escurecia e bloqueava — cortando a leitura
+  automática e apagando a luz da tela que ajuda a câmera a enxergar. Agora, na tela **Escanear**, a
+  tela fica acesa o tempo todo (e, se você sair do app e voltar, ela acende de novo). Em navegadores
+  que não têm esse recurso, nada muda.
+
 ## 2026-06-20 — Resumo: o botão salva as novas E as repetidas
 
 ### Fixed
