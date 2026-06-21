@@ -434,6 +434,9 @@ export function TradeScreen({
   const unarchiveFriend = (id: string, name: string) => {
     friendLists.setArchived(id, false);
     flash(pt.trade.friendUnarchived(name));
+    // Bringing back the LAST archived friend removes the whole expander; collapse it so it doesn't
+    // reappear pre-opened the next time someone archives a friend.
+    if (archivedFriends.length <= 1) setShowArchived(false);
   };
 
   // Only a brand-new user who hasn't kept a single sticker yet gets the onboarding empty state. The
@@ -630,7 +633,7 @@ export function TradeScreen({
                     </span>
                     <span class="friend-info">
                       <span class="friend-name">{f.name}</span>
-                      <span class="friend-stat">{pt.trade.friendNeeds(f.needs.length)}</span>
+                      <span class="friend-stat">{pt.trade.friendArchivedStat(f.needs.length)}</span>
                     </span>
                     <button class="friend-unarchive" onClick={() => unarchiveFriend(f.id, f.name)}>
                       {pt.trade.unarchive}
@@ -695,9 +698,13 @@ function FriendDetail({
           <button class="trade-back" onClick={onBack}>
             ← {pt.trade.detailBack}
           </button>
-          <button class="trade-save-friend" onClick={onArchive}>
-            🗄️ {pt.trade.detailArchive}
-          </button>
+          {/* In the done-state (needs→0) the body shows a prominent "Arquivar o {nome}" — skip the
+              redundant header pill so there aren't two identical archive buttons at once. */}
+          {friend.needs.length > 0 && (
+            <button class="trade-save-friend" onClick={onArchive}>
+              🗄️ {pt.trade.detailArchive}
+            </button>
+          )}
         </div>
         <h1>{pt.trade.detailTitle(friend.name)}</h1>
       </header>

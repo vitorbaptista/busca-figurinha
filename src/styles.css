@@ -3010,6 +3010,12 @@ html.scan-active body {
 }
 .friend-row-archived {
   opacity: 0.72;
+  cursor: default;
+}
+/* The archived row is a non-interactive container (only its 'Trazer de volta' button acts), so it
+   must not inherit .friend-row's pointer cursor / tap-down press highlight. */
+.friend-row-archived:active {
+  background: transparent;
 }
 .friend-unarchive {
   flex: none;
