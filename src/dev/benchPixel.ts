@@ -56,6 +56,7 @@ const cfg = CONFIG as unknown as {
     ttaMaxBoxes: number;
     ttaJitters: number;
     ttaVotes: number;
+    ttaHighVotes: number;
     ttaSoft: number;
     ttaHigh: number;
     ttaPost: number;
@@ -82,6 +83,7 @@ if (Q.has('gateMLP')) CODENET_GATES.minMeanLogProb = Number(Q.get('gateMLP'));
 if (Q.has('ttaMaxBoxes')) cfg.codenet.ttaMaxBoxes = Number(Q.get('ttaMaxBoxes'));
 if (Q.has('ttaJit')) cfg.codenet.ttaJitters = Number(Q.get('ttaJit'));
 if (Q.has('ttaVotes')) cfg.codenet.ttaVotes = Number(Q.get('ttaVotes'));
+if (Q.has('ttaHighVotes')) cfg.codenet.ttaHighVotes = Number(Q.get('ttaHighVotes'));
 if (Q.has('ttaSoft')) cfg.codenet.ttaSoft = Number(Q.get('ttaSoft'));
 if (Q.has('ttaHigh')) cfg.codenet.ttaHigh = Number(Q.get('ttaHigh'));
 if (Q.has('ttaPost')) cfg.codenet.ttaPost = Number(Q.get('ttaPost'));

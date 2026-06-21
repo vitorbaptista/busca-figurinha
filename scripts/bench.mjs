@@ -18,7 +18,7 @@ const LATENCY_SHARP = process.argv.includes('--latency-sharp');
 // to /bench-pixel.html as query params so ROI/gate sweeps need no rebuild:
 //   node scripts/bench.mjs --pixel --split=test --roiRect=0.18,0.32,0.82,0.58 --maxBoxes=2
 const PIXEL = process.argv.includes('--pixel');
-const PIXEL_KEYS = ['split', 'roiTop', 'roiRect', 'fastConf', 'maxBoxes', 'fgDelta', 'engine', 'limit', 'note', 'debugFrame', 'deriveAliases', 'gatePost', 'gateMargin', 'gateMLP', 'recenter', 'model', 'model2', 'ttaMode', 'ttaVotes', 'ttaPost', 'ttaMargin', 'ttaSoft', 'ttaHigh', 'ttaJit', 'ttaMaxBoxes'];
+const PIXEL_KEYS = ['split', 'roiTop', 'roiRect', 'fastConf', 'maxBoxes', 'fgDelta', 'engine', 'limit', 'note', 'debugFrame', 'deriveAliases', 'gatePost', 'gateMargin', 'gateMLP', 'recenter', 'model', 'model2', 'ttaMode', 'ttaVotes', 'ttaHighVotes', 'ttaPost', 'ttaMargin', 'ttaSoft', 'ttaHigh', 'ttaJit', 'ttaMaxBoxes'];
 const pixelQuery = () => {
   const p = new URLSearchParams();
   for (const arg of process.argv.slice(2)) {

@@ -3,6 +3,27 @@
 Notable changes to the sticker scanner. Newest first. No formal releases yet (deploys on push to
 `main`), so entries are grouped by date. Keep this updated when you ship something notable.
 
+## 2026-06-21 — Escanear: zero código errado (confiabilidade acima de tudo)
+
+### Fixed
+- **O Escanear não confirma mais um código errado.** A versão anterior, pra ler mais figurinhas,
+  às vezes confirmava um código trocado (ex.: **BIH10 lido como BIH9** — o "0" virava "9"; também
+  vistos 8↔4, 9↔5 e troca de sigla). Num uso real escaneando 100, 200+ figurinhas, mesmo ~3% de erro
+  já mete várias figurinhas erradas na sua lista, o que não dá. Agora o leitor **só confirma quando
+  tem certeza** e, na dúvida, **não lê** (você reposiciona e tenta de novo) em vez de chutar.
+
+### Changed
+- **Como:** o reconhecedor neural agora exige que **várias "olhadas" da mesma pílula concordem com
+  alta confiança** (não só uma) e que o código ganhe do segundo colocado por uma boa margem — isso
+  derruba justamente as confusões de dígito/sigla. O leitor clássico (Tesseract), que era a maior
+  fonte desses erros, deixou de confirmar (entra só como salva-vidas se o neural não carregar).
+- **Resultado medido** (quadros reais do Pixel): **0 código errado** em 437 quadros (157 não-figurinhas
+  + 280 figurinhas) e **0 falso confirmado** — bem abaixo do alvo de <0,1%.
+- **Custo em leitura (o que se paga pela confiabilidade):** a taxa de leitura por-quadro cai de
+  **72% → 58% (validação)** e **50% → 22% (held-out)**. Ainda é ~2× a versão antiga clássica, e na
+  prática (mira + rajada de quadros) o usuário sente bem menos que isso, porque várias tentativas
+  por figurinha se somam. Ajustável em `CONFIG.codenet` se quiser trocar leitura por velocidade.
+
 ## 2026-06-21 — Trocar: sua lista vai assinada com seu nome
 
 ### Added
