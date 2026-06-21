@@ -26,7 +26,9 @@ function canonicalFromInput(raw: string, checklist: Checklist): string | null {
   return checklist.byCode.has(normalized) ? normalized : null;
 }
 
-function canonicalCodeSet(codes: Iterable<string>, checklist: Checklist): Set<string> {
+/** Validate + dedup arbitrary code strings against the album (FWC0→00 alias, normalizeCode), returning
+ *  only real checklist codes. Exported so the friend-lists store can canonicalize at its boundary. */
+export function canonicalCodeSet(codes: Iterable<string>, checklist: Checklist): Set<string> {
   const out = new Set<string>();
   for (const code of codes) {
     const canonical = canonicalFromInput(code, checklist);
