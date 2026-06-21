@@ -152,16 +152,27 @@ function codeFromTeamNumber(teamCode: string, rawNumber: string, checklist: Chec
   return checklist.byCode.has(code) ? code : null;
 }
 
-/** Parse a received/pasted trade-list text back into canonical checklist codes. Robust to the
- *  emoji/format above AND to looser pasted text ("MEX 3, 6, 10, 20", "CIV12", "FWC 1"). Only return
- *  codes that exist in the checklist (validate via checklist.byCode). De-duplicate; preserve a stable
- *  (album) order. Ignore lines/tokens that don't resolve. */
-export function parseTradeList(text: string, checklist: Checklist): string[] {
+/** Like parseTradeList, but also reports tokens it saw but could NOT place: a `${teamCode}${number}`
+ *  whose team is in the checklist yet whose number falls outside THIS album (e.g. an importer's list
+ *  from an app with a slightly different album — our 992 vs their 994). These feed the import preview's
+ *  "não reconhecidas" count. `unrecognized` is in appearance order, deduped; tokens for unknown teams
+ *  are never seen (they stay glued to their letters and aren't number-matched), so they add no noise. */
+export function parseTradeListDetailed(
+  text: string,
+  checklist: Checklist,
+): { codes: string[]; unrecognized: string[] } {
   const found = new Set<string>();
+  const seenUnknown = new Set<string>();
+  const unrecognized: string[] = [];
   const numberRe = /\b\d{1,3}\b/g;
 
-  for (const line of text.split(/\r?\n/)) {
-    if (/https?:\/\//i.test(line)) continue;
+  for (const rawLine of text.split(/\r?\n/)) {
+    if (/https?:\/\//i.test(rawLine)) continue;
+
+    // Drop "(×N)" duplicate-count annotations (some apps tag a repeat as "MEX20 (×2)") so the N
+    // inside them is never read as a sticker number. Targeted to the "times" marker so it can't
+    // eat a "(MEX)"-style team-code-in-parens, which the parser legitimately reads.
+    const line = rawLine.replace(/\(\s*[×xX]\s*\d+\s*\)/g, ' ');
 
     if (/\b00\b/.test(line) && checklist.byCode.has('00')) {
       found.add('00');
@@ -174,12 +185,31 @@ export function parseTradeList(text: string, checklist: Checklist): string[] {
       const segment = line.slice(mention.end, next?.start);
       for (const match of segment.matchAll(numberRe)) {
         const code = codeFromTeamNumber(mention.code, match[0], checklist);
-        if (code) found.add(code);
+        if (code) {
+          found.add(code);
+          continue;
+        }
+        const token = `${mention.code}${Number.parseInt(match[0], 10)}`;
+        if (!seenUnknown.has(token)) {
+          seenUnknown.add(token);
+          unrecognized.push(token);
+        }
       }
     }
   }
 
-  return entriesFromCodeSet(found, checklist).map((entry) => entry.code);
+  return {
+    codes: entriesFromCodeSet(found, checklist).map((entry) => entry.code),
+    unrecognized,
+  };
+}
+
+/** Parse a received/pasted trade-list text back into canonical checklist codes. Robust to the
+ *  emoji/format above AND to looser pasted text ("MEX 3, 6, 10, 20", "CIV12", "FWC 1"). Only return
+ *  codes that exist in the checklist (validate via checklist.byCode). De-duplicate; preserve a stable
+ *  (album) order. Ignore lines/tokens that don't resolve. */
+export function parseTradeList(text: string, checklist: Checklist): string[] {
+  return parseTradeListDetailed(text, checklist).codes;
 }
 
 function bitLength(checklist: Checklist): number {
