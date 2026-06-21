@@ -112,29 +112,6 @@ Notable changes to the sticker scanner. Newest first. No formal releases yet (de
 - Por ser um PWA com cache (service worker em `autoUpdate`), logo depois de um deploy a pessoa pode
   ver por um instante o hash do build anterior até o app se atualizar na próxima abertura.
 
-## 2026-06-20 — Escanear: reconhecimento de códigos muito melhor (rede neural retreinada + votação)
-
-### Changed
-- **O Escanear acerta muito mais códigos**, principalmente em fotos tremidas/desfocadas, com a
-  figurinha pequena/distante ou de lado. Em quadros reais do Pixel a taxa de leitura **mais que
-  dobrou** (validação **31% → 72%**; conjunto held-out **28% → 50%**) — sem perder a garantia de segurança: o
-  confirmador de múltiplos quadros segue com **0 código errado confirmado** e **0 código lido num
-  não-figurinha**.
-- **Como:** (1) o reconhecedor neural (codeNet) foi **retreinado cobrindo TODOS os ~980 códigos do
-  álbum** com muito mais variação sintética que imita o problema real (desfoque de movimento, pílula
-  pequena/distante) somada aos recortes reais; (2) cada leitura agora é uma **votação de vários
-  recortes** da mesma pílula (várias "olhadas" numa só passada) — recupera leituras que um recorte só
-  erraria e, exigindo concordância, rejeita não-pílulas (o guarda anti-falso-positivo).
-
-### Notes
-- Custa mais tempo por quadro (várias olhadas). **Precisa ser validado no celular**: no Pixel a
-  inferência roda na GPU (WebGL), bem mais rápida que no bench headless (CPU). Se ficar lento num
-  aparelho fraco, dá pra baixar `CONFIG.codenet.ttaMaxBoxes`/`ttaJitters`; subir esses valores troca
-  velocidade por mais acerto (chega a ~75% validação / ~53% held-out na configuração cheia).
-- Limite honesto: **90% por quadro não é alcançável** neste conjunto (quadros com desfoque forte,
-  confusão de dígito 8↔4/9↔5 e o layout especial FWC são limitados pela informação na imagem). A
-  experiência real (mira + rajada de quadros) tende a ser melhor que o número por-quadro.
-
 ## 2026-06-20 — A tela fica acesa enquanto você escaneia
 
 ### Added
@@ -234,6 +211,7 @@ Notable changes to the sticker scanner. Newest first. No formal releases yet (de
   "Últimas leituras", remove do escaneamento (pra não cair no resumo como uma troca errada) e já abre
   a digitação pra você colocar o código certo. Só aparece em GUARDAR/REPETIDA — o card "Não li" já
   tem a digitação manual.
+
 ## 2026-06-20 — Trocar: prévia da mensagem mais curta e organizada
 
 ### Changed
