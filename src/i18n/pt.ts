@@ -211,6 +211,22 @@ export const pt = {
     count: (n: number) => String(n),
   },
 
+  install: {
+    title: 'Instale o app',
+    bodyAndroid: 'Coloque o Troca Figurinhas na tela inicial e abra direto, sem navegador, igual a um app.',
+    action: 'Instalar app',
+    bodyIos: 'No iPhone dá pra adicionar à tela inicial em 2 passos:',
+    iosStep1: 'Toque em Compartilhar na barra do Safari',
+    iosStep2: 'Escolha "Adicionar à Tela de Início"',
+    gotIt: 'Entendi',
+    dismiss: 'Agora não',
+    // Ajustes row
+    settingsRow: 'Instalar o app',
+    settingsHint: 'Abra direto da tela inicial, como um aplicativo.',
+    installed: 'App instalado',
+    installedHint: 'Você já adicionou à tela inicial. 🎉',
+  },
+
   settings: {
     title: 'Ajustes',
     data: 'Meus dados',

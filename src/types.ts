@@ -225,6 +225,9 @@ export interface Settings {
   sound: boolean;
   onboarded: boolean;
   camera: CameraFacing;
+  /** The user dismissed the "install the app" invite — don't auto-show it again (they can
+   *  still install from Ajustes). */
+  installDismissed: boolean;
 }
 
 /** Reactive settings store (see state/settings.ts: createSettingsStore). */

@@ -10,12 +10,26 @@ interface SettingsScreenProps {
   /** The user's wishlist (seeded from a friend's link) — backed up, restored and cleared too. */
   wants: CollectionStore;
   settings: SettingsStore;
+  /** Install capability resolved by usePwaInstall at the app root. 'none' ⇒ hide the install row. */
+  installInvite: 'prompt' | 'ios-steps' | 'none';
+  /** True when already running as an installed app — show a confirmation instead of the action. */
+  isStandalone: boolean;
+  /** Reopen the install sheet (the app root owns the sheet + the captured prompt event). */
+  onOpenInstall: () => void;
 }
 
 // semver from package.json + short commit hash, both injected at build time (see vite.config.ts).
 const APP_VERSION = `${__APP_VERSION__} (${__APP_COMMIT__})`;
 
-export function SettingsScreen({ collection, repeats, wants, settings }: SettingsScreenProps) {
+export function SettingsScreen({
+  collection,
+  repeats,
+  wants,
+  settings,
+  installInvite,
+  isStandalone,
+  onOpenInstall,
+}: SettingsScreenProps) {
   useStore(settings);
 
   const [notice, setNotice] = useState<{ kind: 'ok' | 'error'; text: string } | null>(null);
@@ -87,6 +101,30 @@ export function SettingsScreen({ collection, repeats, wants, settings }: Setting
       </header>
 
       {notice && <div class={`settings-notice notice-${notice.kind}`}>{notice.text}</div>}
+
+      {isStandalone ? (
+        <section class="settings-group">
+          <div class="settings-row">
+            <span class="settings-row-emoji">✅</span>
+            <span class="settings-row-text">
+              <b>{pt.install.installed}</b>
+              <small>{pt.install.installedHint}</small>
+            </span>
+          </div>
+        </section>
+      ) : (
+        installInvite !== 'none' && (
+          <section class="settings-group">
+            <button class="settings-row settings-action" onClick={onOpenInstall}>
+              <span class="settings-row-emoji">📲</span>
+              <span class="settings-row-text">
+                <b>{pt.install.settingsRow}</b>
+                <small>{pt.install.settingsHint}</small>
+              </span>
+            </button>
+          </section>
+        )
+      )}
 
       <section class="settings-group">
         <h2>{pt.settings.data}</h2>
