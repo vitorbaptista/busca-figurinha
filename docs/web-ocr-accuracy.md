@@ -300,3 +300,50 @@ posterior). ScanScreen's ensemble cascade (codeNet-TTA → hybrid fallback) is u
   full config (→75% VAL) if the device handles it; lower `ttaMaxBoxes`/`ttaJitters` for low-end phones (≤250ms).
 - **90% per-frame VAL remains unreachable** on this data (information-limited blur / 8↔4,9↔5 digit confusion /
   FWC layout). The honest TEST ceiling is ~50%. Artifacts: `captures/codenet-v2` (shipped), `codenet-retrained`.
+
+## Session 2026-06-21 — RETUNE for <0.1% false positives (reliability > recall)
+
+Live use surfaced confident MISREADS (committing a wrong real code), e.g. **BIH10→BIH9** (0 read as 9),
+plus 8↔4, 9↔5, country-prefix swaps. Product owner: a <3% FP rate is unusable at 100s–1000s of scans;
+need **<0.1% FP, ideally 0, even at large recall cost** — then report the recall paid.
+
+**Root cause:** the shipped (PR #39) TTA gates were tuned for recall (ttaMargin 0.5, ttaPost 0.5,
+votes 2) + a hybrid fallback. Two FP classes: (a) close-code CONFUSIONS (SCO16/18, 0/9 digit swaps) —
+small best-vs-runnerup margin; (b) confident HALLUCINATIONS (GER4→EGY4@0.97, NED12→MEX15@0.89) — the
+model emits the wrong code at high posterior on only ~1 crop; (c) the hybrid's tesseract digit misreads.
+
+**Fixes (codeNet-only, no committing hybrid):**
+- **New high-confidence-vote gate** `CONFIG.codenet.ttaHighVotes` — a committed code must be the argmax
+  of ≥N crops AT posterior ≥ttaHigh (0.8). This is the key guard for confident hallucinations (1 high
+  crop → rejected) that posterior/margin gates can't catch. Dominant FP lever.
+- **Raised margin gate** (ttaMargin 0.5→1.0) — rejects close-code confusions (0/9, 8/4).
+- **Dropped the hybrid as a committing path** (ScanScreen): codeNet is the only committer; the hybrid
+  runs only as a last resort if codeNet permanently fails to load (rare; precached after first load).
+  While codeNet is loading the scanner ABSTAINS rather than risk a tesseract misread (codex review).
+- **More jitters at fixed 0-FP** (ttaJitters 3→4): more looks give a real pill enough high-conf votes
+  to clear ttaHighVotes while a hallucination stays at 1 — lifts recall without re-admitting FP (6 jitters
+  starts re-admitting a hallucination's 2nd correlated vote, so 4 is the knee).
+
+Final gates: ttaMaxBoxes 3, ttaJitters 4, ttaVotes 2, **ttaHighVotes 2**, ttaSoft 0.2, ttaHigh 0.8,
+ttaPost 0.5, **ttaMargin 1.0**. Bench `--engine=codenet` exercises this exact path (sweepable).
+
+| metric | PR#39 (recall-tuned) | this retune (0-FP) |
+|---|---|---|
+| VAL recall | 72.2% | **58.3%** (−13.9pp) |
+| TEST recall (held-out) | 50.0% | **22.2%** (−27.8pp) |
+| wrong-on-pos misreads (val+test, 72 pos) | 8 | **0** |
+| neg FP (val+test+train, 157 negatives) | ≥1 | **0** |
+| per-sticker precision | ~85–92% | **100%** |
+| held-FP / committed-on-negative | 0 (dataset) | **0** |
+
+**Measured FP = 0 across the entire labeled dataset** (157 negatives + 280 positives = 437 frames):
+0 codes on non-stickers, 0 wrong codes on real stickers, 0 held/committed FP. Well under the <0.1%
+target. Latency ~530ms headless CPU (15 crops, one batched predict, NO hybrid — comparable to PR#39,
+faster on-device WebGL). Still ~2× the old classical recall (was 30.6% VAL) at 0 FP.
+
+**Residual risk (codex review, honest):** jitter votes are correlated (same box), so ttaHighVotes is
+strong but not proof against an UNSEEN systematic confusion whose wrong code happens to clear all gates
+on ≥2 high-conf crops with high margin-vs-runnerup. 0 FP on 437 frames is encouraging, not a guarantee
+on every unseen sticker. The next strengthening lever (if a new confusion appears) is cross-engine
+agreement (commit only if codeNet AND hybrid agree) — deferred (it runs the hybrid every frame → slower,
+and current speed must hold).

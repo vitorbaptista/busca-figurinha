@@ -344,7 +344,17 @@ export async function recognizeFrameCodeNet(
     }
     let best: { code: string; highVotes: number; maxPost: number } | null = null;
     for (const [code, a] of agg) {
-      if (a.votes < cfg.ttaVotes || a.maxPost < cfg.ttaPost || a.maxMargin < cfg.ttaMargin) continue;
+      // Eligibility (the false-positive guard): enough crops agree (votes), enough of them at HIGH
+      // confidence (highVotes — the key guard against confident hallucinations, which the model emits
+      // on only 1 crop, e.g. GER4→EGY4@0.97 with no other ≥ttaHigh crop), peak posterior, and peak
+      // margin (rejects close-code confusions like 0↔9 digit swaps).
+      if (
+        a.votes < cfg.ttaVotes ||
+        a.highVotes < cfg.ttaHighVotes ||
+        a.maxPost < cfg.ttaPost ||
+        a.maxMargin < cfg.ttaMargin
+      )
+        continue;
       if (!best || a.highVotes > best.highVotes || (a.highVotes === best.highVotes && a.maxPost > best.maxPost)) {
         best = { code, highVotes: a.highVotes, maxPost: a.maxPost };
       }
