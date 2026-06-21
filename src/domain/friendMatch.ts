@@ -23,6 +23,24 @@ export function givableTo(friend: FriendList, myRepeatCodes: Set<string>): strin
   return friend.needs.filter((code) => myRepeatCodes.has(code));
 }
 
+export interface GiveBreakdown {
+  /** Their needs I hold as spares — what I can hand over now (the only thing the give UI offers). */
+  canGive: string[];
+  /** Their remaining needs I don't have a spare of — shown as info, never givable. */
+  stillNeeds: string[];
+}
+
+/** Split a friend's needs into "what I can give now" vs "what they still need", both in their needs
+ *  order. The give screen renders + acts on `canGive` only, so a kid can't mark a sticker they don't
+ *  hold as given. */
+export function friendGiveBreakdown(friend: FriendList, myRepeatCodes: Set<string>): GiveBreakdown {
+  const giveSet = new Set(givableTo(friend, myRepeatCodes));
+  return {
+    canGive: friend.needs.filter((code) => giveSet.has(code)),
+    stillNeeds: friend.needs.filter((code) => !giveSet.has(code)),
+  };
+}
+
 const COMBINING = new RegExp('[\\u0300-\\u036f]', 'g');
 
 /** Normalize a name for matching a re-shared list back to its saved friend: strip accents, lowercase,

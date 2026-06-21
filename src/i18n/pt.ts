@@ -232,6 +232,19 @@ export const pt = {
     friendCanGive: (n: number) => (n === 1 ? 'você tem 1 pra dar' : `você tem ${n} pra dar`),
     friendGiveLabel: 'pra dar',
 
+    // A saved friend's detail: what you can give them + "dei pro João" (trade-close).
+    detailBack: 'Voltar',
+    detailTitle: (name: string) => `O que você tem pro ${name}`,
+    detailGiveTitle: (name: string) => `Você pode dar pro ${name} 🎁`,
+    detailGiveGuide: 'Já deu? Toque pra tirar o que você não vai dar e confirme embaixo.',
+    detailNothing: (name: string) => `Nenhuma das suas repetidas serve pro ${name} agora.`,
+    detailScanCta: 'Escanear mais repetidas',
+    detailStillNeeds: (name: string) => `O ${name} ainda precisa 📍`,
+    detailGaveBtn: (n: number) => (n === 1 ? 'Dei essa!' : `Dei essas ${n}!`),
+    detailDone: (name: string) => `Você já tem tudo que o ${name} precisava! 🎉`,
+    gaveToFriend: (name: string, n: number) =>
+      `Você deu ${n === 1 ? '1 figurinha' : `${n} figurinhas`} pro ${name}! 🤝`,
+
     // Grouping (mirrors the album)
     albumGroup: (g: string) => `Grupo ${g}`,
     count: (n: number) => String(n),

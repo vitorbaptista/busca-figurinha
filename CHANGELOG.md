@@ -3,7 +3,13 @@
 Notable changes to the sticker scanner. Newest first. No formal releases yet (deploys on push to
 `main`), so entries are grouped by date. Keep this updated when you ship something notable.
 
-## 2026-06-21 — Trocar: salve a lista de um amigo (Listas de amigos)
+## 2026-06-21 — Trocar: "dei pro João" (feche a troca na lista do amigo)
+
+### Added
+- **Toque num amigo salvo** e veja **o que das suas repetidas serve pra ele** (separado do que ele
+  ainda precisa e você não tem). Deu as figurinhas pessoalmente? Toque em **"✅ Dei essas!"** e o app
+  tira essas repetidas da sua lista e da lista dele de uma vez — a troca fica fechada, sem confusão.
+  (Sua coleção não muda: você deu a **repetida**, continua com a sua.)
 
 ### Added
 - **Abriu o link de um amigo? Agora dá pra salvar a lista dele** (botão "💾 Salvar lista"), pra achar
