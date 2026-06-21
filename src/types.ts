@@ -228,6 +228,9 @@ export interface Settings {
   /** The user's display name, signed into every share link so the receiver sees who it's from
    *  ("Trocar com o Léo") and a re-shared list can be matched back. Optional; absent → "seu amigo". */
   name?: string;
+  /** Remembered camera for the "Conferir figurinhas" scanner — defaults to back (you point at the
+   *  other person's pile), separate from the album scanner's `camera`. */
+  conferirCamera?: 'front' | 'back';
 }
 
 /** Reactive settings store (see state/settings.ts: createSettingsStore). */

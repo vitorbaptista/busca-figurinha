@@ -45,6 +45,8 @@ interface TradeScreenProps {
   onClearFriend: () => void;
   /** Jump to the scanner to capture more repeats. */
   onGoScan: () => void;
+  /** Open the "Conferir figurinhas" scanner (point the camera at the friend's pile). */
+  onConferir: () => void;
   /** Open the manual repeats editor (RepeatsScreen). */
   onEditRepeats: () => void;
   /** Open the Coleção screen to edit what's still missing ("o que eu preciso"). */
@@ -66,6 +68,7 @@ export function TradeScreen({
   onShare,
   onClearFriend,
   onGoScan,
+  onConferir,
   onEditRepeats,
   onEditNeed,
 }: TradeScreenProps) {
@@ -486,6 +489,18 @@ export function TradeScreen({
           )}
         </div>
       </header>
+
+      {/* Trading in person? Point the camera at the friend's pile and see what to grab. Lives at the
+          TOP of the own-offer view only (never in the cold-receiver/empty branches). */}
+      <button class="conferir-cta" onClick={onConferir}>
+        <span class="conferir-cta-emoji" aria-hidden="true">
+          🔍
+        </span>
+        <span class="conferir-cta-text">
+          <b>{pt.trade.conferirCta}</b>
+          <small>{pt.trade.conferirHint}</small>
+        </span>
+      </button>
 
       {/* Mockup order: minhas repetidas → o que eu preciso → prévia → ações. Both sticker lists share
           the same grouped ledger (album group → team tallies), always expanded — no collapse. Each

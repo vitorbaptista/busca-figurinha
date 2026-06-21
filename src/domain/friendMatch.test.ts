@@ -2,7 +2,9 @@ import { describe, expect, it } from 'vitest';
 import {
   friendCanReceive,
   friendGiveBreakdown,
+  friendsNeeding,
   givableTo,
+  huntVerdict,
   needsDiff,
   normalizeName,
   radarFriendNames,
@@ -121,5 +123,60 @@ describe('normalizeName', () => {
     expect(normalizeName('  João  ')).toBe('joao');
     expect(normalizeName('JOÃO')).toBe('joao');
     expect(normalizeName('Maria  das   Couves')).toBe('maria das couves');
+  });
+});
+
+describe('friendsNeeding (Conferir — NOT spare-gated, unlike radarFriendNames)', () => {
+  const joao = friend({ id: 'a', name: 'João', needs: ['MEX3', 'BRA7'] });
+  const maria = friend({ id: 'b', name: 'Maria', needs: ['MEX3'] });
+
+  it('names every active friend whose list includes the code — regardless of whether I own/spare it', () => {
+    // The whole point: I am scanning THEIR sticker, so my own spares are irrelevant here.
+    expect(friendsNeeding('MEX3', [joao, maria])).toEqual(['João', 'Maria']);
+    expect(friendsNeeding('BRA7', [joao, maria])).toEqual(['João']);
+  });
+
+  it('is empty when no active friend needs the code', () => {
+    expect(friendsNeeding('FRA9', [joao, maria])).toEqual([]);
+  });
+
+  it('skips archived friends', () => {
+    const ana = friend({ id: 'c', name: 'Ana', needs: ['MEX3'], archived: true });
+    expect(friendsNeeding('MEX3', [ana, joao])).toEqual(['João']);
+  });
+});
+
+describe('huntVerdict', () => {
+  it("I don't own it → take it for me (mine wins; friends are secondary)", () => {
+    expect(huntVerdict({ owned: false, friendNames: [] })).toEqual({
+      kind: 'take-mine',
+      take: true,
+      forMe: true,
+      forFriends: [],
+    });
+    expect(huntVerdict({ owned: false, friendNames: ['João'] })).toEqual({
+      kind: 'take-mine',
+      take: true,
+      forMe: true,
+      forFriends: ['João'],
+    });
+  });
+
+  it('I own it but a friend needs it → take it for the friend', () => {
+    expect(huntVerdict({ owned: true, friendNames: ['João', 'Maria'] })).toEqual({
+      kind: 'take-friends',
+      take: true,
+      forMe: false,
+      forFriends: ['João', 'Maria'],
+    });
+  });
+
+  it('I own it and nobody needs it → skip', () => {
+    expect(huntVerdict({ owned: true, friendNames: [] })).toEqual({
+      kind: 'skip',
+      take: false,
+      forMe: false,
+      forFriends: [],
+    });
   });
 });

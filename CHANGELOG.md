@@ -3,7 +3,14 @@
 Notable changes to the sticker scanner. Newest first. No formal releases yet (deploys on push to
 `main`), so entries are grouped by date. Keep this updated when you ship something notable.
 
-## 2026-06-21 — Escanear: uma pausinha entre uma figurinha e a próxima
+## 2026-06-21 — Trocar: conferir as figurinhas do amigo na hora (PEGA / DEIXA)
+
+### Added
+- **Trocando ao vivo? Agora dá pra apontar a câmera pras figurinhas do outro e ver na hora o que pegar.**
+  Tem um botão **"🔍 Conferir figurinhas do amigo"** no topo da aba Trocar que abre um scanner: pra cada
+  figurinha ele diz **PEGA!** (você precisa) ou, se você já tem mas um amigo salvo precisa, **PEGA! · serve
+  pro João**, ou **JÁ TENHO · pode deixar** quando você já tem e ninguém precisa. Não mexe na sua coleção —
+  é só pra te ajudar a decidir na hora da troca.
 
 ### Changed
 - Depois de ler uma figurinha, o app agora **espera ~1 segundo** antes de ler a próxima. Assim ele

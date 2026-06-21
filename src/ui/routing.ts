@@ -11,9 +11,12 @@ const SLUGS: Record<Screen, string> = {
   trade: 'trocar',
   settings: 'ajustes',
   repeats: 'repetidas',
+  // Conferir is a camera launched from Trocar — ephemeral like `report`: it shares the Trocar slug and
+  // is absent from the reverse map below, so a refresh restores to Trocar (don't relaunch a camera cold).
+  conferir: 'trocar',
 };
 
-// Reverse map for parsing a hash back to a screen. `report` is omitted so it's never a target.
+// Reverse map for parsing a hash back to a screen. `report` + `conferir` are omitted (never targets).
 const SCREENS: Record<string, Screen> = {
   escanear: 'scan',
   colecao: 'collection',

@@ -92,6 +92,20 @@ export const pt = {
     discarded: 'Leitura descartada',
   },
 
+  // "Conferir figurinhas" — point the camera at the OTHER person's pile while trading.
+  conferir: {
+    pageTitle: 'Conferir',
+    pageSubtitle: 'Figurinhas do amigo',
+    back: 'Voltar',
+    holdStill: 'Mostre a figurinha do amigo',
+    // The verdict (the hero): grab it (PEGA) vs skip (DEIXA), sub-line says for-whom.
+    takeWord: 'PEGA!',
+    takeMineSub: 'Você precisa dessa!',
+    takeFriendsSub: 'Você já tem, mas ele precisa',
+    skipWord: 'JÁ TENHO',
+    skipSub: 'Pode deixar — você já tem e ninguém precisa',
+  },
+
   report: {
     title: 'Resumo do escaneamento',
     scanned: 'escaneadas',
@@ -184,6 +198,10 @@ export const pt = {
   trade: {
     title: 'Trocar',
     repeatsBadge: (n: number) => (n === 1 ? '1 repetida' : `${n} repetidas`),
+
+    // Entry to the "Conferir figurinhas" scanner (point the camera at the friend's pile).
+    conferirCta: 'Conferir figurinhas do amigo',
+    conferirHint: 'Aponte pras figurinhas dele e veja na hora o que pega.',
 
     // Empty state — the user hasn't scanned any duplicates yet.
     emptyEmoji: '🔁',

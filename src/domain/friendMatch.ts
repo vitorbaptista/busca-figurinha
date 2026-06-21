@@ -34,6 +34,37 @@ export function radarFriendNames(
   return friendCanReceive({ code, myRepeatCodes, friends }).map((f) => f.name);
 }
 
+/** "Conferir figurinhas" radar: active saved friends whose list includes `code`. UNLIKE
+ *  `radarFriendNames`, this is NOT gated on my own spares — here I'm scanning the OTHER person's
+ *  sticker (their pile), so "serve pro João" is pure advice to grab it FOR João, never an offer of a
+ *  spare I hold. So it can't produce a false trade offer. */
+export function friendsNeeding(code: string, friends: FriendList[]): string[] {
+  return friends.filter((f) => !f.archived && f.needs.includes(code)).map((f) => f.name);
+}
+
+export interface HuntVerdict {
+  /** take-mine = I'm missing it (grab for me); take-friends = I own it but a friend needs it; skip. */
+  kind: 'take-mine' | 'take-friends' | 'skip';
+  /** The grab/skip binary the user acts on. */
+  take: boolean;
+  /** I personally need it (drives the "você precisa" line). */
+  forMe: boolean;
+  /** Friends this sticker serves (drives the "serve pro João" ribbon). */
+  forFriends: string[];
+}
+
+/** Combine the two axes of a Conferir read into one verdict. Priority: my OWN need wins (I grab it for
+ *  me, friends shown as secondary); otherwise if a friend needs it I grab it for them; otherwise skip. */
+export function huntVerdict(args: { owned: boolean; friendNames: string[] }): HuntVerdict {
+  if (!args.owned) {
+    return { kind: 'take-mine', take: true, forMe: true, forFriends: args.friendNames };
+  }
+  if (args.friendNames.length > 0) {
+    return { kind: 'take-friends', take: true, forMe: false, forFriends: args.friendNames };
+  }
+  return { kind: 'skip', take: false, forMe: false, forFriends: [] };
+}
+
 export interface NeedsDiff {
   /** Codes the friend needed before but not now — what they FOUND since the last list. */
   found: string[];

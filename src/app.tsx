@@ -18,6 +18,7 @@ import { ScanScreen } from './ui/screens/ScanScreen';
 import { ReportScreen } from './ui/screens/ReportScreen';
 import { TradeScreen } from './ui/screens/TradeScreen';
 import { RepeatsScreen } from './ui/screens/RepeatsScreen';
+import { ConferirScreen } from './ui/screens/ConferirScreen';
 import { CollectionScreen } from './ui/screens/CollectionScreen';
 import { SettingsScreen } from './ui/screens/SettingsScreen';
 
@@ -193,8 +194,18 @@ export function App() {
           onShare={(payload) => shareTrades(payload, checklist)}
           onClearFriend={() => setFriendPayload(null)}
           onGoScan={() => setScreen('scan')}
+          onConferir={() => setScreen('conferir')}
           onEditRepeats={() => setScreen('repeats')}
           onEditNeed={() => setScreen('collection')}
+        />
+      )}
+
+      {screen === 'conferir' && (
+        <ConferirScreen
+          collection={collection}
+          friendLists={friendLists}
+          settings={settings}
+          onBack={() => setScreen('trade')}
         />
       )}
 
