@@ -2,7 +2,7 @@ import { useMemo, useState } from 'preact/hooks';
 import type { CollectionStore } from '../../types';
 import { checklist } from '../../data/checklist';
 import { pt } from '../../i18n/pt';
-import { useStore } from '../hooks';
+import { useStickyOffset, useStore } from '../hooks';
 import { AlbumGrid } from '../components/AlbumGrid';
 import { filterTeams } from './CollectionScreen';
 
@@ -24,6 +24,9 @@ export function RepeatsScreen({ collection, repeats, onBack }: RepeatsScreenProp
   const marked = repeats.codes();
   const teams = useMemo(() => filterTeams(checklist.teams, query), [query]);
 
+  // Measure the pinned header so the "Grupo X" labels can pin flush below it as you scroll.
+  const headerRef = useStickyOffset();
+
   // Marking a repeat implies you own the sticker — you can't have a spare of one you don't have — so
   // also add it to the collection. That keeps it from becoming a "ghost" the Trocar screen hides
   // (Trocar offers repeats ∩ owned). Un-marking leaves the original copy owned.
@@ -38,7 +41,7 @@ export function RepeatsScreen({ collection, repeats, onBack }: RepeatsScreenProp
 
   return (
     <div class="screen collection-screen">
-      <header class="collection-header">
+      <header class="collection-header" ref={headerRef}>
         <button class="trade-back" onClick={onBack}>
           ← {pt.repeatsScreen.back}
         </button>

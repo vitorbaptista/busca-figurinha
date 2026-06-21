@@ -1529,9 +1529,18 @@ html.scan-active body {
   flex-direction: column;
   gap: 8px;
 }
-/* "Grupo A" … section label before each World Cup group, mirroring the album. */
+/* "Grupo A" … section label before each World Cup group, mirroring the album. Pins just below
+   the sticky `.collection-header` (its measured height rides in via --sticky-offset, set by
+   useStickyOffset) so the current group stays labelled as the list scrolls. Full-bleed paper band
+   (negative side margins cancel the .team-list padding) so the team cards AND their offset shadows
+   slide cleanly underneath; sits above the cards (z 10) but below the header band (z 20). */
 .group-header {
-  margin: 14px 2px 2px;
+  position: sticky;
+  top: var(--sticky-offset, 0px);
+  z-index: 10;
+  margin: 14px -16px 2px;
+  padding: 0 18px;
+  background: var(--paper-deep);
   font-family: var(--font-display);
   font-weight: 400;
   font-size: 1.3rem;
@@ -1962,6 +1971,23 @@ html.scan-active body {
   border-radius: var(--radius);
   box-shadow: 2px 2px 0 rgba(15, 60, 39, 0.28);
   overflow: hidden;
+}
+/* The own-offer ledgers ("Minhas repetidas" / "O que eu preciso") pin each album-group label below
+   the sticky section header while that group scrolls, so the current "Grupo X" stays labelled
+   (the friend-match lists, with no sticky section above, keep the plain `.ledger`). `clip` instead
+   of `hidden` keeps the rounded-corner clipping WITHOUT making the ledger a scroll container, which
+   would trap the sticky headers inside it. */
+.own-ledger {
+  overflow: clip;
+}
+/* top = the section header's pinned bottom: it pins at safe + 60px (matching .sec-h--sticky) and is
+   54px tall, so the group label tucks flush right under it. z below .sec-h--sticky (10). The section
+   header height is deterministic (no count badge on the own-offer heads, line-heights explicit),
+   like the .sec-h--sticky top it builds on — verified live in headless Chrome (gap = 0px). */
+.own-ledger .grp-head {
+  position: sticky;
+  top: calc(var(--safe-top) + 60px + 54px);
+  z-index: 5;
 }
 /* team tally — flag + name + count on one line, the sticker numbers as wrapping pills below. One
    block per team replaces one row per sticker, so a 100+ list stays a short, scannable card.
