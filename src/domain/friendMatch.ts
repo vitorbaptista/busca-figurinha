@@ -3,17 +3,8 @@
 // actually GIVE, i.e. one of your spares (repeats ∩ owned, passed in as `myRepeatCodes`). A code you
 // scanned but still NEED yourself is NOT givable and must never flag a friend.
 
-/** A saved friend's list. Keyed on a stable `id`; `name` is a display/match hint, not the key. */
-export interface FriendList {
-  id: string;
-  name: string;
-  /** Canonical album codes the friend still needs (validated at the store boundary). */
-  needs: string[];
-  /** Where the list came from (a ?t= link or a pasted text) — drives the update/diff UX. */
-  source: 'link' | 'paste';
-  archived: boolean;
-  updatedAt: number;
-}
+import type { FriendList } from '../types';
+export type { FriendList };
 
 /** The ACTIVE saved friends who need `code` AND to whom I can give it — only when `code` is one of my
  *  own spares (`myRepeatCodes` = repeats ∩ owned). Returns [] when the code isn't mine to give. */

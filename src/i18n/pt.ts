@@ -213,6 +213,21 @@ export const pt = {
     emptyLinkText: 'Escaneie seu álbum e monte o seu pra trocar com a galera.',
     emptyLinkButton: 'Escanear meu álbum',
 
+    // Save a friend's list (to find trades for them later) + the "Listas de amigos" section.
+    saveFriendCta: 'Salvar lista',
+    saveFriendTitle: 'De quem é essa lista?',
+    saveFriendText: (n: number) =>
+      n === 1 ? 'Salva 1 figurinha que ela precisa.' : `Salva ${n} figurinhas que ela precisa.`,
+    saveFriendPlaceholder: 'Nome do amigo',
+    saveFriendSave: 'Salvar amigo',
+    saveFriendCancel: 'Cancelar',
+    friendSaved: (name: string) => `Lista do ${name} salva! 👥`,
+    friendUpdated: (name: string) => `Lista do ${name} atualizada! 🔄`,
+    friendsTitle: '👥 Listas de amigos',
+    friendNeeds: (n: number) => (n === 1 ? 'precisa de 1' : `precisa de ${n}`),
+    friendCanGive: (n: number) => (n === 1 ? 'você tem 1 pra dar' : `você tem ${n} pra dar`),
+    friendGiveLabel: 'pra dar',
+
     // Grouping (mirrors the album)
     albumGroup: (g: string) => `Grupo ${g}`,
     count: (n: number) => String(n),

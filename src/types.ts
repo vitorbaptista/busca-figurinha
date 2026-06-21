@@ -241,6 +241,19 @@ export interface SettingsStore {
   subscribe(listener: () => void): () => void;
 }
 
+// ---------- Friend lists ----------
+/** A saved friend's wishlist (what THEY need), kept to find trades for them. Keyed on a stable `id`;
+ *  `name` is a display/match hint. `needs` holds canonical album codes only (validated at the store
+ *  boundary). See state/friendLists.ts + domain/friendMatch.ts. */
+export interface FriendList {
+  id: string;
+  name: string;
+  needs: string[];
+  source: 'link' | 'paste';
+  archived: boolean;
+  updatedAt: number;
+}
+
 // ---------- Backup ----------
 export interface BackupFile {
   app: 'troca-figurinhas';
@@ -254,5 +267,7 @@ export interface BackupFile {
    *  repeats; restored as-is (no owned-filter). It isn't pruned when a sticker is later obtained, so
    *  a future consumer should intersect with "not owned" at read time. */
   wants?: string[];
+  /** Saved friend lists (what other people need). Optional so older backups import cleanly. */
+  friendLists?: FriendList[];
   settings: Settings;
 }

@@ -1,5 +1,6 @@
 import { useState } from 'preact/hooks';
 import type { BackupFile, CollectionStore, Settings, SettingsStore } from '../../types';
+import type { FriendListsStore } from '../../state/friendLists';
 import { pt } from '../../i18n/pt';
 import { useStore } from '../hooks';
 
@@ -9,6 +10,8 @@ interface SettingsScreenProps {
   repeats: CollectionStore;
   /** The user's wishlist (seeded from a friend's link) — backed up, restored and cleared too. */
   wants: CollectionStore;
+  /** Saved friend lists — backed up, restored and cleared alongside the rest. */
+  friendLists: FriendListsStore;
   settings: SettingsStore;
   /** Install capability resolved by usePwaInstall at the app root. 'none' ⇒ hide the install row. */
   installInvite: 'prompt' | 'ios-steps' | 'none';
@@ -25,6 +28,7 @@ export function SettingsScreen({
   collection,
   repeats,
   wants,
+  friendLists,
   settings,
   installInvite,
   isStandalone,
@@ -48,6 +52,7 @@ export function SettingsScreen({
       owned: collection.exportOwned(),
       repeats: repeats.exportOwned(),
       wants: wants.exportOwned(),
+      friendLists: friendLists.exportAll(),
       settings: settings.get(),
     };
     const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' });
@@ -79,6 +84,8 @@ export function SettingsScreen({
       repeats.importOwned(restoredRepeats);
       // A wishlist is by definition not-owned, so it's restored as-is (no owned-filter like repeats).
       wants.importOwned(Array.isArray(data.wants) ? data.wants : []);
+      // Saved friend lists restored as-is (the store re-canonicalizes needs at its boundary).
+      friendLists.importAll(Array.isArray(data.friendLists) ? data.friendLists : []);
       if (data.settings) settings.set(data.settings as Partial<Settings>);
       flash('ok', pt.settings.importDone);
     } catch {
@@ -91,6 +98,7 @@ export function SettingsScreen({
     collection.clear();
     repeats.clear();
     wants.clear();
+    friendLists.importAll([]);
     flash('ok', pt.settings.clearDone);
   };
 

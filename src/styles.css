@@ -2849,3 +2849,103 @@ html.scan-active body {
   margin-top: 10px;
   min-height: 44px;
 }
+
+/* ===== Listas de amigos (save a friend's list + the own-offer section) ===== */
+.trade-header-friend-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.trade-save-friend {
+  flex: none;
+  background: transparent;
+  color: var(--gold);
+  border: 1.5px solid var(--gold-deep);
+  border-radius: var(--radius-pill);
+  font-family: var(--font-head);
+  font-weight: 700;
+  font-size: 0.8rem;
+  letter-spacing: 0.02em;
+  padding: 7px 13px;
+  min-height: 40px;
+}
+.trade-save-friend:active {
+  transform: scale(0.96);
+}
+
+.friends-section {
+  margin-top: 8px;
+}
+.friends-list {
+  padding: 2px 0;
+}
+.friend-row {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 10px 12px;
+  border-bottom: 1.5px dashed var(--kraft-deep);
+}
+.friend-row:last-child {
+  border-bottom: 0;
+}
+.friend-av {
+  flex: none;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: var(--paper);
+  color: var(--cream);
+  border: 2px solid var(--ink);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: 1.1rem;
+}
+.friend-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+.friend-name {
+  font-family: var(--font-head);
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: var(--ink);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.friend-stat {
+  font-size: 0.8rem;
+  color: var(--kraft-text);
+}
+.friend-give {
+  flex: none;
+  text-align: center;
+}
+.friend-give b {
+  display: block;
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: 1.4rem;
+  line-height: 1;
+  color: var(--keep);
+}
+.friend-give small {
+  font-family: var(--font-head);
+  font-weight: 700;
+  font-size: 0.6rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--kraft-text);
+}
+
+.btn-primary:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
