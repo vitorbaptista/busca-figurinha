@@ -3,6 +3,7 @@ import {
   friendCanReceive,
   friendGiveBreakdown,
   givableTo,
+  needsDiff,
   normalizeName,
   radarFriendNames,
   type FriendList,
@@ -90,6 +91,34 @@ describe('radarFriendNames', () => {
   it('skips archived friends', () => {
     const ana = friend({ id: 'c', name: 'Ana', needs: ['MEX3'], archived: true });
     expect(radarFriendNames('MEX3', new Set(['MEX3']), [ana, joao])).toEqual(['João']);
+  });
+});
+
+describe('needsDiff', () => {
+  it('reports what a friend found (old needs gone) + what they still need', () => {
+    const d = needsDiff(['MEX3', 'BRA7', 'ARG4'], ['BRA7', 'ARG4']);
+    expect(d.found).toEqual(['MEX3']);
+    expect(d.stillNeeds).toEqual(['BRA7', 'ARG4']);
+    expect(d.maybeNew).toEqual([]);
+  });
+
+  it('reports needs that newly appeared (maybeNew)', () => {
+    const d = needsDiff(['MEX3'], ['MEX3', 'FRA9']);
+    expect(d.found).toEqual([]);
+    expect(d.maybeNew).toEqual(['FRA9']);
+    expect(d.stillNeeds).toEqual(['MEX3', 'FRA9']);
+  });
+
+  it('is empty-found when the list is unchanged', () => {
+    expect(needsDiff(['MEX3'], ['MEX3'])).toEqual({ found: [], stillNeeds: ['MEX3'], maybeNew: [] });
+  });
+
+  it('treats a first-time save (no old needs) as all-new, nothing found', () => {
+    expect(needsDiff([], ['MEX3', 'BRA7'])).toEqual({
+      found: [],
+      stillNeeds: ['MEX3', 'BRA7'],
+      maybeNew: ['MEX3', 'BRA7'],
+    });
   });
 });
 
