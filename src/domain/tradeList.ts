@@ -166,8 +166,13 @@ export function parseTradeListDetailed(
   const unrecognized: string[] = [];
   const numberRe = /\b\d{1,3}\b/g;
 
-  for (const line of text.split(/\r?\n/)) {
-    if (/https?:\/\//i.test(line)) continue;
+  for (const rawLine of text.split(/\r?\n/)) {
+    if (/https?:\/\//i.test(rawLine)) continue;
+
+    // Drop "(×N)" duplicate-count annotations (some apps tag a repeat as "MEX20 (×2)") so the N
+    // inside them is never read as a sticker number. Targeted to the "times" marker so it can't
+    // eat a "(MEX)"-style team-code-in-parens, which the parser legitimately reads.
+    const line = rawLine.replace(/\(\s*[×xX]\s*\d+\s*\)/g, ' ');
 
     if (/\b00\b/.test(line) && checklist.byCode.has('00')) {
       found.add('00');

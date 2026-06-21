@@ -109,3 +109,239 @@ describe('commonStrategy and defaultStrategies', () => {
     expect(commonStrategy.detect(SAMPLE)).toBeLessThan(1);
   });
 });
+
+// A real receiver-flow share ("O amigo pode ajudar …"): spaced codes, each section header on its
+// own line, and a "Saldo da troca" footer whose tallies (65/69) must NOT be read as sticker numbers.
+const RECEIVER_SAMPLE = `🎁 O amigo pode ajudar o Antônio com 69 figurinhas
+
+🌟 Especiais
+
+⭐ FWC 8, 14
+
+🇲🇽 México
+
+MEX 13, 14
+
+🇨🇿 República Tcheca
+
+CZE 4, 13, 14, 16, 17, 19, 20
+
+🇧🇦 Bósnia e Herzegovina
+
+BIH 3, 4, 5, 6, 9, 13, 15, 19, 20
+
+🇨🇭 Suíça
+
+SUI 20
+
+🇲🇦 Marrocos
+
+MAR 4, 19
+
+🏴 Escócia
+
+SCO 19
+
+🇺🇸 Estados Unidos
+
+USA 16, 19
+
+🇦🇺 Austrália
+
+AUS 18
+
+🇩🇪 Alemanha
+
+GER 4, 17, 18
+
+🇨🇼 Curaçao
+
+CUW 3
+
+🇨🇮 Costa do Marfim
+
+CIV 4, 13
+
+🇳🇱 Holanda
+
+NED 14
+
+🇯🇵 Japão
+
+JPN 4, 10
+
+🇸🇪 Suécia
+
+SWE 9, 10, 12, 14
+
+🇪🇬 Egito
+
+EGY 3
+
+🇮🇷 Irã
+
+IRN 2, 9, 11, 13, 14, 16, 18
+
+🇳🇿 Nova Zelândia
+
+NZL 6
+
+🇪🇸 Espanha
+
+ESP 19
+
+🇸🇦 Arábia Saudita
+
+KSA 18
+
+🇫🇷 França
+
+FRA 13, 16, 19
+
+🇮🇶 Iraque
+
+IRQ 20
+
+🇳🇴 Noruega
+
+NOR 8, 9, 13, 14, 18
+
+🇦🇷 Argentina
+
+ARG 4
+
+🇩🇿 Argélia
+
+ALG 4, 18
+
+🇦🇹 Áustria
+
+AUT 2
+
+🇵🇹 Portugal
+
+POR 14
+
+🏴 Inglaterra
+
+ENG 13, 17, 18, 20
+
+🇬🇭 Gana
+
+GHA 10, 20
+
+🇵🇦 Panamá
+
+PAN 7, 9
+
+📊 Saldo da troca:
+
+* Antônio entrega: 65 figurinhas
+* Antônio recebe: 69 figurinhas`;
+
+// A real repeats share with "(×N)" duplicate-count annotations, and a CC13 that isn't in our
+// album (the Coca-Cola section ends at CC12).
+const REPEATS_SAMPLE = `🏆 *Copa 2026* — *🔁 252 Repetidas*
+
+🌟 Introdução:
+FWC4, FWC9, FWC10, FWC11, FWC12, FWC13, FWC15
+
+🇲🇽 México:
+MEX5, MEX6, MEX9, MEX17, MEX19, MEX20 (×2)
+
+🇿🇦 África do Sul:
+RSA2, RSA3, RSA5 (×3), RSA11, RSA19
+
+🇨🇿 República Tcheca:
+CZE11, CZE15 (×2)
+
+🇨🇭 Suíça:
+SUI1, SUI2, SUI4, SUI5 (×3), SUI9, SUI12
+
+🇧🇷 Brasil:
+BRA4, BRA9, BRA12, BRA16 (×2), BRA17
+
+🏴 Escócia:
+SCO3, SCO4, SCO6, SCO8 (×2), SCO9 (×2), SCO12 (×2), SCO14, SCO16, SCO20
+
+🇺🇸 Estados Unidos:
+USA10, USA14 (×2)
+
+🇩🇪 Alemanha:
+GER1, GER2, GER5 (×2), GER6, GER9, GER12, GER19 (×2)
+
+🇨🇮 Costa do Marfim:
+CIV1, CIV3, CIV7 (×3), CIV11, CIV12, CIV16, CIV17
+
+🇶🇦 Catar:
+QAT2, QAT6, QAT15 (×2), QAT16 (×2), QAT17
+
+🇵🇹 Portugal:
+POR1, POR8, POR9, POR12, POR16, POR19 (×3)
+
+🥤 Coca:
+CC7, CC12, CC13
+
+Bora trocar? 📲`;
+
+describe('parseImport on real lists from other apps', () => {
+  it('loads a receiver-flow list and ignores the trade-balance footer numbers', () => {
+    const result = parseImport(RECEIVER_SAMPLE, checklist);
+
+    expect(result.strategy).toBe('common');
+    expect(result.unrecognized).toEqual([]);
+    // Exactly the codes listed, in album order (teams A→L, then the FWC specials) — the footer
+    // tallies "65"/"69" and the header "69" are never preceded by a team, so they don't leak in.
+    expect(result.codes).toEqual([
+      'MEX13', 'MEX14',
+      'CZE4', 'CZE13', 'CZE14', 'CZE16', 'CZE17', 'CZE19', 'CZE20',
+      'BIH3', 'BIH4', 'BIH5', 'BIH6', 'BIH9', 'BIH13', 'BIH15', 'BIH19', 'BIH20',
+      'SUI20',
+      'MAR4', 'MAR19',
+      'SCO19',
+      'USA16', 'USA19',
+      'AUS18',
+      'GER4', 'GER17', 'GER18',
+      'CUW3',
+      'CIV4', 'CIV13',
+      'NED14',
+      'JPN4', 'JPN10',
+      'SWE9', 'SWE10', 'SWE12', 'SWE14',
+      'EGY3',
+      'IRN2', 'IRN9', 'IRN11', 'IRN13', 'IRN14', 'IRN16', 'IRN18',
+      'NZL6',
+      'ESP19',
+      'KSA18',
+      'FRA13', 'FRA16', 'FRA19',
+      'IRQ20',
+      'NOR8', 'NOR9', 'NOR13', 'NOR14', 'NOR18',
+      'ARG4',
+      'ALG4', 'ALG18',
+      'AUT2',
+      'POR14',
+      'ENG13', 'ENG17', 'ENG18', 'ENG20',
+      'GHA10', 'GHA20',
+      'PAN7', 'PAN9',
+      'FWC8', 'FWC14',
+    ]);
+  });
+
+  it('ignores "(×N)" duplicate counts and flags out-of-album codes', () => {
+    const result = parseImport(REPEATS_SAMPLE, checklist);
+
+    // CC13 doesn't exist in our album (Coca-Cola ends at CC12) → reported, never a code.
+    expect(result.unrecognized).toEqual(['CC13']);
+    // The "(×N)" tallies are metadata, never sticker numbers: parsing must match the SAME list with
+    // the annotations stripped out (0 false positives — the cardinal rule).
+    const stripped = parseImport(REPEATS_SAMPLE.replace(/\s*\(×\d+\)/g, ''), checklist);
+    expect(result.codes).toEqual(stripped.codes);
+    // Concretely, "(×2)"/"(×3)" must not inject ghosts (none of these are listed in their teams).
+    for (const ghost of ['MEX2', 'CZE2', 'SUI3', 'BRA2', 'SCO2', 'USA2', 'POR3']) {
+      expect(result.codes).not.toContain(ghost);
+    }
+    // The genuinely-listed codes are still there.
+    for (const code of ['MEX20', 'QAT16', 'CIV7', 'CC12', 'FWC13']) {
+      expect(result.codes).toContain(code);
+    }
+  });
+});
