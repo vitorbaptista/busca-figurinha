@@ -4,6 +4,8 @@ import type { ChecklistEntry, CollectionStore, SettingsStore } from '../../types
 import { checklist } from '../../data/checklist';
 import { flagFor } from '../../data/flags';
 import { sanitizeName } from '../../domain/name';
+import { givableTo } from '../../domain/friendMatch';
+import type { FriendListsStore } from '../../state/friendLists';
 import type { TradePayload } from '../../domain/tradeList';
 import {
   toggleCode,
@@ -34,6 +36,8 @@ interface TradeScreenProps {
   wants: CollectionStore;
   /** App settings — used here to read/capture the user's name so every shared link is signed. */
   settings: SettingsStore;
+  /** Saved friend lists — to save a friend's list from their link and show "Listas de amigos". */
+  friendLists: FriendListsStore;
   /** A friend's decoded list, when the user arrived via a shared ?t= link. */
   friendPayload: TradePayload | null;
   onShare: (payload: TradePayload) => Promise<ShareTradesResult>;
@@ -57,6 +61,7 @@ export function TradeScreen({
   repeats,
   wants,
   settings,
+  friendLists,
   friendPayload,
   onShare,
   onClearFriend,
@@ -66,6 +71,7 @@ export function TradeScreen({
 }: TradeScreenProps) {
   useStore(collection);
   useStore(repeats);
+  useStore(friendLists);
 
   const [notice, setNotice] = useState<string | null>(null);
   const flash = (text: string) => {
@@ -104,20 +110,67 @@ export function TradeScreen({
     pending?.();
   };
 
-  // Gate the first paint until both stores have hydrated from IndexedDB. A friend opening a shared
+  // "Salvar a lista do amigo": confirm/edit the friend's name (prefilled from the link), then save (or
+  // update an existing friend matched by normalized name). The store canonicalizes the needs. Never
+  // saves an empty name.
+  const [saveSheet, setSaveSheet] = useState<
+    | { phase: 'name'; needs: string[] }
+    | { phase: 'collision'; needs: string[]; name: string }
+    | null
+  >(null);
+  const [saveNameDraft, setSaveNameDraft] = useState('');
+  const openSaveFriend = () => {
+    if (!friendPayload) return;
+    setSaveNameDraft(sanitizeName(friendPayload.name) || '');
+    setSaveSheet({ phase: 'name', needs: friendPayload.missing });
+  };
+  // On submit: a brand-new name saves straight away; a name that matches a saved friend asks
+  // update-or-new (never silently overwrites the wrong friend — two friends can share a name).
+  const submitSaveName = () => {
+    if (saveSheet?.phase !== 'name') return;
+    const name = sanitizeName(saveNameDraft);
+    if (!name) return;
+    if (friendLists.findByNormalizedName(name).length > 0) {
+      setSaveSheet({ phase: 'collision', needs: saveSheet.needs, name });
+    } else {
+      friendLists.add({ name, needs: saveSheet.needs, source: 'link' });
+      flash(pt.trade.friendSaved(name));
+      setSaveSheet(null);
+    }
+  };
+  const saveAsUpdate = () => {
+    if (saveSheet?.phase !== 'collision') return;
+    const match = friendLists.findByNormalizedName(saveSheet.name)[0];
+    if (match) {
+      friendLists.updateNeeds(match.id, saveSheet.needs);
+      flash(pt.trade.friendUpdated(saveSheet.name));
+    }
+    setSaveSheet(null);
+  };
+  const saveAsNew = () => {
+    if (saveSheet?.phase !== 'collision') return;
+    friendLists.add({ name: saveSheet.name, needs: saveSheet.needs, source: 'link' });
+    flash(pt.trade.friendSaved(saveSheet.name));
+    setSaveSheet(null);
+  };
+
+  // Gate the first paint until the stores have hydrated from IndexedDB. A friend opening a shared
   // ?t= link lands here immediately at startup; without this the match would briefly compute against
-  // an empty `owned` and show an inflated "serve pra você" count before correcting itself.
-  const [loaded, setLoaded] = useState(() => collection.loaded() && repeats.loaded());
+  // an empty `owned` and show an inflated "serve pra você" count before correcting itself. friendLists
+  // is gated too so the "Listas de amigos" section paints with the rest instead of popping in.
+  const [loaded, setLoaded] = useState(
+    () => collection.loaded() && repeats.loaded() && friendLists.loaded(),
+  );
   useEffect(() => {
     if (loaded) return;
     let active = true;
-    void Promise.all([collection.ready, repeats.ready]).then(() => {
+    void Promise.all([collection.ready, repeats.ready, friendLists.ready]).then(() => {
       if (active) setLoaded(true);
     });
     return () => {
       active = false;
     };
-  }, [loaded, collection, repeats]);
+  }, [loaded, collection, repeats, friendLists]);
 
   const owned = collection.codes();
   // A tradeable spare must be a sticker you still own — un-owning one in Coleção doesn't touch the
@@ -207,6 +260,54 @@ export function TradeScreen({
     </div>
   ) : null;
 
+  // "De quem é essa lista?" — name the friend before saving; if the name matches a saved friend,
+  // ask update-or-new so two friends who share a name can't clobber each other.
+  const saveSheetEl = saveSheet ? (
+    <div class="name-overlay" role="dialog" aria-modal="true" aria-label={pt.trade.saveFriendTitle}>
+      <div class="name-card">
+        {saveSheet.phase === 'name' ? (
+          <>
+            <h2>{pt.trade.saveFriendTitle}</h2>
+            <p>{pt.trade.saveFriendText(saveSheet.needs.length)}</p>
+            <input
+              class="name-input"
+              type="text"
+              value={saveNameDraft}
+              maxLength={24}
+              placeholder={pt.trade.saveFriendPlaceholder}
+              autofocus
+              onInput={(e) => setSaveNameDraft((e.currentTarget as HTMLInputElement).value)}
+            />
+            <button
+              class="btn btn-primary btn-block"
+              disabled={!sanitizeName(saveNameDraft)}
+              onClick={submitSaveName}
+            >
+              {pt.trade.saveFriendSave}
+            </button>
+            <button class="link-btn name-skip" onClick={() => setSaveSheet(null)}>
+              {pt.trade.saveFriendCancel}
+            </button>
+          </>
+        ) : (
+          <>
+            <h2>{pt.trade.saveCollisionTitle(saveSheet.name)}</h2>
+            <p>{pt.trade.saveCollisionText}</p>
+            <button class="btn btn-primary btn-block" onClick={saveAsUpdate}>
+              {pt.trade.saveCollisionUpdate(saveSheet.name)}
+            </button>
+            <button class="btn btn-ghost btn-block" onClick={saveAsNew}>
+              {pt.trade.saveCollisionNew}
+            </button>
+            <button class="link-btn name-skip" onClick={() => setSaveSheet(null)}>
+              {pt.trade.saveFriendCancel}
+            </button>
+          </>
+        )}
+      </div>
+    </div>
+  ) : null;
+
   // ---- A friend's shared list is open: the tappable two-way match ----
   if (friendPayload) {
     return (
@@ -219,16 +320,19 @@ export function TradeScreen({
           myRepeatCodes={myRepeatCodes}
           notice={notice}
           onRespond={(have, want) => withName(() => respondToFriend(have, want))}
+          onSaveFriend={openSaveFriend}
           onClearFriend={onClearFriend}
           onGoScan={onGoScan}
         />
         {nameSheetEl}
+        {saveSheetEl}
       </>
     );
   }
 
   // ---- The user's own trade offer ----
   const hasRepeats = myRepeatEntries.length > 0;
+  const activeFriends = friendLists.active();
 
   // Only a brand-new user who hasn't kept a single sticker yet gets the onboarding empty state. The
   // moment they have an album, this screen ALWAYS shows what they need + the share/copy actions —
@@ -349,8 +453,40 @@ export function TradeScreen({
           <QrCode value={shareLink} ariaLabel={pt.trade.qrAria} class="trade-qr-svg" />
           <p class="trade-qr-hint">{pt.trade.qrHint}</p>
         </section>
+
+        {activeFriends.length > 0 && (
+          <section class="friends-section">
+            <SectionHead lead={pt.trade.friendsTitle} />
+            <div class="ledger friends-list">
+              {activeFriends.map((f) => {
+                const canGive = givableTo(f, myRepeatCodes).length;
+                return (
+                  <div class="friend-row" key={f.id}>
+                    <span class="friend-av" aria-hidden="true">
+                      {f.name.slice(0, 1).toUpperCase()}
+                    </span>
+                    <span class="friend-info">
+                      <span class="friend-name">{f.name}</span>
+                      <span class="friend-stat">
+                        {pt.trade.friendNeeds(f.needs.length)}
+                        {canGive > 0 ? ` · ${pt.trade.friendCanGive(canGive)}` : ''}
+                      </span>
+                    </span>
+                    {canGive > 0 && (
+                      <span class="friend-give">
+                        <b>{canGive}</b>
+                        <small>{pt.trade.friendGiveLabel}</small>
+                      </span>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </section>
+        )}
       </div>
       {nameSheetEl}
+      {saveSheetEl}
     </div>
   );
 }
@@ -361,6 +497,8 @@ interface FriendMatchProps {
   notice: string | null;
   /** Commit the receiver's selections and share the combined trade back (deferred write, in TradeScreen). */
   onRespond: (have: string[], want: string[]) => void;
+  /** Open the "save this friend's list" sheet (to find trades for them later). */
+  onSaveFriend: () => void;
   onClearFriend: () => void;
   onGoScan: () => void;
 }
@@ -376,6 +514,7 @@ function FriendMatch({
   myRepeatCodes,
   notice,
   onRespond,
+  onSaveFriend,
   onClearFriend,
   onGoScan,
 }: FriendMatchProps) {
@@ -499,9 +638,14 @@ function FriendMatch({
       )}
 
       <header class="trade-header trade-header-friend">
-        <button class="trade-back" onClick={onClearFriend}>
-          ← {pt.trade.backToMine}
-        </button>
+        <div class="trade-header-friend-row">
+          <button class="trade-back" onClick={onClearFriend}>
+            ← {pt.trade.backToMine}
+          </button>
+          <button class="trade-save-friend" onClick={onSaveFriend}>
+            💾 {pt.trade.saveFriendCta}
+          </button>
+        </div>
         <h1>{pt.trade.friendTradeTitle(friendName)}</h1>
         <p class="trade-guide">{pt.trade.friendGuide}</p>
       </header>

@@ -3,6 +3,7 @@ import type { FunctionComponent } from 'preact';
 import type { ScanRecord, ScanSession, SessionReport } from './types';
 import { checklist } from './data/checklist';
 import { createCollectionStore, idbStore } from './state/collection';
+import { createFriendListsStore } from './state/friendLists';
 import { createSettingsStore } from './state/settings';
 import { createSession } from './domain/session';
 import { readShareLink, shareTrades } from './domain/share';
@@ -29,6 +30,9 @@ const repeats = createCollectionStore(idbStore, 'repeats');
 // A wishlist set: codes the user WANTS, seeded by tapping a friend's spares on a shared link (and
 // shareable/persisted like repeats). No 0-FP risk — wanting a sticker can never offer a wrong trade.
 const wants = createCollectionStore(idbStore, 'wants');
+// Saved friend lists (what OTHER people need), to find trades for them — separate from your own
+// collection. Codes are canonicalized at the store boundary against the album.
+const friendLists = createFriendListsStore(idbStore, checklist);
 const settings = createSettingsStore();
 
 const SESSION_KEY = 'session';
@@ -88,6 +92,7 @@ export function App() {
   useStore(collection);
   useStore(repeats);
   useStore(wants);
+  useStore(friendLists);
   useStore(settings);
 
   const initialFriendPayload = useMemo(loadFriendPayload, []);
@@ -189,6 +194,7 @@ export function App() {
           repeats={repeats}
           wants={wants}
           settings={settings}
+          friendLists={friendLists}
           friendPayload={friendPayload}
           onShare={(payload) => shareTrades(payload, checklist)}
           onClearFriend={() => setFriendPayload(null)}
@@ -211,6 +217,7 @@ export function App() {
           collection={collection}
           repeats={repeats}
           wants={wants}
+          friendLists={friendLists}
           settings={settings}
           installInvite={pwa.invite}
           isStandalone={pwa.isStandalone}

@@ -3,6 +3,15 @@
 Notable changes to the sticker scanner. Newest first. No formal releases yet (deploys on push to
 `main`), so entries are grouped by date. Keep this updated when you ship something notable.
 
+## 2026-06-21 — Trocar: salve a lista de um amigo (Listas de amigos)
+
+### Added
+- **Abriu o link de um amigo? Agora dá pra salvar a lista dele** (botão "💾 Salvar lista"), pra achar
+  troca pra ele depois. O app já vem com o nome dele preenchido (do link). As listas salvas aparecem
+  numa seção **"👥 Listas de amigos"** na aba Trocar, cada um mostrando **quantas figurinhas ele precisa
+  e quantas você tem repetida pra dar pra ele**. Re-salvar a lista de alguém atualiza (não duplica).
+- As listas de amigos entram no **backup** (exportar/importar) e somem no **"Apagar tudo"**.
+
 ## 2026-06-21 — Escanear: zero código errado (confiabilidade acima de tudo)
 
 ### Fixed
