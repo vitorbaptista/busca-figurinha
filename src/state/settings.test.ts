@@ -41,15 +41,6 @@ describe('createSettingsStore', () => {
     expect(reloaded.get().onboarded).toBe(false);
   });
 
-  it('defaults installDismissed to false and round-trips it', () => {
-    const store = createSettingsStore(storage, KEY);
-    expect(store.get().installDismissed).toBe(false);
-
-    store.set({ installDismissed: true });
-    const reloaded = createSettingsStore(storage, KEY);
-    expect(reloaded.get().installDismissed).toBe(true);
-  });
-
   it('tolerates malformed stored JSON by falling back to defaults', () => {
     storage.setItem(KEY, '{not valid json');
     const store = createSettingsStore(storage, KEY);

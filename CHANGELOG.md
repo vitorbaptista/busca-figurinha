@@ -3,6 +3,14 @@
 Notable changes to the sticker scanner. Newest first. No formal releases yet (deploys on push to
 `main`), so entries are grouped by date. Keep this updated when you ship something notable.
 
+## 2026-06-21 — Instalar o app virou opção (sem mais aquele convite na cara)
+
+### Changed
+- O convite de instalar o app **não aparece mais sozinho**. Agora instalar é uma **opção em
+  Ajustes** ("Instalar o app"), pra quem quiser — sem pop-up empurrando ninguém. No **Android**, tocar
+  na opção abre direto a janela de instalar do próprio celular; no **iPhone**, mostra os 2 passos
+  ("Compartilhar → Adicionar à Tela de Início").
+
 ## 2026-06-21 — Trocar: arquivar amigos (lista limpa)
 
 ### Added

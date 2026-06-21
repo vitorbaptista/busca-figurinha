@@ -104,13 +104,13 @@ export function App() {
   const [friendPayload, setFriendPayload] = useState<TradePayload | null>(initialFriendPayload);
 
   // PWA install flow. The hook lives here at the root because `beforeinstallprompt` fires early
-  // (before lazily-mounted screens exist); its result is passed down to Ajustes. `installOpen`
-  // is 'auto' (the one-time nudge) or 'manual' (reopened from Ajustes) so dismiss can differ.
+  // (before lazily-mounted screens exist); its result is passed down to Ajustes — installing is
+  // OPT-IN from there, never auto-prompted. `iosStepsOpen` toggles the iOS instructions sheet
+  // (Android installs straight from the OS dialog, with no sheet of ours).
   const pwa = usePwaInstall();
-  const [installOpen, setInstallOpen] = useState<'auto' | 'manual' | null>(null);
+  const [iosStepsOpen, setIosStepsOpen] = useState(false);
 
   const onboarded = settings.get().onboarded;
-  const installDismissed = settings.get().installDismissed;
 
   // Mirror the active section into the URL hash so a refresh/shared link restores it, and (once a
   // ?t= friend link has been read into state) strip that query so a reload doesn't re-open the
@@ -122,22 +122,12 @@ export function App() {
     history.replaceState(history.state, '', sectionUrl(location, screen, !!initialFriendPayload));
   }, [screen]);
 
-  // Auto-show the install nudge once, after onboarding, when the app is actually installable and
-  // hasn't been dismissed. NOT on the scan screen — that's the camera surface, where an overlay
-  // would fight the permission prompt and interrupt scanning; the nudge waits for an idle moment
-  // (any other tab). `?? 'auto'` never clobbers a 'manual' open already in progress.
-  useEffect(() => {
-    if (onboarded && !installDismissed && !pwa.isStandalone && pwa.invite !== 'none' && screen !== 'scan') {
-      setInstallOpen((cur) => cur ?? 'auto');
-    }
-  }, [onboarded, installDismissed, pwa.isStandalone, pwa.invite, screen]);
-
-  /** Close the install sheet and stop auto-nagging — once the user has seen the invite (whether
-   *  the auto nudge or one they opened from Ajustes), don't pop it again. They can still install
-   *  any time from the Ajustes row, which ignores `installDismissed`. */
-  const closeInstall = () => {
-    settings.set({ installDismissed: true });
-    setInstallOpen(null);
+  /** Install is opt-in from Ajustes (never auto-prompted). Android (a stashed prompt event) goes
+   *  straight to the native OS install dialog; iOS Safari has no such API, so we show the manual
+   *  "Compartilhar → Adicionar à Tela de Início" steps in a sheet. */
+  const openInstall = () => {
+    if (pwa.invite === 'prompt') void pwa.promptInstall();
+    else if (pwa.invite === 'ios-steps') setIosStepsOpen(true);
   };
 
   /** Build the report, end the current scan session, and move to the report screen. */
@@ -223,7 +213,7 @@ export function App() {
           settings={settings}
           installInvite={pwa.invite}
           isStandalone={pwa.isStandalone}
-          onOpenInstall={() => setInstallOpen('manual')}
+          onOpenInstall={openInstall}
         />
       )}
 
@@ -239,14 +229,9 @@ export function App() {
         <Onboarding onDone={() => settings.set({ onboarded: true })} />
       )}
 
-      {/* Install nudge. Only once onboarded and actually installable; hidden behind a friend's
-          shared list (same as the nav). `kind` is the capability the hook resolved. */}
-      {installOpen && onboarded && pwa.invite !== 'none' && !(friendPayload && screen === 'trade') && (
-        <InstallPrompt
-          kind={pwa.invite === 'ios-steps' ? 'ios-steps' : 'prompt'}
-          onInstall={() => void pwa.promptInstall().then(closeInstall)}
-          onDismiss={closeInstall}
-        />
+      {/* iOS-only install instructions, opened on demand from Ajustes (never auto-shown). */}
+      {iosStepsOpen && pwa.invite === 'ios-steps' && (
+        <InstallPrompt onClose={() => setIosStepsOpen(false)} />
       )}
     </div>
   );
