@@ -98,6 +98,7 @@ export function ConferirScreen({ collection, friendLists, settings, onBack }: Co
     if (ocrInitRef.current) return ocrInitRef.current;
     const engine = createOcrEngine();
     ocrRef.current = engine;
+    setOcrFailed(false);
     if (!codeNetRef.current) {
       import('../../ocr/codeNetEngine')
         .then(({ createCodeNet }) => {
