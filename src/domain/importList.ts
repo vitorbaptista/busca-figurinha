@@ -43,6 +43,20 @@ export const commonStrategy: ImportStrategy = {
  *  support a format the common parser can't handle. */
 export const defaultStrategies: ImportStrategy[] = [commonStrategy];
 
+export interface ImportPreview {
+  /** Recognized codes NOT already in the target set — exactly what an import would add. */
+  newCodes: string[];
+  /** How many recognized codes the user already had (so the preview can be honest about the delta). */
+  alreadyHad: number;
+}
+
+/** Split recognized import codes against what the target store already holds, so the preview shows the
+ *  honest "X novas" instead of implying every recognized code is added. Pure. */
+export function importPreview(codes: string[], existing: Set<string>): ImportPreview {
+  const newCodes = codes.filter((code) => !existing.has(code));
+  return { newCodes, alreadyHad: codes.length - newCodes.length };
+}
+
 /** Parse a pasted sticker list into recognized codes + a count of what was skipped, choosing the
  *  strategy that best recognizes the text. Ties (and an all-zero field) keep the earliest strategy,
  *  so the common fallback — listed first in defaultStrategies with a non-zero baseline — handles

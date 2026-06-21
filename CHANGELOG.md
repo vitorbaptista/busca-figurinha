@@ -1,7 +1,16 @@
 # Changelog
 
 Notable changes to the sticker scanner. Newest first. No formal releases yet (deploys on push to
-`main`), so entries are grouped by date. Keep this updated when you ship something notable.
+## 2026-06-21 — Coleção: importar a lista de outro app (sem escanear tudo de novo)
+
+### Added
+- **Já tem sua lista em outro app?** Agora dá pra **colar** (botão "📋 Colar lista" na Coleção) e o app
+  reconhece os códigos e bota na sua coleção de uma vez — sem precisar escanear figurinha por figurinha.
+  Você escolhe se é "**Tenho**" (vai pra coleção) ou "**Preciso**" (vai pra sua lista de preciso), confere
+  quantas foram reconhecidas (e quantas você já tinha / não deu pra ler) e confirma. Reaproveita o mesmo
+  leitor de listas que já existia.
+
+
 
 ## 2026-06-21 — Instalar o app virou opção (sem mais aquele convite na cara)
 

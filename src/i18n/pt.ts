@@ -129,6 +129,39 @@ export const pt = {
     noResults: 'Nenhum time encontrado.',
     inCollection: 'na coleção',
     missing: 'falta',
+    importCta: 'Colar lista',
+  },
+
+  // Importar a lista de outro app (cola um texto do WhatsApp / outro álbum → vira coleção ou lista).
+  importList: {
+    title: 'Importar a lista',
+    close: 'Fechar',
+    lead: 'Cole a lista de figurinhas de outro app e diga se você tem ou se precisa delas.',
+    bucketLabel: 'O que é essa lista',
+    bucketHave: 'Tenho',
+    bucketNeed: 'Preciso',
+    placeholder: 'Cole aqui (ex: BRA 3, 6, 10\nMEX 12\nARG 4, 9, 14…)',
+    pasteClipboard: 'Colar da área de transferência',
+    load: 'Carregar lista',
+    previewTitle: 'Confere antes de salvar',
+    recognized: 'reconhecidas',
+    destHave: '→ vão pra Minha coleção',
+    destNeed: '→ vão pra Minha lista de preciso',
+    alreadyHad: (n: number) =>
+      n === 1 ? '1 você já tinha (não conta de novo).' : `${n} você já tinha (não contam de novo).`,
+    skipped: (n: number) =>
+      n === 1 ? '1 não foi reconhecida e foi pulada.' : `${n} não foram reconhecidas e foram puladas.`,
+    add: (n: number) => (n === 1 ? 'Adicionar 1' : `Adicionar ${n}`),
+    nothingNew: 'Nada de novo pra adicionar',
+    previewNone: 'Não achei nenhuma figurinha nessa lista. Confere o texto e tenta de novo.',
+    back: 'Voltar e revisar',
+    doneTitle: 'Pronto!',
+    doneHave: (n: number) =>
+      n === 1 ? '1 figurinha foi pra sua coleção.' : `${n} figurinhas foram pra sua coleção.`,
+    doneNeed: (n: number) =>
+      n === 1 ? '1 figurinha foi pra sua lista de preciso.' : `${n} figurinhas foram pra sua lista de preciso.`,
+    seeCollection: 'Ver a coleção',
+    another: 'Colar outra lista',
   },
 
   // The manual "Repetidas" editor — mirrors Coleção but toggles your tradeable spares.

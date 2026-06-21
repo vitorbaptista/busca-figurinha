@@ -5,15 +5,19 @@ import { pt } from '../../i18n/pt';
 import { useStickyOffset, useStore } from '../hooks';
 import { ProgressBar } from '../components/ProgressBar';
 import { AlbumGrid } from '../components/AlbumGrid';
+import { ImportSheet } from '../components/ImportSheet';
 
 interface CollectionScreenProps {
   collection: CollectionStore;
+  /** Wishlist store — the "Preciso" destination of a pasted import. */
+  wants: CollectionStore;
 }
 
-export function CollectionScreen({ collection }: CollectionScreenProps) {
+export function CollectionScreen({ collection, wants }: CollectionScreenProps) {
   useStore(collection);
 
   const [query, setQuery] = useState('');
+  const [importing, setImporting] = useState(false);
 
   const owned = collection.codes();
   const total = checklist.total;
@@ -29,7 +33,12 @@ export function CollectionScreen({ collection }: CollectionScreenProps) {
       <header class="collection-header" ref={headerRef}>
         <div class="collection-progress-row">
           <h1>{pt.collection.title}</h1>
-          <span class="collection-count">{pt.collection.progress(owned.size, total)}</span>
+          <div class="collection-head-right">
+            <button class="collection-import" onClick={() => setImporting(true)}>
+              📋 {pt.collection.importCta}
+            </button>
+            <span class="collection-count">{pt.collection.progress(owned.size, total)}</span>
+          </div>
         </div>
         <ProgressBar value={total === 0 ? 0 : owned.size / total} />
         <div class="collection-percent">
@@ -57,6 +66,10 @@ export function CollectionScreen({ collection }: CollectionScreenProps) {
           teamCount={(n, total) => pt.collection.teamProgress(n, total)}
           isTeamComplete={(n, total) => n === total}
         />
+      )}
+
+      {importing && (
+        <ImportSheet collection={collection} wants={wants} onClose={() => setImporting(false)} />
       )}
     </div>
   );
