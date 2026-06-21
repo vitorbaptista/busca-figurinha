@@ -12,7 +12,8 @@ interface SettingsScreenProps {
   settings: SettingsStore;
 }
 
-const APP_VERSION = '0.1.0';
+// semver from package.json + short commit hash, both injected at build time (see vite.config.ts).
+const APP_VERSION = `${__APP_VERSION__} (${__APP_COMMIT__})`;
 
 export function SettingsScreen({ collection, repeats, wants, settings }: SettingsScreenProps) {
   useStore(settings);

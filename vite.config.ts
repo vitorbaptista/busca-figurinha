@@ -3,9 +3,25 @@ import preact from '@preact/preset-vite';
 import { VitePWA } from 'vite-plugin-pwa';
 import { appendFileSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
+import { execSync } from 'node:child_process';
 
 // GitHub Pages serves from a repo subpath. Set GH_PAGES=1 in CI to use it.
 const base = process.env.GH_PAGES ? '/busca-figurinha/' : '/';
+
+// Version shown in Ajustes, injected at build time so it's never a stale hardcoded string.
+// semver is the human-readable release (bump in package.json); the short commit hash auto-updates
+// every deploy, so the displayed identity always traces to an exact build even if semver isn't bumped.
+const appVersion = (JSON.parse(readFileSync(resolve('package.json'), 'utf8')) as { version: string })
+  .version;
+const commitHash = (() => {
+  try {
+    return execSync('git rev-parse --short HEAD', { stdio: ['ignore', 'pipe', 'ignore'] })
+      .toString()
+      .trim();
+  } catch {
+    return 'dev'; // git absent (e.g. a tarball build) → graceful fallback
+  }
+})();
 
 // Dev-only: lets the app (in ?debug) POST a captured camera frame so we can save
 // real device frames to ./captures and iterate on OCR offline. Not part of the build.
@@ -281,6 +297,10 @@ function captureSaver(): Plugin {
 
 export default defineConfig({
   base,
+  define: {
+    __APP_VERSION__: JSON.stringify(appVersion),
+    __APP_COMMIT__: JSON.stringify(commitHash),
+  },
   // Allow tunneling the dev server through ngrok (e.g. to test on a real phone).
   // A leading dot matches the domain and all its subdomains, so any *.ngrok-free.app URL works.
   server: {
