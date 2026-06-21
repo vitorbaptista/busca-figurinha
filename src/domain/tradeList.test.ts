@@ -8,6 +8,7 @@ import {
   formatTradeList,
   matchTrades,
   parseTradeList,
+  parseTradeListDetailed,
   type TradePayload,
 } from './tradeList';
 
@@ -91,6 +92,26 @@ describe('formatTradeList and parseTradeList', () => {
     ].join('\n');
 
     expect(parseTradeList(pasted, checklist)).toEqual(['MEX20', 'CIV12', '00']);
+  });
+});
+
+describe('parseTradeListDetailed', () => {
+  it('returns the same codes as parseTradeList and reports known-team out-of-album tokens', () => {
+    const pasted = ['MEX2, MEX25, FWC8, FWC20', 'CC4, CC15', 'ABC9'].join('\n');
+    const detailed = parseTradeListDetailed(pasted, checklist);
+
+    // codes match the existing parser exactly (album order, deduped).
+    expect(detailed.codes).toEqual(parseTradeList(pasted, checklist));
+    expect(detailed.codes).toEqual(['MEX2', 'FWC8', 'CC4']);
+    // Known team, number outside THIS album (the 994-vs-992 mismatch) is surfaced, in
+    // appearance order. An unknown team (ABC) is never seen, so it adds no noise.
+    expect(detailed.unrecognized).toEqual(['MEX25', 'FWC20', 'CC15']);
+  });
+
+  it('reports nothing unrecognized for a clean list', () => {
+    const detailed = parseTradeListDetailed('MEX 3, 6, 10\nCIV12', checklist);
+    expect(detailed.codes).toEqual(['MEX3', 'MEX6', 'MEX10', 'CIV12']);
+    expect(detailed.unrecognized).toEqual([]);
   });
 });
 
