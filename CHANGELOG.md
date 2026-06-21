@@ -3,6 +3,20 @@
 Notable changes to the sticker scanner. Newest first. No formal releases yet (deploys on push to
 `main`), so entries are grouped by date. Keep this updated when you ship something notable.
 
+## 2026-06-21 — Conferir: contador + salvar na coleção (e câmera frontal por padrão)
+
+### Changed
+- **O Conferir agora usa a câmera da frente** por padrão (celular na mesa, figurinha mostrada pra tela,
+  com a luz de tela) — o jeito que já funciona bem no Escanear. Dá pra virar pra de trás se quiser.
+
+### Added
+- **Contador enquanto você confere:** mostra quantas figurinhas tem **pra você** (que você precisa) e
+  quantas **pros amigos** (que um amigo salvo precisa), conforme você passa o maço.
+- **Salvar na coleção:** depois de trocar, **"💾 Salvar na coleção"** abre uma listinha das que eram pra
+  você pra você **marcar só as que pegou de verdade** ("Pegou quais?") e botar na sua coleção de uma vez —
+  sem re-escanear. As que você só olhou (não pegou) ficam de fora, e as dos amigos não entram (não são suas
+  pra guardar).
+
 ## 2026-06-21 — Resumo do escaneamento: botão pra guardar só as novas
 
 ### Added

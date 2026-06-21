@@ -30,12 +30,14 @@ type CameraState = 'loading' | 'ready' | 'denied';
 type ScanPhase = 'idle' | 'reading';
 
 /**
- * "Conferir figurinhas" — point the camera at the OTHER person's stickers while trading. Per read:
- * PEGA! (você precisa) / PEGA PRO {amigo} / JÁ TENHO (pode deixar). ADVISORY + READ-ONLY: it commits
- * NOTHING (no session, no collection, no repeats). It reuses the shipping scanner's PRIMITIVES
- * (camera source, autoCapture, recognizeFrame, confirmer, allowCommit) and replicates the
+ * "Conferir figurinhas" — show the OTHER person's stickers to the camera while trading. Per read:
+ * PEGA! (você precisa) / PEGA PRO {amigo} / JÁ TENHO (pode deixar). It reuses the shipping scanner's
+ * PRIMITIVES (camera source, autoCapture, recognizeFrame, confirmer, allowCommit) and replicates the
  * 0-FP commit discipline verbatim — a wrong PEGA/DEIXA would drive a bad PHYSICAL trade. The shipping
- * ScanScreen is left untouched (0% regression). Default camera is BACK (you point at their pile).
+ * ScanScreen is left untouched (0% regression). Default camera is FRONT (phone flat, sticker shown to
+ * the screen-side camera + the fill-light — the validated capture path, same as the album scanner).
+ * It accumulates a running tally as you sweep the pile; the ONLY write is the explicit, user-initiated
+ * "Salvar na coleção" (after you actually trade) — every per-read computation is read-only.
  */
 export function ConferirScreen({ collection, friendLists, settings, onBack }: ConferirScreenProps) {
   const videoLayerRef = useRef<HTMLDivElement>(null);
@@ -57,15 +59,25 @@ export function ConferirScreen({ collection, friendLists, settings, onBack }: Co
   const [ocrFailed, setOcrFailed] = useState(false);
   const [verdict, setVerdict] = useState<ConferirVerdictState | null>(null);
   const [announce, setAnnounce] = useState('');
-  // Default BACK camera — you hold the phone with the screen facing you and point the back camera at
-  // the other person's pile. (The album scanner defaults front; here back is the only physical fit.)
+  const [notice, setNotice] = useState<string | null>(null);
+  // Default FRONT camera (phone flat on the table, sticker shown to the screen-side camera + the
+  // fill-light) — the validated capture path the album scanner uses; flip to back is remembered.
   const [facing, setFacing] = useState<'user' | 'environment'>(
-    settings.get().conferirCamera === 'front' ? 'user' : 'environment',
+    settings.get().conferirCamera === 'back' ? 'environment' : 'user',
   );
+  // Running tally of distinct stickers worth grabbing as you sweep the pile: ones you NEED (forMe →
+  // savable to your album once you trade) and ones a saved friend needs (forFriends → advisory only).
+  const [takenForMe, setTakenForMe] = useState<Set<string>>(() => new Set());
+  const [takenForFriends, setTakenForFriends] = useState<Set<string>>(() => new Set());
   const [showManual, setShowManual] = useState(false);
   const [manualValue, setManualValue] = useState('');
   const [scanPhase, setScanPhase] = useState<ScanPhase>('idle');
   const scanPhaseRef = useRef<ScanPhase>('idle');
+
+  const flash = (text: string) => {
+    setNotice(text);
+    window.setTimeout(() => setNotice(null), 2600);
+  };
 
   // ---------- Result handling (READ-ONLY: compute a verdict, persist nothing) ----------
   const handleMatch = (matches: MatchResult[]) => {
@@ -84,6 +96,11 @@ export function ConferirScreen({ collection, friendLists, settings, onBack }: Co
     const friendNames = friendsNeeding(entry.code, friendLists.active());
     const v = huntVerdict({ owned, friendNames });
     setVerdict({ kind: v.kind, display: entry.display, teamName: entry.teamName, forFriends: v.forFriends, key });
+    // Tally the takes (deduped). forMe = a sticker you need (savable to your album after the trade);
+    // take-friends = you own it but a friend needs it (advisory — it's not yours to keep).
+    if (v.forMe) setTakenForMe((s) => (s.has(entry.code) ? s : new Set(s).add(entry.code)));
+    else if (v.kind === 'take-friends')
+      setTakenForFriends((s) => (s.has(entry.code) ? s : new Set(s).add(entry.code)));
     const who =
       v.kind === 'take-mine'
         ? pt.conferir.takeWord + ' ' + pt.conferir.takeMineSub
@@ -91,6 +108,33 @@ export function ConferirScreen({ collection, friendLists, settings, onBack }: Co
           ? pt.conferir.takeWord + ' ' + pt.scan.radarServes(v.forFriends)
           : pt.conferir.skipWord + ' ' + pt.conferir.skipSub;
     setAnnounce(`${entry.display}: ${who}${zwsp}`);
+  };
+
+  // Tapping "Salvar" opens a per-item review (NOT a blind save-all): scanning a sticker only means you
+  // LOOKED at it, not that you traded for it — so the user confirms which ones they actually took before
+  // any get marked owned. Mirrors the album report's checked-keeper gate; preserves the cardinal rule
+  // (never mark a sticker owned that you don't physically have). Friend-takes are never offered here.
+  const [reviewSelected, setReviewSelected] = useState<Set<string> | null>(null);
+  const openReview = () => {
+    if (takenForMe.size === 0) return;
+    setReviewSelected(new Set(takenForMe));
+  };
+  const toggleReview = (code: string) =>
+    setReviewSelected((s) => {
+      if (!s) return s;
+      const next = new Set(s);
+      if (next.has(code)) next.delete(code);
+      else next.add(code);
+      return next;
+    });
+  // Confirm: add ONLY the still-checked ones (the stickers you actually took), then end the session.
+  const confirmSave = () => {
+    if (!reviewSelected) return;
+    const codes = [...reviewSelected];
+    if (codes.length > 0) collection.setOwned(codes, true);
+    setReviewSelected(null);
+    setTakenForMe(new Set());
+    if (codes.length > 0) flash(pt.conferir.saved(codes.length));
   };
 
   // ---------- OCR engine init (codeNet ensemble + hybrid), identical 0-FP discipline ----------
@@ -314,9 +358,23 @@ export function ConferirScreen({ collection, friendLists, settings, onBack }: Co
 
       <div class="cam">
         <div class="cam-top">
-          <button class="conferir-back" onClick={onBack}>
-            ← {pt.conferir.back}
-          </button>
+          <div class="conferir-top-left">
+            <button class="cam-icon-btn" onClick={onBack} aria-label={pt.conferir.back} title={pt.conferir.back}>
+              ←
+            </button>
+            <div class="counters">
+              <div class="chip-count">
+                <b>{takenForMe.size}</b>
+                <span>{pt.conferir.counterMine}</span>
+              </div>
+              {takenForFriends.size > 0 && (
+                <div class="chip-count dup">
+                  <b>{takenForFriends.size}</b>
+                  <span>{pt.conferir.counterFriends}</span>
+                </div>
+              )}
+            </div>
+          </div>
           <div class="cam-top-actions">
             {cameraState !== 'denied' && (
               <>
@@ -388,9 +446,60 @@ export function ConferirScreen({ collection, friendLists, settings, onBack }: Co
         )}
 
         <div class="cam-bottom">
+          {notice && (
+            <div class="conferir-notice" role="status" aria-live="polite">
+              {notice}
+            </div>
+          )}
+          {takenForMe.size > 0 && (
+            <button class="conferir-save" onClick={openReview}>
+              💾 {pt.conferir.save(takenForMe.size)}
+            </button>
+          )}
           {verdict && <ConferirVerdict state={verdict} onManual={() => setShowManual(true)} />}
         </div>
       </div>
+
+      {reviewSelected !== null && (
+        <div class="name-overlay" role="dialog" aria-modal="true" aria-label={pt.conferir.reviewTitle}>
+          <div class="name-card conferir-review">
+            <h2>{pt.conferir.reviewTitle}</h2>
+            <p>{pt.conferir.reviewSub}</p>
+            <div class="review-list">
+              {checklist.entries
+                .filter((e) => takenForMe.has(e.code))
+                .map((e) => {
+                  const on = reviewSelected.has(e.code);
+                  return (
+                    <button
+                      key={e.code}
+                      type="button"
+                      class={`review-row${on ? ' is-on' : ''}`}
+                      aria-pressed={on}
+                      onClick={() => toggleReview(e.code)}
+                    >
+                      <span class="review-check" aria-hidden="true">
+                        {on ? '✓' : ''}
+                      </span>
+                      <span class="review-code">{e.display}</span>
+                      <span class="review-team">{e.teamName}</span>
+                    </button>
+                  );
+                })}
+            </div>
+            <button
+              class="btn btn-primary btn-block"
+              disabled={reviewSelected.size === 0}
+              onClick={confirmSave}
+            >
+              {pt.conferir.reviewSave(reviewSelected.size)}
+            </button>
+            <button class="link-btn name-skip" onClick={() => setReviewSelected(null)}>
+              {pt.conferir.reviewCancel}
+            </button>
+          </div>
+        </div>
+      )}
 
       {showManual && (
         <div class="manual-sheet">

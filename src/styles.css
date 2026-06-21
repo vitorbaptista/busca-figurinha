@@ -3325,21 +3325,102 @@ html.scan-active body {
   color: var(--kraft-text);
 }
 
-/* Back button in the camera top bar */
-.conferir-back {
-  background: rgba(15, 60, 39, 0.55);
-  color: var(--cream);
-  border: 1.5px solid var(--cream);
-  border-radius: var(--radius-pill);
+/* Top-left group: back icon + the running tally */
+.conferir-top-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+/* The take/save bar (above the docked verdict) */
+.conferir-save {
+  width: 100%;
+  margin-bottom: 10px;
+  padding: 13px 16px;
+  background: var(--gold);
+  color: var(--ink);
+  border: 2.5px solid var(--ink);
+  border-radius: var(--radius);
+  box-shadow: 4px 4px 0 var(--paper-edge);
   font-family: var(--font-head);
   font-weight: 700;
-  font-size: 0.85rem;
-  padding: 7px 14px;
-  min-height: 38px;
+  font-size: 1.05rem;
   cursor: pointer;
 }
-.conferir-back:active {
-  transform: scale(0.96);
+.conferir-save:active {
+  transform: translate(2px, 2px);
+  box-shadow: 2px 2px 0 var(--paper-edge);
+}
+.conferir-notice {
+  background: var(--keep);
+  color: var(--cream);
+  border: 2px solid var(--ink);
+  border-radius: var(--radius);
+  padding: 10px 14px;
+  margin-bottom: 10px;
+  font-family: var(--font-head);
+  font-weight: 700;
+  font-size: 0.95rem;
+  text-align: center;
+}
+
+/* "Pegou quais?" — per-item review before saving to the album (reuses .name-overlay/.name-card) */
+.conferir-review .review-list {
+  max-height: 46vh;
+  overflow-y: auto;
+  margin: 4px 0 14px;
+  border: 2px dashed var(--kraft-deep);
+  border-radius: var(--radius);
+}
+.review-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 10px 12px;
+  background: transparent;
+  border: 0;
+  border-bottom: 1.5px dashed var(--kraft-deep);
+  cursor: pointer;
+  text-align: left;
+}
+.review-row:last-child {
+  border-bottom: 0;
+}
+.review-check {
+  flex: none;
+  width: 26px;
+  height: 26px;
+  border-radius: 6px;
+  border: 2px solid var(--ink);
+  background: var(--cream);
+  color: var(--keep);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+}
+.review-row.is-on .review-check {
+  background: var(--keep);
+  color: var(--cream);
+}
+.review-code {
+  font-family: var(--font-head);
+  font-weight: 700;
+  font-size: 1.05rem;
+  letter-spacing: 0.02em;
+  color: var(--ink);
+}
+.review-team {
+  font-size: 0.9rem;
+  color: var(--kraft-text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.review-row:not(.is-on) {
+  opacity: 0.6;
 }
 
 /* The Conferir verdict — docked card, mirrors the album .verdict but trade-framed (PEGA/DEIXA). */
