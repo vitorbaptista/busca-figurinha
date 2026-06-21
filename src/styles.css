@@ -2885,10 +2885,48 @@ html.scan-active body {
   align-items: center;
   gap: 11px;
   padding: 10px 12px;
+  border: 0;
   border-bottom: 1.5px dashed var(--kraft-deep);
+  width: 100%;
+  background: transparent;
+  font: inherit;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
 }
 .friend-row:last-child {
   border-bottom: 0;
+}
+.friend-row:active {
+  background: rgba(22, 36, 28, 0.05);
+}
+.friend-chev {
+  flex: none;
+  font-size: 1.5rem;
+  line-height: 1;
+  color: var(--kraft-deep);
+  margin-left: 2px;
+}
+
+/* Friend detail (dei pro João) */
+.detail-guide {
+  margin: 8px 2px 2px;
+  font-size: 0.85rem;
+  color: var(--kraft-text);
+}
+.detail-empty {
+  text-align: center;
+  padding: 28px 18px;
+}
+.detail-empty-emoji {
+  font-size: 2.6rem;
+  display: block;
+  margin-bottom: 10px;
+}
+.detail-empty p {
+  font-size: 1rem;
+  color: var(--ink);
+  margin: 0 0 16px;
 }
 .friend-av {
   flex: none;

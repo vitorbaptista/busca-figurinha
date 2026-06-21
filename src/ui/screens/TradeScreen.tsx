@@ -1,10 +1,10 @@
 import { type ComponentChildren } from 'preact';
 import { useEffect, useRef, useState } from 'preact/hooks';
-import type { ChecklistEntry, CollectionStore, SettingsStore } from '../../types';
+import type { ChecklistEntry, CollectionStore, FriendList, SettingsStore } from '../../types';
 import { checklist } from '../../data/checklist';
 import { flagFor } from '../../data/flags';
 import { sanitizeName } from '../../domain/name';
-import { givableTo } from '../../domain/friendMatch';
+import { givableTo, friendGiveBreakdown } from '../../domain/friendMatch';
 import type { FriendListsStore } from '../../state/friendLists';
 import type { TradePayload } from '../../domain/tradeList';
 import {
@@ -152,6 +152,27 @@ export function TradeScreen({
     friendLists.add({ name: saveSheet.name, needs: saveSheet.needs, source: 'link' });
     flash(pt.trade.friendSaved(saveSheet.name));
     setSaveSheet(null);
+  };
+
+  // Tapping a saved friend opens their detail ("o que você tem pro João" + dei-pro-João). Cleared
+  // when the friend is gone (e.g. fully traded away) so we never render a detail for a missing id.
+  const [selectedFriendId, setSelectedFriendId] = useState<string | null>(null);
+  // "Dei essas pro João": the spares leave repeats (a given duplicate is gone; `owned` is untouched —
+  // I still have my one) AND leave the friend's needs (they got them). Re-intersect against the FRESH
+  // stores at action time (not the render-captured `codes`) so a double-tap or any stale selection can
+  // only ever commit codes that are still my spare AND still the friend's need — never a wrong give,
+  // never a misleading "você deu N" for nothing.
+  const giveToFriend = (friend: FriendList, codes: string[]) => {
+    const current = friendLists.get(friend.id);
+    if (!current) return;
+    const ownedNow = collection.codes();
+    const spares = new Set([...repeats.codes()].filter((code) => ownedNow.has(code)));
+    const needs = new Set(current.needs);
+    const actual = codes.filter((code) => spares.has(code) && needs.has(code));
+    if (actual.length === 0) return;
+    for (const code of actual) repeats.remove(code);
+    friendLists.removeNeeds(friend.id, actual);
+    flash(pt.trade.gaveToFriend(friend.name, actual.length));
   };
 
   // Gate the first paint until the stores have hydrated from IndexedDB. A friend opening a shared
@@ -330,6 +351,22 @@ export function TradeScreen({
     );
   }
 
+  // ---- A saved friend's detail: what I can give them + "dei pro João" ----
+  const selectedFriend = selectedFriendId ? friendLists.get(selectedFriendId) : undefined;
+  if (selectedFriend) {
+    return (
+      <FriendDetail
+        key={selectedFriend.id}
+        friend={selectedFriend}
+        myRepeatCodes={myRepeatCodes}
+        notice={notice}
+        onGive={(codes) => giveToFriend(selectedFriend, codes)}
+        onBack={() => setSelectedFriendId(null)}
+        onGoScan={onGoScan}
+      />
+    );
+  }
+
   // ---- The user's own trade offer ----
   const hasRepeats = myRepeatEntries.length > 0;
   const activeFriends = friendLists.active();
@@ -461,15 +498,33 @@ export function TradeScreen({
               {activeFriends.map((f) => {
                 const canGive = givableTo(f, myRepeatCodes).length;
                 return (
-                  <div class="friend-row" key={f.id}>
+                  <button
+                    type="button"
+                    class="friend-row"
+                    key={f.id}
+                    onClick={() => setSelectedFriendId(f.id)}
+                    aria-label={
+                      f.needs.length === 0
+                        ? `${f.name} — ${pt.trade.friendAllTraded}`
+                        : `${f.name} — ${pt.trade.friendNeeds(f.needs.length)}${
+                            canGive > 0 ? `, ${pt.trade.friendCanGive(canGive)}` : ''
+                          }`
+                    }
+                  >
                     <span class="friend-av" aria-hidden="true">
                       {f.name.slice(0, 1).toUpperCase()}
                     </span>
                     <span class="friend-info">
                       <span class="friend-name">{f.name}</span>
                       <span class="friend-stat">
-                        {pt.trade.friendNeeds(f.needs.length)}
-                        {canGive > 0 ? ` · ${pt.trade.friendCanGive(canGive)}` : ''}
+                        {f.needs.length === 0 ? (
+                          pt.trade.friendAllTraded
+                        ) : (
+                          <>
+                            {pt.trade.friendNeeds(f.needs.length)}
+                            {canGive > 0 ? ` · ${pt.trade.friendCanGive(canGive)}` : ''}
+                          </>
+                        )}
                       </span>
                     </span>
                     {canGive > 0 && (
@@ -478,7 +533,10 @@ export function TradeScreen({
                         <small>{pt.trade.friendGiveLabel}</small>
                       </span>
                     )}
-                  </div>
+                    <span class="friend-chev" aria-hidden="true">
+                      ›
+                    </span>
+                  </button>
                 );
               })}
             </div>
@@ -487,6 +545,102 @@ export function TradeScreen({
       </div>
       {nameSheetEl}
       {saveSheetEl}
+    </div>
+  );
+}
+
+/** A saved friend's detail: the spares you hold that they need ("você pode dar"), tappable to confirm
+ *  "dei pro João" (trade-close), plus what they still need as info. The give list is `canGive` only —
+ *  needs ∩ your spares — so you can never mark a sticker you don't hold as given (0-FP). */
+function FriendDetail({
+  friend,
+  myRepeatCodes,
+  notice,
+  onGive,
+  onBack,
+  onGoScan,
+}: {
+  friend: FriendList;
+  myRepeatCodes: Set<string>;
+  notice: string | null;
+  onGive: (codes: string[]) => void;
+  onBack: () => void;
+  onGoScan: () => void;
+}) {
+  const { canGive, stillNeeds } = friendGiveBreakdown(friend, myRepeatCodes);
+  // Default every givable sticker selected (the common case: hand over everything you have). Toggling
+  // never grows past canGive, and `give` re-intersects so a code given in a previous tap (now gone from
+  // canGive) can't be re-sent.
+  const [selected, setSelected] = useState<Set<string>>(() => new Set(canGive));
+  const toggle = (code: string) =>
+    setSelected((s) => {
+      const next = new Set(s);
+      if (next.has(code)) next.delete(code);
+      else next.add(code);
+      return next;
+    });
+  const give = canGive.filter((code) => selected.has(code));
+
+  return (
+    <div class="screen trade-screen friend-detail">
+      {notice && (
+        <div class="trade-notice" role="status" aria-live="polite">
+          {notice}
+        </div>
+      )}
+
+      <header class="trade-header trade-header-friend">
+        <button class="trade-back" onClick={onBack}>
+          ← {pt.trade.detailBack}
+        </button>
+        <h1>{pt.trade.detailTitle(friend.name)}</h1>
+      </header>
+
+      <div class="trade-body trade-body-friend">
+        {friend.needs.length === 0 ? (
+          <div class="detail-empty">
+            <span class="detail-empty-emoji" aria-hidden="true">
+              🎉
+            </span>
+            <p>{pt.trade.detailDone(friend.name)}</p>
+          </div>
+        ) : (
+          <>
+            {canGive.length > 0 ? (
+              <>
+                <SectionHead lead={pt.trade.detailGiveTitle(friend.name)} />
+                <p class="detail-guide">{pt.trade.detailGiveGuide}</p>
+                <SelectableList codes={canGive} selected={selected} kind="have" onToggle={toggle} />
+              </>
+            ) : (
+              <div class="detail-empty">
+                <span class="detail-empty-emoji" aria-hidden="true">
+                  🔍
+                </span>
+                <p>{pt.trade.detailNothing(friend.name)}</p>
+                <button class="btn btn-ghost btn-block" onClick={onGoScan}>
+                  {pt.trade.detailScanCta}
+                </button>
+              </div>
+            )}
+
+            {stillNeeds.length > 0 && (
+              <>
+                <SectionHead lead={pt.trade.detailStillNeeds(friend.name)} />
+                <GroupedLedger codes={stillNeeds} tone="need" />
+              </>
+            )}
+          </>
+        )}
+      </div>
+
+      {canGive.length > 0 && (
+        <div class="friend-foot">
+          <button class="btn-wa" disabled={give.length === 0} onClick={() => onGive(give)}>
+            ✅ {pt.trade.detailGaveBtn(give.length)}
+          </button>
+        </div>
+      )}
     </div>
   );
 }

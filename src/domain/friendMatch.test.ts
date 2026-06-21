@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { friendCanReceive, givableTo, normalizeName, type FriendList } from './friendMatch';
+import {
+  friendCanReceive,
+  friendGiveBreakdown,
+  givableTo,
+  normalizeName,
+  type FriendList,
+} from './friendMatch';
 
 function friend(over: Partial<FriendList>): FriendList {
   return { id: 'x', name: 'X', needs: [], source: 'link', archived: false, updatedAt: 0, ...over };
@@ -43,6 +49,27 @@ describe('givableTo', () => {
 
   it('is empty when I have none of their needs', () => {
     expect(givableTo(friend({ needs: ['MEX3'] }), new Set(['BRA7']))).toEqual([]);
+  });
+});
+
+describe('friendGiveBreakdown', () => {
+  it('splits a friend needs into what I can give now vs what they still need', () => {
+    const joao = friend({ needs: ['MEX3', 'BRA7', 'ARG4'] });
+    const b = friendGiveBreakdown(joao, new Set(['MEX3', 'ARG4', 'FRA9']));
+    expect(b.canGive.slice().sort()).toEqual(['ARG4', 'MEX3']);
+    expect(b.stillNeeds).toEqual(['BRA7']);
+  });
+
+  it('preserves friend needs order in stillNeeds and never repeats a code across buckets', () => {
+    const joao = friend({ needs: ['MEX3', 'BRA7', 'ARG4'] });
+    const b = friendGiveBreakdown(joao, new Set(['BRA7']));
+    expect(b.canGive).toEqual(['BRA7']);
+    expect(b.stillNeeds).toEqual(['MEX3', 'ARG4']);
+  });
+
+  it('is all-stillNeeds when I have no spares for them', () => {
+    const joao = friend({ needs: ['MEX3', 'BRA7'] });
+    expect(friendGiveBreakdown(joao, new Set())).toEqual({ canGive: [], stillNeeds: ['MEX3', 'BRA7'] });
   });
 });
 
