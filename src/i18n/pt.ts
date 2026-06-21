@@ -129,6 +129,16 @@ export const pt = {
       `Salvar ${keepers} ${keepers === 1 ? 'nova' : 'novas'} + ${repeats} ${
         repeats === 1 ? 'repetida' : 'repetidas'
       }`,
+    // Secondary action (mixed sessions only): saves the checked keepers but NOT the repetidas.
+    // Same verb as the primary ("Salvar") so the only contrast is the scope ("só as novas"); the
+    // primary above already names the new count, so this stays count-free.
+    addOnlyNew: 'Salvar só as novas',
+    // Spelled out under that button so the user doesn't silently lose trade currency — the count
+    // here is the decision-relevant one (how many repetidas won't be kept to trade).
+    skipRepeatsNote: (repeats: number) =>
+      repeats === 1
+        ? 'A repetida não vai ser guardada pra trocar.'
+        : `As ${repeats} repetidas não vão ser guardadas pra trocar.`,
     back: 'Voltar a escanear',
     added: 'Adicionadas à coleção!',
     repeatsSaved: 'Repetidas guardadas pra trocar!',

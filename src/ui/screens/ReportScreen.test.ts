@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { commitLabel } from './ReportScreen';
+import { pt } from '../../i18n/pt';
 
 describe('commitLabel', () => {
   // The bug: a mixed batch's button only named the keepers, so it looked like the repetidas
@@ -28,5 +29,14 @@ describe('commitLabel', () => {
 
   it('falls back to the empty label when there is nothing to save', () => {
     expect(commitLabel(0, 0)).toBe('Adicionar à coleção');
+  });
+});
+
+describe('skipRepeatsNote', () => {
+  // The secondary "save only the new ones" button drops the scanned repetidas; the note has to
+  // name how many spares that leaves un-saved, with the verb agreeing in number.
+  it('agrees in number with the repeats count', () => {
+    expect(pt.report.skipRepeatsNote(1)).toBe('A repetida não vai ser guardada pra trocar.');
+    expect(pt.report.skipRepeatsNote(5)).toBe('As 5 repetidas não vão ser guardadas pra trocar.');
   });
 });

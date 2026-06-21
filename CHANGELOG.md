@@ -3,6 +3,15 @@
 Notable changes to the sticker scanner. Newest first. No formal releases yet (deploys on push to
 `main`), so entries are grouped by date. Keep this updated when you ship something notable.
 
+## 2026-06-21 — Resumo do escaneamento: botão pra guardar só as novas
+
+### Added
+- No fim de um escaneamento com figurinhas **novas e repetidas**, além do botão principal (que guarda
+  as novas **e** as repetidas pra trocar), agora tem um botão a mais: **"Salvar só as novas"**, pra
+  quem não quer guardar as repetidas pra troca. Embaixo dele um aviso diz quantas repetidas ficam de
+  fora ("As N repetidas não vão ser guardadas pra trocar."), pra ninguém perder figurinha de troca sem
+  querer. O botão principal continua igual.
+
 ## 2026-06-21 — Trocar: conferir as figurinhas do amigo na hora (PEGA / DEIXA)
 
 ### Added
