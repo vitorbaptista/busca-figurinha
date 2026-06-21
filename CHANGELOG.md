@@ -11,6 +11,8 @@ Notable changes to the sticker scanner. Newest first. No formal releases yet (de
   tira essas repetidas da sua lista e da lista dele de uma vez — a troca fica fechada, sem confusão.
   (Sua coleção não muda: você deu a **repetida**, continua com a sua.)
 
+## 2026-06-21 — Trocar: salve a lista de um amigo (Listas de amigos)
+
 ### Added
 - **Abriu o link de um amigo? Agora dá pra salvar a lista dele** (botão "💾 Salvar lista"), pra achar
   troca pra ele depois. O app já vem com o nome dele preenchido (do link). As listas salvas aparecem

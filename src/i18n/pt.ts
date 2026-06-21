@@ -231,6 +231,8 @@ export const pt = {
     friendNeeds: (n: number) => (n === 1 ? 'precisa de 1' : `precisa de ${n}`),
     friendCanGive: (n: number) => (n === 1 ? 'você tem 1 pra dar' : `você tem ${n} pra dar`),
     friendGiveLabel: 'pra dar',
+    // A saved friend whose whole list you've already given (needs → 0): a done state, never "precisa de 0".
+    friendAllTraded: 'já tem tudo! ✅',
 
     // A saved friend's detail: what you can give them + "dei pro João" (trade-close).
     detailBack: 'Voltar',

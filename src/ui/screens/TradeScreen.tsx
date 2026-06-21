@@ -158,13 +158,21 @@ export function TradeScreen({
   // when the friend is gone (e.g. fully traded away) so we never render a detail for a missing id.
   const [selectedFriendId, setSelectedFriendId] = useState<string | null>(null);
   // "Dei essas pro João": the spares leave repeats (a given duplicate is gone; `owned` is untouched —
-  // I still have my one) AND leave the friend's needs (they got them). 0-FP holds: the give UI only
-  // offers `canGive` = needs ∩ my spares, so a sticker I don't hold can't be marked given.
+  // I still have my one) AND leave the friend's needs (they got them). Re-intersect against the FRESH
+  // stores at action time (not the render-captured `codes`) so a double-tap or any stale selection can
+  // only ever commit codes that are still my spare AND still the friend's need — never a wrong give,
+  // never a misleading "você deu N" for nothing.
   const giveToFriend = (friend: FriendList, codes: string[]) => {
-    if (codes.length === 0) return;
-    for (const code of codes) repeats.remove(code);
-    friendLists.removeNeeds(friend.id, codes);
-    flash(pt.trade.gaveToFriend(friend.name, codes.length));
+    const current = friendLists.get(friend.id);
+    if (!current) return;
+    const ownedNow = collection.codes();
+    const spares = new Set([...repeats.codes()].filter((code) => ownedNow.has(code)));
+    const needs = new Set(current.needs);
+    const actual = codes.filter((code) => spares.has(code) && needs.has(code));
+    if (actual.length === 0) return;
+    for (const code of actual) repeats.remove(code);
+    friendLists.removeNeeds(friend.id, actual);
+    flash(pt.trade.gaveToFriend(friend.name, actual.length));
   };
 
   // Gate the first paint until the stores have hydrated from IndexedDB. A friend opening a shared
@@ -495,7 +503,13 @@ export function TradeScreen({
                     class="friend-row"
                     key={f.id}
                     onClick={() => setSelectedFriendId(f.id)}
-                    aria-label={`${f.name} — ${pt.trade.friendNeeds(f.needs.length)}`}
+                    aria-label={
+                      f.needs.length === 0
+                        ? `${f.name} — ${pt.trade.friendAllTraded}`
+                        : `${f.name} — ${pt.trade.friendNeeds(f.needs.length)}${
+                            canGive > 0 ? `, ${pt.trade.friendCanGive(canGive)}` : ''
+                          }`
+                    }
                   >
                     <span class="friend-av" aria-hidden="true">
                       {f.name.slice(0, 1).toUpperCase()}
@@ -503,8 +517,14 @@ export function TradeScreen({
                     <span class="friend-info">
                       <span class="friend-name">{f.name}</span>
                       <span class="friend-stat">
-                        {pt.trade.friendNeeds(f.needs.length)}
-                        {canGive > 0 ? ` · ${pt.trade.friendCanGive(canGive)}` : ''}
+                        {f.needs.length === 0 ? (
+                          pt.trade.friendAllTraded
+                        ) : (
+                          <>
+                            {pt.trade.friendNeeds(f.needs.length)}
+                            {canGive > 0 ? ` · ${pt.trade.friendCanGive(canGive)}` : ''}
+                          </>
+                        )}
                       </span>
                     </span>
                     {canGive > 0 && (
