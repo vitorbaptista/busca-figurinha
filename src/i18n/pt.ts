@@ -236,8 +236,23 @@ export const pt = {
     saveCollisionText: 'Quer atualizar a lista dele ou salvar como outra pessoa?',
     saveCollisionUpdate: (name: string) => `Atualizar a lista do ${name}`,
     saveCollisionNew: 'Salvar como outra pessoa',
+    // After "Atualizar": celebrate the diff (what the friend found since the last list).
+    updatedFoundTitle: (name: string, n: number) =>
+      `${name} achou ${n === 1 ? '1 figurinha' : `${n} figurinhas`}! 🎉`,
+    updatedTitle: (name: string) => `Lista do ${name} atualizada 🔄`,
+    updatedText: (stillNeeds: number, giveCount: number) => {
+      const base =
+        stillNeeds === 0 ? 'Agora ele já tem tudo!' : `Ainda precisa de ${stillNeeds}.`;
+      const give =
+        giveCount > 0
+          ? ` Você tem ${giveCount === 1 ? '1 repetida' : `${giveCount} repetidas`} pra dar pra ele!`
+          : '';
+      return base + give;
+    },
+    updatedSeeGive: 'Ver o que dar',
+    updatedClose: 'Agora não',
+    updatedOk: 'Beleza!',
     friendSaved: (name: string) => `Lista do ${name} salva! 👥`,
-    friendUpdated: (name: string) => `Lista do ${name} atualizada! 🔄`,
     friendsTitle: '👥 Listas de amigos',
     friendNeeds: (n: number) => (n === 1 ? 'precisa de 1' : `precisa de ${n}`),
     friendCanGive: (n: number) => (n === 1 ? 'você tem 1 pra dar' : `você tem ${n} pra dar`),

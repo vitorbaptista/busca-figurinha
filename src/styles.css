@@ -2821,6 +2821,7 @@ html.scan-active body {
   text-transform: uppercase;
   color: var(--paper);
   margin: 0 0 6px;
+  overflow-wrap: anywhere;
 }
 .name-card p {
   font-size: 0.9rem;

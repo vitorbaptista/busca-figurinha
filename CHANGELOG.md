@@ -3,6 +3,13 @@
 Notable changes to the sticker scanner. Newest first. No formal releases yet (deploys on push to
 `main`), so entries are grouped by date. Keep this updated when you ship something notable.
 
+## 2026-06-21 — Trocar: "João achou figurinhas!" (atualizar a lista do amigo)
+
+### Added
+- **Quando um amigo te manda a lista dele de novo** (depois de achar figurinhas), o app reconhece que é
+  ele e mostra **quanta coisa ele já achou**: "João achou 2 figurinhas! 🎉 Ainda precisa de 2. Você tem
+  1 repetida pra dar pra ele!" — e já atualiza a lista salva. Dá pra ir direto **"Ver o que dar"** pra ele.
+
 ## 2026-06-21 — Escanear: radar "serve pro João"
 
 ### Added

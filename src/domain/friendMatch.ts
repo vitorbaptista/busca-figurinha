@@ -34,6 +34,23 @@ export function radarFriendNames(
   return friendCanReceive({ code, myRepeatCodes, friends }).map((f) => f.name);
 }
 
+export interface NeedsDiff {
+  /** Codes the friend needed before but not now — what they FOUND since the last list. */
+  found: string[];
+  /** Their needs now (= the new list). */
+  stillNeeds: string[];
+}
+
+/** Compare a saved friend's old needs against their freshly-shared list, to celebrate progress when
+ *  they re-send an updated link ("João achou 5!"). Pure — both inputs are already canonical codes. */
+export function needsDiff(oldNeeds: string[], newNeeds: string[]): NeedsDiff {
+  const newSet = new Set(newNeeds);
+  return {
+    found: oldNeeds.filter((code) => !newSet.has(code)),
+    stillNeeds: [...newNeeds],
+  };
+}
+
 export interface GiveBreakdown {
   /** Their needs I hold as spares — what I can hand over now (the only thing the give UI offers). */
   canGive: string[];

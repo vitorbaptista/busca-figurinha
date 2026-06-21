@@ -4,7 +4,7 @@ import type { ChecklistEntry, CollectionStore, FriendList, SettingsStore } from 
 import { checklist } from '../../data/checklist';
 import { flagFor } from '../../data/flags';
 import { sanitizeName } from '../../domain/name';
-import { givableTo, friendGiveBreakdown } from '../../domain/friendMatch';
+import { givableTo, friendGiveBreakdown, needsDiff } from '../../domain/friendMatch';
 import type { FriendListsStore } from '../../state/friendLists';
 import type { TradePayload } from '../../domain/tradeList';
 import {
@@ -116,6 +116,7 @@ export function TradeScreen({
   const [saveSheet, setSaveSheet] = useState<
     | { phase: 'name'; needs: string[] }
     | { phase: 'collision'; needs: string[]; name: string }
+    | { phase: 'updated'; name: string; friendId: string; found: number; stillNeeds: number; giveCount: number }
     | null
   >(null);
   const [saveNameDraft, setSaveNameDraft] = useState('');
@@ -138,14 +139,29 @@ export function TradeScreen({
       setSaveSheet(null);
     }
   };
+  // "Atualizar a lista do João": refresh his saved needs from the re-shared link and CELEBRATE the diff
+  // (what he found since last time, what he still needs, how many you can give now). 0-FP: the
+  // give count is givableTo (needs ∩ your spares), same gate as everywhere else.
   const saveAsUpdate = () => {
     if (saveSheet?.phase !== 'collision') return;
     const match = friendLists.findByNormalizedName(saveSheet.name)[0];
-    if (match) {
-      friendLists.updateNeeds(match.id, saveSheet.needs);
-      flash(pt.trade.friendUpdated(saveSheet.name));
+    if (!match) {
+      setSaveSheet(null);
+      return;
     }
-    setSaveSheet(null);
+    const oldNeeds = match.needs;
+    friendLists.updateNeeds(match.id, saveSheet.needs);
+    const updated = friendLists.get(match.id);
+    const diff = needsDiff(oldNeeds, updated?.needs ?? []);
+    const spares = new Set([...repeats.codes()].filter((code) => collection.has(code)));
+    setSaveSheet({
+      phase: 'updated',
+      name: saveSheet.name,
+      friendId: match.id,
+      found: diff.found.length,
+      stillNeeds: diff.stillNeeds.length,
+      giveCount: updated ? givableTo(updated, spares).length : 0,
+    });
   };
   const saveAsNew = () => {
     if (saveSheet?.phase !== 'collision') return;
@@ -284,7 +300,20 @@ export function TradeScreen({
   // "De quem é essa lista?" — name the friend before saving; if the name matches a saved friend,
   // ask update-or-new so two friends who share a name can't clobber each other.
   const saveSheetEl = saveSheet ? (
-    <div class="name-overlay" role="dialog" aria-modal="true" aria-label={pt.trade.saveFriendTitle}>
+    <div
+      class="name-overlay"
+      role="dialog"
+      aria-modal="true"
+      aria-label={
+        saveSheet.phase === 'name'
+          ? pt.trade.saveFriendTitle
+          : saveSheet.phase === 'collision'
+            ? pt.trade.saveCollisionTitle(saveSheet.name)
+            : saveSheet.found > 0
+              ? pt.trade.updatedFoundTitle(saveSheet.name, saveSheet.found)
+              : pt.trade.updatedTitle(saveSheet.name)
+      }
+    >
       <div class="name-card">
         {saveSheet.phase === 'name' ? (
           <>
@@ -310,7 +339,7 @@ export function TradeScreen({
               {pt.trade.saveFriendCancel}
             </button>
           </>
-        ) : (
+        ) : saveSheet.phase === 'collision' ? (
           <>
             <h2>{pt.trade.saveCollisionTitle(saveSheet.name)}</h2>
             <p>{pt.trade.saveCollisionText}</p>
@@ -322,6 +351,31 @@ export function TradeScreen({
             </button>
             <button class="link-btn name-skip" onClick={() => setSaveSheet(null)}>
               {pt.trade.saveFriendCancel}
+            </button>
+          </>
+        ) : (
+          <>
+            <h2>
+              {saveSheet.found > 0
+                ? pt.trade.updatedFoundTitle(saveSheet.name, saveSheet.found)
+                : pt.trade.updatedTitle(saveSheet.name)}
+            </h2>
+            <p>{pt.trade.updatedText(saveSheet.stillNeeds, saveSheet.giveCount)}</p>
+            {saveSheet.giveCount > 0 && (
+              <button
+                class="btn btn-primary btn-block"
+                onClick={() => {
+                  const id = saveSheet.friendId;
+                  setSaveSheet(null);
+                  onClearFriend();
+                  setSelectedFriendId(id);
+                }}
+              >
+                {pt.trade.updatedSeeGive}
+              </button>
+            )}
+            <button class="link-btn name-skip" onClick={() => setSaveSheet(null)}>
+              {saveSheet.giveCount > 0 ? pt.trade.updatedClose : pt.trade.updatedOk}
             </button>
           </>
         )}
