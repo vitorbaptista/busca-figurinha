@@ -3325,21 +3325,44 @@ html.scan-active body {
   color: var(--kraft-text);
 }
 
-/* Back button in the camera top bar */
-.conferir-back {
-  background: rgba(15, 60, 39, 0.55);
-  color: var(--cream);
-  border: 1.5px solid var(--cream);
-  border-radius: var(--radius-pill);
+/* Top-left group: back icon + the running tally */
+.conferir-top-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+/* The take/save bar (above the docked verdict) */
+.conferir-save {
+  width: 100%;
+  margin-bottom: 10px;
+  padding: 13px 16px;
+  background: var(--gold);
+  color: var(--ink);
+  border: 2.5px solid var(--ink);
+  border-radius: var(--radius);
+  box-shadow: 4px 4px 0 var(--paper-edge);
   font-family: var(--font-head);
   font-weight: 700;
-  font-size: 0.85rem;
-  padding: 7px 14px;
-  min-height: 38px;
+  font-size: 1.05rem;
   cursor: pointer;
 }
-.conferir-back:active {
-  transform: scale(0.96);
+.conferir-save:active {
+  transform: translate(2px, 2px);
+  box-shadow: 2px 2px 0 var(--paper-edge);
+}
+.conferir-notice {
+  background: var(--keep);
+  color: var(--cream);
+  border: 2px solid var(--ink);
+  border-radius: var(--radius);
+  padding: 10px 14px;
+  margin-bottom: 10px;
+  font-family: var(--font-head);
+  font-weight: 700;
+  font-size: 0.95rem;
+  text-align: center;
 }
 
 /* The Conferir verdict — docked card, mirrors the album .verdict but trade-framed (PEGA/DEIXA). */
