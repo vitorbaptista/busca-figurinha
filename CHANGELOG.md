@@ -3,6 +3,14 @@
 Notable changes to the sticker scanner. Newest first. No formal releases yet (deploys on push to
 `main`), so entries are grouped by date. Keep this updated when you ship something notable.
 
+## 2026-06-20 — Nome do grupo fica fixo ao rolar (Coleção, Repetidas e Trocar)
+
+### Changed
+- Nas listas longas de **Coleção**, **Repetidas** e **Trocar**, o nome do grupo atual ("Grupo A",
+  "Grupo B"…) agora **fica fixo no alto** enquanto você rola pra baixo, então dá sempre pra saber em
+  que grupo você está — do mesmo jeito que "Minhas repetidas" e "O que eu preciso" já ficavam fixos
+  no Trocar. A barra de cima (busca/progresso) continua fixa e o nome do grupo gruda logo abaixo dela.
+
 ## 2026-06-20 — Ajustes: versão real do app (não mais "0.1.0" fixo)
 
 ### Changed

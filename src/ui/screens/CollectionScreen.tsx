@@ -2,7 +2,7 @@ import { useMemo, useState } from 'preact/hooks';
 import type { CollectionStore, TeamGroup } from '../../types';
 import { checklist } from '../../data/checklist';
 import { pt } from '../../i18n/pt';
-import { useStore } from '../hooks';
+import { useStickyOffset, useStore } from '../hooks';
 import { ProgressBar } from '../components/ProgressBar';
 import { AlbumGrid } from '../components/AlbumGrid';
 
@@ -21,9 +21,12 @@ export function CollectionScreen({ collection }: CollectionScreenProps) {
 
   const teams = useMemo(() => filterTeams(checklist.teams, query), [query]);
 
+  // Measure the pinned header so the "Grupo X" labels can pin flush below it as you scroll.
+  const headerRef = useStickyOffset();
+
   return (
     <div class="screen collection-screen">
-      <header class="collection-header">
+      <header class="collection-header" ref={headerRef}>
         <div class="collection-progress-row">
           <h1>{pt.collection.title}</h1>
           <span class="collection-count">{pt.collection.progress(owned.size, total)}</span>

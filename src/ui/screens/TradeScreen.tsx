@@ -603,7 +603,8 @@ function TeamTally({ entries, tone }: { entries: ChecklistEntry[]; tone: TallyTo
  *  stay identical. Only the count wording/colour differs by tone: "faltam N" (green) vs "tenho N". */
 function GroupedLedger({ codes, tone }: { codes: Iterable<string>; tone: TallyTone }) {
   return (
-    <div class="ledger grouped-ledger">
+    // `own-ledger` pins each "Grupo X" label below the sticky section header as the list scrolls.
+    <div class="ledger grouped-ledger own-ledger">
       {groupByAlbum(codes).map((group) => (
         <div class="grp" key={group.label}>
           <div class="grp-head">

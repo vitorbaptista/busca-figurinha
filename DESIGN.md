@@ -92,6 +92,20 @@ column screens with a fixed bottom spine nav (`--nav-h` 64px). Album chips use
 `repeat(auto-fill, minmax(48px, 1fr))`. Touch targets ≥ 44–48px. Spacing rhythm via
 the radius scale (`--radius` 6 / `--radius-sm` 4 / pill).
 
+**Sticky headers in long lists.** Any long album list (Coleção, Repetidas, Trocar)
+keeps the current **"Grupo X"** label pinned while its stickers scroll, so you never
+lose your place. The rule: the screen's top bar stays pinned (`top: 0`), and each
+group label pins **flush below it** — stacking, never overlapping (Trocar adds a third
+level: bar → section header → group label). Two mechanics keep this honest:
+- **Measure, don't hardcode, a tall/variable bar.** Coleção's and Repetidas's top bars
+  differ in height (progress vs. hint) and reflow on font-load, so `useStickyOffset`
+  (`src/ui/hooks.ts`) measures the bar and publishes `--sticky-offset`; the group label
+  pins at `top: var(--sticky-offset)`. Only hardcode an offset when the bar is short and
+  deterministic (Trocar's bars), and stack each offset on the one above it.
+- **`overflow: clip`, not `hidden`, on a rounded card with sticky children.** `hidden`
+  makes the card a scroll container that traps the sticky label inside it; `clip` keeps
+  the rounded-corner clipping without that side effect (see `.own-ledger`).
+
 ## Motion
 
 Restrained and intentional. Button press = offset-shadow "stamp". Verdict = quick
