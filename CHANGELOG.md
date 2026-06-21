@@ -3,6 +3,15 @@
 Notable changes to the sticker scanner. Newest first. No formal releases yet (deploys on push to
 `main`), so entries are grouped by date. Keep this updated when you ship something notable.
 
+## 2026-06-20 — Resumo: o botão salva as novas E as repetidas
+
+### Fixed
+- **Escaneou um monte com figurinhas novas e repetidas? O botão agora guarda tudo de uma vez.**
+  Ele sempre salvou as duas coisas — as novas na coleção e as repetidas pra trocar —, mas o texto só
+  falava das novas, então parecia que era preciso desmarcar as novas pra conseguir guardar as
+  repetidas. Agora o botão mostra os dois números (ex.: **"Salvar 3 novas + 5 repetidas"**), deixando
+  claro que um toque salva tudo.
+
 ## 2026-06-20 — Trocar: quem abre seu link monta a troca tocando
 
 ### Added
