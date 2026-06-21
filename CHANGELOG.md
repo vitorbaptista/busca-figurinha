@@ -3,6 +3,13 @@
 Notable changes to the sticker scanner. Newest first. No formal releases yet (deploys on push to
 `main`), so entries are grouped by date. Keep this updated when you ship something notable.
 
+## 2026-06-21 — Trocar: arquivar amigos (lista limpa)
+
+### Added
+- **Dá pra arquivar um amigo** quando já trocou tudo com ele (ou só pra organizar). Some da lista de
+  amigos, mas não some de vez: aparece um **"🗄️ N arquivados"** embaixo que abre pra **trazer de volta**
+  quando quiser. Quando o amigo já tem tudo que precisava, o app já oferece o botão de arquivar ali mesmo.
+
 ## 2026-06-21 — Trocar: "João achou figurinhas!" (atualizar a lista do amigo)
 
 ### Added

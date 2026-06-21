@@ -273,6 +273,18 @@ export const pt = {
     gaveToFriend: (name: string, n: number) =>
       `Você deu ${n === 1 ? '1 figurinha' : `${n} figurinhas`} pro ${name}! 🤝`,
 
+    // Arquivar: tuck a finished/inactive friend away (the list stays clean) — reversível.
+    detailArchive: 'Arquivar',
+    detailArchiveDone: (name: string) => `Arquivar o ${name}`,
+    detailArchiveHint: 'Some da lista, mas dá pra trazer de volta quando quiser.',
+    friendArchived: (name: string) => `${name} foi arquivado.`,
+    friendUnarchived: (name: string) => `${name} voltou pra lista!`,
+    archivedToggle: (n: number) => (n === 1 ? '1 arquivado' : `${n} arquivados`),
+    unarchive: 'Trazer de volta',
+    // Calm, neutral stat for a parked friend — not the active list's actionable "precisa de N".
+    friendArchivedStat: (n: number) =>
+      n === 0 ? 'lista completa' : `${n} ${n === 1 ? 'figurinha' : 'figurinhas'} na lista`,
+
     // Grouping (mirrors the album)
     albumGroup: (g: string) => `Grupo ${g}`,
     count: (n: number) => String(n),
