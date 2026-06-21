@@ -70,6 +70,16 @@ export const pt = {
     recentNew: 'Nova',
     recentRep: 'Repetida',
     neededSub: 'Você ainda não tem essa',
+    // Radar ribbon: a just-scanned spare serves saved friend(s). Caps the visible names at 2 + "+N".
+    radarServes: (names: string[]) => {
+      const who =
+        names.length === 1
+          ? names[0]
+          : names.length <= 3
+            ? `${names.slice(0, -1).join(', ')} e ${names[names.length - 1]}`
+            : `${names[0]}, ${names[1]} e +${names.length - 2}`;
+      return `serve pro ${who}`;
+    },
     missWord: 'Não li',
     missSub: 'Não consegui ler o código. Aproxime e segure firme.',
     manualOpen: 'Digitar o código',

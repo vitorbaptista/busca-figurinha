@@ -4,6 +4,7 @@ import {
   friendGiveBreakdown,
   givableTo,
   normalizeName,
+  radarFriendNames,
   type FriendList,
 } from './friendMatch';
 
@@ -70,6 +71,25 @@ describe('friendGiveBreakdown', () => {
   it('is all-stillNeeds when I have no spares for them', () => {
     const joao = friend({ needs: ['MEX3', 'BRA7'] });
     expect(friendGiveBreakdown(joao, new Set())).toEqual({ canGive: [], stillNeeds: ['MEX3', 'BRA7'] });
+  });
+});
+
+describe('radarFriendNames', () => {
+  const joao = friend({ id: 'a', name: 'João', needs: ['MEX3', 'BRA7'] });
+  const maria = friend({ id: 'b', name: 'Maria', needs: ['MEX3'] });
+
+  it('names the active saved friends who need a scanned code that is one of my spares', () => {
+    expect(radarFriendNames('MEX3', new Set(['MEX3']), [joao, maria])).toEqual(['João', 'Maria']);
+  });
+
+  it('is empty when the scanned code is NOT my spare (the 0-FP gate — I might own only one)', () => {
+    expect(radarFriendNames('MEX3', new Set(), [joao, maria])).toEqual([]);
+    expect(radarFriendNames('BRA7', new Set(['MEX3']), [joao])).toEqual([]);
+  });
+
+  it('skips archived friends', () => {
+    const ana = friend({ id: 'c', name: 'Ana', needs: ['MEX3'], archived: true });
+    expect(radarFriendNames('MEX3', new Set(['MEX3']), [ana, joao])).toEqual(['João']);
   });
 });
 

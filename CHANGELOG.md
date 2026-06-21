@@ -3,6 +3,15 @@
 Notable changes to the sticker scanner. Newest first. No formal releases yet (deploys on push to
 `main`), so entries are grouped by date. Keep this updated when you ship something notable.
 
+## 2026-06-21 — Escanear: radar "serve pro João"
+
+### Added
+- **Escaneando suas figurinhas, o app agora avisa quando uma repetida serve pra um amigo seu.** Se você
+  escaneia uma **repetida** que está na lista de algum amigo salvo, aparece uma fita dourada **"📌 serve
+  pro João"** (ou "pro João e Maria", "pro João, Maria e +2") no resultado — aí já separa pra levar pra
+  ele. Só aparece pra repetida que é **sua de verdade** (você marcou como repetida), nunca pra uma que
+  pode ser sua única, então nunca te manda dar uma figurinha que você precisa.
+
 ## 2026-06-21 — Trocar: "dei pro João" (feche a troca na lista do amigo)
 
 ### Added
