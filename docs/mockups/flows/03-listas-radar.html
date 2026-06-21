@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Listas de amigos + Radar de trocas — Troca Figurinhas</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Oswald:wght@500;600;700&family=Archivo:wght@400;500;600;700&family=Archivo+Narrow:wght@600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="_base.css" />
+<style>
+  .body-pad { padding: 14px; }
+  /* loaded-list summary + destination choice (#40 save) */
+  .loaded { background:var(--ink); border:2px solid var(--gold-deep); border-radius:6px; padding:12px 14px; color:var(--cream); position:relative; }
+  .loaded .tag { position:absolute; top:-11px; left:14px; background:var(--gold); color:var(--ink); font-family:'Archivo Narrow'; font-weight:700; font-size:9.5px; letter-spacing:.12em; text-transform:uppercase; padding:3px 9px; border-radius:3px; border:1.5px solid var(--ink); }
+  .loaded .ttl { font-family:'Oswald'; font-weight:700; font-size:16px; color:var(--gold); margin-top:3px; }
+  .loaded .meta { font-family:'Archivo'; font-weight:500; font-size:12px; color:#e7dcc2; margin-top:3px; }
+  .q { font-family:'Archivo Narrow'; font-weight:700; font-size:10px; letter-spacing:.1em; text-transform:uppercase; color:var(--text-dim); margin:16px 2px 8px; }
+  .opt { display:flex; align-items:center; gap:11px; background:var(--cream); border:2px solid var(--ink); border-radius:5px; box-shadow:3px 3px 0 var(--paper-edge); padding:12px 13px; margin-bottom:9px; }
+  .opt.on { background:var(--gold); }
+  .opt .ic { font-size:22px; flex:none; }
+  .opt .tx b { display:block; font-family:'Oswald'; font-weight:700; font-size:14px; color:var(--ink); }
+  .opt .tx small { font-family:'Archivo'; font-weight:500; font-size:11px; color:var(--kraft-text); }
+  .opt.on .tx small { color:#5a4a1e; }
+  .opt .rd { margin-left:auto; width:20px; height:20px; border-radius:50%; border:2px solid var(--ink); flex:none; }
+  .opt.on .rd { background:var(--ink); box-shadow:inset 0 0 0 3px var(--gold); }
+  .save-btn { margin-top:14px; display:flex; align-items:center; justify-content:center; gap:9px; width:100%; background:var(--keep); color:#fff; border:3px solid var(--ink); border-radius:5px; font-family:'Anton'; font-size:19px; text-transform:uppercase; padding:13px; box-shadow:5px 5px 0 var(--paper-edge); }
+  /* Listas de amigos home */
+  .radar-banner { background:var(--ink); border:2px solid var(--gold-deep); border-radius:5px; padding:11px 13px; display:flex; align-items:center; gap:11px; }
+  .radar-banner .ic { font-size:22px; }
+  .radar-banner .tx b { display:block; font-family:'Oswald'; font-weight:700; font-size:13.5px; color:var(--gold); }
+  .radar-banner .tx small { font-family:'Archivo'; font-weight:500; font-size:11px; color:#e7dcc2; }
+  .radar-banner .sw { margin-left:auto; width:46px; height:26px; border-radius:999px; background:var(--keep); border:2px solid var(--ink); position:relative; flex:none; }
+  .radar-banner .sw::after { content:""; position:absolute; top:2px; right:2px; width:18px; height:18px; border-radius:50%; background:var(--cream); }
+  .friend { background:var(--cream); border:2px solid var(--ink); border-radius:5px; box-shadow:2px 2px 0 rgba(15,60,39,.28); padding:11px 13px; margin-top:11px; display:flex; align-items:center; gap:12px; }
+  .friend .av { width:40px; height:40px; border-radius:50%; background:var(--paper); color:var(--cream); border:2px solid var(--ink); display:flex; align-items:center; justify-content:center; font-family:'Anton'; font-size:18px; flex:none; }
+  .friend .nm { font-family:'Oswald'; font-weight:700; font-size:15px; color:var(--ink); }
+  .friend .st { font-family:'Archivo'; font-weight:500; font-size:11.5px; color:#46564b; margin-top:1px; }
+  .friend .st b { color:var(--keep); }
+  .friend .give { margin-left:auto; text-align:center; flex:none; }
+  .friend .give b { display:block; font-family:'Anton'; font-size:24px; line-height:1; color:var(--keep); }
+  .friend .give small { font-family:'Archivo Narrow'; font-weight:700; font-size:8.5px; letter-spacing:.06em; text-transform:uppercase; color:var(--kraft-text); }
+  .addf { margin-top:14px; width:100%; text-align:center; background:transparent; color:var(--cream); border:2px dashed var(--cream); border-radius:5px; font-family:'Oswald'; font-weight:600; font-size:13px; letter-spacing:.04em; text-transform:uppercase; padding:11px; }
+  /* radar scan (reuses the cam/verdict idiom) */
+  .cam { position:relative; flex:1; overflow:hidden; background:radial-gradient(circle at 50% 38%, #2a3b33 0%, #12211a 70%); }
+  .cam::after { content:""; position:absolute; inset:0; background-image:radial-gradient(rgba(255,255,255,.05) 1px,transparent 1px); background-size:4px 4px; opacity:.5; }
+  .radar-chip { position:absolute; top:12px; left:50%; transform:translateX(-50%); z-index:4; background:var(--ink); color:var(--gold); border:1.5px solid var(--gold-deep); border-radius:999px; padding:4px 12px; font-family:'Archivo Narrow'; font-weight:700; font-size:10px; letter-spacing:.08em; text-transform:uppercase; }
+  .mira-wrap { position:absolute; top:30%; left:50%; transform:translate(-50%,-50%); z-index:3; width:200px; text-align:center; }
+  .mira { width:200px; height:132px; border:3px dashed var(--cream); border-radius:8px; position:relative; background:rgba(244,236,216,.06); }
+  .mira .corner { position:absolute; width:18px; height:18px; border:3px solid var(--gold); }
+  .mira .tl{top:-3px;left:-3px;border-right:0;border-bottom:0}.mira .tr{top:-3px;right:-3px;border-left:0;border-bottom:0}
+  .mira .bl{bottom:-3px;left:-3px;border-right:0;border-top:0}.mira .br{bottom:-3px;right:-3px;border-left:0;border-top:0}
+  .mira .cole { position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); font-family:'Archivo Narrow'; font-weight:700; font-size:10px; letter-spacing:.18em; text-transform:uppercase; color:rgba(244,236,216,.6); }
+  /* the radar ribbon sits ABOVE the verdict — the trade-find, in gold foil */
+  .radar-ribbon { position:absolute; left:0; right:0; bottom:124px; z-index:6; background:var(--gold); color:var(--ink); border-top:3px solid var(--ink); border-bottom:3px solid var(--ink); padding:9px 16px; display:flex; align-items:center; gap:10px; box-shadow:0 4px 12px rgba(0,0,0,.3); }
+  .radar-ribbon .pin { font-size:20px; }
+  .radar-ribbon .tx { font-family:'Oswald'; font-weight:700; font-size:15px; letter-spacing:.01em; }
+  .radar-ribbon .tx b { font-family:'Anton'; font-weight:400; font-size:17px; }
+  .verdict { position:absolute; left:0; right:0; bottom:0; z-index:5; background:var(--dupe); border-top:5px solid var(--ink); padding:14px 18px 16px; color:var(--cream); box-shadow:0 -6px 0 rgba(15,60,39,.45); }
+  .verdict::before { content:""; position:absolute; top:-5px; left:0; right:0; height:5px; background:repeating-linear-gradient(90deg,#fff 0 14px,var(--ink) 14px 22px); }
+  .verdict-head { display:flex; align-items:center; gap:13px; }
+  .verdict-mark { flex:none; width:42px; height:42px; border-radius:50%; background:#fff; color:var(--dupe); display:flex; align-items:center; justify-content:center; font-family:'Archivo'; font-weight:700; font-size:25px; border:3px solid var(--ink); box-shadow:3px 3px 0 var(--paper-edge); }
+  .verdict-word { font-family:'Anton'; font-size:44px; line-height:.82; text-transform:uppercase; color:#fff; text-shadow:3px 3px 0 var(--paper-edge); }
+  .verdict-info { display:flex; flex-wrap:wrap; align-items:center; gap:7px 11px; margin-top:11px; }
+  .verdict-code { font-family:'Archivo Narrow'; font-weight:700; font-size:22px; background:var(--cream); color:var(--ink); padding:3px 12px 2px; border-radius:3px; border:2px solid var(--ink); }
+  .verdict-team { font-family:'Oswald'; font-weight:600; font-size:15px; color:#fff; }
+  .steplab2 { margin:16px auto 0; text-align:center; width:360px; flex:none; }
+  .steplab2 .n { display:inline-flex; align-items:center; gap:9px; background:var(--cream); color:var(--ink); border:2px solid var(--ink); border-radius:999px; padding:7px 16px 7px 8px; box-shadow:3px 3px 0 var(--paper-edge); }
+  .steplab2 .n b { width:26px; height:26px; border-radius:50%; background:var(--gold); color:var(--ink); border:2px solid var(--ink); display:flex; align-items:center; justify-content:center; font-family:'Anton'; font-size:15px; }
+  .steplab2 .n span { font-family:'Oswald'; font-weight:700; font-size:13px; text-transform:uppercase; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="cap">
+    <div class="kick">Troca Figurinhas · Copa 2026 · proposta</div>
+    <h1>Salvar a lista de um amigo + Radar de trocas</h1>
+    <p>Carregue a lista de um amigo (do link dele ou de um texto colado) e <strong>salve como amigo</strong>.
+    Aí, com o <strong>radar ligado</strong>, é só escanear normal: toda vez que aparecer uma repetida que
+    o amigo precisa, o app avisa <strong>"📌 separa pro João!"</strong>. Carrega uma vez, acha troca pra
+    sempre. (Depende da #40 pra salvar; a caça focada continua na #41.)</p>
+  </header>
+
+  <div class="phones">
+
+    <!-- 1 · SALVAR COMO AMIGO (#40) -->
+    <div>
+      <div class="device"><div class="notch"></div><div class="screen">
+        <div class="statusbar"><span>9:41</span><span class="dots">📶 ▮▮▮ 84%</span></div>
+        <div class="pagetab"><span class="name">Carregar lista</span><span class="pg">salvar</span></div>
+        <div class="body"><div class="body-pad">
+          <div class="loaded"><span class="tag">Lista carregada</span>
+            <div class="ttl">A lista do João</div>
+            <div class="meta">47 figurinhas que ele precisa · veio do link dele</div>
+          </div>
+          <div class="q">O que fazer com ela?</div>
+          <div class="opt"><span class="ic">📚</span><span class="tx"><b>Botar na minha coleção</b><small>Marca como minhas (Tenho/Preciso)</small></span><span class="rd"></span></div>
+          <div class="opt on"><span class="ic">👥</span><span class="tx"><b>Salvar como lista do João</b><small>Pra achar troca pra ele depois</small></span><span class="rd"></span></div>
+          <button class="save-btn">👥 Salvar o João</button>
+        </div></div>
+      </div></div>
+      <div class="steplab2"><span class="n"><b>1</b><span>Salva a lista do amigo</span></span></div>
+    </div>
+
+    <!-- 2 · LISTAS DE AMIGOS -->
+    <div>
+      <div class="device"><div class="notch"></div><div class="screen">
+        <div class="statusbar"><span>9:41</span><span class="dots">📶 ▮▮▮ 84%</span></div>
+        <div class="pagetab"><span class="name">Amigos</span><span class="pg">listas salvas</span></div>
+        <div class="body"><div class="body-pad">
+          <div class="radar-banner"><span class="ic">📡</span><span class="tx"><b>Radar ligado</b><small>Te aviso quando escanear algo que serve pra eles</small></span><span class="sw"></span></div>
+          <div class="friend"><span class="av">J</span><span><span class="nm">João</span><span class="st">precisa de 47 · você tem <b>5 pra dar</b></span></span><span class="give"><b>5</b><small>pra dar</small></span></div>
+          <div class="friend"><span class="av">M</span><span><span class="nm">Maria</span><span class="st">precisa de 30 · você tem <b>2 pra dar</b></span></span><span class="give"><b>2</b><small>pra dar</small></span></div>
+          <div class="friend"><span class="av">P</span><span><span class="nm">Pedro</span><span class="st">precisa de 61 · nada ainda</span></span><span class="give"><b>0</b><small>pra dar</small></span></div>
+          <button class="addf">+ Adicionar lista de um amigo</button>
+        </div></div>
+      </div></div>
+      <div class="steplab2"><span class="n"><b>2</b><span>Listas de amigos (radar ligado)</span></span></div>
+    </div>
+
+    <!-- 3 · RADAR ENQUANTO ESCANEIA (#41) -->
+    <div>
+      <div class="device"><div class="notch"></div><div class="screen">
+        <div class="statusbar"><span>9:41</span><span class="dots">📶 ▮▮▮ 84%</span></div>
+        <div class="pagetab"><span class="name">Escanear</span><span class="pg">radar ligado</span></div>
+        <div class="body"><div class="cam">
+          <div class="radar-chip">📡 Radar: João · Maria</div>
+          <div class="mira-wrap"><div class="mira"><span class="corner tl"></span><span class="corner tr"></span><span class="corner bl"></span><span class="corner br"></span><span class="cole">Cole aqui</span></div></div>
+          <div class="radar-ribbon"><span class="pin">📌</span><span class="tx">Separa pro <b>João</b>! — ele precisa dessa</span></div>
+          <div class="verdict">
+            <div class="verdict-head"><span class="verdict-mark">✕</span><div class="verdict-word">Repetida</div></div>
+            <div class="verdict-info"><span class="verdict-code">CIV 12</span><span class="verdict-team">Costa do Marfim · você já tem</span></div>
+          </div>
+        </div></div>
+      </div></div>
+      <div class="steplab2"><span class="n"><b>3</b><span>Escaneando normal: "separa pro João!"</span></span></div>
+    </div>
+
+  </div>
+</div>
+</body>
+</html>
