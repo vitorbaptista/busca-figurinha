@@ -70,7 +70,8 @@ export const pt = {
     recentNew: 'Nova',
     recentRep: 'Repetida',
     neededSub: 'Você ainda não tem essa',
-    // Radar ribbon: a just-scanned spare serves saved friend(s). Caps the visible names at 2 + "+N".
+    // Radar ribbon: a just-scanned spare serves saved friend(s). Lists up to 3 names in full; 4+
+    // shows the first two then "+N" so the pill stays short.
     radarServes: (names: string[]) => {
       const who =
         names.length === 1

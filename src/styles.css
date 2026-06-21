@@ -3001,6 +3001,7 @@ html.scan-active body {
   font-size: 0.98rem;
   letter-spacing: 0.01em;
   text-align: center;
+  overflow-wrap: anywhere;
   box-shadow: 0 2px 0 rgba(0, 0, 0, 0.28);
   animation: radar-pop 0.22s ease-out 0.04s both;
 }

@@ -199,10 +199,16 @@ export function ScanScreen({
         ...r,
       ].slice(0, 12),
     );
+    // Radar for the single-verdict case: which saved friends this read serves. Only fires for a real
+    // spare (repeats∩owned via radarFriendNames), so a GUARDAR or a single-copy owned read never tells
+    // a kid to give it away. Computed once and reused for the spoken announce + the verdict ribbon.
+    const serves = items.length === 1 ? radarServesFor(items[0].code) : [];
     setAnnounce(
       items
         .map((it) => `${it.outcome === 'owned' ? pt.scan.owned : pt.scan.needed}: ${it.display}`)
-        .join('. ') + zwsp,
+        .join('. ') +
+        (serves.length > 0 ? `. ${pt.scan.radarServes(serves)}` : '') +
+        zwsp,
     );
 
     if (items.length === 1) {
@@ -213,9 +219,7 @@ export function ScanScreen({
         code: it.code,
         display: it.display,
         teamName: it.teamName,
-        // Radar: which saved friends this read serves. Only fires for a real spare (repeats∩owned via
-        // radarFriendNames), so a GUARDAR or a single-copy owned read never tells a kid to give it away.
-        serves: radarServesFor(it.code),
+        serves,
         key,
       });
     } else {
