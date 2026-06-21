@@ -11,6 +11,13 @@ Notable changes to the sticker scanner. Newest first. No formal releases yet (de
   na opção abre direto a janela de instalar do próprio celular; no **iPhone**, mostra os 2 passos
   ("Compartilhar → Adicionar à Tela de Início").
 
+## 2026-06-21 — Remoção do app Android nativo (experimental)
+
+### Removed
+- **Removido o app Android nativo experimental** (a pasta `android/`), que nunca chegou a ser
+  publicado. O scanner segue sendo o PWA — **nada muda pra quem usa o app**. Saiu junto a ferramenta
+  só-de-dev que gerava o atlas binário do Android (`atlas-export.html` e o script de exportação).
+
 ## 2026-06-21 — Trocar: arquivar amigos (lista limpa)
 
 ### Added
