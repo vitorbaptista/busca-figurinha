@@ -193,6 +193,17 @@ button {
   color: var(--ink);
 }
 
+/* lower-emphasis save action: outlined in the GUARDAR green so it groups with the filled-green
+   primary as a "save to collection" action, while staying clearly subordinate to it. */
+.btn-secondary {
+  background: var(--cream);
+  color: var(--keep);
+  border-color: var(--keep);
+}
+.btn-secondary:active {
+  background: var(--keep-soft);
+}
+
 .btn-block {
   width: 100%;
 }
@@ -1546,6 +1557,20 @@ html.scan-active body {
   flex-direction: column;
   gap: 10px;
   margin-top: 8px;
+}
+
+/* the secondary "só as novas" button + its trade-off note, kept tight together as one unit */
+.report-skip {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.report-skip-note {
+  margin: 0;
+  text-align: center;
+  font-family: var(--font-head);
+  font-size: 0.85rem;
+  color: var(--text-dim);
 }
 
 .report-done {

@@ -50,12 +50,22 @@ export function ReportScreen({
     setChecked(allChecked ? new Set() : new Set(keepers.map((e) => e.code)));
 
   const commit = () => {
+    if (done) return; // two commit paths now share this screen — guard against a double-tap race.
     collection.setOwned(checked, true);
     // Every scanned duplicate becomes a tradeable spare; the Trocar screen lets the user drop
     // any they've since traded away. Committed alongside the keepers so both stores move together.
     onCommitRepeats(repeats.map((e) => e.code));
     setDone(true);
     // Brief success state before handing back to the collection.
+    window.setTimeout(onCommitted, 900);
+  };
+
+  // Secondary action: save only the checked keepers, leaving the scanned duplicates un-persisted
+  // (they don't become tradeable spares this session). Mirrors commit() minus onCommitRepeats.
+  const commitNewOnly = () => {
+    if (done) return;
+    collection.setOwned(checked, true);
+    setDone(true);
     window.setTimeout(onCommitted, 900);
   };
 
@@ -154,6 +164,20 @@ export function ReportScreen({
         >
           {commitLabel(checkedCount, repeats.length)}
         </button>
+        {/* Only a mixed session (news to keep AND repeats to skip) makes "só as novas" both
+            distinct from the primary and actionable; disabled mirrors the primary's idiom. */}
+        {keepers.length > 0 && repeats.length > 0 && (
+          <div class="report-skip">
+            <button
+              class="btn btn-secondary btn-block"
+              onClick={commitNewOnly}
+              disabled={checkedCount === 0}
+            >
+              {pt.report.addOnlyNew}
+            </button>
+            <p class="report-skip-note">{pt.report.skipRepeatsNote(repeats.length)}</p>
+          </div>
+        )}
         <button class="btn btn-ghost btn-block" onClick={onBack}>
           {pt.report.back}
         </button>
