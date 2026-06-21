@@ -3,6 +3,7 @@ import { checklist } from '../data/checklist';
 import {
   commonStrategy,
   defaultStrategies,
+  importPreview,
   parseImport,
   type ImportStrategy,
 } from './importList';
@@ -279,5 +280,24 @@ describe('parseImport on real lists from other apps', () => {
       'PAN7', 'PAN9',
       'FWC8', 'FWC14',
     ]);
+  });
+});
+
+describe('importPreview', () => {
+  it('splits recognized codes into new (to add) vs already present', () => {
+    const p = importPreview(['MEX3', 'MEX4', 'BRA7'], new Set(['MEX4']));
+    expect(p.newCodes).toEqual(['MEX3', 'BRA7']);
+    expect(p.alreadyHad).toBe(1);
+  });
+
+  it('is all-new against an empty set', () => {
+    expect(importPreview(['MEX3', 'BRA7'], new Set())).toEqual({
+      newCodes: ['MEX3', 'BRA7'],
+      alreadyHad: 0,
+    });
+  });
+
+  it('adds nothing when every recognized code is already present', () => {
+    expect(importPreview(['MEX3'], new Set(['MEX3']))).toEqual({ newCodes: [], alreadyHad: 1 });
   });
 });

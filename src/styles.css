@@ -1586,6 +1586,7 @@ html.scan-active body {
   font-weight: 400;
   font-size: 1.5rem;
   color: var(--gold);
+  white-space: nowrap;
 }
 .collection-percent {
   font-family: var(--font-head);
@@ -3066,4 +3067,193 @@ html.scan-active body {
   .verdict-radar {
     animation: none;
   }
+}
+
+/* ===== Importar a lista de outro app ===== */
+.collection-head-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.collection-import {
+  flex: none;
+  background: var(--gold);
+  color: var(--ink);
+  border: 2px solid var(--ink);
+  border-radius: var(--radius-pill);
+  font-family: var(--font-head);
+  font-weight: 700;
+  font-size: 0.78rem;
+  letter-spacing: 0.02em;
+  padding: 7px 13px;
+  min-height: 38px;
+  box-shadow: 0 2px 0 rgba(0, 0, 0, 0.25);
+  cursor: pointer;
+}
+.collection-import:active {
+  transform: scale(0.96);
+}
+/* On the narrowest phones, drop the button label to just the 📋 icon so the "980 / 980" count keeps
+   its own line and never collapses/clips. */
+@media (max-width: 360px) {
+  .collection-import-label {
+    display: none;
+  }
+}
+
+.import-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 72;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 18px;
+  padding-bottom: calc(18px + var(--safe-bottom));
+  background: rgba(15, 60, 39, 0.66);
+}
+.import-card {
+  width: 100%;
+  max-width: 380px;
+  max-height: 92vh;
+  overflow-y: auto;
+  background: var(--cream);
+  color: var(--ink);
+  border: 3px solid var(--ink);
+  border-radius: var(--radius);
+  box-shadow: 6px 6px 0 var(--paper-edge);
+  padding: 18px 16px;
+}
+.import-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 6px;
+}
+.import-head h2 {
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: 1.5rem;
+  text-transform: uppercase;
+  color: var(--paper);
+  margin: 0;
+}
+.import-close {
+  flex: none;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: 2px solid var(--ink);
+  background: transparent;
+  color: var(--ink);
+  font-size: 1rem;
+  line-height: 1;
+  cursor: pointer;
+}
+.import-lead {
+  font-size: 0.9rem;
+  color: var(--kraft-text);
+  margin: 0 0 12px;
+}
+.import-bucket {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+.import-bucket-btn {
+  flex: 1;
+  padding: 11px 8px;
+  border: 2px solid var(--ink);
+  border-radius: var(--radius-pill);
+  background: transparent;
+  color: var(--ink);
+  font-family: var(--font-head);
+  font-weight: 700;
+  font-size: 0.95rem;
+  cursor: pointer;
+}
+.import-bucket-btn.is-on {
+  background: var(--paper);
+  color: var(--cream);
+}
+.import-textarea {
+  width: 100%;
+  min-height: 130px;
+  resize: vertical;
+  box-sizing: border-box;
+  border: 2px dashed var(--kraft-deep);
+  border-radius: var(--radius);
+  background: #fff;
+  color: var(--ink);
+  font-family: var(--font-mono, monospace);
+  font-size: 0.88rem;
+  padding: 10px 12px;
+  margin-bottom: 10px;
+}
+.import-stat {
+  text-align: center;
+  border: 2px solid var(--keep);
+  border-radius: var(--radius);
+  padding: 14px;
+  margin-bottom: 12px;
+}
+.import-big {
+  display: block;
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: 3rem;
+  line-height: 1;
+  color: var(--keep);
+}
+.import-stat-label {
+  font-family: var(--font-head);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-size: 0.85rem;
+  color: var(--ink);
+}
+.import-dest {
+  display: block;
+  margin-top: 4px;
+  font-size: 0.85rem;
+  color: var(--kraft-text);
+}
+.import-note {
+  font-size: 0.85rem;
+  color: var(--kraft-text);
+  margin: 0 0 8px;
+}
+.import-note-skip {
+  color: var(--dupe);
+}
+.import-preview-empty,
+.import-done {
+  text-align: center;
+  padding: 14px 4px;
+}
+.import-done h2 {
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: 1.8rem;
+  text-transform: uppercase;
+  color: var(--keep);
+  margin: 8px 0 4px;
+}
+.import-check {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: var(--keep);
+  color: var(--cream);
+  font-size: 2rem;
+}
+.import-done p {
+  font-size: 1rem;
+  color: var(--ink);
+  margin: 0 0 16px;
 }
