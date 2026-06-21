@@ -15,10 +15,13 @@ type Step =
 
 export function ImportSheet({
   collection,
+  repeats,
   wants,
   onClose,
 }: {
   collection: CollectionStore;
+  /** The user's spares — a "Tenho" import clears any STALE repeat marker for a re-owned code (see confirm). */
+  repeats: CollectionStore;
   /** The wishlist store — destination for the "Preciso" bucket. */
   wants: CollectionStore;
   onClose: () => void;
@@ -45,11 +48,22 @@ export function ImportSheet({
   };
 
   const confirm = (preview: { newCodes: string[] }) => {
-    const store = target();
-    for (const code of preview.newCodes) store.add(code);
+    if (bucket === 'have') {
+      // newCodes are recognized codes the user did NOT already own, so none can be a live spare (a
+      // spare must be owned). Clearing any lingering repeat marker for them in one commit means a stale
+      // spare (marked-repeat then un-owned in Coleção) can't resurrect as tradeable just because the
+      // import re-owns one copy — the import only proved ownership, not a duplicate. 0-FP-safe.
+      repeats.setOwned(preview.newCodes, false);
+      collection.setOwned(preview.newCodes, true); // single IDB write + one re-render, not N
+    } else {
+      wants.setOwned(preview.newCodes, true);
+    }
     setStep({ phase: 'done', added: preview.newCodes.length });
   };
 
+  // Back from the preview keeps the pasted text so the user can actually revise it; only the
+  // done-screen "Colar outra lista" starts fresh.
+  const back = () => setStep({ phase: 'paste' });
   const reset = () => {
     setText('');
     setStep({ phase: 'paste' });
@@ -68,19 +82,17 @@ export function ImportSheet({
             </header>
             <p class="import-lead">{pt.importList.lead}</p>
 
-            <div class="import-bucket" role="radiogroup" aria-label={pt.importList.bucketLabel}>
+            <div class="import-bucket" role="group" aria-label={pt.importList.bucketLabel}>
               <button
                 class={`import-bucket-btn${bucket === 'have' ? ' is-on' : ''}`}
-                role="radio"
-                aria-checked={bucket === 'have'}
+                aria-pressed={bucket === 'have'}
                 onClick={() => setBucket('have')}
               >
                 ✓ {pt.importList.bucketHave}
               </button>
               <button
                 class={`import-bucket-btn${bucket === 'need' ? ' is-on' : ''}`}
-                role="radio"
-                aria-checked={bucket === 'need'}
+                aria-pressed={bucket === 'need'}
                 onClick={() => setBucket('need')}
               >
                 {pt.importList.bucketNeed}
@@ -90,6 +102,7 @@ export function ImportSheet({
             <textarea
               class="import-textarea"
               value={text}
+              aria-label={pt.importList.title}
               placeholder={pt.importList.placeholder}
               onInput={(e) => setText((e.currentTarget as HTMLTextAreaElement).value)}
             />
@@ -121,7 +134,7 @@ export function ImportSheet({
                   🤔
                 </span>
                 <p>{pt.importList.previewNone}</p>
-                <button class="btn btn-primary btn-block" onClick={reset}>
+                <button class="btn btn-primary btn-block" onClick={back}>
                   {pt.importList.back}
                 </button>
               </div>
@@ -151,7 +164,7 @@ export function ImportSheet({
                     ? pt.importList.nothingNew
                     : pt.importList.add(step.newCodes.length)}
                 </button>
-                <button class="link-btn" onClick={reset}>
+                <button class="link-btn" onClick={back}>
                   {pt.importList.back}
                 </button>
               </>
@@ -171,7 +184,7 @@ export function ImportSheet({
                 : pt.importList.doneNeed(step.added)}
             </p>
             <button class="btn btn-primary btn-block" onClick={onClose}>
-              {pt.importList.seeCollection}
+              {bucket === 'have' ? pt.importList.seeCollection : pt.importList.doneClose}
             </button>
             <button class="link-btn" onClick={reset}>
               {pt.importList.another}

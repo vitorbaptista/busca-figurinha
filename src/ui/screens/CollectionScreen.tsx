@@ -9,11 +9,13 @@ import { ImportSheet } from '../components/ImportSheet';
 
 interface CollectionScreenProps {
   collection: CollectionStore;
+  /** Spares store — an import clears stale repeat markers for re-owned codes (0-FP). */
+  repeats: CollectionStore;
   /** Wishlist store — the "Preciso" destination of a pasted import. */
   wants: CollectionStore;
 }
 
-export function CollectionScreen({ collection, wants }: CollectionScreenProps) {
+export function CollectionScreen({ collection, repeats, wants }: CollectionScreenProps) {
   useStore(collection);
 
   const [query, setQuery] = useState('');
@@ -34,8 +36,12 @@ export function CollectionScreen({ collection, wants }: CollectionScreenProps) {
         <div class="collection-progress-row">
           <h1>{pt.collection.title}</h1>
           <div class="collection-head-right">
-            <button class="collection-import" onClick={() => setImporting(true)}>
-              📋 {pt.collection.importCta}
+            <button
+              class="collection-import"
+              onClick={() => setImporting(true)}
+              aria-label={pt.collection.importCta}
+            >
+              📋 <span class="collection-import-label">{pt.collection.importCta}</span>
             </button>
             <span class="collection-count">{pt.collection.progress(owned.size, total)}</span>
           </div>
@@ -69,7 +75,12 @@ export function CollectionScreen({ collection, wants }: CollectionScreenProps) {
       )}
 
       {importing && (
-        <ImportSheet collection={collection} wants={wants} onClose={() => setImporting(false)} />
+        <ImportSheet
+          collection={collection}
+          repeats={repeats}
+          wants={wants}
+          onClose={() => setImporting(false)}
+        />
       )}
     </div>
   );

@@ -178,7 +178,9 @@ export function App() {
         />
       )}
 
-      {screen === 'collection' && <CollectionScreen collection={collection} wants={wants} />}
+      {screen === 'collection' && (
+        <CollectionScreen collection={collection} repeats={repeats} wants={wants} />
+      )}
 
       {screen === 'trade' && (
         <TradeScreen

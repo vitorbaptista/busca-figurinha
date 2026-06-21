@@ -1586,6 +1586,7 @@ html.scan-active body {
   font-weight: 400;
   font-size: 1.5rem;
   color: var(--gold);
+  white-space: nowrap;
 }
 .collection-percent {
   font-family: var(--font-head);
@@ -3091,6 +3092,13 @@ html.scan-active body {
 }
 .collection-import:active {
   transform: scale(0.96);
+}
+/* On the narrowest phones, drop the button label to just the 📋 icon so the "980 / 980" count keeps
+   its own line and never collapses/clips. */
+@media (max-width: 360px) {
+  .collection-import-label {
+    display: none;
+  }
 }
 
 .import-overlay {

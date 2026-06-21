@@ -146,7 +146,7 @@ export const pt = {
     previewTitle: 'Confere antes de salvar',
     recognized: 'reconhecidas',
     destHave: '→ vão pra Minha coleção',
-    destNeed: '→ vão pra Minha lista de preciso',
+    destNeed: '→ vão pra lista do que você precisa',
     alreadyHad: (n: number) =>
       n === 1 ? '1 você já tinha (não conta de novo).' : `${n} você já tinha (não contam de novo).`,
     skipped: (n: number) =>
@@ -159,8 +159,11 @@ export const pt = {
     doneHave: (n: number) =>
       n === 1 ? '1 figurinha foi pra sua coleção.' : `${n} figurinhas foram pra sua coleção.`,
     doneNeed: (n: number) =>
-      n === 1 ? '1 figurinha foi pra sua lista de preciso.' : `${n} figurinhas foram pra sua lista de preciso.`,
+      n === 1
+        ? '1 figurinha foi pra lista do que você precisa.'
+        : `${n} figurinhas foram pra lista do que você precisa.`,
     seeCollection: 'Ver a coleção',
+    doneClose: 'Beleza!',
     another: 'Colar outra lista',
   },
 
