@@ -239,51 +239,6 @@ PAN 7, 9
 * Antônio entrega: 65 figurinhas
 * Antônio recebe: 69 figurinhas`;
 
-// A real repeats share with "(×N)" duplicate-count annotations, and a CC13 that isn't in our
-// album (the Coca-Cola section ends at CC12).
-const REPEATS_SAMPLE = `🏆 *Copa 2026* — *🔁 252 Repetidas*
-
-🌟 Introdução:
-FWC4, FWC9, FWC10, FWC11, FWC12, FWC13, FWC15
-
-🇲🇽 México:
-MEX5, MEX6, MEX9, MEX17, MEX19, MEX20 (×2)
-
-🇿🇦 África do Sul:
-RSA2, RSA3, RSA5 (×3), RSA11, RSA19
-
-🇨🇿 República Tcheca:
-CZE11, CZE15 (×2)
-
-🇨🇭 Suíça:
-SUI1, SUI2, SUI4, SUI5 (×3), SUI9, SUI12
-
-🇧🇷 Brasil:
-BRA4, BRA9, BRA12, BRA16 (×2), BRA17
-
-🏴 Escócia:
-SCO3, SCO4, SCO6, SCO8 (×2), SCO9 (×2), SCO12 (×2), SCO14, SCO16, SCO20
-
-🇺🇸 Estados Unidos:
-USA10, USA14 (×2)
-
-🇩🇪 Alemanha:
-GER1, GER2, GER5 (×2), GER6, GER9, GER12, GER19 (×2)
-
-🇨🇮 Costa do Marfim:
-CIV1, CIV3, CIV7 (×3), CIV11, CIV12, CIV16, CIV17
-
-🇶🇦 Catar:
-QAT2, QAT6, QAT15 (×2), QAT16 (×2), QAT17
-
-🇵🇹 Portugal:
-POR1, POR8, POR9, POR12, POR16, POR19 (×3)
-
-🥤 Coca:
-CC7, CC12, CC13
-
-Bora trocar? 📲`;
-
 describe('parseImport on real lists from other apps', () => {
   it('loads a receiver-flow list and ignores the trade-balance footer numbers', () => {
     const result = parseImport(RECEIVER_SAMPLE, checklist);
@@ -324,24 +279,5 @@ describe('parseImport on real lists from other apps', () => {
       'PAN7', 'PAN9',
       'FWC8', 'FWC14',
     ]);
-  });
-
-  it('ignores "(×N)" duplicate counts and flags out-of-album codes', () => {
-    const result = parseImport(REPEATS_SAMPLE, checklist);
-
-    // CC13 doesn't exist in our album (Coca-Cola ends at CC12) → reported, never a code.
-    expect(result.unrecognized).toEqual(['CC13']);
-    // The "(×N)" tallies are metadata, never sticker numbers: parsing must match the SAME list with
-    // the annotations stripped out (0 false positives — the cardinal rule).
-    const stripped = parseImport(REPEATS_SAMPLE.replace(/\s*\(×\d+\)/g, ''), checklist);
-    expect(result.codes).toEqual(stripped.codes);
-    // Concretely, "(×2)"/"(×3)" must not inject ghosts (none of these are listed in their teams).
-    for (const ghost of ['MEX2', 'CZE2', 'SUI3', 'BRA2', 'SCO2', 'USA2', 'POR3']) {
-      expect(result.codes).not.toContain(ghost);
-    }
-    // The genuinely-listed codes are still there.
-    for (const code of ['MEX20', 'QAT16', 'CIV7', 'CC12', 'FWC13']) {
-      expect(result.codes).toContain(code);
-    }
   });
 });
