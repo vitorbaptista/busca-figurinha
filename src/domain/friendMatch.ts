@@ -39,19 +39,15 @@ export interface NeedsDiff {
   found: string[];
   /** Their needs now (= the new list). */
   stillNeeds: string[];
-  /** Codes in the new list that weren't in the old one — needs that appeared. */
-  maybeNew: string[];
 }
 
 /** Compare a saved friend's old needs against their freshly-shared list, to celebrate progress when
  *  they re-send an updated link ("João achou 5!"). Pure — both inputs are already canonical codes. */
 export function needsDiff(oldNeeds: string[], newNeeds: string[]): NeedsDiff {
-  const oldSet = new Set(oldNeeds);
   const newSet = new Set(newNeeds);
   return {
     found: oldNeeds.filter((code) => !newSet.has(code)),
     stillNeeds: [...newNeeds],
-    maybeNew: newNeeds.filter((code) => !oldSet.has(code)),
   };
 }
 

@@ -99,26 +99,20 @@ describe('needsDiff', () => {
     const d = needsDiff(['MEX3', 'BRA7', 'ARG4'], ['BRA7', 'ARG4']);
     expect(d.found).toEqual(['MEX3']);
     expect(d.stillNeeds).toEqual(['BRA7', 'ARG4']);
-    expect(d.maybeNew).toEqual([]);
   });
 
-  it('reports needs that newly appeared (maybeNew)', () => {
+  it('found stays empty when the friend only added needs', () => {
     const d = needsDiff(['MEX3'], ['MEX3', 'FRA9']);
     expect(d.found).toEqual([]);
-    expect(d.maybeNew).toEqual(['FRA9']);
     expect(d.stillNeeds).toEqual(['MEX3', 'FRA9']);
   });
 
   it('is empty-found when the list is unchanged', () => {
-    expect(needsDiff(['MEX3'], ['MEX3'])).toEqual({ found: [], stillNeeds: ['MEX3'], maybeNew: [] });
+    expect(needsDiff(['MEX3'], ['MEX3'])).toEqual({ found: [], stillNeeds: ['MEX3'] });
   });
 
-  it('treats a first-time save (no old needs) as all-new, nothing found', () => {
-    expect(needsDiff([], ['MEX3', 'BRA7'])).toEqual({
-      found: [],
-      stillNeeds: ['MEX3', 'BRA7'],
-      maybeNew: ['MEX3', 'BRA7'],
-    });
+  it('treats a first-time save (no old needs) as nothing found', () => {
+    expect(needsDiff([], ['MEX3', 'BRA7'])).toEqual({ found: [], stillNeeds: ['MEX3', 'BRA7'] });
   });
 });
 

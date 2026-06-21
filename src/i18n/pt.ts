@@ -253,7 +253,6 @@ export const pt = {
     updatedClose: 'Agora não',
     updatedOk: 'Beleza!',
     friendSaved: (name: string) => `Lista do ${name} salva! 👥`,
-    friendUpdated: (name: string) => `Lista do ${name} atualizada! 🔄`,
     friendsTitle: '👥 Listas de amigos',
     friendNeeds: (n: number) => (n === 1 ? 'precisa de 1' : `precisa de ${n}`),
     friendCanGive: (n: number) => (n === 1 ? 'você tem 1 pra dar' : `você tem ${n} pra dar`),

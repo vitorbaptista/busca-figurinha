@@ -300,7 +300,20 @@ export function TradeScreen({
   // "De quem é essa lista?" — name the friend before saving; if the name matches a saved friend,
   // ask update-or-new so two friends who share a name can't clobber each other.
   const saveSheetEl = saveSheet ? (
-    <div class="name-overlay" role="dialog" aria-modal="true" aria-label={pt.trade.saveFriendTitle}>
+    <div
+      class="name-overlay"
+      role="dialog"
+      aria-modal="true"
+      aria-label={
+        saveSheet.phase === 'name'
+          ? pt.trade.saveFriendTitle
+          : saveSheet.phase === 'collision'
+            ? pt.trade.saveCollisionTitle(saveSheet.name)
+            : saveSheet.found > 0
+              ? pt.trade.updatedFoundTitle(saveSheet.name, saveSheet.found)
+              : pt.trade.updatedTitle(saveSheet.name)
+      }
+    >
       <div class="name-card">
         {saveSheet.phase === 'name' ? (
           <>
