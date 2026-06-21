@@ -173,6 +173,7 @@ export function TradeScreen({
   // Tapping a saved friend opens their detail ("o que você tem pro João" + dei-pro-João). Cleared
   // when the friend is gone (e.g. fully traded away) so we never render a detail for a missing id.
   const [selectedFriendId, setSelectedFriendId] = useState<string | null>(null);
+  const [showArchived, setShowArchived] = useState(false);
   // "Dei essas pro João": the spares leave repeats (a given duplicate is gone; `owned` is untouched —
   // I still have my one) AND leave the friend's needs (they got them). Re-intersect against the FRESH
   // stores at action time (not the render-captured `codes`) so a double-tap or any stale selection can
@@ -415,6 +416,11 @@ export function TradeScreen({
         myRepeatCodes={myRepeatCodes}
         notice={notice}
         onGive={(codes) => giveToFriend(selectedFriend, codes)}
+        onArchive={() => {
+          friendLists.setArchived(selectedFriend.id, true);
+          flash(pt.trade.friendArchived(selectedFriend.name));
+          setSelectedFriendId(null);
+        }}
         onBack={() => setSelectedFriendId(null)}
         onGoScan={onGoScan}
       />
@@ -424,6 +430,11 @@ export function TradeScreen({
   // ---- The user's own trade offer ----
   const hasRepeats = myRepeatEntries.length > 0;
   const activeFriends = friendLists.active();
+  const archivedFriends = friendLists.all().filter((f) => f.archived);
+  const unarchiveFriend = (id: string, name: string) => {
+    friendLists.setArchived(id, false);
+    flash(pt.trade.friendUnarchived(name));
+  };
 
   // Only a brand-new user who hasn't kept a single sticker yet gets the onboarding empty state. The
   // moment they have an album, this screen ALWAYS shows what they need + the share/copy actions —
@@ -596,6 +607,40 @@ export function TradeScreen({
             </div>
           </section>
         )}
+
+        {archivedFriends.length > 0 && (
+          <section class="friends-section friends-archived">
+            <button
+              type="button"
+              class="archived-toggle"
+              onClick={() => setShowArchived((s) => !s)}
+              aria-expanded={showArchived}
+            >
+              🗄️ {pt.trade.archivedToggle(archivedFriends.length)}
+              <span class="archived-caret" aria-hidden="true">
+                {showArchived ? '▾' : '▸'}
+              </span>
+            </button>
+            {showArchived && (
+              <div class="ledger friends-list">
+                {archivedFriends.map((f) => (
+                  <div class="friend-row friend-row-archived" key={f.id}>
+                    <span class="friend-av" aria-hidden="true">
+                      {f.name.slice(0, 1).toUpperCase()}
+                    </span>
+                    <span class="friend-info">
+                      <span class="friend-name">{f.name}</span>
+                      <span class="friend-stat">{pt.trade.friendNeeds(f.needs.length)}</span>
+                    </span>
+                    <button class="friend-unarchive" onClick={() => unarchiveFriend(f.id, f.name)}>
+                      {pt.trade.unarchive}
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </section>
+        )}
       </div>
       {nameSheetEl}
       {saveSheetEl}
@@ -611,6 +656,7 @@ function FriendDetail({
   myRepeatCodes,
   notice,
   onGive,
+  onArchive,
   onBack,
   onGoScan,
 }: {
@@ -618,6 +664,7 @@ function FriendDetail({
   myRepeatCodes: Set<string>;
   notice: string | null;
   onGive: (codes: string[]) => void;
+  onArchive: () => void;
   onBack: () => void;
   onGoScan: () => void;
 }) {
@@ -644,9 +691,14 @@ function FriendDetail({
       )}
 
       <header class="trade-header trade-header-friend">
-        <button class="trade-back" onClick={onBack}>
-          ← {pt.trade.detailBack}
-        </button>
+        <div class="trade-header-friend-row">
+          <button class="trade-back" onClick={onBack}>
+            ← {pt.trade.detailBack}
+          </button>
+          <button class="trade-save-friend" onClick={onArchive}>
+            🗄️ {pt.trade.detailArchive}
+          </button>
+        </div>
         <h1>{pt.trade.detailTitle(friend.name)}</h1>
       </header>
 
@@ -657,6 +709,10 @@ function FriendDetail({
               🎉
             </span>
             <p>{pt.trade.detailDone(friend.name)}</p>
+            <button class="btn btn-primary btn-block" onClick={onArchive}>
+              🗄️ {pt.trade.detailArchiveDone(friend.name)}
+            </button>
+            <p class="detail-guide detail-archive-hint">{pt.trade.detailArchiveHint}</p>
           </div>
         ) : (
           <>

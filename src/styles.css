@@ -2984,6 +2984,50 @@ html.scan-active body {
   color: var(--kraft-text);
 }
 
+/* Arquivados — a quiet expander under the active friend list */
+.friends-archived {
+  margin-top: 6px;
+}
+.archived-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  background: transparent;
+  border: 0;
+  padding: 10px 4px;
+  font-family: var(--font-head);
+  font-weight: 700;
+  font-size: 0.85rem;
+  color: var(--kraft-text);
+  cursor: pointer;
+}
+.archived-caret {
+  font-size: 0.7rem;
+}
+.detail-archive-hint {
+  text-align: center;
+}
+.friend-row-archived {
+  opacity: 0.72;
+}
+.friend-unarchive {
+  flex: none;
+  background: transparent;
+  color: var(--paper);
+  border: 1.5px solid var(--paper);
+  border-radius: var(--radius-pill);
+  font-family: var(--font-head);
+  font-weight: 700;
+  font-size: 0.78rem;
+  padding: 6px 12px;
+  min-height: 38px;
+  cursor: pointer;
+}
+.friend-unarchive:active {
+  transform: scale(0.96);
+}
+
 .btn-primary:disabled {
   opacity: 0.5;
   cursor: default;
