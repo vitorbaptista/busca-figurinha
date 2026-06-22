@@ -421,7 +421,6 @@ export const pt = {
     title: 'Ajustes',
     nameLabel: 'Seu nome',
     namePlaceholder: 'Seu nome ou apelido',
-    nameHint: 'Aparece pra quem recebe sua lista ("Trocar com Léo").',
     data: 'Meus dados',
     export: 'Exportar coleção',
     exportHint: 'Baixa um arquivo de backup com a sua coleção.',
@@ -437,6 +436,8 @@ export const pt = {
     clearConfirm: 'Apagar TODA a coleção? Isso não pode ser desfeito.',
     clearDone: 'Coleção apagada.',
     version: (v: string) => `Versão ${v}`,
-    credit: 'Feito com 💚 para a galera trocadora.',
+    credit: 'Feito com 💚 por ',
+    creditAuthor: 'Vitor Baptista',
+    creditUrl: 'https://vitorbaptista.com',
   },
 } as const;

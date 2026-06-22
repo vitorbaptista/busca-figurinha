@@ -3,6 +3,13 @@
 Notable changes to the sticker scanner. Newest first. No formal releases yet (deploys on push to
 `main`), so entries are grouped by date. Keep this updated when you ship something notable.
 
+## 2026-06-22 — Ajustes: crédito do autor
+
+### Changed
+- O rodapé dos Ajustes agora diz **"Feito com 💚 por [Vitor Baptista](https://vitorbaptista.com)"**,
+  com link pro site, no lugar de "Feito com 💚 para a galera trocadora.".
+- Removida a dica embaixo do campo "Seu nome" ("Aparece pra quem recebe sua lista…").
+
 ## 2026-06-22 — Voltar (Back) volta para a aba anterior, em vez de sair do app
 
 ### Changed
