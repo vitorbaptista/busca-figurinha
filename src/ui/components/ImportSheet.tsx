@@ -1,4 +1,4 @@
-import { useState } from 'preact/hooks';
+import { useMemo, useState } from 'preact/hooks';
 import type { CollectionStore } from '../../types';
 import { checklist } from '../../data/checklist';
 import { importPreview, parseImport, type ImportResult } from '../../domain/importList';
@@ -6,12 +6,14 @@ import { pt } from '../../i18n/pt';
 
 /** The "Importar a lista de outro app" flow (a paste from a friend's WhatsApp / another album app):
  *  paste + choose a destination bucket → preview the recognized count → merge. "Tenho" lands in the
- *  collection (owned); "Preciso" lands in the wishlist (wants). Neither touches repeats, so an import
- *  can never create a tradeable spare — 0 false positives by construction. */
+ *  collection (owned); "Preciso" lands in the wishlist (wants) AND implies you have all the others, so
+ *  it also marks every other album code owned (the user asserts "I'm only missing these"). Neither
+ *  bucket touches repeats, so an import can never create a tradeable spare — 0 false positives by
+ *  construction (this is user-asserted ownership via an explicit confirm, not the recognizer guessing). */
 type Step =
   | { phase: 'paste' }
   | { phase: 'preview'; result: ImportResult; newCodes: string[]; alreadyHad: number }
-  | { phase: 'done'; added: number };
+  | { phase: 'done'; added: number; owned?: number };
 
 export function ImportSheet({
   collection,
@@ -44,22 +46,16 @@ export function ImportSheet({
 
   const target = () => (bucket === 'have' ? collection : wants);
 
-  const pasteFromClipboard = async () => {
-    try {
-      const clip = await navigator.clipboard.readText();
-      if (clip) setText(clip);
-    } catch {
-      /* clipboard blocked (permissions / no https) — the user can paste into the textarea by hand. */
-    }
-  };
+  // Parse live so the load button can show the recognized count ("Carregar N figurinhas") and the
+  // preview can reuse the result. parseImport is cheap string/regex work (not OCR), safe per keystroke.
+  const parsed = useMemo(() => parseImport(text, checklist), [text]);
 
   const load = () => {
-    const result = parseImport(text, checklist);
-    const { newCodes, alreadyHad } = importPreview(result.codes, target().codes());
-    setStep({ phase: 'preview', result, newCodes, alreadyHad });
+    const { newCodes, alreadyHad } = importPreview(parsed.codes, target().codes());
+    setStep({ phase: 'preview', result: parsed, newCodes, alreadyHad });
   };
 
-  const confirm = (preview: { newCodes: string[] }) => {
+  const confirm = (preview: { result: ImportResult; newCodes: string[] }) => {
     if (bucket === 'have') {
       // newCodes are recognized codes the user did NOT already own, so none can be a live spare (a
       // spare must be owned). Clearing any lingering repeat marker for them in one commit means a stale
@@ -67,10 +63,21 @@ export function ImportSheet({
       // import re-owns one copy — the import only proved ownership, not a duplicate. 0-FP-safe.
       repeats.setOwned(preview.newCodes, false);
       collection.setOwned(preview.newCodes, true); // single IDB write + one re-render, not N
+      setStep({ phase: 'done', added: preview.newCodes.length });
     } else {
-      wants.setOwned(preview.newCodes, true);
+      // "Preciso" = "I'm only missing these". ALL recognized needed codes go to the wishlist (not just
+      // the delta-vs-wants — setOwned is idempotent, so re-importing the same list is a no-op); the rest
+      // of the album is therefore something the user has, so mark every OTHER code owned. Additive only —
+      // we never un-own the needed codes (the wishlist is the source of truth for "missing"; consumers
+      // intersect wants with not-owned, see types.ts) and never touch repeats, so no tradeable spare is
+      // invented → 0-FP holds. Each setOwned call = single IDB write + one re-render, not N.
+      const needed = preview.result.codes;
+      wants.setOwned(needed, true);
+      const neededSet = new Set(needed);
+      const others = checklist.entries.map((e) => e.code).filter((code) => !neededSet.has(code));
+      collection.setOwned(others, true);
+      setStep({ phase: 'done', added: needed.length, owned: others.length });
     }
-    setStep({ phase: 'done', added: preview.newCodes.length });
   };
 
   // Back from the preview keeps the pasted text so the user can actually revise it; only the
@@ -118,15 +125,14 @@ export function ImportSheet({
               placeholder={pt.importList.placeholder}
               onInput={(e) => setText((e.currentTarget as HTMLTextAreaElement).value)}
             />
-            <button class="btn btn-ghost btn-block" onClick={pasteFromClipboard}>
-              📋 {pt.importList.pasteClipboard}
-            </button>
             <button
               class="btn btn-primary btn-block"
-              disabled={text.trim().length === 0}
+              disabled={parsed.codes.length === 0}
               onClick={load}
             >
-              {pt.importList.load}
+              {parsed.codes.length === 0
+                ? pt.importList.load
+                : pt.importList.loadCount(parsed.codes.length)}
             </button>
           </>
         )}
@@ -167,15 +173,27 @@ export function ImportSheet({
                     {pt.importList.skipped(step.result.unrecognized.length)}
                   </p>
                 )}
-                <button
-                  class="btn btn-primary btn-block"
-                  disabled={step.newCodes.length === 0}
-                  onClick={() => confirm(step)}
-                >
-                  {step.newCodes.length === 0
-                    ? pt.importList.nothingNew
-                    : pt.importList.add(step.newCodes.length)}
-                </button>
+                {bucket === 'need' && (
+                  <p class="import-note">
+                    {pt.importList.fillsAlbum(checklist.total - step.result.codes.length)}
+                  </p>
+                )}
+                {bucket === 'have' ? (
+                  <button
+                    class="btn btn-primary btn-block"
+                    disabled={step.newCodes.length === 0}
+                    onClick={() => confirm(step)}
+                  >
+                    {step.newCodes.length === 0
+                      ? pt.importList.nothingNew
+                      : pt.importList.add(step.newCodes.length)}
+                  </button>
+                ) : (
+                  // "Preciso": always actionable here (recognized > 0) — it fills the album with the rest.
+                  <button class="btn btn-primary btn-block" onClick={() => confirm(step)}>
+                    {pt.importList.confirmNeed}
+                  </button>
+                )}
                 <button class="link-btn" onClick={back}>
                   {pt.importList.back}
                 </button>
@@ -193,7 +211,7 @@ export function ImportSheet({
             <p>
               {bucket === 'have'
                 ? pt.importList.doneHave(step.added)
-                : pt.importList.doneNeed(step.added)}
+                : pt.importList.doneNeed(step.added, step.owned ?? 0)}
             </p>
             <button
               class="btn btn-primary btn-block"

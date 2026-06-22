@@ -223,8 +223,9 @@ export const pt = {
     bucketHave: 'Tenho',
     bucketNeed: 'Preciso',
     placeholder: 'Cole aqui (ex: BRA 3, 6, 10\nMEX 12\nARG 4, 9, 14…)',
-    pasteClipboard: 'Colar da área de transferência',
     load: 'Carregar lista',
+    // Live count on the load button: disabled "Carregar lista" with 0 detected, then this.
+    loadCount: (n: number) => (n === 1 ? 'Carregar 1 figurinha' : `Carregar ${n} figurinhas`),
     previewTitle: 'Confere antes de salvar',
     recognized: 'reconhecidas',
     destHave: '→ vão pra Minha coleção',
@@ -234,16 +235,25 @@ export const pt = {
     skipped: (n: number) =>
       n === 1 ? '1 não foi reconhecida e foi pulada.' : `${n} não foram reconhecidas e foram puladas.`,
     add: (n: number) => (n === 1 ? 'Adicionar 1' : `Adicionar ${n}`),
+    // "Preciso" bucket: importing what you need implies you have the rest, so the import also fills
+    // the album. This note (preview) makes that consequence explicit before the user confirms.
+    fillsAlbum: (n: number) =>
+      n === 1
+        ? 'Como você tem o resto, vou marcar a outra como sua no álbum.'
+        : `Como você tem o resto, vou marcar as outras ${n} como suas no álbum.`,
+    confirmNeed: 'Salvar e preencher o álbum',
     nothingNew: 'Nada de novo pra adicionar',
     previewNone: 'Não achei nenhuma figurinha nessa lista. Confere o texto e tenta de novo.',
     back: 'Voltar e revisar',
     doneTitle: 'Pronto!',
     doneHave: (n: number) =>
       n === 1 ? '1 figurinha foi pra sua coleção.' : `${n} figurinhas foram pra sua coleção.`,
-    doneNeed: (n: number) =>
-      n === 1
-        ? '1 figurinha foi pra lista do que você precisa.'
-        : `${n} figurinhas foram pra lista do que você precisa.`,
+    // n = quantas você precisa (foram pra lista); owned = as outras, marcadas como suas no álbum.
+    doneNeed: (n: number, owned: number) =>
+      `Você precisa de ${n === 1 ? '1 figurinha' : `${n} figurinhas`}. ` +
+      (owned === 1
+        ? 'Marquei a outra como sua no álbum.'
+        : `Marquei as outras ${owned} como suas no álbum.`),
     seeCollection: 'Ver a coleção',
     doneClose: 'Beleza!',
     another: 'Colar outra lista',
