@@ -13,6 +13,7 @@ import { Verdict, type VerdictState } from '../components/Verdict';
 import { MultiResult, type ScanResultItem } from '../components/MultiResult';
 import { ImportSheet } from '../components/ImportSheet';
 import { useScanner } from '../hooks/useScanner';
+import { ScanShell } from '../components/ScanShell';
 
 interface ScanScreenProps {
   session: ScanSession;
@@ -68,7 +69,6 @@ export function ScanScreen({
   const [recent, setRecent] = useState<RecentScan[]>([]);
   const [showManual, setShowManual] = useState(false);
   const [showImport, setShowImport] = useState(false);
-  const [manualValue, setManualValue] = useState('');
 
   // ---------- Result handling shared by all input paths ----------
 
@@ -241,15 +241,6 @@ export function ScanScreen({
 
   // ---------- Manual entry ----------
 
-  const submitManual = (e: Event) => {
-    e.preventDefault();
-    const value = manualValue.trim();
-    if (!value) return;
-    scanner.submitManualCode(value);
-    setManualValue('');
-    setShowManual(false);
-  };
-
   /** "Não é essa?" — the read on screen is wrong. Undo it so a confident misread never
    *  reaches the report: drop the record from the session, uncount it, remove it from the
    *  recent strip, clear the card, then open manual entry to type the right code. The
@@ -276,22 +267,30 @@ export function ScanScreen({
   // ---------- Render ----------
 
   return (
-    <div class="screen scan-screen">
-      {/* Screen-reader / sound-off announcement of each scan result. */}
-      <p class="sr-only" role="status" aria-live="assertive">
-        {announce}
-      </p>
-
-      {/* Album section tab */}
-      <div class="pagetab">
-        <span class="pagetab-name">{pt.scan.pageTitle}</span>
-        <span class="pagetab-pg">{pt.scan.pageSubtitle}</span>
-      </div>
-
-      {/* Full-bleed camera. The live <video> is shown ONLY inside the .mira window;
-          everything around it is the dark album surface (no fill-light flood). */}
-      <div class="cam" onClick={DEBUG ? scanner.captureNow : undefined}>
-        <div class="cam-top">
+    <>
+      <ScanShell
+        pageTitle={pt.scan.pageTitle}
+        pageSubtitle={pt.scan.pageSubtitle}
+        announce={announce}
+        holdStillText={pt.scan.holdStill}
+        cameraState={scanner.cameraState}
+        ocrReady={scanner.ocrReady}
+        ocrFailed={scanner.ocrFailed}
+        ocrProgress={scanner.ocrProgress}
+        reading={scanner.reading}
+        facing={scanner.facing}
+        videoLayerRef={scanner.videoLayerRef}
+        onFlip={scanner.flipCamera}
+        onRetry={scanner.retryCamera}
+        manualOpen={showManual}
+        setManualOpen={setShowManual}
+        onManualSubmit={(v) => scanner.submitManualCode(v)}
+        onCamClick={DEBUG ? scanner.captureNow : undefined}
+        debugBeat={DEBUG ? scanner.debug.beat : undefined}
+        debugText={DEBUG ? scanner.debug.text : undefined}
+        recCount={scanner.debug.recCount}
+        recording={RECORD}
+        topLeft={
           <div class="counters">
             <div class="chip-count">
               <b>{counters.neededCount}</b>
@@ -302,173 +301,50 @@ export function ScanScreen({
               <span>{pt.scan.counters.repeated}</span>
             </div>
           </div>
-          <div class="cam-top-actions">
-            {!session.isEmpty() && (
-              <button class="finish-pill" onClick={onFinish}>
-                {pt.scan.finish}
-              </button>
-            )}
-            {scanner.cameraState !== 'denied' && (
+        }
+        finishAction={
+          !session.isEmpty() && (
+            <button class="finish-pill" onClick={onFinish}>
+              {pt.scan.finish}
+            </button>
+          )
+        }
+        overlay={multi && <MultiResult items={multi} />}
+        bottom={
+          <>
+            {recent.length > 0 && (
               <>
-                {/* Always-reachable manual entry: the live burst is silent on misses, so the
-                    "Não li" card rarely shows — without this a stuck sticker has no escape. */}
-                <button
-                  class="cam-icon-btn"
-                  onClick={() => setShowManual(true)}
-                  aria-label={pt.scan.manualEntry}
-                  title={pt.scan.manualEntry}
-                >
-                  📝
-                </button>
-                <button
-                  class="cam-icon-btn"
-                  onClick={scanner.flipCamera}
-                  aria-label={pt.scan.flipCamera}
-                  title={scanner.facing === 'user' ? pt.scan.cameraFront : pt.scan.cameraBack}
-                >
-                  🔄
-                </button>
+                <div class="recent-cap">{pt.scan.recentCap}</div>
+                <div class="recent" aria-label={pt.scan.recent}>
+                  {recent.slice(0, 3).map((r) => (
+                    <div key={r.id} class="rd">
+                      <div class="rc">{r.label}</div>
+                      <div class={r.outcome === 'owned' ? 'rs rep' : 'rs nova'}>
+                        {r.outcome === 'owned' ? pt.scan.recentRep : pt.scan.recentNew}
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </>
             )}
-          </div>
-        </div>
-
-        {RECORD && (
-          <div class="scan-rec" role="status">
-            <span class="scan-rec-dot" aria-hidden="true" />
-            Gravando · {scanner.debug.recCount}
-          </div>
-        )}
-
-        {DEBUG && (
-          <div class="debug-box">
-            {scanner.debug.beat || 'iniciando…'}
-            {scanner.debug.text ? ` · ${scanner.debug.text}` : ''}
-          </div>
-        )}
-
-        {scanner.cameraState !== 'denied' && (
-          <div class="mira-wrap">
-            <div class={scanner.reading ? 'mira reading' : 'mira'}>
-              {/* Camera <video> is appended here imperatively; Preact leaves it alone. */}
-              <div class="scan-video-layer" ref={scanner.videoLayerRef} aria-hidden="true" />
-              {/* Scanner sweep — the visible "it's reading" signal (mounts fresh each read so
-                  the sweep restarts). Reduced-motion turns this into a still glow via CSS. */}
-              {scanner.reading && <span class="mira-scan" aria-hidden="true" />}
-              <span class="corner tl" aria-hidden="true" />
-              <span class="corner tr" aria-hidden="true" />
-              <span class="corner bl" aria-hidden="true" />
-              <span class="corner br" aria-hidden="true" />
-              {scanner.cameraState === 'loading' && <span class="cole">{pt.scan.slotLabel}</span>}
-            </div>
-            {scanner.ocrReady && !verdict && !multi && (
-              <span class={scanner.reading ? 'hint reading' : 'hint'}>
-                <span class="pulse" aria-hidden="true" />
-                {scanner.reading ? pt.scan.reading : pt.scan.holdStill}
-              </span>
+            {verdict && !multi && (
+              <Verdict state={verdict} onManual={() => setShowManual(true)} onWrong={handleWrong} />
             )}
-          </div>
-        )}
-
-        {scanner.cameraState === 'ready' && !scanner.ocrReady && !scanner.ocrFailed && (
-          <div class="scan-overlay">
-            <div class="spinner" />
-            <p>{pt.scan.preparing(scanner.ocrProgress)}</p>
-          </div>
-        )}
-        {scanner.cameraState === 'ready' && scanner.ocrFailed && (
-          <div class="scan-overlay scan-overlay-msg">
-            <div class="scan-denied-emoji">📴</div>
-            <p>{pt.scan.ocrUnavailable}</p>
-            <button class="miss-action" type="button" onClick={() => setShowManual(true)}>
-              📝 {pt.scan.manualOpen}
-            </button>
-          </div>
-        )}
-        {scanner.cameraState === 'denied' && (
-          <div class="scan-overlay scan-denied">
-            <div class="scan-denied-emoji">📷</div>
-            <h2>{pt.scan.cameraDenied}</h2>
-            <p>{pt.scan.cameraDeniedHint}</p>
-            <button class="btn btn-primary" onClick={scanner.retryCamera}>
-              {pt.scan.retry}
-            </button>
-          </div>
-        )}
-
-        {/* Multi-sticker reads (several backs at once) stay a full-camera overlay panel. */}
-        {multi && <MultiResult items={multi} />}
-
-        {/* Bottom dock — recent reads sit above the verdict, both stay visible. */}
-        <div class="cam-bottom">
-          {recent.length > 0 && (
-            <>
-              <div class="recent-cap">{pt.scan.recentCap}</div>
-              <div class="recent" aria-label={pt.scan.recent}>
-                {recent.slice(0, 3).map((r) => (
-                  <div key={r.id} class="rd">
-                    <div class="rc">{r.label}</div>
-                    <div class={r.outcome === 'owned' ? 'rs rep' : 'rs nova'}>
-                      {r.outcome === 'owned' ? pt.scan.recentRep : pt.scan.recentNew}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </>
-          )}
-          {verdict && !multi && (
-            <Verdict
-              state={verdict}
-              onManual={() => setShowManual(true)}
-              onWrong={handleWrong}
-            />
-          )}
-        </div>
-      </div>
-
-      {showManual && (
-        <div class="manual-sheet">
-          <form class="manual-form" onSubmit={submitManual}>
-            <h2 class="manual-title">{pt.scan.manualEntry}</h2>
-            <input
-              class="manual-input"
-              type="text"
-              inputMode="text"
-              autocomplete="off"
-              autocapitalize="characters"
-              placeholder={pt.scan.manualPlaceholder}
-              value={manualValue}
-              onInput={(e) => setManualValue((e.currentTarget as HTMLInputElement).value)}
-              autofocus
-            />
-            <div class="manual-actions">
-              <button
-                class="btn btn-ghost"
-                type="button"
-                onClick={() => setShowManual(false)}
-              >
-                {pt.scan.manualCancel}
-              </button>
-              <button class="btn btn-primary" type="submit">
-                {pt.scan.manualConfirm}
-              </button>
-            </div>
-            {/* Tertiary: jump to the same "Colar lista" import flow (a paste of many codes),
-                a quieter affordance below the type-one-code group. */}
-            <button
-              class="manual-import"
-              type="button"
-              onClick={() => {
-                setShowManual(false);
-                setShowImport(true);
-              }}
-            >
-              📋 {pt.collection.importCta}
-            </button>
-          </form>
-        </div>
-      )}
-
+          </>
+        }
+        manualExtra={
+          <button
+            class="manual-import"
+            type="button"
+            onClick={() => {
+              setShowManual(false);
+              setShowImport(true);
+            }}
+          >
+            📋 {pt.collection.importCta}
+          </button>
+        }
+      />
       {showImport && (
         <ImportSheet
           collection={collection}
@@ -481,6 +357,6 @@ export function ScanScreen({
           }}
         />
       )}
-    </div>
+    </>
   );
 }
