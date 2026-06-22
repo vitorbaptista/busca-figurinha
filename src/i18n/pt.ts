@@ -13,26 +13,45 @@ export const pt = {
   },
 
   onboarding: {
-    slides: [
-      {
-        emoji: '📸',
-        title: 'Escaneie e descubra',
-        text: 'Mostre cada figurinha pra câmera e o app diz na hora se você precisa ou se é repetida.',
-      },
-      {
-        emoji: '🔃',
-        title: 'Mostre o verso',
-        text: 'Deixe o celular na mesa, de tela pra cima, e mostre o VERSO da figurinha pra câmera da frente — onde fica o codiguinho (ex: CIV 12). Dá pra trocar pra câmera de trás no botão.',
-      },
-      {
-        emoji: '🟢',
-        title: 'Verde guarda, vermelho não',
-        text: 'Verde = você precisa, GUARDAR! Vermelho = você já tem, é repetida.',
-      },
-    ],
-    next: 'Próximo',
-    start: 'Começar',
     skip: 'Pular',
+    back: 'Voltar',
+
+    // Tela 1 — boas-vindas + a demonstração do valor (uma leitura ao vivo, em loop).
+    welcomeTitle: 'Guardo ou é repetida?',
+    welcomeText:
+      'Mostre o verso da figurinha pra câmera e o app responde na hora. Sem digitar, sem internet.',
+    namePlaceholder: 'Seu nome ou apelido',
+    start: 'Bora!',
+    // Textos do mini-demo (o veredito que pisca em loop).
+    demoBackLabel: 'Verso',
+    demoNeeded: 'GUARDAR',
+    demoOwned: 'REPETIDA',
+
+    // Tela 2 — de quem são as figurinhas.
+    whoseTitle: (name: string) =>
+      name ? `Bora, ${name}! Vai escanear de quem?` : 'Vai escanear figurinhas de quem?',
+    whoseMine: 'As minhas',
+    whoseMineSub: 'Ver o que eu guardo e o que é repetida',
+    whoseOther: 'De outra pessoa',
+    whoseOtherSub: 'Ver o que serve pra mim no maço da pessoa',
+
+    // Tela 3 — tem a lista do que procura? (só quando é de outra pessoa)
+    listTitle: 'Você tem a lista do que procura?',
+    listText: 'Tipo aquela do grupo do WhatsApp. Eu guardo ela na sua lista do que falta.',
+    listYes: 'Tenho a lista',
+    listYesSub: 'Colo aqui o que eu procuro',
+    listNo: 'Não tenho',
+    listNoSub: 'Escaneio e vejo o que serve depois',
+
+    // Tela 4 — colar a lista (reusa o parser de importação).
+    pasteTitle: 'Cola o que você procura',
+    pasteText: 'Cole a lista do WhatsApp (ou de outro app). Eu reconheço os códigos.',
+    pastePlaceholder: 'Ex: BRA 3, 6, 10\nMEX 12\nARG 4, 9, 14…',
+    pasteLoad: 'Pronto, é isso',
+    pasteRecognized: (n: number) =>
+      n === 1 ? '1 figurinha reconhecida ✓' : `${n} figurinhas reconhecidas ✓`,
+    pasteNone: 'Não reconheci nenhuma ainda — confere o texto.',
+    pasteSkip: 'Escanear sem lista',
   },
 
   scan: {
