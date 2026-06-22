@@ -3,6 +3,19 @@
 Notable changes to the sticker scanner. Newest first. No formal releases yet (deploys on push to
 `main`), so entries are grouped by date. Keep this updated when you ship something notable.
 
+## 2026-06-22 — Importar a lista: botão mostra quantas achou e "Preciso" preenche o álbum
+
+### Changed
+- Na tela **Importar a lista**, o botão de carregar agora **mostra quantas figurinhas o app achou**:
+  começa desligado em "Carregar lista" e vira "Carregar 1 figurinha", "Carregar 2 figurinhas"… à
+  medida que você cola a lista.
+- **Colar o que você precisa já preenche o resto do álbum.** Se você diz que **precisa** de algumas
+  figurinhas (ex: BRA1, BRA2, BRA5), o app assume que você **tem todas as outras** e marca o restante
+  como suas na coleção. A tela avisa antes de salvar.
+
+### Removed
+- O botão **"Colar da área de transferência"** saiu — é só colar direto no campo de texto.
+
 ## 2026-06-22 — Pilha pro amigo: as que você pegou não viram repetidas dele
 
 ### Changed
