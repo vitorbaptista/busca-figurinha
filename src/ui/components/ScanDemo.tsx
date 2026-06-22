@@ -1,5 +1,8 @@
 import { useEffect, useState } from 'preact/hooks';
 import { pt } from '../../i18n/pt';
+// The official FIFA World Cup 2026 mark (the "26" with the trophy), traced to a monochrome vector and
+// cropped to drop its baked-in code pill — so the demo can overlay its own changing code pill.
+import fifa26 from './fifa26.svg';
 
 /** The onboarding value-prop demo: a looping re-creation of the real scan→verdict moment, built
  *  from the app's own Banca visual language (the mira slot + gold sweep + the verdict ticket). It
@@ -46,14 +49,8 @@ export function ScanDemo() {
           <span class="corner bl" />
           <span class="corner br" />
           <div class="demo-back">
-            <div class="demo-back-lic">
-              <span class="demo-back-fifa">FIFA</span>
-              <span class="demo-back-wc">World Cup 2026</span>
-            </div>
-            <div class="demo-back-box">
-              <span class="demo-back-pill">{beat.code}</span>
-              <span class="demo-back-panini">PANINI</span>
-            </div>
+            <span class="demo-back-pill">{beat.code}</span>
+            <img class="demo-back-logo" src={fifa26} alt="" />
           </div>
           <div class="demo-sweep" />
         </div>

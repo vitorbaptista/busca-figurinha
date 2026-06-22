@@ -502,12 +502,12 @@ button {
 }
 .demo-mira {
   position: relative;
-  width: 100%;
-  aspect-ratio: 236 / 150;
+  width: 58%;
+  margin: 0 auto 16px;
+  aspect-ratio: 5 / 7;
   border: 3px dashed var(--cream);
   border-radius: 8px;
   background: rgba(244, 236, 216, 0.06);
-  margin-bottom: 18px;
   display: grid;
   place-items: center;
 }
@@ -541,77 +541,40 @@ button {
   border-left: 0;
   border-top: 0;
 }
-/* A stylized Panini back (album-twin language, not a photo): a light card with the FIFA World Cup
-   licensing block on the left and the dark code box on the right — the distinctive mark of the real
-   back, and exactly the dark pill the scanner detects. */
+/* A stylized Panini back, PORTRAIT like the real sticker: the official FIFA World Cup 2026 mark
+   (the "26" trophy) centred on a light card, with the code in a dark pill at the top-right — exactly
+   the real layout, and the pill is the dark mark the scanner locks onto. */
 .demo-back {
-  display: flex;
-  align-items: stretch;
-  gap: 7px;
+  position: relative;
   width: 84%;
-  aspect-ratio: 3 / 2;
-  background: var(--cream);
-  color: var(--ink);
+  aspect-ratio: 5 / 7;
+  background: #edecf2;
   border: 2px solid var(--ink);
-  border-radius: 5px;
-  padding: 7px;
+  border-radius: 6px;
   box-shadow: 2px 2px 0 var(--paper-edge);
+  display: grid;
+  place-items: center;
   animation: pop 0.4s ease;
 }
-.demo-back-lic {
-  flex: 1;
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  gap: 2px;
-  text-align: left;
+.demo-back-logo {
+  width: 58%;
+  height: auto;
 }
-.demo-back-fifa {
+/* the dark code pill, top-right like the real back — the part the scanner reads, kept legible */
+.demo-back-pill {
+  position: absolute;
+  top: 7%;
+  right: 7%;
+  background: var(--ink);
+  color: #fff;
   font-family: var(--font-head);
   font-weight: 700;
-  font-size: 0.82rem;
+  font-size: 0.92rem;
   letter-spacing: 0.04em;
   line-height: 1;
-}
-.demo-back-wc {
-  font-family: var(--font-head);
-  font-weight: 600;
-  font-size: 0.5rem;
-  letter-spacing: 0.05em;
-  line-height: 1.1;
-  text-transform: uppercase;
-  color: var(--kraft-text);
-}
-.demo-back-box {
-  flex: none;
-  width: 46%;
-  background: var(--ink);
-  border-radius: 3px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: space-between;
-  padding: 6px 5px 5px;
-}
-.demo-back-pill {
-  background: #fff;
-  color: var(--ink);
-  font-family: var(--font-head);
-  font-weight: 700;
-  font-size: 1rem;
-  letter-spacing: 0.03em;
-  line-height: 1;
-  padding: 3px 11px 2px;
+  padding: 4px 11px 3px;
   border-radius: var(--radius-pill);
   white-space: nowrap;
-}
-.demo-back-panini {
-  font-family: var(--font-head);
-  font-weight: 700;
-  font-size: 0.4rem;
-  letter-spacing: 0.2em;
-  color: rgba(244, 236, 216, 0.72);
 }
 .demo-sweep {
   position: absolute;
