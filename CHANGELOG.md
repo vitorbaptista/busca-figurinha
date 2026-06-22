@@ -3,6 +3,17 @@
 Notable changes to the sticker scanner. Newest first. No formal releases yet (deploys on push to
 `main`), so entries are grouped by date. Keep this updated when you ship something notable.
 
+## 2026-06-21 — Trocar: WhatsApp e QR Code lado a lado (e sem o "Copiar lista")
+
+### Changed
+- **"Enviar no WhatsApp" e "Mostrar QR Code" agora ficam lado a lado**, como dois jeitos do mesmo
+  objetivo: mandar sua lista — um pela internet (WhatsApp), outro pessoalmente (QR Code). O "Conferir
+  figurinhas do amigo" continua em cima, sozinho (é outra coisa: ver a lista do amigo).
+
+### Removed
+- **O botão "Copiar lista" saiu.** O próprio "Enviar no WhatsApp" já copia a lista pra você colar
+  quando o compartilhar do celular não está disponível, então o botão separado era redundante.
+
 ## 2026-06-21 — Trocar: WhatsApp e QR Code no topo (mais fáceis de achar)
 
 ### Changed

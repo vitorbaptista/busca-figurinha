@@ -19,7 +19,6 @@ import {
 } from '../../domain/friendTrade';
 import {
   previewTextFor,
-  copyTradeList,
   shareLinkFor,
   type ShareTradesResult,
 } from '../../domain/share';
@@ -236,14 +235,6 @@ export function TradeScreen({
     const result = await onShare({ ...myPayload, name: userName() });
     if (result === 'copied') flash(pt.trade.copied);
     else if (result === 'unavailable') flash(pt.trade.copyFail);
-  };
-
-  const copy = async () => {
-    flash(
-      (await copyTradeList({ ...myPayload, name: userName() }, checklist))
-        ? pt.trade.copied
-        : pt.trade.copyFail,
-    );
   };
 
   // The receiver tapped "tenho"/"quero" on a friend's link and hit Responder. DEFERRED WRITE: commit
@@ -510,26 +501,35 @@ export function TradeScreen({
             </span>
           </button>
 
-          <button
-            class="conferir-cta trade-qr-toggle"
-            aria-expanded={showQr}
-            aria-controls="trade-qr-panel"
-            onClick={() => setShowQr((s) => !s)}
-          >
-            <span class="conferir-cta-emoji" aria-hidden="true">
-              🔳
-            </span>
-            <span class="conferir-cta-text">
-              <b>{pt.trade.qrCta}</b>
-              <small>{pt.trade.qrCtaHint}</small>
-            </span>
-            <span class="conferir-cta-caret" aria-hidden="true">
-              {showQr ? '▾' : '▸'}
-            </span>
-          </button>
+          {/* Share my list — two methods of one goal, side by side: WhatsApp (online) and a QR Code
+              for in-person. The QR opens inline below the row; the WhatsApp button itself falls back to
+              copying the list when the native share sheet isn't available, so there's no separate
+              "Copiar" button. withName captures the user's name once before the first signed share. */}
+          <div class="share-row">
+            <button class="share-btn share-wa" onClick={() => withName(share)}>
+              <span class="share-emoji" aria-hidden="true">
+                📲
+              </span>
+              <span class="share-label">{pt.trade.shareWhats}</span>
+            </button>
+            <button
+              class="share-btn share-qr"
+              aria-expanded={showQr}
+              aria-controls="trade-qr-panel"
+              onClick={() => setShowQr((s) => !s)}
+            >
+              <span class="share-emoji" aria-hidden="true">
+                🔳
+              </span>
+              <span class="share-label">{pt.trade.qrCta}</span>
+              <span class="share-caret" aria-hidden="true">
+                {showQr ? '▾' : '▸'}
+              </span>
+            </button>
+          </div>
           {/* In-person QR: the friend points their camera at this and opens your exact list (same deep
-              link as the WhatsApp share) — no typing, no app. Collapsed by default so the cluster stays
-              compact; built here (not as a top-level const) because shareLink only exists in this branch. */}
+              link as the WhatsApp share) — no typing, no app. Collapsed by default; built here (not as a
+              top-level const) because shareLink only exists in this branch. */}
           {showQr && (
             <section class="trade-qr" id="trade-qr-panel">
               <span class="ptag">{pt.trade.qrTag}</span>
@@ -537,18 +537,6 @@ export function TradeScreen({
               <p class="trade-qr-hint">{pt.trade.qrHint}</p>
             </section>
           )}
-
-          {/* Online: WhatsApp is the green hero; Copiar is the quiet fallback (its toast points back
-              here). withName captures the user's name once before the first signed share. */}
-          <button class="btn-wa" onClick={() => withName(share)}>
-            <span class="wa" aria-hidden="true">
-              📲
-            </span>{' '}
-            {pt.trade.shareWhats}
-          </button>
-          <button class="btn-copy" onClick={() => withName(copy)}>
-            {pt.trade.copy}
-          </button>
         </div>
 
         <section class="trade-section">
