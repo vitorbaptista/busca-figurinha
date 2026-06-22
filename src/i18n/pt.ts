@@ -135,7 +135,16 @@ export const pt = {
     finishTitle: 'Terminar a troca',
     finishPileCount: 'na pilha',
     finishTakeCount: 'pra você',
-    takenEmpty: 'Você não precisa de nenhuma dessa pilha — mas ainda dá pra mandar a lista pro amigo.',
+    takenEmpty: 'Você não precisa de nenhuma dessa pilha — mas ainda dá pra mostrar o álbum pro amigo.',
+    // Done state: shown after the CTA fires — QR + warm copy + close.
+    albumDoneTitle: 'Tá pronto pra entregar! 🎉',
+    albumDoneLead: (n: number) =>
+      n === 1
+        ? 'Você escaneou 1 figurinha da pilha dele. Mostra esse QR pro seu amigo: é só apontar a câmera e as figurinhas entram no álbum dele na hora.'
+        : `Você escaneou ${n} figurinhas da pilha dele. Mostra esse QR pro seu amigo: é só apontar a câmera e as figurinhas entram no álbum dele na hora.`,
+    albumDoneCta: 'Pronto, beleza!',
+    // CTA label when taken.length === 0 (nothing to save, but still show the album QR).
+    showAlbumCta: 'Mostrar o álbum pro amigo',
   },
 
   report: {
@@ -180,18 +189,10 @@ export const pt = {
   // friend opens it and the whole pile lands in THEIR álbum — and the ones you did NOT take become
   // their repetidas (you took the others' dupes). (Receiver copy is the import half.)
   pile: {
-    shareCta: '📲 Mandar a pilha pro amigo',
-    shareTitle: 'Manda o álbum pro seu amigo! 📲',
-    shareLead: (n: number) =>
-      n === 1
-        ? 'Você leu 1 figurinha da pilha dele. Ele abre esse código e ela já entra no álbum dele — do jeito mais rápido de começar.'
-        : `Você leu ${n} figurinhas da pilha dele. Ele abre esse código e elas já entram no álbum dele — do jeito mais rápido de começar.`,
     qrAria: 'Código QR com as figurinhas escaneadas',
-    qrHint: 'Peça pro seu amigo abrir a câmera e apontar pra esse código.',
     shareWhats: 'Mandar no WhatsApp',
     shareCopied: 'Link copiado!',
     shareFail: 'Não rolou compartilhar. Mostre o QR pro seu amigo.',
-    close: 'Fechar',
     // Receiver half: a friend scanned my pile and sent me the link.
     importTitle: (name?: string) =>
       name ? `${name} escaneou suas figurinhas! 🎉` : 'Um amigo escaneou suas figurinhas! 🎉',
