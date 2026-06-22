@@ -3,6 +3,13 @@
 Notable changes to the sticker scanner. Newest first. No formal releases yet (deploys on push to
 `main`), so entries are grouped by date. Keep this updated when you ship something notable.
 
+## 2026-06-22 — Voltar (Back) volta para a aba anterior, em vez de sair do app
+
+### Changed
+- **O botão "Voltar" do navegador/celular agora volta para a última aba que você abriu** (ex.: de
+  "Trocar" para "Coleção"), em vez de fechar o app. Cada troca de aba vira um passo no histórico;
+  quando você volta até o começo, aí sim o "Voltar" sai do app, como antes.
+
 ## 2026-06-22 — Conferir do amigo: manda a pilha dele pra ele começar o álbum (QR/link)
 
 ### Added
