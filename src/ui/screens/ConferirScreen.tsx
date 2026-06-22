@@ -384,7 +384,7 @@ export function ConferirScreen({ collection, friendLists, settings, onBack }: Co
                   aria-label={pt.scan.manualEntry}
                   title={pt.scan.manualEntry}
                 >
-                  ⌨️
+                  📝
                 </button>
                 <button
                   class="cam-icon-btn"
@@ -430,7 +430,7 @@ export function ConferirScreen({ collection, friendLists, settings, onBack }: Co
             <div class="scan-denied-emoji">📴</div>
             <p>{pt.scan.ocrUnavailable}</p>
             <button class="miss-action" type="button" onClick={() => setShowManual(true)}>
-              ⌨️ {pt.scan.manualOpen}
+              📝 {pt.scan.manualOpen}
             </button>
           </div>
         )}

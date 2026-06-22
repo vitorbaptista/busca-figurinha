@@ -26,6 +26,7 @@ import { createAutoCapture } from '../../ocr/autoCapture';
 import { createScreenWakeLock } from '../wakeLock';
 import { Verdict, type VerdictState } from '../components/Verdict';
 import { MultiResult, type ScanResultItem } from '../components/MultiResult';
+import { ImportSheet } from '../components/ImportSheet';
 
 interface ScanScreenProps {
   session: ScanSession;
@@ -34,9 +35,13 @@ interface ScanScreenProps {
   repeats: CollectionStore;
   /** Saved friend lists — radar source for the "📌 serve pro {nome}" verdict ribbon. */
   friendLists: FriendListsStore;
+  /** Wishlist store — the "Preciso" destination when importing a list from the scan sheet. */
+  wants: CollectionStore;
   settings: SettingsStore;
   onPersist: () => void;
   onFinish: () => void;
+  /** Navigate to the Coleção screen (after a "Tenho" import finishes). */
+  onGoToCollection: () => void;
 }
 
 // Opt-in debug readout (open with ?debug): shows raw OCR text + matched codes and
@@ -66,9 +71,11 @@ export function ScanScreen({
   collection,
   repeats,
   friendLists,
+  wants,
   settings,
   onPersist,
   onFinish,
+  onGoToCollection,
 }: ScanScreenProps) {
   // Dedicated, Preact-untouched layer for the <video>. Preact never renders
   // children into it, so mounting the camera element by hand is safe.
@@ -111,6 +118,7 @@ export function ScanScreen({
     settings.get().camera === 'back' ? 'environment' : 'user',
   );
   const [showManual, setShowManual] = useState(false);
+  const [showImport, setShowImport] = useState(false);
   const [manualValue, setManualValue] = useState('');
   const [debugText, setDebugText] = useState('');
   // Live "is it reading?" state for the normal (non-debug) UI — drives the mira scanner
@@ -679,7 +687,7 @@ export function ScanScreen({
                   aria-label={pt.scan.manualEntry}
                   title={pt.scan.manualEntry}
                 >
-                  ⌨️
+                  📝
                 </button>
                 <button
                   class="cam-icon-btn"
@@ -742,7 +750,7 @@ export function ScanScreen({
             <div class="scan-denied-emoji">📴</div>
             <p>{pt.scan.ocrUnavailable}</p>
             <button class="miss-action" type="button" onClick={() => setShowManual(true)}>
-              ⌨️ {pt.scan.manualOpen}
+              📝 {pt.scan.manualOpen}
             </button>
           </div>
         )}
@@ -790,6 +798,7 @@ export function ScanScreen({
       {showManual && (
         <div class="manual-sheet">
           <form class="manual-form" onSubmit={submitManual}>
+            <h2 class="manual-title">{pt.scan.manualEntry}</h2>
             <input
               class="manual-input"
               type="text"
@@ -813,8 +822,33 @@ export function ScanScreen({
                 {pt.scan.manualConfirm}
               </button>
             </div>
+            {/* Tertiary: jump to the same "Colar lista" import flow (a paste of many codes),
+                a quieter affordance below the type-one-code group. */}
+            <button
+              class="manual-import"
+              type="button"
+              onClick={() => {
+                setShowManual(false);
+                setShowImport(true);
+              }}
+            >
+              📋 {pt.collection.importCta}
+            </button>
           </form>
         </div>
+      )}
+
+      {showImport && (
+        <ImportSheet
+          collection={collection}
+          repeats={repeats}
+          wants={wants}
+          onClose={() => setShowImport(false)}
+          onSeeCollection={() => {
+            setShowImport(false);
+            onGoToCollection();
+          }}
+        />
       )}
     </div>
   );
