@@ -17,6 +17,8 @@ export interface ScanShellProps {
   ocrFailed: boolean;
   ocrProgress: number;
   reading: boolean;
+  /** Hide the idle hint (the screen owns this — e.g. while a verdict/multi card is docked). */
+  hideHint: boolean;
   facing: 'user' | 'environment';
   videoLayerRef: RefObject<HTMLDivElement>;
   onFlip: () => void;
@@ -60,6 +62,7 @@ export function ScanShell({
   ocrFailed,
   ocrProgress,
   reading,
+  hideHint,
   facing,
   videoLayerRef,
   onFlip,
@@ -154,7 +157,7 @@ export function ScanShell({
               <span class="corner br" aria-hidden="true" />
               {cameraState === 'loading' && <span class="cole">{pt.scan.slotLabel}</span>}
             </div>
-            {ocrReady && !bottom && (
+            {ocrReady && !hideHint && (
               <span class={reading ? 'hint reading' : 'hint'}>
                 <span class="pulse" aria-hidden="true" />
                 {reading ? pt.scan.reading : holdStillText}

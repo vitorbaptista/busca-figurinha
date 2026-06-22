@@ -285,6 +285,7 @@ export function ScanScreen({
         manualOpen={showManual}
         setManualOpen={setShowManual}
         onManualSubmit={(v) => scanner.submitManualCode(v)}
+        hideHint={!!verdict || !!multi}
         onCamClick={DEBUG ? scanner.captureNow : undefined}
         debugBeat={DEBUG ? scanner.debug.beat : undefined}
         debugText={DEBUG ? scanner.debug.text : undefined}
