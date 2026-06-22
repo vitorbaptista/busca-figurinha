@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { hashFromScreen, screenFromHash, sectionUrl } from './routing';
+import { hashFromScreen, nextHistoryStep, screenFromHash, sectionUrl } from './routing';
 
 describe('screenFromHash', () => {
   it('maps each known slug to its screen', () => {
@@ -61,5 +61,44 @@ describe('sectionUrl', () => {
 
   it('writes the escanear slug for the ephemeral report screen', () => {
     expect(sectionUrl({ pathname: '/', search: '' }, 'report', false)).toBe('/#escanear');
+  });
+});
+
+describe('nextHistoryStep', () => {
+  const loc = (hash: string, search = '') => ({ pathname: '/', search, hash });
+
+  it('replaces (no phantom entry) on the first sync when the hash is not yet canonical', () => {
+    expect(nextHistoryStep(loc(''), 'scan', false, true)).toEqual({
+      action: 'replace',
+      url: '/#escanear',
+    });
+  });
+
+  it('does nothing when the URL already matches (e.g. a Back/Forward just synced it)', () => {
+    expect(nextHistoryStep(loc('#trocar'), 'trade', false, false)).toEqual({
+      action: 'none',
+      url: '/#trocar',
+    });
+  });
+
+  it('pushes on a later in-app navigation so Back returns to the previous section', () => {
+    expect(nextHistoryStep(loc('#escanear'), 'trade', false, false)).toEqual({
+      action: 'push',
+      url: '/#trocar',
+    });
+  });
+
+  it('replaces to strip a consumed ?t= friend link on the first sync without a phantom entry', () => {
+    expect(nextHistoryStep(loc('#trocar', '?t=ABC'), 'trade', true, true)).toEqual({
+      action: 'replace',
+      url: '/#trocar',
+    });
+  });
+
+  it('is a no-op once the friend query is already stripped', () => {
+    expect(nextHistoryStep(loc('#trocar'), 'trade', true, false)).toEqual({
+      action: 'none',
+      url: '/#trocar',
+    });
   });
 });

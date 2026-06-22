@@ -112,18 +112,24 @@ report, settings) are conventional. Reading these files in order explains the sy
   returns instantly. This is what keeps a busy multi-sticker frame fast.
 - **Camera frames are not mirrored** by `getUserMedia` (mirroring is only a display choice), so the
   OCR canvas reads correctly for the front camera with no flip.
-- **URL-hash routing has one writer, and it's `replaceState`.** `src/ui/routing.ts`'s `sectionUrl`
-  is the SOLE place the address bar is written; `app.tsx` calls it from a single `useEffect`. Don't
-  add a second `history.replaceState`/`pushState`/`location.hash =` site — two writers with
-  different URL shapes fight (this is why the old `clearTradeQuery` was folded in; the `?t=`
-  friend-link strip rides the same effect via its `dropQuery` arg). Use `replaceState`, **never**
-  `pushState`/`location.hash =`: tab switches must NOT pile up history (Back exits the app), and
-  `replaceState` doesn't fire `hashchange`, so there's no sync loop — there is deliberately **no
-  `hashchange` listener**. `sectionUrl` must keep `location.pathname` (the GH-Pages base path) and
-  `location.search` (the `?debug`/`?capture`/`?record` flags). The **`report` screen is ephemeral**
-  (built from an already-cleared session) so it can't be deep-linked: it writes `#escanear` and is
-  absent from the reverse map, so `#report` never parses back. Keep `routing.ts` pure (no `location`
-  access) so it unit-tests in node — see `routing.test.ts`.
+- **URL-hash routing has one writer effect.** `src/ui/routing.ts`'s `sectionUrl`/`nextHistoryStep`
+  decide the URL; `app.tsx` performs the single `history` write from one `useEffect`. Don't add a
+  second `history.replaceState`/`pushState`/`location.hash =` site — two writers with different URL
+  shapes fight (this is why the old `clearTradeQuery` was folded in; the `?t=` friend-link strip
+  rides the same effect via its `dropQuery` arg). The contract (`nextHistoryStep`, pure + node-tested):
+  the **first** sync after load `replaceState`s (canonicalize the hash / strip a consumed `?t=` with
+  no phantom Back step); every later in-app section change `pushState`s, so the browser **Back button
+  returns to the previous section** (GH #73). Back/Forward is caught by a `popstate` listener that
+  maps the restored hash → screen (`screenFromHash`) — it lands on exactly the URL the writer would
+  produce, so `nextHistoryStep` returns `none` and nothing is re-written: no loop. Still **never**
+  assign `location.hash =`, and there is deliberately **no `hashchange` listener** (push/replaceState
+  don't fire it; `popstate` is the Back/Forward signal). `sectionUrl` must keep `location.pathname`
+  (the GH-Pages base path) and `location.search` (the `?debug`/`?capture`/`?record` flags). The
+  **`report` (and `conferir`) screen is ephemeral** (built from an already-cleared session) so it
+  can't be deep-linked: it writes `#escanear` and is absent from the reverse map, so `#report` never
+  parses back — and because it reuses Escanear's slug it gets `none` (no entry of its own), so browser
+  Back from it lands on the *previous section* (its in-screen "Voltar" returns to Escanear). Keep
+  `routing.ts` pure (no `location` access) so it unit-tests in node — see `routing.test.ts`.
 
 ## Hard-won lessons (read before "optimizing")
 

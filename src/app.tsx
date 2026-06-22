@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'preact/hooks';
+import { useEffect, useMemo, useRef, useState } from 'preact/hooks';
 import type { FunctionComponent } from 'preact';
 import type { ScanRecord, ScanSession, SessionReport } from './types';
 import { checklist } from './data/checklist';
@@ -11,7 +11,7 @@ import { readPilePayload } from './domain/pileShare';
 import type { TradePayload } from './domain/tradeList';
 import { useStore } from './ui/hooks';
 import { Nav, type Screen } from './ui/Nav';
-import { screenFromHash, sectionUrl } from './ui/routing';
+import { nextHistoryStep, screenFromHash } from './ui/routing';
 import { Onboarding } from './ui/Onboarding';
 import { InstallPrompt } from './ui/InstallPrompt';
 import { usePwaInstall } from './ui/usePwaInstall';
@@ -110,6 +110,9 @@ export function App() {
   const [screen, setScreen] = useState<Screen>(() =>
     initialFriendPayload ? 'trade' : screenFromHash(typeof location === 'undefined' ? '' : location.hash),
   );
+  // The first URL sync after load canonicalizes the hash in place (replaceState, no phantom Back
+  // step); every later section change pushes, so the browser Back button returns to the prior section.
+  const firstUrlSync = useRef(true);
   const session = useMemo(loadSession, []);
   const [report, setReport] = useState<SessionReport | null>(null);
   const [friendPayload, setFriendPayload] = useState<TradePayload | null>(initialFriendPayload);
@@ -126,17 +129,33 @@ export function App() {
 
   const onboarded = settings.get().onboarded;
 
-  // Mirror the active section into the URL hash so a refresh/shared link restores it, and (once a
-  // ?t= friend link has been read into state) strip that query so a reload doesn't re-open the
-  // list. replaceState (not assigning location.hash) adds no history entry — switching tabs doesn't
-  // pile up Back steps — and doesn't fire `hashchange`, so there's no sync loop. sectionUrl keeps
-  // pathname (GH-Pages base) + the ?debug/?capture flags.
+  // Keep the active section and the URL hash in sync, two ways:
+  //   • Section → URL: one writer effect. The first sync after load replaceState-canonicalizes the
+  //     hash (and strips a consumed ?t= friend / ?p= pile link) with no phantom history entry; every
+  //     later in-app navigation pushState-s, so the browser Back button returns to the previous
+  //     section (GH #73). sectionUrl keeps pathname (GH-Pages base) + the ?debug/?capture flags.
+  //   • URL → section: a popstate listener maps a Back/Forward to the screen for the restored hash.
+  //     It lands on exactly the URL the writer would produce, so nextHistoryStep returns 'none' and
+  //     nothing is re-written — no loop. (push/replaceState don't fire `hashchange`, so there is
+  //     still deliberately no `hashchange` listener, and we still never assign `location.hash =`.)
+  //     report/conferir share their parent's slug → 'none' → no entry of their own, so browser Back
+  //     from them lands on the previous section (their in-screen "Voltar" returns to the parent).
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const onPopState = () => setScreen(screenFromHash(location.hash));
+    window.addEventListener('popstate', onPopState);
+    return () => window.removeEventListener('popstate', onPopState);
+  }, []);
+
   useEffect(() => {
     if (typeof history === 'undefined' || typeof location === 'undefined') return;
     // Drop the query once a ?t= friend link OR a ?p= pile link has been read into state, so a
-    // reload/back doesn't re-open it. Same single-writer replaceState — no second history site.
+    // reload/back doesn't re-open it.
     const dropQuery = !!initialFriendPayload || !!initialPilePayload;
-    history.replaceState(history.state, '', sectionUrl(location, screen, dropQuery));
+    const step = nextHistoryStep(location, screen, dropQuery, firstUrlSync.current);
+    firstUrlSync.current = false;
+    if (step.action === 'replace') history.replaceState(history.state, '', step.url);
+    else if (step.action === 'push') history.pushState(history.state, '', step.url);
   }, [screen]);
 
   /** Install is opt-in from Ajustes (never auto-prompted). Android (a stashed prompt event) goes
