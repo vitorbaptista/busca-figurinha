@@ -177,6 +177,8 @@ export function TradeScreen({
   // when the friend is gone (e.g. fully traded away) so we never render a detail for a missing id.
   const [selectedFriendId, setSelectedFriendId] = useState<string | null>(null);
   const [showArchived, setShowArchived] = useState(false);
+  // The "Mostrar QR Code" tile in the top action cluster toggles the in-person QR open inline.
+  const [showQr, setShowQr] = useState(false);
   // "Dei essas pro João": the spares leave repeats (a given duplicate is gone; `owned` is untouched —
   // I still have my one) AND leave the friend's needs (they got them). Re-intersect against the FRESH
   // stores at action time (not the render-captured `codes`) so a double-tap or any stale selection can
@@ -490,23 +492,65 @@ export function TradeScreen({
         </div>
       </header>
 
-      {/* Trading in person? Point the camera at the friend's pile and see what to grab. Lives at the
-          TOP of the own-offer view only (never in the cold-receiver/empty branches). */}
-      <button class="conferir-cta" onClick={onConferir}>
-        <span class="conferir-cta-emoji" aria-hidden="true">
-          🔍
-        </span>
-        <span class="conferir-cta-text">
-          <b>{pt.trade.conferirCta}</b>
-          <small>{pt.trade.conferirHint}</small>
-        </span>
-      </button>
-
-      {/* Mockup order: minhas repetidas → o que eu preciso → prévia → ações. Both sticker lists share
-          the same grouped ledger (album group → team tallies), always expanded — no collapse. Each
-          list is wrapped in its own <section> so its sticky header pins only within that section and
-          hands off cleanly to the next instead of overlapping it. */}
       <div class="trade-body">
+        {/* The three ways to trade, surfaced ABOVE the lists so they're reachable without scrolling
+            past them: scan the friend's pile (live), show a QR for them to scan (live), or send the
+            list on WhatsApp (online). Own-offer view only — never in the cold-receiver/empty branches. */}
+        <div class="trade-ways">
+          <button class="conferir-cta" onClick={onConferir}>
+            <span class="conferir-cta-emoji" aria-hidden="true">
+              🔍
+            </span>
+            <span class="conferir-cta-text">
+              <b>{pt.trade.conferirCta}</b>
+              <small>{pt.trade.conferirHint}</small>
+            </span>
+            <span class="conferir-cta-chev" aria-hidden="true">
+              ›
+            </span>
+          </button>
+
+          <button
+            class="conferir-cta trade-qr-toggle"
+            aria-expanded={showQr}
+            aria-controls="trade-qr-panel"
+            onClick={() => setShowQr((s) => !s)}
+          >
+            <span class="conferir-cta-emoji" aria-hidden="true">
+              🔳
+            </span>
+            <span class="conferir-cta-text">
+              <b>{pt.trade.qrCta}</b>
+              <small>{pt.trade.qrCtaHint}</small>
+            </span>
+            <span class="conferir-cta-caret" aria-hidden="true">
+              {showQr ? '▾' : '▸'}
+            </span>
+          </button>
+          {/* In-person QR: the friend points their camera at this and opens your exact list (same deep
+              link as the WhatsApp share) — no typing, no app. Collapsed by default so the cluster stays
+              compact; built here (not as a top-level const) because shareLink only exists in this branch. */}
+          {showQr && (
+            <section class="trade-qr" id="trade-qr-panel">
+              <span class="ptag">{pt.trade.qrTag}</span>
+              <QrCode value={shareLink} ariaLabel={pt.trade.qrAria} class="trade-qr-svg" />
+              <p class="trade-qr-hint">{pt.trade.qrHint}</p>
+            </section>
+          )}
+
+          {/* Online: WhatsApp is the green hero; Copiar is the quiet fallback (its toast points back
+              here). withName captures the user's name once before the first signed share. */}
+          <button class="btn-wa" onClick={() => withName(share)}>
+            <span class="wa" aria-hidden="true">
+              📲
+            </span>{' '}
+            {pt.trade.shareWhats}
+          </button>
+          <button class="btn-copy" onClick={() => withName(copy)}>
+            {pt.trade.copy}
+          </button>
+        </div>
+
         <section class="trade-section">
           <SectionHead
             lead={pt.trade.myRepeatsTitle}
@@ -553,26 +597,6 @@ export function TradeScreen({
           <span class="ptag">{pt.trade.previewTag}</span>
           <pre class="preview-text">{previewText}</pre>
         </div>
-
-        <div class="trade-actions">
-          <button class="btn-wa" onClick={() => withName(share)}>
-            <span class="wa" aria-hidden="true">
-              📲
-            </span>{' '}
-            {pt.trade.shareWhats}
-          </button>
-          <button class="btn-copy" onClick={() => withName(copy)}>
-            {pt.trade.copy}
-          </button>
-        </div>
-
-        {/* QR for in-person trading: show it, the other person scans it and lands on this exact list
-            (same deep link as the WhatsApp share) without typing anything. */}
-        <section class="trade-qr">
-          <span class="ptag">{pt.trade.qrTag}</span>
-          <QrCode value={shareLink} ariaLabel={pt.trade.qrAria} class="trade-qr-svg" />
-          <p class="trade-qr-hint">{pt.trade.qrHint}</p>
-        </section>
 
         {activeFriends.length > 0 && (
           <section class="friends-section">

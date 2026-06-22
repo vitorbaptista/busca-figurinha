@@ -2264,14 +2264,8 @@ html.scan-active body {
   word-break: break-word;
 }
 
-/* actions */
-.trade-actions {
-  margin: 18px 0 16px;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-/* WhatsApp send — the album's keep-green, full print-ticket treatment, biggest CTA */
+/* WhatsApp send — the album's keep-green, full print-ticket treatment, biggest CTA. Now lives in the
+   top action cluster (.trade-ways); the cluster's flex gap owns its spacing. */
 .btn-wa {
   display: flex;
   align-items: center;
@@ -3358,6 +3352,39 @@ html.scan-active body {
 .conferir-cta-text small {
   font-size: 0.82rem;
   color: var(--kraft-text);
+}
+/* trailing affordance on the gold tiles, a shape cue beyond colour: › = navigates to the scanner
+   (Conferir); ▸/▾ = expands the QR in place. */
+.conferir-cta-chev,
+.conferir-cta-caret {
+  flex: none;
+  margin-left: auto;
+  line-height: 1;
+  color: var(--ink);
+}
+.conferir-cta-chev {
+  font-size: 1.5rem;
+}
+.conferir-cta-caret {
+  font-size: 0.95rem;
+}
+
+/* The top action cluster on the own-offer view: the three ways to trade (scan the friend's pile,
+   show a QR, send on WhatsApp), surfaced above the lists so they're reachable without scrolling.
+   First child of .trade-body, so it shares the 16px inset; the flex gap is the single spacing
+   source — the tiles/buttons inside drop their own margins. */
+.trade-ways {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 14px 0 6px;
+}
+.trade-ways .conferir-cta {
+  margin: 0;
+}
+/* the inline QR panel (reused .trade-qr ticket); a little top room for its -11px floating tag */
+.trade-ways .trade-qr {
+  margin: 8px 0 2px;
 }
 
 /* Top-left group: back icon + the running tally */
