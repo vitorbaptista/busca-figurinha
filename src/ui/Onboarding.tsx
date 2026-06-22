@@ -1,9 +1,9 @@
-import { useMemo, useState } from 'preact/hooks';
+import { useState } from 'preact/hooks';
+import type { CollectionStore } from '../types';
 import { pt } from '../i18n/pt';
-import { checklist } from '../data/checklist';
-import { parseImport } from '../domain/importList';
 import { sanitizeName } from '../domain/name';
 import { ScanDemo } from './components/ScanDemo';
+import { ImportSheet } from './components/ImportSheet';
 
 /** What the first-run flow learned about the user, handed back to app.tsx to seed state + route. */
 export interface OnboardingResult {
@@ -11,58 +11,57 @@ export interface OnboardingResult {
   name?: string;
   /** Where to drop the user: their own pile (Escanear) or someone else's (Conferir). */
   start: 'scan' | 'conferir';
-  /** Codes from a pasted "what I'm looking for" list, to seed the wishlist (wants). */
-  wants?: string[];
 }
 
-type Step = 'welcome' | 'whose' | 'list' | 'paste';
+type Step = 'welcome' | 'whose' | 'list';
 
 const PREV: Record<Step, Step> = {
   welcome: 'welcome',
   whose: 'welcome',
   list: 'whose',
-  paste: 'list',
 };
 
 /** First-run onboarding: prove the value (a looping live-scan demo), ask only the first name, then
  *  route the user to the right starting point — their own pile (Escanear) or another person's
- *  (Conferir), optionally seeding a pasted want-list. Replaces the old emoji carousel. */
+ *  (Conferir). On the "outra pessoa" branch they can first paste a list via the real Importar sheet
+ *  (Tenho → coleção, Preciso → wants) and then go straight to scanning. Replaces the old carousel. */
 export function Onboarding({
+  collection,
+  repeats,
+  wants,
   onComplete,
   defaultName,
 }: {
+  collection: CollectionStore;
+  repeats: CollectionStore;
+  wants: CollectionStore;
   onComplete: (result: OnboardingResult) => void;
   /** Pre-fills the name field — so replaying the tutorial from Ajustes keeps the existing name. */
   defaultName?: string;
 }) {
   const [step, setStep] = useState<Step>('welcome');
   const [name, setName] = useState(defaultName ?? '');
-  const [paste, setPaste] = useState('');
+  // The "Tenho a lista" branch opens the real Importar sheet (it writes to the stores itself).
+  const [importing, setImporting] = useState(false);
 
   // Sanitize at the source so the name written to settings (and signed into share links) matches what
   // the rest of the app produces (Ajustes/Trocar route through the same sanitizeName: strips
   // zero-width/control chars, collapses whitespace, caps at 24).
   const cleanName = sanitizeName(name);
-  const finish = (start: 'scan' | 'conferir', wants?: string[]) =>
-    onComplete({ name: cleanName || undefined, start, wants });
-
-  // Recognized codes in the pasted list — recomputed as they type so the count reassures them the
-  // paste worked (the same parser the Importar flow uses). Cheap for an onboarding-sized paste.
-  const pasteCodes = useMemo(
-    () => (paste.trim() ? parseImport(paste, checklist).codes : []),
-    [paste],
-  );
+  const finish = (start: 'scan' | 'conferir') => onComplete({ name: cleanName || undefined, start });
 
   return (
     <div class="onboarding">
-      {step !== 'welcome' && (
+      {step !== 'welcome' && !importing && (
         <button class="onboarding-back" onClick={() => setStep(PREV[step])}>
           ← {pt.onboarding.back}
         </button>
       )}
-      <button class="onboarding-skip" onClick={() => finish('scan')}>
-        {pt.onboarding.skip}
-      </button>
+      {!importing && (
+        <button class="onboarding-skip" onClick={() => finish('scan')}>
+          {pt.onboarding.skip}
+        </button>
+      )}
 
       {step === 'welcome' && (
         <div class="ob-step ob-welcome" key="welcome">
@@ -116,7 +115,7 @@ export function Onboarding({
           <h2 class="ob-headline">{pt.onboarding.listTitle}</h2>
           <p class="ob-sub">{pt.onboarding.listText}</p>
           <div class="ob-choices">
-            <button class="ob-choice" onClick={() => setStep('paste')}>
+            <button class="ob-choice" onClick={() => setImporting(true)}>
               <span class="ob-choice-emoji" aria-hidden="true">
                 📋
               </span>
@@ -138,35 +137,18 @@ export function Onboarding({
         </div>
       )}
 
-      {step === 'paste' && (
-        <div class="ob-step ob-paste" key="paste">
-          <h2 class="ob-headline">{pt.onboarding.pasteTitle}</h2>
-          <p class="ob-sub">{pt.onboarding.pasteText}</p>
-          <textarea
-            class="ob-textarea"
-            value={paste}
-            placeholder={pt.onboarding.pastePlaceholder}
-            aria-label={pt.onboarding.pasteTitle}
-            onInput={(e) => setPaste((e.currentTarget as HTMLTextAreaElement).value)}
-          />
-          <p class={`ob-paste-hint${pasteCodes.length ? ' is-ok' : ''}`} aria-live="polite">
-            {paste.trim()
-              ? pasteCodes.length
-                ? pt.onboarding.pasteRecognized(pasteCodes.length)
-                : pt.onboarding.pasteNone
-              : ''}
-          </p>
-          <button
-            class="btn btn-primary btn-block"
-            disabled={pasteCodes.length === 0}
-            onClick={() => finish('conferir', pasteCodes)}
-          >
-            {pt.onboarding.pasteLoad}
-          </button>
-          <button class="link-btn" onClick={() => finish('conferir')}>
-            {pt.onboarding.pasteSkip}
-          </button>
-        </div>
+      {/* The real "Importar a lista" sheet, reused: paste → Tenho (coleção) / Preciso (wants), with a
+          real "achei N" confirmation, then "Bora escanear!" drops into the scanner. The ✕ cancels back
+          to the list question. It writes to the stores itself, so onComplete only routes. */}
+      {importing && (
+        <ImportSheet
+          collection={collection}
+          repeats={repeats}
+          wants={wants}
+          onClose={() => setImporting(false)}
+          onProceed={() => finish('conferir')}
+          proceedLabel={pt.onboarding.importProceed}
+        />
       )}
     </div>
   );

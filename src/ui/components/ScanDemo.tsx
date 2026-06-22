@@ -46,8 +46,14 @@ export function ScanDemo() {
           <span class="corner bl" />
           <span class="corner br" />
           <div class="demo-back">
-            <span class="demo-back-label">{pt.onboarding.demoBackLabel}</span>
-            <span class="demo-back-code">{beat.code}</span>
+            <div class="demo-back-lic">
+              <span class="demo-back-fifa">FIFA</span>
+              <span class="demo-back-wc">World Cup 2026</span>
+            </div>
+            <div class="demo-back-box">
+              <span class="demo-back-pill">{beat.code}</span>
+              <span class="demo-back-panini">PANINI</span>
+            </div>
           </div>
           <div class="demo-sweep" />
         </div>

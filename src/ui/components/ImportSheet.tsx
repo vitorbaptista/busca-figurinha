@@ -19,6 +19,8 @@ export function ImportSheet({
   wants,
   onClose,
   onSeeCollection,
+  onProceed,
+  proceedLabel,
 }: {
   collection: CollectionStore;
   /** The user's spares — a "Tenho" import clears any STALE repeat marker for a re-owned code (see confirm). */
@@ -30,6 +32,11 @@ export function ImportSheet({
    *  scanner, so the done-screen "Ver a coleção" button actually lands you there). When omitted
    *  (the Coleção caller), the done button just closes — exactly as before. */
   onSeeCollection?: () => void;
+  /** Optional host-controlled "advance" action for the done screen (onboarding: "Bora escanear!" →
+   *  the scanner). When set, it replaces the done-screen primary for BOTH buckets and takes priority
+   *  over onSeeCollection; `proceedLabel` is its button text. onClose (the ✕) stays "cancel". */
+  onProceed?: () => void;
+  proceedLabel?: string;
 }) {
   const [bucket, setBucket] = useState<'have' | 'need'>('have');
   const [text, setText] = useState('');
@@ -190,9 +197,15 @@ export function ImportSheet({
             </p>
             <button
               class="btn btn-primary btn-block"
-              onClick={bucket === 'have' && onSeeCollection ? onSeeCollection : onClose}
+              onClick={
+                onProceed ?? (bucket === 'have' && onSeeCollection ? onSeeCollection : onClose)
+              }
             >
-              {bucket === 'have' ? pt.importList.seeCollection : pt.importList.doneClose}
+              {onProceed
+                ? proceedLabel
+                : bucket === 'have'
+                  ? pt.importList.seeCollection
+                  : pt.importList.doneClose}
             </button>
             <button class="link-btn" onClick={reset}>
               {pt.importList.another}
