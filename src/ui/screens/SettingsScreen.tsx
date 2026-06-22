@@ -148,7 +148,6 @@ export function SettingsScreen({
             onInput={(e) => settings.set({ name: (e.currentTarget as HTMLInputElement).value })}
           />
         </div>
-        <p class="settings-name-hint">{pt.settings.nameHint}</p>
       </section>
 
       <section class="settings-group">
@@ -209,7 +208,12 @@ export function SettingsScreen({
 
       <footer class="settings-footer">
         <p>{pt.settings.version(APP_VERSION)}</p>
-        <p>{pt.settings.credit}</p>
+        <p>
+          {pt.settings.credit}
+          <a href={pt.settings.creditUrl} target="_blank" rel="noopener noreferrer">
+            {pt.settings.creditAuthor}
+          </a>
+        </p>
       </footer>
     </div>
   );

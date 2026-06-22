@@ -1968,6 +1968,10 @@ html.scan-active body {
 .settings-footer p {
   margin: 4px 0;
 }
+.settings-footer a {
+  color: inherit;
+  text-decoration: underline;
+}
 
 /* ===================================================== Trade screen ======= */
 /* "Trocar": your trade offer (repetidas to give + what you need) and a WhatsApp-shareable
@@ -2820,11 +2824,6 @@ html.scan-active body {
   min-height: 44px;
 }
 .settings-name-input::placeholder {
-  color: var(--kraft-text);
-}
-.settings-name-hint {
-  margin: 8px 2px 0;
-  font-size: 0.85rem;
   color: var(--kraft-text);
 }
 
