@@ -502,12 +502,12 @@ button {
 }
 .demo-mira {
   position: relative;
-  width: 100%;
-  aspect-ratio: 236 / 150;
+  width: 58%;
+  margin: 0 auto 16px;
+  aspect-ratio: 5 / 7;
   border: 3px dashed var(--cream);
   border-radius: 8px;
   background: rgba(244, 236, 216, 0.06);
-  margin-bottom: 18px;
   display: grid;
   place-items: center;
 }
@@ -541,83 +541,55 @@ button {
   border-left: 0;
   border-top: 0;
 }
-/* A stylized Panini back (album-twin language, not a photo): a light card with the FIFA World Cup
-   licensing block on the left and the dark code box on the right — the distinctive mark of the real
-   back, and exactly the dark pill the scanner detects. */
+/* A stylized Panini back, PORTRAIT like the real sticker: the official FIFA World Cup 2026 mark
+   (the "26" trophy) BIG and dead-centre on a lavender card, with the code in a readable dark pill at
+   the top-right — exactly the real layout, and the pill is the dark mark the scanner locks onto. */
 .demo-back {
-  display: flex;
-  align-items: stretch;
-  gap: 7px;
+  position: relative;
   width: 84%;
-  aspect-ratio: 3 / 2;
-  background: var(--cream);
-  color: var(--ink);
+  aspect-ratio: 99 / 134;
+  background: #e6e3ef;
   border: 2px solid var(--ink);
-  border-radius: 5px;
-  padding: 7px;
+  border-radius: 6px;
   box-shadow: 2px 2px 0 var(--paper-edge);
+  overflow: hidden;
   animation: pop 0.4s ease;
 }
-.demo-back-lic {
-  flex: 1;
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  gap: 2px;
-  text-align: left;
+/* The logo SVG is cropped to a tight, symmetric viewBox around the mark (so it fills, not floats).
+   It's horizontally centred but sits a little BELOW centre, leaving the top-right corner clear so the
+   code pill has breathing room above it — like the real back's header strip. */
+.demo-back-logo {
+  position: absolute;
+  width: 54%;
+  height: auto;
+  left: 50%;
+  top: 57%;
+  transform: translate(-50%, -50%);
 }
-.demo-back-fifa {
-  font-family: var(--font-head);
-  font-weight: 700;
-  font-size: 0.82rem;
-  letter-spacing: 0.04em;
-  line-height: 1;
-}
-.demo-back-wc {
-  font-family: var(--font-head);
-  font-weight: 600;
-  font-size: 0.5rem;
-  letter-spacing: 0.05em;
-  line-height: 1.1;
-  text-transform: uppercase;
-  color: var(--kraft-text);
-}
-.demo-back-box {
-  flex: none;
-  width: 46%;
-  background: var(--ink);
-  border-radius: 3px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: space-between;
-  padding: 6px 5px 5px;
-}
+/* the dark code pill, top-right like the real back — kept legible (the part the scanner reads) */
 .demo-back-pill {
-  background: #fff;
-  color: var(--ink);
+  position: absolute;
+  top: 6%;
+  right: 7%;
+  z-index: 1;
+  background: var(--ink);
+  color: #fff;
   font-family: var(--font-head);
   font-weight: 700;
-  font-size: 1rem;
-  letter-spacing: 0.03em;
+  font-size: 0.95rem;
+  letter-spacing: 0.05em;
   line-height: 1;
-  padding: 3px 11px 2px;
+  padding: 4px 12px 3px;
   border-radius: var(--radius-pill);
   white-space: nowrap;
-}
-.demo-back-panini {
-  font-family: var(--font-head);
-  font-weight: 700;
-  font-size: 0.4rem;
-  letter-spacing: 0.2em;
-  color: rgba(244, 236, 216, 0.72);
 }
 .demo-sweep {
   position: absolute;
   inset: 0;
+  /* above the card + its code pill (z-index 1) so the scan line passes OVER everything, not behind */
+  z-index: 4;
   overflow: hidden;
-  border-radius: 6px;
+  border-radius: 8px; /* match the .demo-mira slot it clips over */
   pointer-events: none;
 }
 .demo-sweep::before {
