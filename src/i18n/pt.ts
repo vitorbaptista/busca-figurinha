@@ -23,7 +23,6 @@ export const pt = {
     namePlaceholder: 'Seu nome ou apelido',
     start: 'Bora!',
     // Textos do mini-demo (o veredito que pisca em loop).
-    demoBackLabel: 'Verso',
     demoNeeded: 'GUARDAR',
     demoOwned: 'REPETIDA',
 
@@ -35,23 +34,16 @@ export const pt = {
     whoseOther: 'De outra pessoa',
     whoseOtherSub: 'Ver o que serve pra mim no maço da pessoa',
 
-    // Tela 3 — tem a lista do que procura? (só quando é de outra pessoa)
-    listTitle: 'Você tem a lista do que procura?',
-    listText: 'Tipo aquela do grupo do WhatsApp. Eu guardo ela na sua lista do que falta.',
+    // Tela 3 — tem uma lista pra colar? (só "de outra pessoa") → abre o Importar (Tenho/Preciso).
+    listTitle: 'Você tem uma lista pra colar?',
+    listText: 'Tipo aquela do grupo do WhatsApp. Dá pra dizer o que você tem e o que precisa.',
     listYes: 'Tenho a lista',
-    listYesSub: 'Colo aqui o que eu procuro',
+    listYesSub: 'Colar do WhatsApp (tenho / preciso)',
     listNo: 'Não tenho',
     listNoSub: 'Escaneio e vejo o que serve depois',
 
-    // Tela 4 — colar a lista (reusa o parser de importação).
-    pasteTitle: 'Cola o que você procura',
-    pasteText: 'Cole a lista do WhatsApp (ou de outro app). Eu reconheço os códigos.',
-    pastePlaceholder: 'Ex: BRA 3, 6, 10\nMEX 12\nARG 4, 9, 14…',
-    pasteLoad: 'Pronto, é isso',
-    pasteRecognized: (n: number) =>
-      n === 1 ? '1 figurinha reconhecida ✓' : `${n} figurinhas reconhecidas ✓`,
-    pasteNone: 'Não reconheci nenhuma ainda — confere o texto.',
-    pasteSkip: 'Escanear sem lista',
+    // Botão que fecha o Importar e leva pro escâner.
+    importProceed: 'Bora escanear!',
   },
 
   scan: {

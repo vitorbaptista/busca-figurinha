@@ -277,14 +277,15 @@ export function App() {
           move), so it appears the moment they tap "Escanear". */}
       {!onboarded && !(initialFriendPayload && screen === 'trade') && !initialPilePayload && (
         <Onboarding
+          collection={collection}
+          repeats={repeats}
+          wants={wants}
           defaultName={settings.get().name}
           onComplete={(result) => {
             settings.set({ onboarded: true, ...(result.name ? { name: result.name } : {}) });
-            // A pasted "what I'm looking for" list seeds the wishlist (wants), like Importar's
-            // "Preciso" bucket — never repeats, so no 0-FP risk.
-            if (result.wants && result.wants.length) wants.setOwned(result.wants, true);
             // Route to the right starting point: their own pile (Escanear) or another person's
-            // (Conferir, the friend's-pile scanner). #68: same scanner, different framing.
+            // (Conferir, the friend's-pile scanner). #68: same scanner, different framing. Any pasted
+            // list was already written to the stores by the Importar sheet itself.
             setScreen(result.start === 'conferir' ? 'conferir' : 'scan');
           }}
         />
