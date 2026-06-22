@@ -136,6 +136,15 @@ export const pt = {
     finishPileCount: 'na pilha',
     finishTakeCount: 'pra você',
     takenEmpty: 'Você não precisa de nenhuma dessa pilha — mas ainda dá pra mandar a lista pro amigo.',
+    // Done state: shown after the CTA fires — QR + warm copy + close.
+    albumDoneTitle: 'Tá pronto pra entregar! 🎉',
+    albumDoneLead: (n: number) =>
+      n === 1
+        ? 'Você escaneou 1 figurinha da pilha dele. Mostra esse QR pro seu amigo: é só apontar a câmera e as figurinhas entram no álbum dele na hora.'
+        : `Você escaneou ${n} figurinhas da pilha dele. Mostra esse QR pro seu amigo: é só apontar a câmera e as figurinhas entram no álbum dele na hora.`,
+    albumDoneCta: 'Pronto, beleza!',
+    // CTA label when taken.length === 0 (nothing to save, but still show the album QR).
+    showAlbumCta: 'Mostrar o álbum pro amigo',
   },
 
   report: {

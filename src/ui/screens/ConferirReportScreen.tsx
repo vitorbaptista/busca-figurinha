@@ -3,7 +3,9 @@ import { useState } from 'preact/hooks';
 import type { CollectionStore } from '../../types';
 import type { PileReport } from '../../domain/pileSession';
 import { pt } from '../../i18n/pt';
-import { PileShareSheet } from '../components/PileShareSheet';
+import { checklist } from '../../data/checklist';
+import { pileShareTextFor, sharePile } from '../../domain/pileShare';
+import { QrCode } from '../components/QrCode';
 
 interface ConferirReportScreenProps {
   report: PileReport;
@@ -14,20 +16,18 @@ interface ConferirReportScreenProps {
 }
 
 /**
- * The Conferir finish step ("Terminar"), symmetric to the album's ReportScreen. Two goal-appropriate
- * actions on one screen: (1) review which scanned stickers you actually TOOK in the trade → mark them
- * owned (preserving the cardinal rule: only what you physically have), and (2) share the friend's whole
- * pile back to them. Unlike ReportScreen it does NOT auto-navigate after saving — you may save AND then
- * share — so saving shows inline success and the share stays available; the only exit is "Voltar".
+ * The Conferir finish step ("Terminar"), symmetric to the album's ReportScreen. Reviews which
+ * scanned stickers you actually TOOK, marks them owned, then transitions to a full-screen done
+ * state whose hero is the friend's-album QR code — so handing the phone back is one tap.
  */
 export function ConferirReportScreen({ report, collection, name, onBack }: ConferirReportScreenProps) {
   const { taken, wholePile } = report;
   // Take-mine rows default checked; the user un-checks any they didn't actually take.
   const [checked, setChecked] = useState<Set<string>>(() => new Set(taken.map((e) => e.code)));
-  // What was actually saved this session — excluded from the share (you took those dupes).
+  // What was actually saved this session — excluded from the share QR (you took those dupes).
   const [savedTaken, setSavedTaken] = useState<Set<string>>(() => new Set());
-  const [savedMsg, setSavedMsg] = useState<string | null>(null);
-  const [shareOpen, setShareOpen] = useState(false);
+  const [done, setDone] = useState(false);
+  const [shareNotice, setShareNotice] = useState<string | null>(null);
 
   const toggle = (code: string) =>
     setChecked((prev) => {
@@ -40,10 +40,51 @@ export function ConferirReportScreen({ report, collection, name, onBack }: Confe
     const codes = [...checked];
     if (codes.length === 0) return;
     collection.setOwned(codes, true);
-    setSavedTaken((s) => new Set([...s, ...codes]));
-    setSavedMsg(pt.conferir.saved(codes.length));
   };
 
+  /** Single handler for the primary CTA: save (when there's something to save) + flip to done. */
+  const finalize = () => {
+    save();
+    // One-shot snapshot — the QR renders with this savedTaken. When taken.length === 0,
+    // savedTaken stays empty → the QR encodes the whole pile (correct: you took nothing).
+    setSavedTaken(new Set(checked));
+    setDone(true);
+  };
+
+  const shareAlbum = async () => {
+    const result = await sharePile(wholePile, [...savedTaken], checklist, name);
+    if (result === 'copied') setShareNotice(pt.pile.shareCopied);
+    else if (result === 'unavailable') setShareNotice(pt.pile.shareFail);
+  };
+
+  // ── Done state ──────────────────────────────────────────────────────────────
+  if (done) {
+    const { link } = pileShareTextFor(wholePile, [...savedTaken], checklist, name);
+    return (
+      <div class="screen report-screen conferir-report-screen">
+        <div class="conferir-album-done">
+          <h2 class="conferir-album-done-title">{pt.conferir.albumDoneTitle}</h2>
+          <p class="conferir-album-done-lead">{pt.conferir.albumDoneLead(wholePile.length)}</p>
+          <div class="trade-qr conferir-album-qr">
+            <QrCode value={link} ariaLabel={pt.pile.qrAria} class="trade-qr-svg" />
+          </div>
+          {shareNotice && (
+            <p class="conferir-album-notice" role="status" aria-live="polite">
+              {shareNotice}
+            </p>
+          )}
+          <button class="btn btn-primary btn-block" onClick={onBack}>
+            {pt.conferir.albumDoneCta}
+          </button>
+          <button class="btn-wa" onClick={shareAlbum}>
+            📲 {pt.pile.shareWhats}
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // ── Review state ─────────────────────────────────────────────────────────────
   return (
     <div class="screen report-screen conferir-report-screen">
       <header class="report-header">
@@ -87,34 +128,17 @@ export function ConferirReportScreen({ report, collection, name, onBack }: Confe
       </section>
 
       <div class="report-footer">
-        {savedMsg && (
-          <div class="conferir-notice" role="status" aria-live="polite">
-            {savedMsg}
-          </div>
-        )}
-        {taken.length > 0 && (
-          <button class="btn btn-primary btn-block" disabled={checked.size === 0} onClick={save}>
-            {pt.conferir.reviewSave(checked.size)}
-          </button>
-        )}
-        {wholePile.length > 0 && (
-          <button class="btn btn-secondary btn-block" onClick={() => setShareOpen(true)}>
-            {pt.pile.shareCta}
-          </button>
-        )}
+        <button
+          class="btn btn-primary btn-block"
+          disabled={taken.length > 0 && checked.size === 0}
+          onClick={finalize}
+        >
+          {taken.length > 0 ? pt.conferir.reviewSave(checked.size) : pt.conferir.showAlbumCta}
+        </button>
         <button class="btn btn-ghost btn-block" onClick={onBack}>
           {pt.conferir.back}
         </button>
       </div>
-
-      {shareOpen && (
-        <PileShareSheet
-          pile={wholePile}
-          taken={[...savedTaken]}
-          name={name}
-          onClose={() => setShareOpen(false)}
-        />
-      )}
     </div>
   );
 }
