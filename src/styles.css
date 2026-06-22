@@ -542,45 +542,54 @@ button {
   border-top: 0;
 }
 /* A stylized Panini back, PORTRAIT like the real sticker: the official FIFA World Cup 2026 mark
-   (the "26" trophy) centred on a light card, with the code in a dark pill at the top-right — exactly
-   the real layout, and the pill is the dark mark the scanner locks onto. */
+   (the "26" trophy) BIG and dead-centre on a lavender card, with the code in a readable dark pill at
+   the top-right — exactly the real layout, and the pill is the dark mark the scanner locks onto. */
 .demo-back {
   position: relative;
   width: 84%;
-  aspect-ratio: 5 / 7;
-  background: #edecf2;
+  aspect-ratio: 99 / 134;
+  background: #e6e3ef;
   border: 2px solid var(--ink);
   border-radius: 6px;
   box-shadow: 2px 2px 0 var(--paper-edge);
-  display: grid;
-  place-items: center;
+  overflow: hidden;
   animation: pop 0.4s ease;
 }
+/* The logo SVG is cropped to a tight, symmetric viewBox around the mark (so it fills, not floats).
+   It's horizontally centred but sits a little BELOW centre, leaving the top-right corner clear so the
+   code pill has breathing room above it — like the real back's header strip. */
 .demo-back-logo {
-  width: 58%;
+  position: absolute;
+  width: 54%;
   height: auto;
+  left: 50%;
+  top: 57%;
+  transform: translate(-50%, -50%);
 }
-/* the dark code pill, top-right like the real back — the part the scanner reads, kept legible */
+/* the dark code pill, top-right like the real back — kept legible (the part the scanner reads) */
 .demo-back-pill {
   position: absolute;
-  top: 7%;
+  top: 6%;
   right: 7%;
+  z-index: 1;
   background: var(--ink);
   color: #fff;
   font-family: var(--font-head);
   font-weight: 700;
-  font-size: 0.92rem;
-  letter-spacing: 0.04em;
+  font-size: 0.95rem;
+  letter-spacing: 0.05em;
   line-height: 1;
-  padding: 4px 11px 3px;
+  padding: 4px 12px 3px;
   border-radius: var(--radius-pill);
   white-space: nowrap;
 }
 .demo-sweep {
   position: absolute;
   inset: 0;
+  /* above the card + its code pill (z-index 1) so the scan line passes OVER everything, not behind */
+  z-index: 4;
   overflow: hidden;
-  border-radius: 6px;
+  border-radius: 8px; /* match the .demo-mira slot it clips over */
   pointer-events: none;
 }
 .demo-sweep::before {
