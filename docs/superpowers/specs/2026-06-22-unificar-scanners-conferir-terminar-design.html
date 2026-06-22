@@ -1,0 +1,452 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Unificar os scanners + "Terminar" no Conferir — design</title>
+<style>
+  :root {
+    --bg: #0f1115;
+    --panel: #171a21;
+    --panel-2: #1d212a;
+    --ink: #e7e9ee;
+    --ink-soft: #aab1bf;
+    --ink-faint: #7c8493;
+    --line: #2a2f3a;
+    --keep: #4ade80;     /* GUARDAR / pegar */
+    --keep-dim: #1f3a2b;
+    --rep: #f87171;      /* REPETIDA / deixar */
+    --gold: #f5c451;     /* Copa */
+    --blue: #60a5fa;
+    --code-bg: #11141a;
+    --radius: 14px;
+    --maxw: 860px;
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0;
+    background: radial-gradient(1200px 600px at 50% -200px, #1b2030 0%, var(--bg) 60%);
+    color: var(--ink);
+    font: 16px/1.65 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: var(--maxw); margin: 0 auto; padding: 0 22px 120px; }
+
+  /* ---- Header ---- */
+  header.hero {
+    padding: 64px 0 28px;
+    border-bottom: 1px solid var(--line);
+    margin-bottom: 40px;
+  }
+  .eyebrow {
+    display: inline-flex; align-items: center; gap: 8px;
+    font-size: 13px; letter-spacing: .08em; text-transform: uppercase;
+    color: var(--gold); font-weight: 700; margin: 0 0 14px;
+  }
+  .eyebrow::before { content: "⚽"; font-size: 15px; }
+  h1.title {
+    font-size: clamp(28px, 5vw, 42px); line-height: 1.12; margin: 0 0 16px;
+    letter-spacing: -.02em; font-weight: 800;
+  }
+  h1.title .q { color: var(--gold); }
+  .meta { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+  .badge {
+    font-size: 13px; padding: 5px 12px; border-radius: 999px;
+    background: var(--panel-2); border: 1px solid var(--line); color: var(--ink-soft);
+  }
+  .badge b { color: var(--ink); font-weight: 600; }
+  .lede { color: var(--ink-soft); font-size: 17px; margin: 22px 0 0; }
+
+  /* ---- TOC ---- */
+  nav.toc {
+    background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius);
+    padding: 18px 22px; margin: 0 0 44px;
+  }
+  nav.toc h2 { font-size: 13px; text-transform: uppercase; letter-spacing: .08em; color: var(--ink-faint); margin: 0 0 12px; font-weight: 700; }
+  nav.toc ol { margin: 0; padding: 0; list-style: none; columns: 2; column-gap: 30px; }
+  nav.toc li { margin: 0 0 8px; break-inside: avoid; }
+  nav.toc a { color: var(--ink-soft); text-decoration: none; font-size: 14.5px; display: flex; gap: 9px; }
+  nav.toc a:hover { color: var(--gold); }
+  nav.toc a .n { color: var(--ink-faint); font-variant-numeric: tabular-nums; min-width: 16px; text-align: center; }
+  @media (max-width: 560px) { nav.toc ol { columns: 1; } }
+
+  /* ---- Sections ---- */
+  section { margin: 0 0 46px; scroll-margin-top: 20px; }
+  h2.sec {
+    font-size: 24px; letter-spacing: -.01em; margin: 0 0 16px; font-weight: 750;
+    display: flex; align-items: baseline; gap: 12px;
+  }
+  h2.sec .num {
+    font-size: 15px; color: var(--bg); background: var(--gold);
+    width: 28px; height: 28px; border-radius: 8px; display: inline-grid; place-items: center;
+    font-weight: 800; flex: none; align-self: center;
+  }
+  h3.sub { font-size: 18px; margin: 28px 0 10px; font-weight: 700; color: var(--ink); }
+  h3.sub .tag {
+    font: 600 12px/1 ui-monospace, SFMono-Regular, Menlo, monospace;
+    color: var(--blue); background: #14233a; border: 1px solid #1e334d; padding: 3px 7px;
+    border-radius: 6px; margin-left: 8px; vertical-align: middle;
+  }
+  p { margin: 0 0 14px; color: var(--ink); }
+  p.soft, li.soft { color: var(--ink-soft); }
+  a { color: var(--blue); }
+  code {
+    font: 13.5px/1.4 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    background: var(--panel-2); border: 1px solid var(--line);
+    padding: 1.5px 6px; border-radius: 6px; color: #d6dbe6;
+  }
+  pre {
+    background: var(--code-bg); border: 1px solid var(--line); border-radius: 12px;
+    padding: 16px 18px; overflow-x: auto; margin: 0 0 18px;
+    font: 13px/1.55 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    color: #cdd3df;
+  }
+  pre code { background: none; border: none; padding: 0; color: inherit; }
+  ul, ol { margin: 0 0 16px; padding-left: 22px; }
+  li { margin: 0 0 8px; }
+  li > strong, p > strong { color: #fff; }
+
+  /* ---- Callouts (subtle: full border + colored label dot, no side-tab) ---- */
+  .callout {
+    background: var(--panel); border: 1px solid var(--line);
+    border-radius: 12px; padding: 16px 20px; margin: 0 0 18px;
+  }
+  .callout .k {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 12px; text-transform: uppercase; letter-spacing: .06em;
+    font-weight: 700; margin-bottom: 8px; color: var(--gold);
+  }
+  .callout .k::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: currentColor; flex: none; }
+  .callout.note .k { color: var(--blue); }
+  .callout.warn .k { color: var(--rep); }
+  .callout p:last-child, .callout ul:last-child { margin-bottom: 0; }
+
+  /* ---- chips / file lists ---- */
+  .files { display: grid; gap: 16px; grid-template-columns: 1fr 1fr; }
+  @media (max-width: 600px){ .files { grid-template-columns: 1fr; } }
+  .files h4 { margin: 0 0 10px; font-size: 14px; letter-spacing:.04em; text-transform: uppercase; }
+  .files .new h4 { color: var(--keep); }
+  .files .mod h4 { color: var(--gold); }
+  .filelist { list-style: none; margin: 0; padding: 0; }
+  .filelist li {
+    font: 12.5px/1.5 ui-monospace, SFMono-Regular, Menlo, monospace;
+    padding: 7px 11px; margin: 0 0 7px; border-radius: 8px;
+    background: var(--panel-2); border: 1px solid var(--line); color: #cfd5e1;
+  }
+  .filelist li .why { display:block; font-family: -apple-system, system-ui, sans-serif; color: var(--ink-faint); font-size: 12px; margin-top: 3px; }
+
+  .gate { display: grid; gap: 10px; grid-template-columns: repeat(3, 1fr); margin: 4px 0 14px; }
+  @media (max-width: 560px){ .gate { grid-template-columns: 1fr; } }
+  .gate .g { background: var(--panel-2); border:1px solid var(--line); border-radius: 10px; padding: 12px 14px; }
+  .gate .g b { display:block; color:#fff; font-size: 13.5px; font-family: ui-monospace, monospace; margin-bottom: 4px; }
+  .gate .g span { font-size: 12.5px; color: var(--ink-soft); }
+
+  .pill { display:inline-block; padding: 2px 9px; border-radius:999px; font-size:12px; font-weight:700; }
+  .pill.keep { background: var(--keep-dim); color: var(--keep); }
+
+  footer { border-top: 1px solid var(--line); margin-top: 50px; padding-top: 22px; color: var(--ink-faint); font-size: 13.5px; }
+  footer code { font-size: 12px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="hero">
+    <p class="eyebrow">Busca Figurinha · Documento de design</p>
+    <h1 class="title">Unificar os scanners <span class="q">+ "Terminar"</span> no Conferir</h1>
+    <div class="meta">
+      <span class="badge">📅 <b>2026-06-22</b></span>
+      <span class="badge">PWA · Preact + TypeScript</span>
+      <span class="badge">Status: <b>aguardando revisão</b></span>
+    </div>
+    <p class="lede">
+      Duas telas de câmera quase idênticas. A experiência de <em>escaneamento</em> deveria ser a
+      mesma nas duas; a divergência pertence ao passo de <strong>finalização</strong>, porque o
+      objetivo é diferente: numa você escaneia as <em>suas</em> figurinhas, na outra as do <em>outro</em>.
+    </p>
+  </header>
+
+  <nav class="toc" aria-label="Sumário">
+    <h2>Sumário</h2>
+    <ol>
+      <li><a href="#problema"><span class="n">·</span> Problema</a></li>
+      <li><a href="#objetivo"><span class="n">·</span> Objetivo &amp; decisões</a></li>
+      <li><a href="#nao-objetivos"><span class="n">·</span> Não-objetivos</a></li>
+      <li><a href="#arq"><span class="n">·</span> Arquitetura</a></li>
+      <li><a href="#a1"><span class="n">1</span> useScanner (motor)</a></li>
+      <li><a href="#a2"><span class="n">2</span> ScanShell (chrome)</a></li>
+      <li><a href="#a3"><span class="n">3</span> Conferir ao vivo</a></li>
+      <li><a href="#a4"><span class="n">4</span> createPileSession</a></li>
+      <li><a href="#a5"><span class="n">5</span> ConferirReportScreen</a></li>
+      <li><a href="#a6"><span class="n">6</span> Roteamento + app.tsx</a></li>
+      <li><a href="#fluxo"><span class="n">·</span> Fluxo de dados</a></li>
+      <li><a href="#erros"><span class="n">·</span> Casos de borda</a></li>
+      <li><a href="#testes"><span class="n">·</span> Testes</a></li>
+      <li><a href="#verif"><span class="n">·</span> Verificação</a></li>
+      <li><a href="#arquivos"><span class="n">·</span> Arquivos</a></li>
+    </ol>
+  </nav>
+
+  <section id="problema">
+    <h2 class="sec"><span class="num">?</span> Problema</h2>
+    <p>Existem duas telas de câmera quase idênticas:</p>
+    <ul>
+      <li><strong>Escanear</strong> (<code>ScanScreen</code>) escaneia o álbum do próprio usuário,
+        num fluxo limpo de dois passos: escaneia ao vivo acumulando numa <code>session</code>
+        (acumulador read-only) → botão <span class="pill keep">Terminar</span> →
+        <code>ReportScreen</code> (marca os keepers → grava em <code>collection</code> +
+        <code>repeats</code>).</li>
+      <li><strong>Conferir</strong> (<code>ConferirScreen</code>) escaneia a pilha do amigo durante a
+        troca, e <strong>não tem passo "Terminar".</strong> As ações de pós-escaneamento ficam
+        espremidas <em>dentro</em> da tela ao vivo, no rodapé: "💾 Salvar" (revisar o que você pegou
+        → grava em <code>collection</code>) e "Mandar pro amigo" (compartilha a pilha inteira via
+        <code>PileShareSheet</code>).</li>
+    </ul>
+    <p>São dois problemas, um de UX e um de código:</p>
+    <ol>
+      <li><strong>UX assimétrica.</strong> O Conferir mistura "escanear" e "finalizar" na mesma tela,
+        enquanto o Escanear separa os dois passos.</li>
+      <li><strong>Duplicação.</strong> Cerca de 250 a 300 linhas de motor de escaneamento e "chrome"
+        da câmera são copiadas verbatim entre as duas telas, incluindo a disciplina de
+        <strong>0 falsos-positivos</strong> (confirmer + cooldown de commit). O próprio
+        <code>ConferirScreen</code> admite: <em>"copied verbatim from the shipping scanner's 0-FP
+        path"</em> e <em>"Keep every guard identical"</em>. Hoje, uma correção numa tela não chega
+        na outra.</li>
+    </ol>
+  </section>
+
+  <section id="objetivo">
+    <h2 class="sec"><span class="num">★</span> Objetivo</h2>
+    <ul>
+      <li><strong>Uma única experiência de escaneamento ao vivo</strong> (motor + chrome), consumida
+        pelas duas telas.</li>
+      <li><strong>Conferir ganha um passo "Terminar"</strong> simétrico ao do Escanear, levando a uma
+        tela de finalização própria que faz duas coisas: revisar o que você pegou → gravar na
+        coleção, e mandar a lista pro amigo.</li>
+      <li>A tela ao vivo do Conferir vira <strong>escaneamento puro</strong> (os botões inline
+        Salvar/Mandar saem dela).</li>
+    </ul>
+    <div class="callout">
+      <span class="k">Decisões já tomadas com o usuário</span>
+      <ul>
+        <li>A finalização do Conferir faz <strong>as duas coisas</strong> (revisar pegadas + compartilhar de volta).</li>
+        <li><strong>Extração completa</strong>: extrair <code>useScanner</code> + <code>&lt;ScanShell&gt;</code> e refatorar <strong>as duas</strong> telas, num single-source da disciplina 0-FP.</li>
+        <li>Acumulador <code>createPileSession</code> (espelho de <code>domain/session.ts</code>), <strong>em memória</strong>.</li>
+        <li>A finalização do Conferir <strong>não navega sozinha</strong> depois de salvar: salvar mostra sucesso inline, o compartilhar continua disponível, a saída é explícita.</li>
+      </ul>
+    </div>
+  </section>
+
+  <section id="nao-objetivos">
+    <h2 class="sec"><span class="num">✕</span> Não-objetivos</h2>
+    <ul>
+      <li>Não mexer nos casos de uso nem na navegação entre telas (links, abas).</li>
+      <li>Não unificar os vereditos. <code>Verdict</code> (owned/needed/unknown) e
+        <code>ConferirVerdict</code> (take-mine/take-friends/skip/unknown) são modelos de resultado
+        genuinamente diferentes, não só texto, e continuam componentes separados.</li>
+      <li>A tela dev <code>CaptureScreen</code> (<code>?capture</code>) <strong>fica de fora</strong>:
+        não roda o pipeline de OCR, usa markup próprio, e o único overlap é o ciclo de câmera trivial,
+        que não vale acoplar.</li>
+      <li>Sem refatoração não relacionada.</li>
+    </ul>
+  </section>
+
+  <section id="arq">
+    <h2 class="sec"><span class="num">⚙</span> Arquitetura</h2>
+    <p class="soft">Dois novos módulos compartilhados, consumidos pelas duas telas; um acumulador de
+      domínio; uma tela de finalização; e a fiação de rota.</p>
+
+    <h3 class="sub" id="a1">1 · Motor compartilhado <span class="tag">src/ui/hooks/useScanner.ts</span></h3>
+    <p>Hook dono de tudo que hoje está duplicado: as 11 refs de motor, o estado de câmera/OCR,
+      <code>ensureOcr</code>, <code>recognizeCanvas</code> (cascata do ensemble → confirmer → cooldown
+      <code>allowCommit</code> → <code>CaptureResult</code>), os quatro efeitos (lock
+      <code>scan-active</code>, wake lock, ciclo do OCR, ciclo de câmera + <code>createAutoCapture</code>),
+      <code>useRoiViewport</code>, <code>flipCamera</code>, <code>retryCamera</code> e o derivado
+      <code>reading</code>.</p>
+    <pre><code>useScanner({
+  onMatches: (matches: MatchResult[]) =&gt; void,   // sink único de resultado
+  settings: SettingsStore,
+  cameraSetting: 'camera' | 'conferirCamera',     // qual chave persiste o facing
+  debug?: boolean,                                 // só Escanear (?debug)
+  record?: boolean,                                // só Escanear (?record)
+})
+// → { videoLayerRef, cameraState, ocrReady, ocrFailed, ocrProgress,
+//     facing, reading, flipCamera, retryCamera, submitManualCode }</code></pre>
+    <ul>
+      <li><code>onMatches</code> é o <strong>único sink</strong>, chamado com os matches commitados ou
+        com <code>[]</code> numa leitura explícita que não achou nada. Elimina a diferença
+        <code>handleMatches</code> (plural) vs <code>handleMatch</code> (singular).</li>
+      <li><code>cameraSetting</code> escolhe qual chave de <code>settings</code> persiste o
+        <code>facing</code>.</li>
+      <li><code>debug</code>/<code>record</code> mantêm a instrumentação do Escanear; o Conferir omite.</li>
+      <li><code>submitManualCode(value)</code> faz <code>onMatches([matchCode(value, checklist)])</code>,
+        cobrindo a entrada manual e o seam de teste headless.</li>
+    </ul>
+    <div class="callout note">
+      <span class="k">Fica na tela, não no hook</span>
+      <p><code>flashCounter</code> (key de re-render do veredito) e os contadores são apresentação de
+        cada tela. <code>multiTimerRef</code> e o <code>audioCtx</code> (beep) são específicos do
+        Escanear.</p>
+    </div>
+
+    <h3 class="sub" id="a2">2 · Chrome compartilhado <span class="tag">src/ui/components/ScanShell.tsx</span></h3>
+    <p>Componente de apresentação com o chrome compartilhado: o wrapper <code>.screen.scan-screen</code>,
+      o <code>announce</code> sr-only, o <code>pagetab</code>, o <code>.cam-top</code> (slot
+      <code>topLeft</code> mais o grupo de ações à direita: pílula <strong>"Terminar"</strong> opcional,
+      <code>📝</code> e <code>🔄</code>), o <code>.mira-wrap</code> (mira/reading, sweep, cantos, label,
+      hint), os três <code>scan-overlay</code> (loading/failed/denied), o slot <code>.cam-bottom</code>
+      e a <code>manual-sheet</code> (com slot <code>manualExtra</code> para o "Colar lista" do Escanear).</p>
+    <p class="soft">Slots por tela: <code>topLeft</code> · <code>finishAction</code> ·
+      <code>bottom</code> · <code>manualExtra</code>. Texto: <code>pageTitle</code> ·
+      <code>pageSubtitle</code> · <code>holdStillText</code>. (Lista exata de props no plano.)</p>
+
+    <h3 class="sub" id="a3">3 · Conferir ao vivo vira escaneamento puro</h3>
+    <p><code>ConferirScreen</code> fica fino: renderiza <code>&lt;ScanShell&gt;</code> +
+      <code>useScanner({ onMatches: handleMatch, cameraSetting: 'conferirCamera' })</code>, mantém os
+      chips ("pra mim / pro amigo") e o <code>ConferirVerdict</code>. Os botões inline
+      <strong>Salvar e Mandar são removidos</strong>. A pílula <span class="pill keep">Terminar</span>
+      aparece com ≥1 figurinha escaneada. O <code>←</code> (voltar pra Banca) continua no
+      <code>topLeft</code>. O estado da pilha <strong>sobe para o <code>app.tsx</code></strong>.</p>
+
+    <h3 class="sub" id="a4">4 · Acumulador da pilha <span class="tag">src/domain/pileSession.ts</span></h3>
+    <p>Espelho de <code>domain/session.ts</code>:</p>
+    <ul>
+      <li><code>add(entry, kind)</code> registra uma leitura commitada (código +
+        <code>HuntVerdict['kind']</code>), deduplicado.</li>
+      <li>Expõe a <strong>pilha inteira</strong> (o que o QR compartilha) e o conjunto
+        <strong>take-mine</strong> (as que você precisa).</li>
+      <li><code>finish() → PileReport</code> produz <code>{ taken: ChecklistEntry[], wholePile: string[] }</code>.</li>
+      <li><code>reset()</code>. <strong>Em memória</strong>, testável em node.</li>
+    </ul>
+    <div class="callout note">
+      <span class="k">Sobre os conjuntos</span>
+      <p><code>takenForFriends</code> é só contador advisory na tela ao vivo (não entra na revisão,
+        já que pegadas pra amigo não vão pra <em>sua</em> coleção). <code>savedTaken</code> passa a
+        ser populado <strong>no passo de finalização</strong>, quando você salva.</p>
+    </div>
+
+    <h3 class="sub" id="a5">5 · Finalização do Conferir <span class="tag">src/ui/screens/ConferirReportScreen.tsx</span></h3>
+    <p>Simétrica à <code>ReportScreen</code>, fazendo as duas coisas:</p>
+    <ul>
+      <li><strong>"Pegou quais?"</strong> é a lista de revisão das take-mine, com checkboxes marcadas
+        por padrão → "Salvar N na coleção" → <code>collection.setOwned(checked)</code>. É o modal de
+        revisão de hoje promovido a tela, e preserva a regra cardinal (só marca como owned o que você
+        fisicamente pegou).</li>
+      <li><strong>"📤 Mandar a lista pro amigo"</strong> abre o <code>PileShareSheet</code> existente
+        (pilha inteira, menos o que você pegou).</li>
+      <li><strong>"Voltar"</strong> volta pra Banca (<code>trade</code>).</li>
+      <li>Diferente da <code>ReportScreen</code>, <strong>não navega sozinha</strong> depois de salvar.</li>
+    </ul>
+    <p class="soft">Semântica do share preservada: <code>(wholePile, taken = savedTaken-até-agora)</code>.
+      Se você salva antes, as pegadas saem das repetidas do amigo; se compartilha antes,
+      <code>savedTaken</code> está vazio (correto: ainda não pegou nada).</p>
+
+    <h3 class="sub" id="a6">6 · Roteamento + fiação no app.tsx</h3>
+    <ul>
+      <li>Nova tela efêmera no union <code>Screen</code>: <strong><code>conferir-report</code></strong>.</li>
+      <li>Em <code>routing.ts</code>: <code>conferir-report: 'trocar'</code> no <code>SLUGS</code>
+        (compartilha o slug da Banca, como <code>conferir</code>); <strong>ausente</strong> do mapa
+        reverso <code>SCREENS</code>; mapeada para <code>trade</code> na derivação <code>active</code>
+        do <code>Nav</code>. Mantém os invariantes (escritor único, <code>routing.ts</code> puro).</li>
+      <li><code>app.tsx</code> ganha o acumulador <code>pileSession</code> mais um estado
+        <code>pileReport</code>. "Terminar" constrói o <code>PileReport</code> e
+        <code>setScreen('conferir-report')</code>; ao finalizar, reseta o <code>pileSession</code> e
+        volta pra <code>trade</code>.</li>
+    </ul>
+  </section>
+
+  <section id="fluxo">
+    <h2 class="sec"><span class="num">→</span> Fluxo de dados (Conferir, depois)</h2>
+    <pre><code>ConferirScreen (ao vivo)
+  useScanner({ onMatches: handleMatch })  → cada leitura commitada
+  handleMatch → huntVerdict → ConferirVerdict + chips + pileSession.add(entry, kind)
+  "Terminar" (≥1 escaneada) → app.finishConferir():
+        pileReport = pileSession.finish()
+        setScreen('conferir-report')
+
+ConferirReportScreen (finalização)
+  revisar take-mine → collection.setOwned(checked)   (+ registra savedTaken)
+  "Mandar pro amigo" → PileShareSheet(wholePile, savedTaken)
+  "Voltar" → pileSession.reset(); setScreen('trade')</code></pre>
+  </section>
+
+  <section id="erros">
+    <h2 class="sec"><span class="num">!</span> Tratamento de erros / casos de borda</h2>
+    <ul>
+      <li><strong>OCR indisponível / câmera negada:</strong> inalterado, já que os overlays moram no
+        <code>&lt;ScanShell&gt;</code>, agora compartilhados.</li>
+      <li><strong>Terminar sem nada útil:</strong> a pílula só aparece com ≥1 leitura, então
+        <code>pileReport.taken</code> pode estar vazio (você só leu figurinhas que já tem). A tela
+        mostra lista vazia e oferece só o compartilhar, igual à <code>ReportScreen</code> com 0 keepers.</li>
+      <li><strong>Double-tap em salvar:</strong> guarda com flag <code>done</code> (como
+        <code>ReportScreen.commit</code>).</li>
+    </ul>
+    <div class="callout warn">
+      <span class="k">Regra cardinal — 0 falsos-positivos</span>
+      <p>Intocada: passa a viver 100% no <code>useScanner</code> (antes duplicada). O reset de
+        <code>committedThisBurst</code> no <code>onBurstStart</code> continua <em>load-bearing</em>.</p>
+    </div>
+  </section>
+
+  <section id="testes">
+    <h2 class="sec"><span class="num">✓</span> Testes</h2>
+    <ul>
+      <li><strong><code>pileSession.test.ts</code></strong> (novo, node): <code>add</code> deduplicado,
+        take-mine vs whole-pile, <code>finish()</code>, <code>reset()</code>.</li>
+      <li><strong><code>routing.test.ts</code></strong> (existente): cobrir <code>conferir-report</code>
+        (slug compartilhado, ausente do reverso, Back volta pra Banca).</li>
+      <li><strong><code>ConferirReportScreen</code></strong>: teste do gate de revisão, no estilo
+        <code>ReportScreen.test.ts</code>.</li>
+      <li>O motor (<code>useScanner</code>) é code-motion puro; a cobertura é o pipeline existente mais os benches.</li>
+    </ul>
+  </section>
+
+  <section id="verif">
+    <h2 class="sec"><span class="num">⛓</span> Verificação <span style="font-size:14px;color:var(--ink-faint);font-weight:500;">(gate da regra cardinal)</span></h2>
+    <p>Comportamento preservado no caminho do álbum. Gate de toda a mudança em:</p>
+    <div class="gate">
+      <div class="g"><b>npm run build</b><span>tsc <code>--noEmit</code> + vite. O typecheck é parte do build.</span></div>
+      <div class="g"><b>npm test</b><span>vitest, incluindo os testes novos.</span></div>
+      <div class="g"><b>npm run bench:pixel</b><span>recall / FP por frame / FP de figurinha confirmada / latência têm que se manter vs. baseline.</span></div>
+    </div>
+    <p class="soft">Rodar o baseline do <code>bench:pixel</code> <strong>antes</strong> de refatorar.
+      <code>CHANGELOG.md</code> atualizado. Texto de usuário em pt-BR.</p>
+  </section>
+
+  <section id="arquivos">
+    <h2 class="sec"><span class="num">📁</span> Arquivos</h2>
+    <div class="files">
+      <div class="new">
+        <h4>Novos</h4>
+        <ul class="filelist">
+          <li>src/ui/hooks/useScanner.ts</li>
+          <li>src/ui/components/ScanShell.tsx</li>
+          <li>src/domain/pileSession.ts <span class="why">+ pileSession.test.ts</span></li>
+          <li>src/ui/screens/ConferirReportScreen.tsx</li>
+        </ul>
+      </div>
+      <div class="mod">
+        <h4>Modificados</h4>
+        <ul class="filelist">
+          <li>src/ui/screens/ScanScreen.tsx <span class="why">consome useScanner + ScanShell; debug/record via flags</span></li>
+          <li>src/ui/screens/ConferirScreen.tsx <span class="why">vira fino; remove Salvar/Share inline; ganha "Terminar"</span></li>
+          <li>src/app.tsx <span class="why">pileSession + pileReport + fiação conferir-report</span></li>
+          <li>src/ui/routing.ts &amp; src/ui/Nav.tsx <span class="why">+ conferir-report; derivação active</span></li>
+          <li>src/types.ts <span class="why">PileReport, se compartilhado</span></li>
+          <li>src/i18n/pt.ts <span class="why">textos da finalização do Conferir</span></li>
+          <li>CHANGELOG.md</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <p>Gerado a partir de
+      <code>docs/superpowers/specs/2026-06-22-unificar-scanners-conferir-terminar-design.md</code>.
+      Documento de design, com revisão pendente antes do plano de implementação.</p>
+  </footer>
+
+</div>
+</body>
+</html>
