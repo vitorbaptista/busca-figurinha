@@ -3,6 +3,18 @@
 Notable changes to the sticker scanner. Newest first. No formal releases yet (deploys on push to
 `main`), so entries are grouped by date. Keep this updated when you ship something notable.
 
+## 2026-06-21 — Escanear: "Colar lista" agora também na tela de escanear
+
+### Added
+- **Dá pra colar uma lista sem sair da tela de escanear.** Toque no botão de **escrever (📝)**
+  ali em cima e, junto com o "Digitar código", aparece **"📋 Colar lista"** — abre o mesmo
+  importador de listas da Coleção (colar do WhatsApp / de outro app → "Tenho" ou "Preciso").
+  Mesma função, só num lugar mais à mão.
+
+### Changed
+- O ícone de **digitar o código** virou um **lápis (📝)** no lugar do teclado — combina mais com
+  a cara do álbum.
+
 ## 2026-06-21 — Conferir: contador + salvar na coleção (e câmera frontal por padrão)
 
 ### Changed

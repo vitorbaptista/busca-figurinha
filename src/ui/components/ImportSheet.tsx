@@ -18,6 +18,7 @@ export function ImportSheet({
   repeats,
   wants,
   onClose,
+  onSeeCollection,
 }: {
   collection: CollectionStore;
   /** The user's spares — a "Tenho" import clears any STALE repeat marker for a re-owned code (see confirm). */
@@ -25,6 +26,10 @@ export function ImportSheet({
   /** The wishlist store — destination for the "Preciso" bucket. */
   wants: CollectionStore;
   onClose: () => void;
+  /** Optional: navigate to the collection after a "Tenho" import (used when opened from the
+   *  scanner, so the done-screen "Ver a coleção" button actually lands you there). When omitted
+   *  (the Coleção caller), the done button just closes — exactly as before. */
+  onSeeCollection?: () => void;
 }) {
   const [bucket, setBucket] = useState<'have' | 'need'>('have');
   const [text, setText] = useState('');
@@ -183,7 +188,10 @@ export function ImportSheet({
                 ? pt.importList.doneHave(step.added)
                 : pt.importList.doneNeed(step.added)}
             </p>
-            <button class="btn btn-primary btn-block" onClick={onClose}>
+            <button
+              class="btn btn-primary btn-block"
+              onClick={bucket === 'have' && onSeeCollection ? onSeeCollection : onClose}
+            >
               {bucket === 'have' ? pt.importList.seeCollection : pt.importList.doneClose}
             </button>
             <button class="link-btn" onClick={reset}>

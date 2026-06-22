@@ -48,7 +48,7 @@ export function Verdict({
           <div class="verdict-text">
             <span class="verdict-sub">{pt.scan.missSub}</span>
             <button class="miss-action" type="button" onClick={onManual}>
-              ⌨️ {pt.scan.manualOpen}
+              📝 {pt.scan.manualOpen}
             </button>
           </div>
         </div>

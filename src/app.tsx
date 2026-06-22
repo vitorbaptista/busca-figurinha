@@ -160,9 +160,11 @@ export function App() {
           collection={collection}
           repeats={repeats}
           friendLists={friendLists}
+          wants={wants}
           settings={settings}
           onPersist={() => persistSession(session)}
           onFinish={finishSession}
+          onGoToCollection={() => setScreen('collection')}
         />
       )}
 

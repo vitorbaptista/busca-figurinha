@@ -1384,6 +1384,41 @@ html.scan-active body {
   border-color: var(--gold-deep);
   box-shadow: 0 0 0 3px rgba(240, 198, 75, 0.4);
 }
+/* small heading framing the manual-entry sheet (cream ~10:1 on the dark --paper-deep sheet) */
+.manual-title {
+  font-family: var(--font-head);
+  font-weight: 700;
+  font-size: 0.95rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--cream);
+  margin: 0;
+}
+/* tertiary "Colar lista" affordance: visibly quieter than cream Cancelar + green Verificar,
+   set apart by a faint gold hairline so it reads as "or, paste a whole list" not a 3rd CTA */
+.manual-import {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  min-height: 44px;
+  margin-top: 4px;
+  padding-top: 14px;
+  border: none;
+  border-top: 1px solid rgba(240, 198, 75, 0.28);
+  background: none;
+  color: var(--gold);
+  font-family: var(--font-head);
+  font-weight: 700;
+  font-size: 0.95rem;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.manual-import:active {
+  color: var(--gold-deep);
+}
 
 /* ==================================================== Report screen ======= */
 

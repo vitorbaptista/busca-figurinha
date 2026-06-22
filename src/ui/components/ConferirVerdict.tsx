@@ -35,7 +35,7 @@ export function ConferirVerdict({ state, onManual }: { state: ConferirVerdictSta
         <div class="cv-body">
           <span class="cv-sub">{pt.scan.missSub}</span>
           <button class="miss-action" type="button" onClick={onManual}>
-            ⌨️ {pt.scan.manualOpen}
+            📝 {pt.scan.manualOpen}
           </button>
         </div>
       </div>
