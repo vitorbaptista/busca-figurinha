@@ -7,6 +7,7 @@ import type {
   SettingsStore,
 } from '../../types';
 import { pt } from '../../i18n/pt';
+import { track } from '../../analytics';
 import { radarFriendNames } from '../../domain/friendMatch';
 import type { FriendListsStore } from '../../state/friendLists';
 import { Verdict, type VerdictState } from '../components/Verdict';
@@ -88,7 +89,7 @@ export function ScanScreen({
     return radarFriendNames(code, myRepeatCodes, friends);
   };
 
-  const handleMatches = (matches: MatchResult[]) => {
+  const handleMatches = (matches: MatchResult[], source: 'camera' | 'manual' = 'camera') => {
     flashCounter.current += 1;
     const key = flashCounter.current;
     // A toggled zero-width space forces the aria-live region to re-announce even
@@ -101,6 +102,7 @@ export function ScanScreen({
     const alreadyInSession = new Set(session.records().map((r) => r.code));
     const items: ScanResultItem[] = [];
     const seen = new Set<string>();
+    const scanned: { code: string; outcome: 'needed' | 'owned'; status: MatchResult['status'] }[] = [];
     let newNeeded = 0;
     let newOwned = 0;
     for (const match of matches) {
@@ -117,7 +119,23 @@ export function ScanScreen({
         session.add(match, owned);
         if (owned) newOwned++;
         else newNeeded++;
+        scanned.push({ code: match.entry.code, outcome: owned ? 'owned' : 'needed', status: match.status });
       }
+    }
+
+    // Anonymous per-sticker stat — once per distinct code per session (matches the app's own
+    // dedup/counters). Side-effect only: it reads the loop's results, never alters them. `status`
+    // is narrowed to 'exact'|'corrected' here because match.entry is non-null for every `scanned`.
+    // `multi` = this read came from a frame holding more than one distinct sticker.
+    const multi = items.length > 1;
+    for (const s of scanned) {
+      track('sticker_scanned', {
+        outcome: s.outcome,
+        match_status: s.status,
+        source,
+        code: s.code,
+        multi,
+      });
     }
 
     if (items.length === 0) {
@@ -262,6 +280,9 @@ export function ScanScreen({
     setVerdict(null);
     setAnnounce(pt.scan.discarded);
     setShowManual(true);
+    // Anonymous field-monitor for the 0-FP rule: a user flagging a confident read as wrong is the
+    // only in-the-wild signal of a misread.
+    track('misread_rejected', { outcome: v.outcome });
   };
 
   // ---------- Render ----------

@@ -118,6 +118,14 @@ Para rodar o deploy manualmente, use **Actions → Deploy to GitHub Pages → Ru
 
 ## Privacidade
 
-Tudo fica no aparelho. As imagens da câmera são processadas localmente e nunca saem do
-celular; a coleção é gravada só no próprio dispositivo. Nenhum dado é enviado para
-servidores.
+As imagens da câmera são processadas localmente e **nunca saem do celular**; a sua coleção é
+gravada só no próprio dispositivo.
+
+Pra entender o que é útil no app, ele envia **estatísticas de uso anônimas** (por ex.: quantas
+figurinhas foram lidas, quantos compartilhamentos). **Sem login e sem dados pessoais**: nenhum
+nome, e-mail, foto ou texto digitado é enviado. As estatísticas são **agregadas** e o app é
+configurado pra **não armazenar o endereço de IP** — no máximo o país/estado, pra ver de onde
+vem o uso. Não dá pra saber quem está usando, só quanto o app é usado.
+
+Vêm desligadas por padrão. Como ligar (chaves no GitHub) e configurar com privacidade (GeoIP sem
+guardar o IP) está em [`docs/analytics.md`](docs/analytics.md).

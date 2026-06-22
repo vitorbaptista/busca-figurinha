@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'preact/hooks';
 import type { CollectionStore, SessionReport } from '../../types';
 import { pt } from '../../i18n/pt';
+import { track } from '../../analytics';
 
 /** The commit CTA's label. `commit` ALWAYS saves both the checked keepers and every scanned
  *  repeat, so when both are present the label must name both — otherwise it reads as if only
@@ -56,6 +57,12 @@ export function ReportScreen({
     // any they've since traded away. Committed alongside the keepers so both stores move together.
     onCommitRepeats(repeats.map((e) => e.code));
     setDone(true);
+    track('report_committed', {
+      keepers_kept: checked.size,
+      repeats_found: repeats.length,
+      repeats_committed: true,
+      scanned_total: scannedCount,
+    });
     // Brief success state before handing back to the collection.
     window.setTimeout(onCommitted, 900);
   };
@@ -66,6 +73,12 @@ export function ReportScreen({
     if (done) return;
     collection.setOwned(checked, true);
     setDone(true);
+    track('report_committed', {
+      keepers_kept: checked.size,
+      repeats_found: repeats.length,
+      repeats_committed: false,
+      scanned_total: scannedCount,
+    });
     window.setTimeout(onCommitted, 900);
   };
 

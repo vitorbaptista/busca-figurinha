@@ -41,6 +41,11 @@ jobs:
         run: npm run build
         env:
           GH_PAGES: 1
+          # Anonymous usage stats (PostHog). Both are optional — if unset, the build ships with
+          # analytics disabled (a pure no-op). The project API key (phc_…) is a PUBLIC client key,
+          # safe to expose in the bundle. POSTHOG_HOST defaults to US cloud when the variable is unset.
+          VITE_POSTHOG_KEY: ${{ secrets.POSTHOG_KEY }}
+          VITE_POSTHOG_HOST: ${{ vars.POSTHOG_HOST }}
 
       - name: Configure Pages
         uses: actions/configure-pages@v5
