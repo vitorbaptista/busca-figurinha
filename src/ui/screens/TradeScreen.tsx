@@ -176,8 +176,6 @@ export function TradeScreen({
   // when the friend is gone (e.g. fully traded away) so we never render a detail for a missing id.
   const [selectedFriendId, setSelectedFriendId] = useState<string | null>(null);
   const [showArchived, setShowArchived] = useState(false);
-  // The "Mostrar QR Code" tile in the top action cluster toggles the in-person QR open inline.
-  const [showQr, setShowQr] = useState(false);
   // "Dei essas pro João": the spares leave repeats (a given duplicate is gone; `owned` is untouched —
   // I still have my one) AND leave the friend's needs (they got them). Re-intersect against the FRESH
   // stores at action time (not the render-captured `codes`) so a double-tap or any stale selection can
@@ -501,42 +499,15 @@ export function TradeScreen({
             </span>
           </button>
 
-          {/* Share my list — two methods of one goal, side by side: WhatsApp (online) and a QR Code
-              for in-person. The QR opens inline below the row; the WhatsApp button itself falls back to
-              copying the list when the native share sheet isn't available, so there's no separate
-              "Copiar" button. withName captures the user's name once before the first signed share. */}
-          <div class="share-row">
-            <button class="share-btn share-wa" onClick={() => withName(share)}>
-              <span class="share-emoji" aria-hidden="true">
-                📲
-              </span>
-              <span class="share-label">{pt.trade.shareWhats}</span>
-            </button>
-            <button
-              class="share-btn share-qr"
-              aria-expanded={showQr}
-              aria-controls="trade-qr-panel"
-              onClick={() => setShowQr((s) => !s)}
-            >
-              <span class="share-emoji" aria-hidden="true">
-                🔳
-              </span>
-              <span class="share-label">{pt.trade.qrCta}</span>
-              <span class="share-caret" aria-hidden="true">
-                {showQr ? '▾' : '▸'}
-              </span>
-            </button>
-          </div>
-          {/* In-person QR: the friend points their camera at this and opens your exact list (same deep
-              link as the WhatsApp share) — no typing, no app. Collapsed by default; built here (not as a
-              top-level const) because shareLink only exists in this branch. */}
-          {showQr && (
-            <section class="trade-qr" id="trade-qr-panel">
-              <span class="ptag">{pt.trade.qrTag}</span>
-              <QrCode value={shareLink} ariaLabel={pt.trade.qrAria} class="trade-qr-svg" />
-              <p class="trade-qr-hint">{pt.trade.qrHint}</p>
-            </section>
-          )}
+          {/* Share my list — WhatsApp (online) + QR Code (in person), side by side; the QR opens
+              inline below the row. Repeated again after the lists (see .share-foot) so it's reachable
+              whether or not the user has scrolled. The WhatsApp button itself falls back to copying the
+              list when the native share sheet is unavailable, so there's no separate "Copiar" button. */}
+          <ShareRow
+            panelId="trade-qr-panel-top"
+            onShareWhats={() => withName(share)}
+            shareLink={shareLink}
+          />
         </div>
 
         <section class="trade-section">
@@ -584,6 +555,16 @@ export function TradeScreen({
         <div class="preview">
           <span class="ptag">{pt.trade.previewTag}</span>
           <pre class="preview-text">{previewText}</pre>
+        </div>
+
+        {/* The same two share methods, repeated after the lists so they're reachable once the user has
+            scrolled past "minhas repetidas" / "o que eu preciso". Its own panelId → independent QR toggle. */}
+        <div class="share-foot">
+          <ShareRow
+            panelId="trade-qr-panel-bottom"
+            onShareWhats={() => withName(share)}
+            shareLink={shareLink}
+          />
         </div>
 
         {activeFriends.length > 0 && (
@@ -675,6 +656,55 @@ export function TradeScreen({
       {nameSheetEl}
       {saveSheetEl}
     </div>
+  );
+}
+
+/** The two ways to share your OWN list — 📲 WhatsApp (online) and 🔳 QR Code (in person) — as a
+ *  side-by-side pair, the QR opening inline below the row. Rendered twice in the own-offer view (at the
+ *  top and again after the lists), so it's reachable whether or not the user has scrolled. `panelId`
+ *  keeps the two instances' QR panels from colliding on id / aria-controls; each owns its open state. */
+function ShareRow({
+  panelId,
+  onShareWhats,
+  shareLink,
+}: {
+  panelId: string;
+  onShareWhats: () => void;
+  shareLink: string;
+}) {
+  const [showQr, setShowQr] = useState(false);
+  return (
+    <>
+      <div class="share-row">
+        <button class="share-btn share-wa" onClick={onShareWhats}>
+          <span class="share-emoji" aria-hidden="true">
+            📲
+          </span>
+          <span class="share-label">{pt.trade.shareWhats}</span>
+        </button>
+        <button
+          class="share-btn share-qr"
+          aria-expanded={showQr}
+          aria-controls={panelId}
+          onClick={() => setShowQr((s) => !s)}
+        >
+          <span class="share-emoji" aria-hidden="true">
+            🔳
+          </span>
+          <span class="share-label">{pt.trade.qrCta}</span>
+          <span class="share-caret" aria-hidden="true">
+            {showQr ? '▾' : '▸'}
+          </span>
+        </button>
+      </div>
+      {showQr && (
+        <section class="trade-qr" id={panelId}>
+          <span class="ptag">{pt.trade.qrTag}</span>
+          <QrCode value={shareLink} ariaLabel={pt.trade.qrAria} class="trade-qr-svg" />
+          <p class="trade-qr-hint">{pt.trade.qrHint}</p>
+        </section>
+      )}
+    </>
   );
 }
 
