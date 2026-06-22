@@ -160,6 +160,36 @@ export const pt = {
     repeatsSaved: 'Repetidas guardadas pra trocar!',
   },
 
+  // The viral share-back from "Conferir do amigo": a QR/link of the pile you just scanned, so your
+  // friend opens it and the stickers land in THEIR álbum + repetidas. (Receiver copy is the import half.)
+  pile: {
+    shareCta: '📲 Mandar a pilha pro amigo',
+    shareTitle: 'Manda o álbum pro seu amigo! 📲',
+    shareLead: (n: number) =>
+      n === 1
+        ? 'Você leu 1 figurinha da pilha dele. Ele abre esse código e ela já entra no álbum dele — do jeito mais rápido de começar.'
+        : `Você leu ${n} figurinhas da pilha dele. Ele abre esse código e elas já entram no álbum dele — do jeito mais rápido de começar.`,
+    qrAria: 'Código QR com as figurinhas escaneadas',
+    qrHint: 'Peça pro seu amigo abrir a câmera e apontar pra esse código.',
+    shareWhats: 'Mandar no WhatsApp',
+    shareCopied: 'Link copiado!',
+    shareFail: 'Não rolou compartilhar. Mostre o QR pro seu amigo.',
+    close: 'Fechar',
+    // Receiver half: a friend scanned my pile and sent me the link.
+    importTitle: (name?: string) =>
+      name ? `${name} escaneou suas figurinhas! 🎉` : 'Um amigo escaneou suas figurinhas! 🎉',
+    importLead: (n: number) =>
+      n === 1
+        ? '1 figurinha que ele viu na sua pilha pode entrar no seu álbum e nas suas repetidas pra trocar.'
+        : `${n} figurinhas que ele viu na sua pilha podem entrar no seu álbum e nas suas repetidas pra trocar.`,
+    importAdd: (n: number) =>
+      n === 1 ? 'Adicionar 1 ao meu álbum' : `Adicionar ${n} ao meu álbum`,
+    importSkip: 'Agora não',
+    importDoneTitle: 'Prontinho! 🎉',
+    importDoneLead: 'Já estão no seu álbum e nas suas repetidas pra trocar.',
+    importDoneCta: 'Ver minha coleção',
+  },
+
   collection: {
     title: 'Minha coleção',
     progress: (owned: number, total: number) => `${owned} / ${total}`,

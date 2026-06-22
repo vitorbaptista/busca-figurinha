@@ -7,6 +7,7 @@ import { createFriendListsStore } from './state/friendLists';
 import { createSettingsStore } from './state/settings';
 import { createSession } from './domain/session';
 import { readShareLink, shareTrades } from './domain/share';
+import { readPilePayload } from './domain/pileShare';
 import type { TradePayload } from './domain/tradeList';
 import { useStore } from './ui/hooks';
 import { Nav, type Screen } from './ui/Nav';
@@ -19,6 +20,7 @@ import { ReportScreen } from './ui/screens/ReportScreen';
 import { TradeScreen } from './ui/screens/TradeScreen';
 import { RepeatsScreen } from './ui/screens/RepeatsScreen';
 import { ConferirScreen } from './ui/screens/ConferirScreen';
+import { PileImportSheet } from './ui/components/PileImportSheet';
 import { CollectionScreen } from './ui/screens/CollectionScreen';
 import { SettingsScreen } from './ui/screens/SettingsScreen';
 
@@ -74,6 +76,14 @@ function loadFriendPayload(): TradePayload | null {
   return readShareLink(location.search, checklist);
 }
 
+/** Someone who opened a scanned-pile ?p= link arrives with the codes to import into THEIR álbum.
+ *  The trade ?t= link wins if both are somehow present (they never are — a link carries one). */
+function loadPilePayload(): { codes: string[]; name?: string } | null {
+  if (typeof location === 'undefined') return null;
+  if (readShareLink(location.search, checklist)) return null;
+  return readPilePayload(location.search, checklist);
+}
+
 // Gated dataset-capture tool, opened with ?capture (same obscurity as ?debug/?record — regular
 // users never see it). Lazy-loaded so the capture UI + its deps stay out of the normal bundle.
 const CAPTURE =
@@ -103,6 +113,9 @@ export function App() {
   const session = useMemo(loadSession, []);
   const [report, setReport] = useState<SessionReport | null>(null);
   const [friendPayload, setFriendPayload] = useState<TradePayload | null>(initialFriendPayload);
+  // A scanned-pile ?p= link (a friend scanned my pile) → import the codes into MY álbum + repetidas.
+  const initialPilePayload = useMemo(loadPilePayload, []);
+  const [pilePayload, setPilePayload] = useState(initialPilePayload);
 
   // PWA install flow. The hook lives here at the root because `beforeinstallprompt` fires early
   // (before lazily-mounted screens exist); its result is passed down to Ajustes — installing is
@@ -120,7 +133,10 @@ export function App() {
   // pathname (GH-Pages base) + the ?debug/?capture flags.
   useEffect(() => {
     if (typeof history === 'undefined' || typeof location === 'undefined') return;
-    history.replaceState(history.state, '', sectionUrl(location, screen, !!initialFriendPayload));
+    // Drop the query once a ?t= friend link OR a ?p= pile link has been read into state, so a
+    // reload/back doesn't re-open it. Same single-writer replaceState — no second history site.
+    const dropQuery = !!initialFriendPayload || !!initialPilePayload;
+    history.replaceState(history.state, '', sectionUrl(location, screen, dropQuery));
   }, [screen]);
 
   /** Install is opt-in from Ajustes (never auto-prompted). Android (a stashed prompt event) goes
@@ -240,13 +256,30 @@ export function App() {
       {/* A friend who arrives via a shared link lands straight on their trade comparison — don't
           bury it behind the intro. The intro still gates the SCANNER (it teaches the show-the-back
           move), so it appears the moment they tap "Escanear". */}
-      {!onboarded && !(initialFriendPayload && screen === 'trade') && (
+      {!onboarded && !(initialFriendPayload && screen === 'trade') && !initialPilePayload && (
         <Onboarding onDone={() => settings.set({ onboarded: true })} />
       )}
 
       {/* iOS-only install instructions, opened on demand from Ajustes (never auto-shown). */}
       {iosStepsOpen && pwa.invite === 'ios-steps' && (
         <InstallPrompt onClose={() => setIosStepsOpen(false)} />
+      )}
+
+      {/* Receiving end: a friend opened a ?p= link of a pile someone scanned for them. Import it
+          (with consent) into their own álbum + repetidas. Bypasses onboarding so it shows first. */}
+      {pilePayload && (
+        <PileImportSheet
+          codes={pilePayload.codes}
+          fromName={pilePayload.name}
+          collection={collection}
+          repeats={repeats}
+          onClose={() => {
+            // Land on Coleção — shows the just-imported stickers ("Ver minha coleção"), and gives a
+            // brand-new receiver a calm first screen instead of the camera-permission prompt.
+            setPilePayload(null);
+            setScreen('collection');
+          }}
+        />
       )}
     </div>
   );

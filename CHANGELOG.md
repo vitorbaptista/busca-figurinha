@@ -3,7 +3,22 @@
 Notable changes to the sticker scanner. Newest first. No formal releases yet (deploys on push to
 `main`), so entries are grouped by date. Keep this updated when you ship something notable.
 
-## 2026-06-22 — Trocar: WhatsApp e QR Code também no rodapé da lista
+## 2026-06-22 — Conferir do amigo: manda a pilha dele pra ele começar o álbum (QR/link)
+
+### Added
+- **Depois de conferir a pilha do amigo, toque em "📲 Mandar a pilha pro amigo".** O app gera um
+  **QR Code** (e link pro WhatsApp) com **todas** as figurinhas que você leu na pilha dele. Ele abre,
+  e elas já entram na **coleção e nas repetidas dele** — o jeito mais rápido de um amigo começar o
+  próprio álbum (e de chamar gente pro app). O botão aparece assim que você lê a primeira figurinha,
+  ao lado do "Salvar na coleção", e vale mesmo que você não vá guardar nenhuma.
+- Quem recebe o link vê **"… escaneou suas figurinhas!"**, confirma, e as figurinhas entram no álbum
+  dele. Amigo só vira "amigo salvo" na sua lista quando ELE te manda a lista dele (pelo link/QR dele),
+  como já era.
+
+### Notes
+- 0 falso-positivo mantido: as leituras só entram na pilha depois de confirmadas (mesmo critério do
+  scanner), e quem recebe confirma antes de qualquer coisa ser salva. O link da pilha usa um endereço
+  próprio (`?p=`), separado do link de troca (`?t=`), e não some a coleção de quem já usa o app.
 
 ### Added
 - **Os botões "Enviar no WhatsApp" e "Mostrar QR Code" agora se repetem embaixo, depois das listas.**
