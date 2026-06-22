@@ -75,6 +75,11 @@ export function ConferirScreen({ collection, friendLists, settings, onBack }: Co
   // have are still HIS stickers). This is what the viral "Mandar pro amigo" QR encodes so the friend
   // imports his entire pile. Confirmer-gated like the tally (recorded only in handleMatch).
   const [scannedCodes, setScannedCodes] = useState<Set<string>>(() => new Set());
+  // The stickers you actually TOOK in the trade (confirmed in "Pegou quais?"). The viral share
+  // excludes these from the friend's repetidas (you took that dupe, so it's no longer their spare),
+  // while the whole pile still goes to their álbum. Empty until you save — sharing before that
+  // treats nothing as taken (correct: you've taken nothing yet → all their dupes remain).
+  const [savedTaken, setSavedTaken] = useState<Set<string>>(() => new Set());
   const [shareOpen, setShareOpen] = useState(false);
   const [showManual, setShowManual] = useState(false);
   const [manualValue, setManualValue] = useState('');
@@ -142,6 +147,9 @@ export function ConferirScreen({ collection, friendLists, settings, onBack }: Co
     if (!reviewSelected) return;
     const codes = [...reviewSelected];
     if (codes.length > 0) collection.setOwned(codes, true);
+    // Remember what was taken (accumulated across saves) so the viral share can drop these from the
+    // friend's repetidas — you took those dupes.
+    if (codes.length > 0) setSavedTaken((s) => new Set([...s, ...codes]));
     setReviewSelected(null);
     setTakenForMe(new Set());
     if (codes.length > 0) flash(pt.conferir.saved(codes.length));
@@ -518,7 +526,8 @@ export function ConferirScreen({ collection, friendLists, settings, onBack }: Co
 
       {shareOpen && (
         <PileShareSheet
-          codes={[...scannedCodes]}
+          pile={[...scannedCodes]}
+          taken={[...savedTaken]}
           name={sanitizeName(settings.get().name) || undefined}
           onClose={() => setShareOpen(false)}
         />

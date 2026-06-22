@@ -5,17 +5,27 @@ export type SharePileResult = 'shared' | 'whatsapp' | 'copied' | 'unavailable';
 
 const PILE_CTA = '👉 Abre o link e suas figurinhas entram no seu álbum 👇';
 
-/** The viral "I scanned your pile" deep link. Carries the scanned codes in the payload's `repeats`
- *  slot (for the friend these ARE their stickers-in-hand) under a NEW `?p=` key, so the trade `?t=`
- *  receiver never sees it and can't misread it as a trade offer. Reuses the tradeList codec. */
+/** The viral "I scanned your pile" deep link, under a NEW `?p=` key so the trade `?t=` receiver
+ *  never sees it. It carries TWO sets of the friend's stickers via the 2-field tradeList codec:
+ *    - `repeats` slot = the ones you did NOT take → still the friend's spares → their álbum AND
+ *      their repetidas.
+ *    - `missing` slot = the ones you TOOK in the trade → their álbum ONLY (you took that dupe, so
+ *      it's no longer a spare for them).
+ *  The whole pile = the union of both → the friend's álbum. (`missing` is just the codec's second
+ *  transport slot here, not "missing" in the trade sense.) */
 export function buildPileLink(
   baseUrl: string,
-  codes: Iterable<string>,
+  pile: Iterable<string>,
+  taken: Iterable<string>,
   checklist: Checklist,
   name?: string,
 ): string {
+  const takenSet = new Set(taken);
+  const pileArr = [...pile];
+  const notTaken = pileArr.filter((c) => !takenSet.has(c));
+  const tookFromPile = pileArr.filter((c) => takenSet.has(c));
   const encoded = encodeURIComponent(
-    encodePayload({ repeats: [...codes], missing: [], name }, checklist),
+    encodePayload({ repeats: notTaken, missing: tookFromPile, name }, checklist),
   );
   const hashStart = baseUrl.indexOf('#');
   const beforeHash = hashStart === -1 ? baseUrl : baseUrl.slice(0, hashStart);
@@ -28,27 +38,33 @@ export function buildPileLink(
   return `${beforeHash}${joiner}p=${encoded}${hash}`;
 }
 
-/** Read a pile payload back from a full URL or a raw query/`?p=` value; null if absent/garbage. */
+/** Read a pile payload back from a full URL or a raw query/`?p=` value; null if absent/garbage.
+ *  `ownedCodes` = the whole pile (→ the receiver's álbum); `repeatCodes` = the not-taken subset
+ *  (→ the receiver's repetidas). */
 export function readPilePayload(
   urlOrSearch: string,
   checklist: Checklist,
-): { codes: string[]; name?: string } | null {
+): { ownedCodes: string[]; repeatCodes: string[]; name?: string } | null {
   const encoded = extractPileValue(urlOrSearch);
   if (!encoded) return null;
   const payload = decodePayload(encoded, checklist);
-  if (payload.repeats.length === 0) return null;
-  return { codes: payload.repeats, name: payload.name };
+  if (payload.repeats.length === 0 && payload.missing.length === 0) return null;
+  const repeatCodes = payload.repeats; // not-taken → spares
+  const ownedCodes = [...new Set([...payload.repeats, ...payload.missing])]; // whole pile
+  return { ownedCodes, repeatCodes, name: payload.name };
 }
 
 /** The deep link + the WhatsApp message text for a scanned pile, from the current page. One source
- *  of truth for the QR, the share, and the copy fallback so they never drift. */
+ *  of truth for the QR, the share, and the copy fallback so they never drift. The count is the WHOLE
+ *  pile (what enters the friend's álbum), regardless of how many you took. */
 export function pileShareTextFor(
-  codes: Iterable<string>,
+  pile: Iterable<string>,
+  taken: Iterable<string>,
   checklist: Checklist,
   name?: string,
 ): { link: string; text: string } {
-  const link = buildPileLink(browserBaseUrl(), codes, checklist, name);
-  const total = new Set(codes).size;
+  const link = buildPileLink(browserBaseUrl(), pile, taken, checklist, name);
+  const total = new Set(pile).size;
   const head = `📸 Escaneei a sua pilha da Copa 2026 — ${total} ${
     total === 1 ? 'figurinha' : 'figurinhas'
   }!`;
@@ -56,11 +72,12 @@ export function pileShareTextFor(
 }
 
 export async function sharePile(
-  codes: Iterable<string>,
+  pile: Iterable<string>,
+  taken: Iterable<string>,
   checklist: Checklist,
   name?: string,
 ): Promise<SharePileResult> {
-  const { text } = pileShareTextFor(codes, checklist, name);
+  const { text } = pileShareTextFor(pile, taken, checklist, name);
   const nav = typeof navigator === 'undefined' ? null : navigator;
 
   if (typeof nav?.share === 'function') {
