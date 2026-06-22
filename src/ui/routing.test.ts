@@ -10,6 +10,10 @@ describe('screenFromHash', () => {
     expect(screenFromHash('#repetidas')).toBe('repeats');
   });
 
+  it('parses #trocar to trade (conferir + conferir-report never parse back)', () => {
+    expect(screenFromHash('#trocar')).toBe('trade');
+  });
+
   it('tolerates a missing leading #', () => {
     expect(screenFromHash('trocar')).toBe('trade');
   });
@@ -33,6 +37,10 @@ describe('hashFromScreen', () => {
 
   it('writes the escanear slug for the ephemeral report screen', () => {
     expect(hashFromScreen('report')).toBe('escanear');
+  });
+
+  it('writes the trocar slug for the ephemeral conferir-report screen', () => {
+    expect(hashFromScreen('conferir-report')).toBe('trocar');
   });
 
   it('round-trips every routable screen', () => {

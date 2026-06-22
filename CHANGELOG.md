@@ -3,6 +3,17 @@
 Notable changes to the sticker scanner. Newest first. No formal releases yet (deploys on push to
 `main`), so entries are grouped by date. Keep this updated when you ship something notable.
 
+## 2026-06-22 — Conferir a pilha do amigo agora termina igual ao Escanear
+
+### Added
+- Ao **conferir a pilha do amigo**, agora aparece o botão **"Terminar"** (como no Escanear). Ele
+  abre uma tela onde você **marca quais figurinhas pegou de verdade** na troca e salva na sua
+  coleção, e ainda dá pra **mandar a lista da pilha pro amigo**.
+
+### Changed
+- As duas telas de câmera (**Escanear** e **Conferir**) agora funcionam igual por dentro — mesma
+  leitura e mesma experiência de escaneamento; muda só o texto e o que acontece ao **Terminar**.
+
 ## 2026-06-22 — Importar a lista: botão mostra quantas achou e "Preciso" preenche o álbum
 
 ### Changed

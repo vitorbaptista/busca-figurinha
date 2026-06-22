@@ -6,6 +6,9 @@ import { createCollectionStore, idbStore } from './state/collection';
 import { createFriendListsStore } from './state/friendLists';
 import { createSettingsStore } from './state/settings';
 import { createSession } from './domain/session';
+import { createPileSession } from './domain/pileSession';
+import type { PileReport } from './domain/pileSession';
+import { sanitizeName } from './domain/name';
 import { readShareLink, shareTrades } from './domain/share';
 import { readPilePayload } from './domain/pileShare';
 import type { TradePayload } from './domain/tradeList';
@@ -20,6 +23,7 @@ import { ReportScreen } from './ui/screens/ReportScreen';
 import { TradeScreen } from './ui/screens/TradeScreen';
 import { RepeatsScreen } from './ui/screens/RepeatsScreen';
 import { ConferirScreen } from './ui/screens/ConferirScreen';
+import { ConferirReportScreen } from './ui/screens/ConferirReportScreen';
 import { PileImportSheet } from './ui/components/PileImportSheet';
 import { CollectionScreen } from './ui/screens/CollectionScreen';
 import { SettingsScreen } from './ui/screens/SettingsScreen';
@@ -114,6 +118,9 @@ export function App() {
   // step); every later section change pushes, so the browser Back button returns to the prior section.
   const firstUrlSync = useRef(true);
   const session = useMemo(loadSession, []);
+  // Conferir's pile accumulator (mirrors `session`): in-memory, read-only over the collection.
+  const pileSession = useMemo(createPileSession, []);
+  const [pileReport, setPileReport] = useState<PileReport | null>(null);
   const [report, setReport] = useState<SessionReport | null>(null);
   const [friendPayload, setFriendPayload] = useState<TradePayload | null>(initialFriendPayload);
   // A scanned-pile ?p= link (a friend scanned my pile) → import the codes into MY álbum + repetidas.
@@ -174,6 +181,12 @@ export function App() {
     setScreen('report');
   };
 
+  /** Build the Conferir pile report and move to its finish step (Terminar). */
+  const finishConferir = () => {
+    setPileReport(pileSession.finish());
+    setScreen('conferir-report');
+  };
+
   /** Wipe the session (after the user has committed their picks) and reset to scanning. */
   const resetSession = () => {
     session.clear();
@@ -231,7 +244,10 @@ export function App() {
           onShare={(payload) => shareTrades(payload, checklist)}
           onClearFriend={() => setFriendPayload(null)}
           onGoScan={() => setScreen('scan')}
-          onConferir={() => setScreen('conferir')}
+          onConferir={() => {
+            pileSession.reset();
+            setScreen('conferir');
+          }}
           onEditRepeats={() => setScreen('repeats')}
           onEditNeed={() => setScreen('collection')}
         />
@@ -242,7 +258,21 @@ export function App() {
           collection={collection}
           friendLists={friendLists}
           settings={settings}
+          pileSession={pileSession}
+          onFinish={finishConferir}
           onBack={() => setScreen('trade')}
+        />
+      )}
+
+      {screen === 'conferir-report' && pileReport && (
+        <ConferirReportScreen
+          report={pileReport}
+          collection={collection}
+          name={sanitizeName(settings.get().name) || undefined}
+          onBack={() => {
+            setPileReport(null);
+            setScreen('trade');
+          }}
         />
       )}
 
@@ -286,6 +316,7 @@ export function App() {
             // Route to the right starting point: their own pile (Escanear) or another person's
             // (Conferir, the friend's-pile scanner). #68: same scanner, different framing. Any pasted
             // list was already written to the stores by the Importar sheet itself.
+            if (result.start === 'conferir') pileSession.reset();
             setScreen(result.start === 'conferir' ? 'conferir' : 'scan');
           }}
         />

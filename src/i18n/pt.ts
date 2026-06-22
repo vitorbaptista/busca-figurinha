@@ -131,6 +131,11 @@ export const pt = {
           ? 'Salvar 1 na coleção'
           : `Salvar ${n} na coleção`,
     reviewCancel: 'Agora não',
+    // The "Terminar" finish step (a screen, like the album's report): review what you took + share back.
+    finishTitle: 'Terminar a troca',
+    finishPileCount: 'na pilha',
+    finishTakeCount: 'pra você',
+    takenEmpty: 'Você não precisa de nenhuma dessa pilha — mas ainda dá pra mandar a lista pro amigo.',
   },
 
   report: {

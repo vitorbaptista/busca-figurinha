@@ -14,9 +14,12 @@ const SLUGS: Record<Screen, string> = {
   // Conferir is a camera launched from Trocar — ephemeral like `report`: it shares the Trocar slug and
   // is absent from the reverse map below, so a refresh restores to Trocar (don't relaunch a camera cold).
   conferir: 'trocar',
+  // Conferir's finish step ("Terminar") — ephemeral like `report`/`conferir`: shares the Trocar slug
+  // and is absent from the reverse map, so a refresh lands on Trocar (don't relaunch a camera cold).
+  'conferir-report': 'trocar',
 };
 
-// Reverse map for parsing a hash back to a screen. `report` + `conferir` are omitted (never targets).
+// Reverse map for parsing a hash back to a screen. `report`, `conferir`, and `conferir-report` are omitted (never targets).
 const SCREENS: Record<string, Screen> = {
   escanear: 'scan',
   colecao: 'collection',

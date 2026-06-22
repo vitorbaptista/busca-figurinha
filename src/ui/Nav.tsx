@@ -7,6 +7,7 @@ export type Screen =
   | 'trade'
   | 'repeats'
   | 'conferir'
+  | 'conferir-report'
   | 'settings';
 
 interface NavProps {
@@ -23,8 +24,14 @@ const ITEMS: { screen: Screen; label: string; emoji: string }[] = [
 ];
 
 export function Nav({ current, onNavigate }: NavProps) {
-  // Report lives "inside" the scan flow (Escanear tab); Conferir is launched from Trocar (Trocar tab).
-  const active = current === 'report' ? 'scan' : current === 'conferir' ? 'trade' : current;
+  // Report lives "inside" the scan flow (Escanear tab); Conferir + its finish step are launched
+  // from Trocar (Trocar tab).
+  const active =
+    current === 'report'
+      ? 'scan'
+      : current === 'conferir' || current === 'conferir-report'
+        ? 'trade'
+        : current;
 
   return (
     <nav class="nav">

@@ -1,100 +1,53 @@
-import { useEffect, useRef, useState } from 'preact/hooks';
-import type { AutoCapture, CaptureResult, CollectionStore, MatchResult, OcrEngine, SettingsStore } from '../../types';
-import { CONFIG } from '../../config';
-import { checklist } from '../../data/checklist';
+import { useRef, useState } from 'preact/hooks';
+import type { CollectionStore, MatchResult, SettingsStore } from '../../types';
 import { pt } from '../../i18n/pt';
-import { matchCode } from '../../domain/matching';
 import { friendsNeeding, huntVerdict } from '../../domain/friendMatch';
 import type { FriendListsStore } from '../../state/friendLists';
-import { createConfirmer } from '../../domain/confirm';
-import { allowCommit } from '../../domain/commitGate';
-import { createHybridOcrEngine as createOcrEngine } from '../../ocr/hybridEngine';
-import { createCameraSource } from '../../ocr/frameSource';
-import { useRoiViewport } from '../hooks/useRoiViewport';
-import { recognizeFrameInOrder, recognizeFrameCodeNet } from '../../ocr/recognize';
-import type { CodeNet } from '../../ocr/codeNetEngine';
-import { createAutoCapture } from '../../ocr/autoCapture';
-import { createScreenWakeLock } from '../wakeLock';
+import type { PileSession } from '../../domain/pileSession';
+import { useScanner } from '../hooks/useScanner';
+import { ScanShell } from '../components/ScanShell';
 import { ConferirVerdict, type ConferirVerdictState } from '../components/ConferirVerdict';
-import { PileShareSheet } from '../components/PileShareSheet';
-import { sanitizeName } from '../../domain/name';
 
 interface ConferirScreenProps {
-  /** Read-only: PRECISO/JÁ TENHO comes from collection.has(code). Never written here. */
+  /** Read-only: PRECISO/JÁ TENHO comes from collection.has(code). Never written here (only the
+   *  finish step writes). */
   collection: CollectionStore;
   /** Read-only: friends a scanned sticker serves (friendsNeeding, NOT spare-gated — it's THEIR sticker). */
   friendLists: FriendListsStore;
   settings: SettingsStore;
+  /** The lifted pile accumulator; live reads are recorded here, the finish step reads it. */
+  pileSession: PileSession;
+  /** "Terminar" → build the report + route to the finish step (owned by app.tsx). */
+  onFinish: () => void;
   onBack: () => void;
 }
 
-type CameraState = 'loading' | 'ready' | 'denied';
-type ScanPhase = 'idle' | 'reading';
-
 /**
  * "Conferir figurinhas" — show the OTHER person's stickers to the camera while trading. Per read:
- * PEGA! (você precisa) / PEGA PRO {amigo} / JÁ TENHO (pode deixar). It reuses the shipping scanner's
- * PRIMITIVES (camera source, autoCapture, recognizeFrame, confirmer, allowCommit) and replicates the
- * 0-FP commit discipline verbatim — a wrong PEGA/DEIXA would drive a bad PHYSICAL trade. The shipping
- * ScanScreen is left untouched (0% regression). Default camera is FRONT (phone flat, sticker shown to
- * the screen-side camera + the fill-light — the validated capture path, same as the album scanner).
- * It accumulates a running tally as you sweep the pile; the ONLY write is the explicit, user-initiated
- * "Salvar na coleção" (after you actually trade) — every per-read computation is read-only.
+ * PEGA! (você precisa) / PEGA PRO {amigo} / JÁ TENHO (pode deixar). Pure live scanning now: it shares
+ * the album scanner's engine (useScanner) and chrome (ScanShell), and accumulates into the lifted
+ * pileSession. The post-scan actions (review takes → save, share the pile) live in the "Terminar"
+ * finish step (ConferirReportScreen), reached by the Terminar pill — symmetric to Escanear's report.
  */
-export function ConferirScreen({ collection, friendLists, settings, onBack }: ConferirScreenProps) {
-  const videoLayerRef = useRef<HTMLDivElement>(null);
-  const ocrRef = useRef<OcrEngine | null>(null);
-  const ocrInitRef = useRef<Promise<boolean> | null>(null);
-  const codeNetRef = useRef<CodeNet | null>(null);
-  const sourceRef = useRef<ReturnType<typeof createCameraSource> | null>(null);
-  const captureRef = useRef<AutoCapture | null>(null);
-  // Serializes every OCR call (one wasm/tfjs worker) so a manual read can't race the live burst.
-  const recognizeChainRef = useRef<Promise<void>>(Promise.resolve());
-  const confirmerRef = useRef(createConfirmer(CONFIG.match.confirmations));
-  const lastCommitAtRef = useRef(0);
-  const committedThisBurstRef = useRef(false);
-  const flashCounter = useRef(0);
-
-  const [cameraState, setCameraState] = useState<CameraState>('loading');
-  const [ocrProgress, setOcrProgress] = useState(0);
-  const [ocrReady, setOcrReady] = useState(false);
-  const [ocrFailed, setOcrFailed] = useState(false);
+export function ConferirScreen({
+  collection,
+  friendLists,
+  settings,
+  pileSession,
+  onFinish,
+  onBack,
+}: ConferirScreenProps) {
   const [verdict, setVerdict] = useState<ConferirVerdictState | null>(null);
   const [announce, setAnnounce] = useState('');
-  const [notice, setNotice] = useState<string | null>(null);
-  // Default FRONT camera (phone flat on the table, sticker shown to the screen-side camera + the
-  // fill-light) — the validated capture path the album scanner uses; flip to back is remembered.
-  const [facing, setFacing] = useState<'user' | 'environment'>(
-    settings.get().conferirCamera === 'back' ? 'environment' : 'user',
-  );
-  // Running tally of distinct stickers worth grabbing as you sweep the pile: ones you NEED (forMe →
-  // savable to your album once you trade) and ones a saved friend needs (forFriends → advisory only).
-  const [takenForMe, setTakenForMe] = useState<Set<string>>(() => new Set());
-  const [takenForFriends, setTakenForFriends] = useState<Set<string>>(() => new Set());
-  // The WHOLE pile you've read (every resolved sticker, regardless of verdict — even ones you already
-  // have are still HIS stickers). This is what the viral "Mandar pro amigo" QR encodes so the friend
-  // imports his entire pile. Confirmer-gated like the tally (recorded only in handleMatch).
-  const [scannedCodes, setScannedCodes] = useState<Set<string>>(() => new Set());
-  // The stickers you actually TOOK in the trade (confirmed in "Pegou quais?"). The viral share
-  // excludes these from the friend's repetidas (you took that dupe, so it's no longer their spare),
-  // while the whole pile still goes to their álbum. Empty until you save — sharing before that
-  // treats nothing as taken (correct: you've taken nothing yet → all their dupes remain).
-  const [savedTaken, setSavedTaken] = useState<Set<string>>(() => new Set());
-  const [shareOpen, setShareOpen] = useState(false);
   const [showManual, setShowManual] = useState(false);
-  const [manualValue, setManualValue] = useState('');
-  const [scanPhase, setScanPhase] = useState<ScanPhase>('idle');
-  const scanPhaseRef = useRef<ScanPhase>('idle');
+  // A monotonic tick bumped on each NEW read so the chips re-read the (non-reactive) pileSession.
+  const [, bumpTally] = useState(0);
+  const flashCounterRef = useRef(0);
 
-  const flash = (text: string) => {
-    setNotice(text);
-    window.setTimeout(() => setNotice(null), 2600);
-  };
-
-  // ---------- Result handling (READ-ONLY: compute a verdict, persist nothing) ----------
+  // READ-ONLY result handling: compute a verdict, record into the pile, persist nothing here.
   const handleMatch = (matches: MatchResult[]) => {
-    flashCounter.current += 1;
-    const key = flashCounter.current;
+    flashCounterRef.current += 1;
+    const key = flashCounterRef.current;
     const zwsp = '​'.repeat(key % 2);
 
     // One sticker at a time (you check the pile one by one). Take the first resolved entry.
@@ -108,14 +61,7 @@ export function ConferirScreen({ collection, friendLists, settings, onBack }: Co
     const friendNames = friendsNeeding(entry.code, friendLists.active());
     const v = huntVerdict({ owned, friendNames });
     setVerdict({ kind: v.kind, display: entry.display, teamName: entry.teamName, forFriends: v.forFriends, key });
-    // Record the read into the whole-pile set (every resolved sticker, deduped) — what the viral QR
-    // shares with the friend. They're his stickers whether or not you already have them.
-    setScannedCodes((s) => (s.has(entry.code) ? s : new Set(s).add(entry.code)));
-    // Tally the takes (deduped). forMe = a sticker you need (savable to your album after the trade);
-    // take-friends = you own it but a friend needs it (advisory — it's not yours to keep).
-    if (v.forMe) setTakenForMe((s) => (s.has(entry.code) ? s : new Set(s).add(entry.code)));
-    else if (v.kind === 'take-friends')
-      setTakenForFriends((s) => (s.has(entry.code) ? s : new Set(s).add(entry.code)));
+    if (pileSession.add(entry, v.kind)) bumpTally((n) => n + 1);
     const who =
       v.kind === 'take-mine'
         ? pt.conferir.takeWord + ' ' + pt.conferir.takeMineSub
@@ -125,439 +71,63 @@ export function ConferirScreen({ collection, friendLists, settings, onBack }: Co
     setAnnounce(`${entry.display}: ${who}${zwsp}`);
   };
 
-  // Tapping "Salvar" opens a per-item review (NOT a blind save-all): scanning a sticker only means you
-  // LOOKED at it, not that you traded for it — so the user confirms which ones they actually took before
-  // any get marked owned. Mirrors the album report's checked-keeper gate; preserves the cardinal rule
-  // (never mark a sticker owned that you don't physically have). Friend-takes are never offered here.
-  const [reviewSelected, setReviewSelected] = useState<Set<string> | null>(null);
-  const openReview = () => {
-    if (takenForMe.size === 0) return;
-    setReviewSelected(new Set(takenForMe));
-  };
-  const toggleReview = (code: string) =>
-    setReviewSelected((s) => {
-      if (!s) return s;
-      const next = new Set(s);
-      if (next.has(code)) next.delete(code);
-      else next.add(code);
-      return next;
-    });
-  // Confirm: add ONLY the still-checked ones (the stickers you actually took), then end the session.
-  const confirmSave = () => {
-    if (!reviewSelected) return;
-    const codes = [...reviewSelected];
-    if (codes.length > 0) collection.setOwned(codes, true);
-    // Remember what was taken (accumulated across saves) so the viral share can drop these from the
-    // friend's repetidas — you took those dupes.
-    if (codes.length > 0) setSavedTaken((s) => new Set([...s, ...codes]));
-    setReviewSelected(null);
-    setTakenForMe(new Set());
-    if (codes.length > 0) flash(pt.conferir.saved(codes.length));
-  };
+  const scanner = useScanner({
+    onMatches: handleMatch,
+    settings,
+    cameraSetting: 'conferirCamera',
+  });
 
-  // ---------- OCR engine init (codeNet ensemble + hybrid), identical 0-FP discipline ----------
-  const ensureOcr = (): Promise<boolean> => {
-    if (ocrInitRef.current) return ocrInitRef.current;
-    const engine = createOcrEngine();
-    ocrRef.current = engine;
-    setOcrFailed(false);
-    if (!codeNetRef.current) {
-      import('../../ocr/codeNetEngine')
-        .then(({ createCodeNet }) => {
-          const cn = createCodeNet(checklist);
-          return cn.init(import.meta.env.BASE_URL + 'models/codenet/model.json').then(() => {
-            codeNetRef.current = cn;
-          });
-        })
-        .catch(() => {
-          /* codeNet unavailable → hybrid-only fallback */
-        });
-    }
-    const init = engine.init((ratio) => setOcrProgress(Math.round(ratio * 100))).then(() => true);
-    const timeout = new Promise<boolean>((resolve) => setTimeout(() => resolve(false), 25000));
-    ocrInitRef.current = Promise.race([init, timeout])
-      .then((ok) => {
-        if (!ok) throw new Error('ocr-init-timeout');
-        setOcrReady(true);
-        return true;
-      })
-      .catch(() => {
-        ocrRef.current = null;
-        ocrInitRef.current = null;
-        setOcrReady(false);
-        setOcrFailed(true);
-        return false;
-      });
-    return ocrInitRef.current;
-  };
-
-  // Recognize a drawn canvas — copied verbatim from the shipping scanner's 0-FP path: codeNet-first
-  // ensemble with hybrid fallback, multi-frame confirmer, and the commit cooldown. The ONLY change is
-  // the result sink (handleMatch instead of the album handler). Keep every guard identical.
-  const recognizeCanvas = (
-    canvas: HTMLCanvasElement,
-    opts: { confirm: boolean; silent: boolean },
-  ): Promise<CaptureResult> => {
-    const idle: CaptureResult = { stop: false, committed: false, detected: false };
-    const job = recognizeChainRef.current.then(async (): Promise<CaptureResult> => {
-      const ready = await ensureOcr();
-      const ocr = ocrRef.current;
-      if (!ready || !ocr) return idle;
-      try {
-        await new Promise((r) => setTimeout(r, 0));
-        const cn = codeNetRef.current;
-        let out = cn?.ready()
-          ? await recognizeFrameCodeNet(cn, canvas, checklist, opts.confirm)
-          : await recognizeFrameInOrder(ocr, canvas, checklist, opts.confirm);
-        if (cn?.ready() && out.resolved.length === 0) {
-          out = await recognizeFrameInOrder(ocr, canvas, checklist, opts.confirm);
-        }
-        const { resolved, crops } = out;
-
-        let toCommit = resolved;
-        let stopBurst = true;
-        if (opts.confirm) {
-          const newly = confirmerRef.current.add(resolved.map((m) => m.entry!.code));
-          const ok = new Set(newly);
-          toCommit = resolved.filter((m) => ok.has(m.entry!.code));
-          stopBurst = confirmerRef.current.committedCount() > 0 && newly.length === 0;
-          // Commit cooldown — gates only the burst's FIRST commit. The committedThisBurstRef reset on
-          // onBurstStart (below) is load-bearing: without it allowCommit would return true forever.
-          if (toCommit.length > 0) {
-            const now = Date.now();
-            const state = {
-              lastCommitAt: lastCommitAtRef.current,
-              committedThisBurst: committedThisBurstRef.current,
-            };
-            if (allowCommit(state, now, CONFIG.capture.minRecaptureMs)) {
-              lastCommitAtRef.current = now;
-              committedThisBurstRef.current = true;
-            } else {
-              toCommit = [];
-            }
-          }
-        }
-
-        if (toCommit.length > 0) {
-          handleMatch(toCommit);
-        } else if (!opts.silent) {
-          handleMatch([]);
-        }
-        const committed = opts.confirm ? confirmerRef.current.committedCount() > 0 : toCommit.length > 0;
-        return { stop: opts.confirm ? stopBurst : true, committed, detected: crops > 0 };
-      } catch {
-        if (!opts.silent) handleMatch([]);
-        return idle;
-      }
-    });
-    recognizeChainRef.current = job.then(
-      () => {},
-      () => {},
-    );
-    return job;
-  };
-
-  // Lock the document to the visible viewport (full-bleed camera must never scroll). Same as ScanScreen.
-  useEffect(() => {
-    const root = document.documentElement;
-    root.classList.add('scan-active');
-    return () => root.classList.remove('scan-active');
-  }, []);
-
-  // Keep the screen awake during the hands-free loop.
-  useEffect(() => {
-    const wake = createScreenWakeLock();
-    wake.acquire();
-    return () => wake.release();
-  }, []);
-
-  // OCR lifecycle (independent of which camera is active).
-  useEffect(() => {
-    void ensureOcr();
-    return () => {
-      ocrRef.current?.terminate().catch(() => {});
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  // Camera lifecycle (restarts on flip).
-  useEffect(() => {
-    let cancelled = false;
-    setCameraState('loading');
-    const source = createCameraSource({ facingMode: facing });
-    sourceRef.current = source;
-
-    const start = async () => {
-      try {
-        await source.start();
-      } catch {
-        if (!cancelled) setCameraState('denied');
-        return;
-      }
-      if (cancelled) {
-        source.stop();
-        return;
-      }
-      source.element.classList.add('scan-video');
-      videoLayerRef.current?.replaceChildren(source.element);
-      setCameraState('ready');
-
-      const capture = createAutoCapture({
-        source,
-        onBurstStart: () => {
-          // Load-bearing for 0-FP: reset the per-burst commit flag so the cooldown gate works.
-          confirmerRef.current.reset();
-          committedThisBurstRef.current = false;
-        },
-        onCapture: (frame) => recognizeCanvas(frame, { confirm: true, silent: true }),
-        onTick: (s) => {
-          const phase: ScanPhase = s.phase === 'holding' || s.phase === 'reading' ? 'reading' : 'idle';
-          if (phase !== scanPhaseRef.current) {
-            scanPhaseRef.current = phase;
-            setScanPhase(phase);
-          }
-        },
-      });
-      captureRef.current = capture;
-      capture.start();
-    };
-
-    start();
-
-    return () => {
-      cancelled = true;
-      captureRef.current?.stop();
-      captureRef.current = null;
-      source.stop();
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [facing]);
-
-  useRoiViewport(videoLayerRef, () => sourceRef.current?.element as HTMLVideoElement | undefined, [
-    cameraState,
-    facing,
-  ]);
-
-  const flipCamera = () => {
-    const next = facing === 'user' ? 'environment' : 'user';
-    setFacing(next);
-    settings.set({ conferirCamera: next === 'user' ? 'front' : 'back' });
-  };
-
-  // Manual entry — the escape hatch AND the headless test seam (drives handleMatch without a camera).
-  const submitManual = (e: Event) => {
-    e.preventDefault();
-    const value = manualValue.trim();
-    if (!value) return;
-    handleMatch([matchCode(value, checklist)]);
-    setManualValue('');
-    setShowManual(false);
-  };
-
-  const retryCamera = () => {
-    setCameraState('loading');
-    setOcrReady(false);
-    setOcrProgress(0);
-    window.location.reload();
-  };
-
-  const reading = scanPhase === 'reading' && ocrReady;
+  const mineCount = pileSession.takenForMe().length;
+  const friendsCount = pileSession.takenForFriends().length;
+  const hasScanned = pileSession.wholePile().length > 0;
 
   return (
-    <div class="screen scan-screen conferir-screen">
-      <p class="sr-only" role="status" aria-live="assertive">
-        {announce}
-      </p>
-
-      <div class="pagetab">
-        <span class="pagetab-name">{pt.conferir.pageTitle}</span>
-        <span class="pagetab-pg">{pt.conferir.pageSubtitle}</span>
-      </div>
-
-      <div class="cam">
-        <div class="cam-top">
-          <div class="conferir-top-left">
-            <button class="cam-icon-btn" onClick={onBack} aria-label={pt.conferir.back} title={pt.conferir.back}>
-              ←
-            </button>
-            <div class="counters">
-              <div class="chip-count">
-                <b>{takenForMe.size}</b>
-                <span>{pt.conferir.counterMine}</span>
+    <ScanShell
+      rootClass="conferir-screen"
+      pageTitle={pt.conferir.pageTitle}
+      pageSubtitle={pt.conferir.pageSubtitle}
+      announce={announce}
+      holdStillText={pt.conferir.holdStill}
+      cameraState={scanner.cameraState}
+      ocrReady={scanner.ocrReady}
+      ocrFailed={scanner.ocrFailed}
+      ocrProgress={scanner.ocrProgress}
+      reading={scanner.reading}
+      hideHint={!!verdict}
+      facing={scanner.facing}
+      videoLayerRef={scanner.videoLayerRef}
+      onFlip={scanner.flipCamera}
+      onRetry={scanner.retryCamera}
+      manualOpen={showManual}
+      setManualOpen={setShowManual}
+      onManualSubmit={(v) => scanner.submitManualCode(v)}
+      topLeft={
+        <div class="conferir-top-left">
+          <button class="cam-icon-btn" onClick={onBack} aria-label={pt.conferir.back} title={pt.conferir.back}>
+            ←
+          </button>
+          <div class="counters">
+            <div class="chip-count">
+              <b>{mineCount}</b>
+              <span>{pt.conferir.counterMine}</span>
+            </div>
+            {friendsCount > 0 && (
+              <div class="chip-count dup">
+                <b>{friendsCount}</b>
+                <span>{pt.conferir.counterFriends}</span>
               </div>
-              {takenForFriends.size > 0 && (
-                <div class="chip-count dup">
-                  <b>{takenForFriends.size}</b>
-                  <span>{pt.conferir.counterFriends}</span>
-                </div>
-              )}
-            </div>
-          </div>
-          <div class="cam-top-actions">
-            {cameraState !== 'denied' && (
-              <>
-                <button
-                  class="cam-icon-btn"
-                  onClick={() => setShowManual(true)}
-                  aria-label={pt.scan.manualEntry}
-                  title={pt.scan.manualEntry}
-                >
-                  📝
-                </button>
-                <button
-                  class="cam-icon-btn"
-                  onClick={flipCamera}
-                  aria-label={pt.scan.flipCamera}
-                  title={facing === 'user' ? pt.scan.cameraFront : pt.scan.cameraBack}
-                >
-                  🔄
-                </button>
-              </>
             )}
           </div>
         </div>
-
-        {cameraState !== 'denied' && (
-          <div class="mira-wrap">
-            <div class={reading ? 'mira reading' : 'mira'}>
-              <div class="scan-video-layer" ref={videoLayerRef} aria-hidden="true" />
-              {reading && <span class="mira-scan" aria-hidden="true" />}
-              <span class="corner tl" aria-hidden="true" />
-              <span class="corner tr" aria-hidden="true" />
-              <span class="corner bl" aria-hidden="true" />
-              <span class="corner br" aria-hidden="true" />
-              {cameraState === 'loading' && <span class="cole">{pt.scan.slotLabel}</span>}
-            </div>
-            {ocrReady && !verdict && (
-              <span class={reading ? 'hint reading' : 'hint'}>
-                <span class="pulse" aria-hidden="true" />
-                {reading ? pt.scan.reading : pt.conferir.holdStill}
-              </span>
-            )}
-          </div>
-        )}
-
-        {cameraState === 'ready' && !ocrReady && !ocrFailed && (
-          <div class="scan-overlay">
-            <div class="spinner" />
-            <p>{pt.scan.preparing(ocrProgress)}</p>
-          </div>
-        )}
-        {cameraState === 'ready' && ocrFailed && (
-          <div class="scan-overlay scan-overlay-msg">
-            <div class="scan-denied-emoji">📴</div>
-            <p>{pt.scan.ocrUnavailable}</p>
-            <button class="miss-action" type="button" onClick={() => setShowManual(true)}>
-              📝 {pt.scan.manualOpen}
-            </button>
-          </div>
-        )}
-        {cameraState === 'denied' && (
-          <div class="scan-overlay scan-denied">
-            <div class="scan-denied-emoji">📷</div>
-            <h2>{pt.scan.cameraDenied}</h2>
-            <p>{pt.scan.cameraDeniedHint}</p>
-            <button class="btn btn-primary" onClick={retryCamera}>
-              {pt.scan.retry}
-            </button>
-          </div>
-        )}
-
-        <div class="cam-bottom">
-          {notice && (
-            <div class="conferir-notice" role="status" aria-live="polite">
-              {notice}
-            </div>
-          )}
-          {takenForMe.size > 0 && (
-            <button class="conferir-save" onClick={openReview}>
-              💾 {pt.conferir.save(takenForMe.size)}
-            </button>
-          )}
-          {scannedCodes.size > 0 && (
-            <button class="conferir-share" onClick={() => setShareOpen(true)}>
-              {pt.pile.shareCta}
-            </button>
-          )}
-          {verdict && <ConferirVerdict state={verdict} onManual={() => setShowManual(true)} />}
-        </div>
-      </div>
-
-      {reviewSelected !== null && (
-        <div class="name-overlay" role="dialog" aria-modal="true" aria-label={pt.conferir.reviewTitle}>
-          <div class="name-card conferir-review">
-            <h2>{pt.conferir.reviewTitle}</h2>
-            <p>{pt.conferir.reviewSub}</p>
-            <div class="review-list">
-              {checklist.entries
-                .filter((e) => takenForMe.has(e.code))
-                .map((e) => {
-                  const on = reviewSelected.has(e.code);
-                  return (
-                    <button
-                      key={e.code}
-                      type="button"
-                      class={`review-row${on ? ' is-on' : ''}`}
-                      aria-pressed={on}
-                      onClick={() => toggleReview(e.code)}
-                    >
-                      <span class="review-check" aria-hidden="true">
-                        {on ? '✓' : ''}
-                      </span>
-                      <span class="review-code">{e.display}</span>
-                      <span class="review-team">{e.teamName}</span>
-                    </button>
-                  );
-                })}
-            </div>
-            <button
-              class="btn btn-primary btn-block"
-              disabled={reviewSelected.size === 0}
-              onClick={confirmSave}
-            >
-              {pt.conferir.reviewSave(reviewSelected.size)}
-            </button>
-            <button class="link-btn name-skip" onClick={() => setReviewSelected(null)}>
-              {pt.conferir.reviewCancel}
-            </button>
-          </div>
-        </div>
-      )}
-
-      {shareOpen && (
-        <PileShareSheet
-          pile={[...scannedCodes]}
-          taken={[...savedTaken]}
-          name={sanitizeName(settings.get().name) || undefined}
-          onClose={() => setShareOpen(false)}
-        />
-      )}
-
-      {showManual && (
-        <div class="manual-sheet">
-          <form class="manual-form" onSubmit={submitManual}>
-            <input
-              class="manual-input"
-              type="text"
-              inputMode="text"
-              autocomplete="off"
-              autocapitalize="characters"
-              placeholder={pt.scan.manualPlaceholder}
-              value={manualValue}
-              onInput={(e) => setManualValue((e.currentTarget as HTMLInputElement).value)}
-              autofocus
-            />
-            <div class="manual-actions">
-              <button class="btn btn-ghost" type="button" onClick={() => setShowManual(false)}>
-                {pt.scan.manualCancel}
-              </button>
-              <button class="btn btn-primary" type="submit">
-                {pt.scan.manualConfirm}
-              </button>
-            </div>
-          </form>
-        </div>
-      )}
-    </div>
+      }
+      finishAction={
+        hasScanned && (
+          <button class="finish-pill" onClick={onFinish}>
+            {pt.scan.finish}
+          </button>
+        )
+      }
+      bottom={verdict && <ConferirVerdict state={verdict} onManual={() => setShowManual(true)} />}
+    />
   );
 }
