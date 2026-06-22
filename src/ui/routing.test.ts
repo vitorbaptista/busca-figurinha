@@ -35,6 +35,10 @@ describe('hashFromScreen', () => {
     expect(hashFromScreen('report')).toBe('escanear');
   });
 
+  it('writes the trocar slug for the ephemeral conferir-report screen', () => {
+    expect(hashFromScreen('conferir-report')).toBe('trocar');
+  });
+
   it('round-trips every routable screen', () => {
     for (const s of ['scan', 'collection', 'trade', 'settings', 'repeats'] as const) {
       expect(screenFromHash('#' + hashFromScreen(s))).toBe(s);
