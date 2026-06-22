@@ -3,6 +3,7 @@ import type { AutoCapture, CaptureResult, MatchResult, OcrEngine, SettingsStore 
 import { CONFIG } from '../../config';
 import { checklist } from '../../data/checklist';
 import { matchCode } from '../../domain/matching';
+import { track } from '../../analytics';
 import { createConfirmer } from '../../domain/confirm';
 import { allowCommit } from '../../domain/commitGate';
 import { createHybridOcrEngine as createOcrEngine } from '../../ocr/hybridEngine';
@@ -18,8 +19,9 @@ type ScanPhase = 'idle' | 'reading';
 
 export interface UseScannerOptions {
   /** The single result sink: called with the committed matches, or [] on an explicit (non-silent)
-   *  read that found nothing. The screen decides one-vs-many and what to record. */
-  onMatches: (matches: MatchResult[]) => void;
+   *  read that found nothing. The screen decides one-vs-many and what to record. `source` lets the
+   *  screen tag a read as camera vs manual entry (for analytics); callers may ignore it. */
+  onMatches: (matches: MatchResult[], source: 'camera' | 'manual') => void;
   settings: SettingsStore;
   /** Which Settings key persists this scanner's camera facing. */
   cameraSetting: 'camera' | 'conferirCamera';
@@ -62,6 +64,8 @@ export function useScanner({
   const confirmerRef = useRef(createConfirmer(CONFIG.match.confirmations));
   const lastCommitAtRef = useRef(0);
   const committedThisBurstRef = useRef(false);
+  // Fire the anonymous `ocr_unavailable` stat at most once per mount (ensureOcr's catch can re-run).
+  const ocrUnavailableFiredRef = useRef(false);
 
   const [cameraState, setCameraState] = useState<CameraState>('loading');
   const [ocrProgress, setOcrProgress] = useState(0);
@@ -119,6 +123,12 @@ export function useScanner({
         ocrInitRef.current = null;
         setOcrReady(false);
         setOcrFailed(true);
+        // Anonymous stat: OCR couldn't load (blocked/slow CDN) so the user is pushed to manual
+        // entry. Once per mount — this catch can re-run on later ensureOcr() calls.
+        if (!ocrUnavailableFiredRef.current) {
+          ocrUnavailableFiredRef.current = true;
+          track('ocr_unavailable');
+        }
         return false;
       });
     return ocrInitRef.current;
@@ -182,16 +192,16 @@ export function useScanner({
         }
 
         if (toCommit.length > 0) {
-          onMatches(toCommit);
+          onMatches(toCommit, 'camera');
         } else if (!opts.silent) {
-          onMatches([]);
+          onMatches([], 'camera');
         }
         const committed = opts.confirm
           ? confirmerRef.current.committedCount() > 0
           : toCommit.length > 0;
         return { stop: opts.confirm ? stopBurst : true, committed, detected: crops > 0 };
       } catch {
-        if (!opts.silent) onMatches([]);
+        if (!opts.silent) onMatches([], 'camera');
         return idle;
       }
     });
@@ -316,7 +326,7 @@ export function useScanner({
   };
 
   const submitManualCode = (value: string) => {
-    onMatches([matchCode(value, checklist)]);
+    onMatches([matchCode(value, checklist)], 'manual');
   };
 
   const captureNow = () => {

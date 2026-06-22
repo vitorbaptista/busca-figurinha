@@ -13,6 +13,7 @@ import { readShareLink, shareTrades } from './domain/share';
 import { readPilePayload } from './domain/pileShare';
 import type { TradePayload } from './domain/tradeList';
 import { useStore } from './ui/hooks';
+import { trackScreen } from './analytics';
 import { Nav, type Screen } from './ui/Nav';
 import { nextHistoryStep, screenFromHash } from './ui/routing';
 import { Onboarding } from './ui/Onboarding';
@@ -163,6 +164,12 @@ export function App() {
     firstUrlSync.current = false;
     if (step.action === 'replace') history.replaceState(history.state, '', step.url);
     else if (step.action === 'push') history.pushState(history.state, '', step.url);
+  }, [screen]);
+
+  // Anonymous "which section is being used" stat. A SEPARATE effect that only READS `screen` — it
+  // must never write the URL (that's the single-writer effect above's job).
+  useEffect(() => {
+    trackScreen(screen);
   }, [screen]);
 
   /** Install is opt-in from Ajustes (never auto-prompted). Android (a stashed prompt event) goes

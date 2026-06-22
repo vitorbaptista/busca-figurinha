@@ -4,6 +4,7 @@ import type { ChecklistEntry, CollectionStore, FriendList, SettingsStore } from 
 import { checklist } from '../../data/checklist';
 import { flagFor } from '../../data/flags';
 import { sanitizeName } from '../../domain/name';
+import { track } from '../../analytics';
 import { givableTo, friendGiveBreakdown, needsDiff } from '../../domain/friendMatch';
 import type { FriendListsStore } from '../../state/friendLists';
 import type { TradePayload } from '../../domain/tradeList';
@@ -139,6 +140,7 @@ export function TradeScreen({
       friendLists.add({ name, needs: saveSheet.needs, source: 'link' });
       flash(pt.trade.friendSaved(name));
       setSaveSheet(null);
+      track('friend_list_saved', { needs_count: saveSheet.needs.length, is_update: false });
     }
   };
   // "Atualizar a lista do João": refresh his saved needs from the re-shared link and CELEBRATE the diff
@@ -153,6 +155,7 @@ export function TradeScreen({
     }
     const oldNeeds = match.needs;
     friendLists.updateNeeds(match.id, saveSheet.needs);
+    track('friend_list_saved', { needs_count: saveSheet.needs.length, is_update: true });
     const updated = friendLists.get(match.id);
     const diff = needsDiff(oldNeeds, updated?.needs ?? []);
     const spares = new Set([...repeats.codes()].filter((code) => collection.has(code)));
@@ -170,6 +173,7 @@ export function TradeScreen({
     friendLists.add({ name: saveSheet.name, needs: saveSheet.needs, source: 'link' });
     flash(pt.trade.friendSaved(saveSheet.name));
     setSaveSheet(null);
+    track('friend_list_saved', { needs_count: saveSheet.needs.length, is_update: false });
   };
 
   // Tapping a saved friend opens their detail ("o que você tem pro João" + dei-pro-João). Cleared
@@ -192,6 +196,7 @@ export function TradeScreen({
     for (const code of actual) repeats.remove(code);
     friendLists.removeNeeds(friend.id, actual);
     flash(pt.trade.gaveToFriend(friend.name, actual.length));
+    track('gave_to_friend', { spare_count: actual.length });
   };
 
   // Gate the first paint until the stores have hydrated from IndexedDB. A friend opening a shared
@@ -231,6 +236,12 @@ export function TradeScreen({
   // updated synchronously, so this first signed share carries the just-typed name.
   const share = async () => {
     const result = await onShare({ ...myPayload, name: userName() });
+    track('share', {
+      kind: 'primary',
+      method: result,
+      spare_count: myRepeatCodes.size,
+      missing_count: missingCodes.length,
+    });
     if (result === 'copied') flash(pt.trade.copied);
     else if (result === 'unavailable') flash(pt.trade.copyFail);
   };
@@ -248,6 +259,7 @@ export function TradeScreen({
     // is a follow-up that pairs with the own-offer return screen — see issue #29.
     for (const code of want) wants.add(code);
     void onShare(shareBackPayload(have, want, userName())).then((result) => {
+      track('share', { kind: 'reply', method: result, spare_count: have.length, missing_count: want.length });
       if (result === 'unavailable') flash(pt.trade.copyFail);
     });
   };

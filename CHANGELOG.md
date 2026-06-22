@@ -3,6 +3,15 @@
 Notable changes to the sticker scanner. Newest first. No formal releases yet (deploys on push to
 `main`), so entries are grouped by date. Keep this updated when you ship something notable.
 
+## 2026-06-22 — Estatísticas de uso anônimas (pra saber o que é útil)
+
+### Added
+- O app agora envia **estatísticas de uso anônimas** pra ajudar a entender o que é útil (quantas
+  figurinhas são lidas, quais são digitadas na mão, quantos compartilhamentos, novas vs repetidas).
+  **Sem login e sem dados pessoais**: nada de nome, e-mail, foto ou texto digitado. As estatísticas
+  são agregadas e o app é configurado pra não armazenar o endereço de IP (no máximo país/estado).
+  Não dá pra saber **quem** usa, só **quanto** o app é usado. A leitura das figurinhas não muda em nada.
+
 ## 2026-06-22 — Conferir a pilha do amigo agora termina igual ao Escanear
 
 ### Added
