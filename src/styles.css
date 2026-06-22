@@ -3449,6 +3449,60 @@ html.scan-active body {
   transform: translate(2px, 2px);
   box-shadow: 2px 2px 0 var(--paper-edge);
 }
+/* The viral "Mandar a pilha pro amigo" CTA — green (a "send" action, distinct from the gold save),
+   same ink-on-paper card shape as .conferir-save. */
+.conferir-share {
+  width: 100%;
+  margin-bottom: 10px;
+  padding: 13px 16px;
+  background: var(--keep);
+  color: #fff;
+  border: 2.5px solid var(--ink);
+  border-radius: var(--radius);
+  box-shadow: 4px 4px 0 var(--paper-edge);
+  font-family: var(--font-head);
+  font-weight: 700;
+  font-size: 1.05rem;
+  cursor: pointer;
+}
+.conferir-share:active {
+  transform: translate(2px, 2px);
+  box-shadow: 2px 2px 0 var(--paper-edge);
+}
+
+/* ===== Pilha viral: gerar o QR (share) e receber a pilha (import) — reuse .name-card / .trade-qr ===== */
+.pile-share-card .trade-qr.pile-share-qr {
+  margin: 4px 0 0;
+  padding: 14px;
+}
+.pile-share-card .trade-qr-svg {
+  width: min(62vw, 240px);
+}
+.pile-share-hint {
+  font-size: 0.85rem;
+  color: var(--kraft-text);
+  text-align: center;
+  margin: 12px 2px 14px;
+}
+.pile-share-notice {
+  text-align: center;
+  font-weight: 700;
+  color: var(--paper);
+  margin: 0 0 10px;
+}
+.pile-share-card .btn-wa {
+  margin-top: 4px;
+}
+.pile-import-card {
+  text-align: center;
+}
+.pile-import-card .report-done-emoji {
+  font-size: 3rem;
+  margin-bottom: 6px;
+}
+.pile-import-card .btn-primary {
+  margin-top: 6px;
+}
 .conferir-notice {
   background: var(--keep);
   color: var(--cream);

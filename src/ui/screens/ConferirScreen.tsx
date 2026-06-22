@@ -16,6 +16,8 @@ import type { CodeNet } from '../../ocr/codeNetEngine';
 import { createAutoCapture } from '../../ocr/autoCapture';
 import { createScreenWakeLock } from '../wakeLock';
 import { ConferirVerdict, type ConferirVerdictState } from '../components/ConferirVerdict';
+import { PileShareSheet } from '../components/PileShareSheet';
+import { sanitizeName } from '../../domain/name';
 
 interface ConferirScreenProps {
   /** Read-only: PRECISO/JÁ TENHO comes from collection.has(code). Never written here. */
@@ -69,6 +71,11 @@ export function ConferirScreen({ collection, friendLists, settings, onBack }: Co
   // savable to your album once you trade) and ones a saved friend needs (forFriends → advisory only).
   const [takenForMe, setTakenForMe] = useState<Set<string>>(() => new Set());
   const [takenForFriends, setTakenForFriends] = useState<Set<string>>(() => new Set());
+  // The WHOLE pile you've read (every resolved sticker, regardless of verdict — even ones you already
+  // have are still HIS stickers). This is what the viral "Mandar pro amigo" QR encodes so the friend
+  // imports his entire pile. Confirmer-gated like the tally (recorded only in handleMatch).
+  const [scannedCodes, setScannedCodes] = useState<Set<string>>(() => new Set());
+  const [shareOpen, setShareOpen] = useState(false);
   const [showManual, setShowManual] = useState(false);
   const [manualValue, setManualValue] = useState('');
   const [scanPhase, setScanPhase] = useState<ScanPhase>('idle');
@@ -96,6 +103,9 @@ export function ConferirScreen({ collection, friendLists, settings, onBack }: Co
     const friendNames = friendsNeeding(entry.code, friendLists.active());
     const v = huntVerdict({ owned, friendNames });
     setVerdict({ kind: v.kind, display: entry.display, teamName: entry.teamName, forFriends: v.forFriends, key });
+    // Record the read into the whole-pile set (every resolved sticker, deduped) — what the viral QR
+    // shares with the friend. They're his stickers whether or not you already have them.
+    setScannedCodes((s) => (s.has(entry.code) ? s : new Set(s).add(entry.code)));
     // Tally the takes (deduped). forMe = a sticker you need (savable to your album after the trade);
     // take-friends = you own it but a friend needs it (advisory — it's not yours to keep).
     if (v.forMe) setTakenForMe((s) => (s.has(entry.code) ? s : new Set(s).add(entry.code)));
@@ -456,6 +466,11 @@ export function ConferirScreen({ collection, friendLists, settings, onBack }: Co
               💾 {pt.conferir.save(takenForMe.size)}
             </button>
           )}
+          {scannedCodes.size > 0 && (
+            <button class="conferir-share" onClick={() => setShareOpen(true)}>
+              {pt.pile.shareCta}
+            </button>
+          )}
           {verdict && <ConferirVerdict state={verdict} onManual={() => setShowManual(true)} />}
         </div>
       </div>
@@ -499,6 +514,14 @@ export function ConferirScreen({ collection, friendLists, settings, onBack }: Co
             </button>
           </div>
         </div>
+      )}
+
+      {shareOpen && (
+        <PileShareSheet
+          codes={[...scannedCodes]}
+          name={sanitizeName(settings.get().name) || undefined}
+          onClose={() => setShareOpen(false)}
+        />
       )}
 
       {showManual && (
