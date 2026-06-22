@@ -50,3 +50,23 @@ export function sectionUrl(
   const search = dropQuery ? '' : loc.search;
   return `${loc.pathname}${search}#${hashFromScreen(screen)}`;
 }
+
+/**
+ * Decide how to reflect a screen change into the address bar. Pure — the caller passes the current
+ * URL and performs the `history` write — so it unit-tests in node like the rest of this module.
+ * `replace` on the first sync after load canonicalizes the hash / strips a consumed `?t=` with no
+ * phantom Back step; `push` on every later in-app navigation gives the browser Back button the prior
+ * section to return to (GH #73); `none` when the URL already matches — a Back/Forward the popstate
+ * handler just synced (so re-writing would re-trap Back), or an entry already canonical on load.
+ */
+export function nextHistoryStep(
+  loc: { pathname: string; search: string; hash: string },
+  screen: Screen,
+  dropQuery: boolean,
+  isFirstSync: boolean,
+): { action: 'push' | 'replace' | 'none'; url: string } {
+  const url = sectionUrl(loc, screen, dropQuery);
+  const current = `${loc.pathname}${loc.search}${loc.hash}`;
+  if (url === current) return { action: 'none', url };
+  return { action: isFirstSync ? 'replace' : 'push', url };
+}
