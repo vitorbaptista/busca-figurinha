@@ -3356,8 +3356,13 @@ html.scan-active body {
   margin: 0;
 }
 /* the inline QR panel (reused .trade-qr ticket); a little top room for its -11px floating tag */
-.trade-ways .trade-qr {
+.trade-ways .trade-qr,
+.share-foot .trade-qr {
   margin: 8px 0 2px;
+}
+/* the share buttons repeated after the lists; separate them from the message preview above */
+.share-foot {
+  margin-top: 20px;
 }
 
 /* "Mandar minha lista" — two methods of one goal, side by side: WhatsApp (online) + QR Code (in

@@ -3,6 +3,13 @@
 Notable changes to the sticker scanner. Newest first. No formal releases yet (deploys on push to
 `main`), so entries are grouped by date. Keep this updated when you ship something notable.
 
+## 2026-06-22 — Trocar: WhatsApp e QR Code também no rodapé da lista
+
+### Added
+- **Os botões "Enviar no WhatsApp" e "Mostrar QR Code" agora se repetem embaixo, depois das listas.**
+  Como "minhas repetidas" e "o que eu preciso" são compridas, quem rola até o fim acha os mesmos botões
+  de compartilhar ali na hora, sem precisar voltar pro topo. O QR de baixo abre no próprio lugar.
+
 ## 2026-06-21 — Trocar: WhatsApp e QR Code lado a lado (e sem o "Copiar lista")
 
 ### Changed
