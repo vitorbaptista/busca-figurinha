@@ -3,6 +3,15 @@
 Notable changes to the sticker scanner. Newest first. No formal releases yet (deploys on push to
 `main`), so entries are grouped by date. Keep this updated when you ship something notable.
 
+## 2026-06-21 — Trocar: WhatsApp e QR Code no topo (mais fáceis de achar)
+
+### Changed
+- **Os três jeitos de trocar agora ficam juntos no topo da tela "Trocar", acima das listas:**
+  "Conferir figurinhas do amigo", "Enviar no WhatsApp" e "Mostrar QR Code". Antes o WhatsApp e o QR
+  Code ficavam lá embaixo, depois das listas de figurinhas — agora você acha na hora, sem rolar a tela.
+- **O QR Code abre só quando você toca em "Mostrar QR Code"** (pra trocar pessoalmente), pra deixar o
+  topo enxuto. O "Copiar lista" continua logo abaixo do WhatsApp.
+
 ## 2026-06-21 — Escanear: "Colar lista" agora também na tela de escanear
 
 ### Added

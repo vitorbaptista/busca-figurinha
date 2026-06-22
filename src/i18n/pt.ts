@@ -271,6 +271,10 @@ export const pt = {
     namePromptSkip: 'Mandar sem nome',
 
     // QR Code — for trading in person: show it and the other person opens your list with the camera.
+    // qrCta/qrCtaHint label the collapsed "Mostrar QR Code" tile in the top action cluster;
+    // qrTag/qrHint label the QR itself once the tile is expanded.
+    qrCta: 'Mostrar QR Code',
+    qrCtaHint: 'Pra trocar pessoalmente, sem app.',
     qrTag: 'Trocar ao vivo',
     qrHint:
       'Tá trocando pessoalmente? Mostre este QR Code pra pessoa apontar a câmera e abrir sua lista na hora.',
