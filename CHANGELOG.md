@@ -3,6 +3,20 @@
 Notable changes to the sticker scanner. Newest first. No formal releases yet (deploys on push to
 `main`), so entries are grouped by date. Keep this updated when you ship something notable.
 
+## 2026-06-22 — Boas-vindas novas: veja o app funcionando e comece em poucos toques
+
+### Changed
+- **A tela de abertura foi refeita pra ir direto ao ponto.** No lugar dos três slides, ela já mostra o
+  app **funcionando** — uma demonstração que pisca **GUARDAR** e **REPETIDA** em loop — pergunta só o
+  seu **nome** e te manda escanear.
+- **Agora ela te leva pro lugar certo.** Antes de começar, pergunta de quem são as figurinhas: **as
+  suas** (cai no Escanear, pra ver o que guarda e o que é repetida) ou **de outra pessoa** (cai no
+  Conferir, pra ver o que serve pra você no maço da pessoa).
+
+### Added
+- **Se as figurinhas são de outra pessoa, dá pra colar a lista do que você procura** já na abertura
+  (aquela do grupo do WhatsApp) — o app reconhece os códigos e guarda na sua lista de "preciso".
+
 ## 2026-06-22 — Ajustes: crédito do autor
 
 ### Changed
@@ -33,6 +47,7 @@ Notable changes to the sticker scanner. Newest first. No formal releases yet (de
 - 0 falso-positivo mantido: as leituras só entram na pilha depois de confirmadas (mesmo critério do
   scanner), e quem recebe confirma antes de qualquer coisa ser salva. O link da pilha usa um endereço
   próprio (`?p=`), separado do link de troca (`?t=`), e não some a coleção de quem já usa o app.
+## 2026-06-22 — Trocar: WhatsApp e QR Code também no rodapé da lista
 
 ### Added
 - **Os botões "Enviar no WhatsApp" e "Mostrar QR Code" agora se repetem embaixo, depois das listas.**

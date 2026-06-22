@@ -276,7 +276,18 @@ export function App() {
           bury it behind the intro. The intro still gates the SCANNER (it teaches the show-the-back
           move), so it appears the moment they tap "Escanear". */}
       {!onboarded && !(initialFriendPayload && screen === 'trade') && !initialPilePayload && (
-        <Onboarding onDone={() => settings.set({ onboarded: true })} />
+        <Onboarding
+          defaultName={settings.get().name}
+          onComplete={(result) => {
+            settings.set({ onboarded: true, ...(result.name ? { name: result.name } : {}) });
+            // A pasted "what I'm looking for" list seeds the wishlist (wants), like Importar's
+            // "Preciso" bucket — never repeats, so no 0-FP risk.
+            if (result.wants && result.wants.length) wants.setOwned(result.wants, true);
+            // Route to the right starting point: their own pile (Escanear) or another person's
+            // (Conferir, the friend's-pile scanner). #68: same scanner, different framing.
+            setScreen(result.start === 'conferir' ? 'conferir' : 'scan');
+          }}
+        />
       )}
 
       {/* iOS-only install instructions, opened on demand from Ajustes (never auto-shown). */}
