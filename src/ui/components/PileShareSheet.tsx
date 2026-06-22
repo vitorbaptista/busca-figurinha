@@ -4,24 +4,27 @@ import { sharePile, pileShareTextFor } from '../../domain/pileShare';
 import { pt } from '../../i18n/pt';
 import { QrCode } from './QrCode';
 
-/** Shown right after the friend-pile Resumo commits. Encodes the scanned codes into a `?p=` deep
- *  link and presents it as a QR (for in-person trading, the common case) + a WhatsApp share, so the
- *  friend opens it and the stickers land in THEIR own álbum + repeats. */
+/** Shown from the Conferir scanner. Encodes the friend's pile into a `?p=` deep link and presents
+ *  it as a QR (for in-person trading, the common case) + a WhatsApp share, so the friend opens it
+ *  and the stickers land in THEIR own álbum. `pile` = everything you scanned (→ their álbum); `taken`
+ *  = the ones you grabbed in the trade (excluded from THEIR repetidas — that dupe is gone). */
 export function PileShareSheet({
-  codes,
+  pile,
+  taken,
   name,
   onClose,
 }: {
-  codes: string[];
+  pile: string[];
+  taken: string[];
   /** The current user's name (optional) — signs the link so the receiver is greeted by name. */
   name?: string;
   onClose: () => void;
 }) {
   const [notice, setNotice] = useState<string | null>(null);
-  const { link } = pileShareTextFor(codes, checklist, name);
+  const { link } = pileShareTextFor(pile, taken, checklist, name);
 
   const share = async () => {
-    const result = await sharePile(codes, checklist, name);
+    const result = await sharePile(pile, taken, checklist, name);
     if (result === 'copied') setNotice(pt.pile.shareCopied);
     else if (result === 'unavailable') setNotice(pt.pile.shareFail);
   };
@@ -30,7 +33,7 @@ export function PileShareSheet({
     <div class="name-overlay" role="dialog" aria-modal="true" aria-label={pt.pile.shareTitle}>
       <div class="name-card pile-share-card">
         <h2>{pt.pile.shareTitle}</h2>
-        <p>{pt.pile.shareLead(codes.length)}</p>
+        <p>{pt.pile.shareLead(pile.length)}</p>
         <div class="trade-qr pile-share-qr">
           <QrCode value={link} ariaLabel={pt.pile.qrAria} class="trade-qr-svg" />
         </div>

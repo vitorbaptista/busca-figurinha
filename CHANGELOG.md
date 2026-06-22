@@ -3,6 +3,15 @@
 Notable changes to the sticker scanner. Newest first. No formal releases yet (deploys on push to
 `main`), so entries are grouped by date. Keep this updated when you ship something notable.
 
+## 2026-06-22 — Pilha pro amigo: as que você pegou não viram repetidas dele
+
+### Changed
+- Quando o amigo monta o álbum pelo seu link da pilha, agora a divisão é certa: **tudo que você leu
+  entra no álbum dele**, mas só as que **você NÃO pegou** viram **repetidas** dele pra trocar. As que
+  **você pegou na troca** entram só no álbum — não nas repetidas, porque você levou a repetida dele.
+  ("Pegou" = o que você confirmou no "Pegou quais?".) Antes, a pilha inteira virava repetida dele,
+  então ele poderia te oferecer de volta uma figurinha que ele já tinha te dado — agora não mais.
+
 ## 2026-06-22 — Boas-vindas novas: veja o app funcionando e comece em poucos toques
 
 ### Changed

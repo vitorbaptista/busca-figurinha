@@ -4,24 +4,38 @@ import { buildPileLink, readPilePayload, pileShareTextFor } from './pileShare';
 import { buildShareLink } from './share';
 
 // Real album codes, so the round-trip can't be a no-op against an empty set.
-const sample = checklist.entries.slice(0, 3).map((e) => e.code);
+const pile = checklist.entries.slice(0, 4).map((e) => e.code);
+const taken = pile.slice(0, 2); // the first two were taken in the trade
+const notTaken = pile.slice(2);
 
 describe('pileShare round-trip', () => {
-  it('encodes codes into a ?p= link and reads them back', () => {
-    const link = buildPileLink('https://x.test/app/', sample, checklist, 'João');
+  it('owned = the whole pile; repeats = only the not-taken ones', () => {
+    const link = buildPileLink('https://x.test/app/', pile, taken, checklist, 'João');
     expect(link).toContain('p=');
     const back = readPilePayload(link, checklist);
     expect(back).not.toBeNull();
-    expect(new Set(back!.codes)).toEqual(new Set(sample));
+    // Everything scanned enters the friend's álbum.
+    expect(new Set(back!.ownedCodes)).toEqual(new Set(pile));
+    // Only the ones you did NOT take become the friend's repetidas (you took the others' dupes).
+    expect(new Set(back!.repeatCodes)).toEqual(new Set(notTaken));
     expect(back!.name).toBe('João');
   });
 
-  it('round-trips without a name', () => {
-    const link = buildPileLink('https://x.test/app/', sample, checklist);
+  it('with nothing taken, every sticker is owned AND a repeat', () => {
+    const link = buildPileLink('https://x.test/app/', pile, [], checklist);
     const back = readPilePayload(link, checklist);
     expect(back).not.toBeNull();
-    expect(new Set(back!.codes)).toEqual(new Set(sample));
+    expect(new Set(back!.ownedCodes)).toEqual(new Set(pile));
+    expect(new Set(back!.repeatCodes)).toEqual(new Set(pile));
     expect(back!.name).toBeUndefined();
+  });
+
+  it('with everything taken, all owned but no repeats remain', () => {
+    const link = buildPileLink('https://x.test/app/', pile, pile, checklist);
+    const back = readPilePayload(link, checklist);
+    expect(back).not.toBeNull();
+    expect(new Set(back!.ownedCodes)).toEqual(new Set(pile));
+    expect(back!.repeatCodes).toEqual([]);
   });
 
   it('returns null for garbage / no p value', () => {
@@ -33,15 +47,15 @@ describe('pileShare round-trip', () => {
   it('is isolated from the trade ?t= link (a ?t= link is not read as a pile)', () => {
     const tradeLink = buildShareLink(
       'https://x.test/app/',
-      { repeats: sample, missing: [] },
+      { repeats: pile, missing: [] },
       checklist,
     );
     expect(readPilePayload(tradeLink, checklist)).toBeNull();
   });
 
-  it('keeps the human-readable message and link in sync', () => {
-    const { link, text } = pileShareTextFor(sample, checklist, 'João');
+  it('keeps the human-readable message and link in sync (count = whole pile)', () => {
+    const { link, text } = pileShareTextFor(pile, taken, checklist, 'João');
     expect(text).toContain(link);
-    expect(text).toContain(String(sample.length));
+    expect(text).toContain(String(pile.length));
   });
 });

@@ -78,7 +78,7 @@ function loadFriendPayload(): TradePayload | null {
 
 /** Someone who opened a scanned-pile ?p= link arrives with the codes to import into THEIR álbum.
  *  The trade ?t= link wins if both are somehow present (they never are — a link carries one). */
-function loadPilePayload(): { codes: string[]; name?: string } | null {
+function loadPilePayload(): { ownedCodes: string[]; repeatCodes: string[]; name?: string } | null {
   if (typeof location === 'undefined') return null;
   if (readShareLink(location.search, checklist)) return null;
   return readPilePayload(location.search, checklist);
@@ -299,7 +299,8 @@ export function App() {
           (with consent) into their own álbum + repetidas. Bypasses onboarding so it shows first. */}
       {pilePayload && (
         <PileImportSheet
-          codes={pilePayload.codes}
+          ownedCodes={pilePayload.ownedCodes}
+          repeatCodes={pilePayload.repeatCodes}
           fromName={pilePayload.name}
           collection={collection}
           repeats={repeats}

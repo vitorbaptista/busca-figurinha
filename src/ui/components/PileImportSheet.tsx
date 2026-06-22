@@ -4,16 +4,22 @@ import { sanitizeName } from '../../domain/name';
 import { pt } from '../../i18n/pt';
 
 /** Receiver side of the viral pile link (`?p=`): a friend scanned my pile and sent me the codes.
- *  On confirm they land in BOTH my owned collection AND my repeats (spare-implies-ownership — the
- *  same "tenho" mechanic as the trade receiver). Consent-gated: nothing is written until I tap add. */
+ *  On confirm, the WHOLE pile lands in my álbum (`ownedCodes`), and only the ones the friend did NOT
+ *  take land in my repetidas (`repeatCodes`) — the dupes I handed over are gone, so they're not my
+ *  spares anymore (spare-implies-ownership, the trade-receiver "tenho" mechanic, but split). Consent-
+ *  gated: nothing is written until I tap add. */
 export function PileImportSheet({
-  codes,
+  ownedCodes,
+  repeatCodes,
   fromName,
   collection,
   repeats,
   onClose,
 }: {
-  codes: string[];
+  /** The whole pile the friend scanned → my álbum (collection). */
+  ownedCodes: string[];
+  /** The not-taken subset → my repetidas (spares I can trade). A subset of ownedCodes. */
+  repeatCodes: string[];
   /** The sharer's name (optional) — greets the receiver ("João escaneou suas figurinhas!"). */
   fromName?: string;
   collection: CollectionStore;
@@ -34,10 +40,9 @@ export function PileImportSheet({
     // hydration would persist only the imported codes and the later in-memory merge wouldn't be
     // re-persisted, dropping an existing user's saved collection (same gate TradeScreen uses).
     await Promise.all([collection.ready, repeats.ready]);
-    // owned + repeats in one shot. A code seen in a hand-pile is owned (collection) and, being in a
-    // trade pile, a spare (repeats) — exactly what the trade receiver's "tenho" does.
-    collection.setOwned(codes, true);
-    repeats.setOwned(codes, true);
+    // Whole pile → álbum; only the not-taken ones → repetidas (the dupes I gave away aren't spares).
+    collection.setOwned(ownedCodes, true);
+    repeats.setOwned(repeatCodes, true);
     setDone(true);
   };
 
@@ -67,9 +72,9 @@ export function PileImportSheet({
     >
       <div class="name-card pile-import-card">
         <h2>{pt.pile.importTitle(from)}</h2>
-        <p>{pt.pile.importLead(codes.length)}</p>
+        <p>{pt.pile.importLead(ownedCodes.length)}</p>
         <button class="btn btn-primary btn-block" onClick={add}>
-          {pt.pile.importAdd(codes.length)}
+          {pt.pile.importAdd(ownedCodes.length)}
         </button>
         <button class="link-btn name-skip" onClick={onClose}>
           {pt.pile.importSkip}

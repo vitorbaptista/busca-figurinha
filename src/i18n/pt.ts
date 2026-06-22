@@ -180,7 +180,8 @@ export const pt = {
   },
 
   // The viral share-back from "Conferir do amigo": a QR/link of the pile you just scanned, so your
-  // friend opens it and the stickers land in THEIR álbum + repetidas. (Receiver copy is the import half.)
+  // friend opens it and the whole pile lands in THEIR álbum — and the ones you did NOT take become
+  // their repetidas (you took the others' dupes). (Receiver copy is the import half.)
   pile: {
     shareCta: '📲 Mandar a pilha pro amigo',
     shareTitle: 'Manda o álbum pro seu amigo! 📲',
@@ -199,13 +200,13 @@ export const pt = {
       name ? `${name} escaneou suas figurinhas! 🎉` : 'Um amigo escaneou suas figurinhas! 🎉',
     importLead: (n: number) =>
       n === 1
-        ? '1 figurinha que ele viu na sua pilha pode entrar no seu álbum e nas suas repetidas pra trocar.'
-        : `${n} figurinhas que ele viu na sua pilha podem entrar no seu álbum e nas suas repetidas pra trocar.`,
+        ? '1 figurinha que ele viu na sua pilha pode entrar no seu álbum (as repetidas já ficam prontas pra trocar).'
+        : `${n} figurinhas que ele viu na sua pilha podem entrar no seu álbum (as repetidas já ficam prontas pra trocar).`,
     importAdd: (n: number) =>
       n === 1 ? 'Adicionar 1 ao meu álbum' : `Adicionar ${n} ao meu álbum`,
     importSkip: 'Agora não',
     importDoneTitle: 'Prontinho! 🎉',
-    importDoneLead: 'Já estão no seu álbum e nas suas repetidas pra trocar.',
+    importDoneLead: 'Já estão no seu álbum!',
     importDoneCta: 'Ver minha coleção',
   },
 
