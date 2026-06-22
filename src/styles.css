@@ -3796,9 +3796,11 @@ html.scan-active body {
 .vale-foil {
   font-family: var(--font-head);
   font-weight: 700;
-  font-size: 0.7rem;
+  font-size: 0.72rem;
   letter-spacing: 0.14em;
-  color: var(--gold-deep);
+  /* kraft-toned, not gold-deep: gold-deep on cream is only ~2:1 (fails AA at this size). The gold
+     foil accent still leads on the "TROCA FEITA!" headline + the Pronto CTA. */
+  color: var(--kraft-text);
 }
 .vale-count {
   font-family: var(--font-display);
