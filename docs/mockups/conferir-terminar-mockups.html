@@ -1,0 +1,506 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Conferir · "Terminar a troca" — 5 mockups pra escolher</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Oswald:wght@500;600;700&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    /* Banca — Álbum de Papel tokens (from src/styles.css) */
+    --paper: #1f6b46;
+    --paper-deep: #185438;
+    --paper-edge: #0f3c27;
+    --cream: #f4ecd8;
+    --cream-dim: #e4d8bc;
+    --ink: #16241c;
+    --kraft: #d8b88a;
+    --kraft-deep: #c39b66;
+    --kraft-text: #6c4e23;
+    --gold: #f0c64b;
+    --gold-deep: #caa033;
+    --keep: #0a7a3e;
+    --keep-bright: #2bd06f;
+    --dupe: #b23a1e;
+    --radius: 6px;
+    --radius-sm: 4px;
+    --head: 'Oswald', system-ui, sans-serif;
+    --display: 'Anton', system-ui, sans-serif;
+    --body: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: var(--body);
+    color: #e9edf2;
+    background: #14171c;
+    -webkit-font-smoothing: antialiased;
+    line-height: 1.5;
+  }
+
+  /* ---------- Gallery chrome (neutral, doesn't compete with the mockups) ---------- */
+  .gallery-head {
+    max-width: 1180px; margin: 0 auto; padding: 40px 24px 8px;
+  }
+  .gallery-head h1 {
+    font-family: var(--head); font-weight: 700; letter-spacing: -.01em;
+    font-size: 26px; margin: 0 0 8px; color: #fff;
+  }
+  .gallery-head p { margin: 0 0 6px; color: #aab2bd; font-size: 15px; max-width: 70ch; }
+  .gallery-head .how { color: #7f8893; font-size: 13.5px; }
+  .gallery-head code { background: #20242b; border: 1px solid #2c313a; border-radius: 5px; padding: 1px 6px; font-size: 12.5px; color: #cdd3dc; }
+
+  .gallery {
+    max-width: 1180px; margin: 0 auto; padding: 24px;
+    display: grid; gap: 28px;
+    grid-template-columns: repeat(auto-fit, minmax(330px, 1fr));
+    align-items: start;
+  }
+  figure.mock { margin: 0; }
+  .mock-cap { margin-top: 14px; }
+  .mock-cap .tag {
+    display: inline-block; font-family: var(--head); font-weight: 700; font-size: 12px;
+    letter-spacing: .04em; text-transform: uppercase; color: #14171c; background: var(--gold);
+    padding: 3px 9px; border-radius: 999px; margin-bottom: 8px;
+  }
+  .mock-cap h2 { font-family: var(--head); font-weight: 600; font-size: 16px; margin: 0 0 6px; color: #fff; }
+  .mock-cap p { margin: 0 0 6px; font-size: 13px; color: #9aa3ae; }
+  .mock-cap .copy { color: #c8cfd8; font-size: 12.5px; border-left: 0; }
+  .mock-cap .copy b { color: #fff; font-weight: 600; }
+
+  /* ---------- Phone frame ---------- */
+  .phone {
+    width: 100%; max-width: 360px; margin: 0 auto;
+    aspect-ratio: 360 / 740;
+    border-radius: 30px;
+    background: #000; padding: 8px;
+    box-shadow: 0 18px 40px rgba(0,0,0,.45), 0 2px 0 rgba(255,255,255,.06) inset;
+  }
+  .screen {
+    width: 100%; height: 100%;
+    border-radius: 23px; overflow: hidden;
+    position: relative;
+    /* album green + halftone print dots */
+    background:
+      radial-gradient(rgba(255,255,255,.05) 1px, transparent 1.6px) 0 0 / 7px 7px,
+      var(--paper-deep);
+    color: var(--cream);
+    display: flex; flex-direction: column;
+    padding: 20px 18px calc(18px);
+    font-family: var(--body);
+  }
+
+  /* ---------- Shared on-brand primitives ---------- */
+  .ticket {
+    background: var(--cream); color: var(--ink);
+    border: 2.5px solid var(--ink); border-radius: var(--radius);
+    box-shadow: 5px 5px 0 var(--paper-edge);
+  }
+  .qr-box {
+    background: #fff; border: 2.5px solid var(--ink); border-radius: var(--radius);
+    padding: 10px; display: grid; place-items: center;
+  }
+  .qr-box svg { width: 100%; height: auto; display: block; }
+  .btn {
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    width: 100%; min-height: 50px; border-radius: var(--radius);
+    font-family: var(--head); font-weight: 700; font-size: 16px; letter-spacing: .01em;
+    border: 2.5px solid var(--ink); cursor: pointer; text-decoration: none;
+  }
+  .btn-gold { background: var(--gold); color: var(--ink); box-shadow: 4px 4px 0 var(--gold-deep); }
+  .btn-ghost { background: transparent; color: var(--cream); border-color: var(--cream); box-shadow: none; min-height: 46px; font-size: 15px; }
+  .btn-wa-link { background: none; border: 0; color: var(--cream); font-family: var(--head); font-weight: 600; font-size: 14px; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; padding: 8px; }
+  .chip {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-family: var(--head); font-weight: 700; font-size: 13px;
+    background: var(--kraft); color: var(--kraft-text); border: 2px solid var(--ink);
+    border-radius: 999px; padding: 4px 12px;
+  }
+  .code-chip {
+    display: flex; align-items: center; gap: 8px;
+    background: var(--cream); border: 2px solid var(--ink); border-radius: var(--radius-sm);
+    padding: 7px 11px; color: var(--ink);
+  }
+  .code-chip .ck { width: 18px; height: 18px; border-radius: 4px; background: var(--keep); color: #fff; display: grid; place-items: center; font-size: 12px; font-weight: 900; flex: none; }
+  .code-chip .cc { font-family: var(--head); font-weight: 700; font-size: 15px; }
+  .code-chip .ct { margin-left: auto; font-size: 12px; color: var(--kraft-text); }
+  .spacer { flex: 1 1 auto; }
+  .stack > * + * { margin-top: 12px; }
+
+  h3.disp { font-family: var(--display); font-weight: 400; line-height: .98; letter-spacing: 0; text-transform: uppercase; }
+  .lead { font-family: var(--head); font-weight: 500; }
+
+  /* ====== Opção 1 — Bilhete (ticket stub) ====== */
+  .m1 .screen { justify-content: center; gap: 16px; text-align: center; align-items: center; }
+  .m1 .card { width: 100%; padding: 22px 18px; display: flex; flex-direction: column; align-items: center; gap: 14px; }
+  .m1 h3 { font-size: 30px; color: var(--ink); margin: 0; max-width: 12ch; text-wrap: balance; }
+  .m1 .lead { color: var(--kraft-text); font-size: 14.5px; margin: 0; }
+  .m1 .qr-box { width: 188px; }
+  .m1 .actions { width: 100%; }
+
+  /* ====== Opção 2 — Você leva / Ele recebe ====== */
+  .m2 .screen { gap: 14px; }
+  .m2 .top { text-align: center; }
+  .m2 .top h3 { font-size: 27px; color: var(--gold); margin: 6px 0 2px; }
+  .m2 .top span { font-family: var(--head); color: var(--cream); font-size: 13.5px; }
+  .m2 .panel { padding: 13px 14px; }
+  .m2 .panel .label { font-family: var(--head); font-weight: 700; font-size: 12px; text-transform: uppercase; letter-spacing: .04em; color: var(--kraft-text); margin: 0 0 9px; }
+  .m2 .gets { display: flex; flex-direction: column; gap: 7px; }
+  .m2 .give { display: flex; gap: 13px; align-items: center; }
+  .m2 .give .qr-box { width: 104px; flex: none; padding: 7px; }
+  .m2 .give .gtext { color: var(--ink); }
+  .m2 .give .gtext b { font-family: var(--head); font-size: 17px; display: block; }
+  .m2 .give .gtext span { font-size: 12.5px; color: var(--kraft-text); }
+
+  /* ====== Opção 3 — QR no comando (minimal hero) ====== */
+  .m3 .screen { justify-content: center; align-items: center; text-align: center; gap: 18px; }
+  .m3 .hint { font-family: var(--head); font-weight: 600; font-size: 17px; color: var(--cream); margin: 0; max-width: 16ch; text-wrap: balance; }
+  .m3 .qr-box { width: 230px; box-shadow: 6px 6px 0 var(--paper-edge); }
+  .m3 .sub { font-family: var(--head); color: var(--gold); font-weight: 700; font-size: 15px; margin: 0; }
+  .m3 .actions { width: 100%; }
+
+  /* ====== Opção 4 — Vale-figurinhas (coupon) ====== */
+  .m4 .screen { justify-content: center; align-items: center; gap: 16px; }
+  .m4 .coupon { width: 100%; background: var(--cream); border: 2.5px solid var(--ink); border-radius: var(--radius); box-shadow: 5px 5px 0 var(--paper-edge); overflow: hidden; }
+  .m4 .stub-top { padding: 16px 16px 14px; text-align: center; color: var(--ink); }
+  .m4 .stub-top .foil { font-family: var(--head); font-weight: 700; font-size: 12px; letter-spacing: .12em; color: var(--gold-deep); }
+  .m4 .stub-top h3 { font-size: 31px; margin: 4px 0 4px; color: var(--ink); }
+  .m4 .stub-top p { font-family: var(--head); font-weight: 500; color: var(--kraft-text); font-size: 13.5px; margin: 0; }
+  .m4 .perf { border: 0; border-top: 2.5px dashed var(--kraft-deep); margin: 0; position: relative; }
+  .m4 .stub-bot { padding: 16px; display: flex; flex-direction: column; align-items: center; gap: 10px; background: var(--cream-dim); }
+  .m4 .qr-box { width: 168px; }
+  .m4 .stub-bot .redeem { font-family: var(--head); font-weight: 600; color: var(--kraft-text); font-size: 13px; text-align: center; }
+  .m4 .actions { width: 100%; }
+
+  /* ====== Opção 5 — Recado do amigo (conversational) ====== */
+  .m5 .screen { justify-content: center; gap: 16px; }
+  .m5 .note { padding: 16px 16px; position: relative; }
+  .m5 .note h3 { font-family: var(--head); font-weight: 700; font-size: 19px; color: var(--ink); margin: 0 0 7px; }
+  .m5 .note p { margin: 0; color: var(--ink); font-size: 14.5px; }
+  .m5 .note p b { color: var(--keep); }
+  .m5 .qrwrap { display: flex; flex-direction: column; align-items: center; gap: 9px; }
+  .m5 .qr-box { width: 170px; }
+  .m5 .qrwrap .cap { font-family: var(--head); font-weight: 700; color: var(--gold); font-size: 14px; }
+  .m5 .actions { width: 100%; }
+
+  /* ===== Mistura: "TROCA FEITA!" (op.2) + Vale-figurinhas (op.4) ===== */
+  .section-title { max-width: 1180px; margin: 32px auto 0; padding: 0 24px; font-family: var(--head); font-weight: 700; font-size: 18px; color: #fff; }
+  .section-title.star { color: var(--gold); }
+  .section-sub { max-width: 75ch; margin: 5px auto 0; padding: 0 24px; color: #9aa3ae; font-size: 14px; }
+
+  /* shared success headline (the user's own win) */
+  .win { text-align: center; }
+  .win h3 { font-family: var(--display); font-weight: 400; text-transform: uppercase; color: var(--gold); margin: 0; line-height: .95; letter-spacing: 0; text-wrap: balance; }
+  .win p { font-family: var(--head); font-weight: 600; color: var(--cream); margin: 6px 0 0; font-size: 14px; }
+
+  /* shared vale-coupon (distinct class names so it can't clash with op.4's .m4 rules) */
+  .vale-card { width: 100%; background: var(--cream); border: 2.5px solid var(--ink); border-radius: var(--radius); box-shadow: 5px 5px 0 var(--paper-edge); overflow: hidden; }
+  .vc-top { padding: 14px 16px 12px; text-align: center; color: var(--ink); }
+  .vc-foil { font-family: var(--head); font-weight: 700; font-size: 11px; letter-spacing: .12em; color: var(--gold-deep); }
+  .vc-h { font-family: var(--display); font-weight: 400; font-size: 28px; margin: 3px 0; color: var(--ink); line-height: 1; }
+  .vc-sub { font-family: var(--head); font-weight: 500; color: var(--kraft-text); font-size: 13px; }
+  .vc-perf { border: 0; border-top: 2.5px dashed var(--kraft-deep); margin: 0; }
+  .vc-bot { padding: 15px; display: flex; flex-direction: column; align-items: center; gap: 9px; background: var(--cream-dim); }
+  .vc-redeem { font-family: var(--head); font-weight: 600; color: var(--kraft-text); font-size: 12.5px; text-align: center; margin: 0; }
+
+  /* Mistura A — banner em cima + vale embaixo */
+  .m6 .screen { gap: 16px; justify-content: center; }
+  .m6 .win h3 { font-size: 34px; max-width: 11ch; margin-inline: auto; }
+  .m6 .qr-box { width: 158px; }
+
+  /* Mistura B — carimbo "Troca feita" no vale */
+  .m7 .screen { justify-content: center; align-items: center; gap: 18px; }
+  .m7 .coupon-wrap { position: relative; width: 100%; }
+  .m7 .stamp {
+    position: absolute; top: -14px; right: -4px; transform: rotate(7deg); z-index: 2;
+    font-family: var(--head); font-weight: 700; font-size: 13px; letter-spacing: .03em;
+    color: var(--keep); border: 2.5px solid var(--keep); border-radius: 6px;
+    padding: 5px 11px; background: var(--cream); box-shadow: 2px 2px 0 rgba(10, 122, 62, 0.28);
+  }
+  .m7 .qr-box { width: 172px; }
+
+  /* Mistura C — seu troféu (códigos) + vale compacto */
+  .m8 .screen { gap: 12px; justify-content: center; }
+  .m8 .win h3 { font-size: 26px; }
+  .m8 .panel { background: var(--cream); border: 2.5px solid var(--ink); border-radius: var(--radius); box-shadow: 4px 4px 0 var(--paper-edge); padding: 12px 13px; }
+  .m8 .panel .label { font-family: var(--head); font-weight: 700; font-size: 11px; text-transform: uppercase; letter-spacing: .04em; color: var(--kraft-text); margin: 0 0 8px; }
+  .m8 .gets { display: flex; flex-direction: column; gap: 6px; }
+  .m8 .vale-row { display: flex; align-items: center; gap: 12px; padding: 12px 13px; background: var(--cream-dim); border: 2.5px dashed var(--kraft-deep); border-radius: var(--radius); }
+  .m8 .vale-row .qr-box { width: 90px; flex: none; padding: 6px; }
+  .m8 .vale-row .vt .vf { font-family: var(--head); font-weight: 700; font-size: 10px; letter-spacing: .1em; color: var(--gold-deep); }
+  .m8 .vale-row .vt b { font-family: var(--display); font-weight: 400; font-size: 19px; color: var(--ink); display: block; line-height: 1.05; }
+  .m8 .vale-row .vt span { font-size: 12px; color: var(--kraft-text); font-family: var(--head); display: block; margin-top: 3px; }
+
+  @media (max-width: 380px) { .phone { border-radius: 22px; } }
+</style>
+</head>
+<body>
+  <header class="gallery-head">
+    <h1>Conferir · "Terminar a troca" — jeitos de mostrar o QR pro amigo</h1>
+    <p>A tela que aparece quando você termina de conferir a pilha do amigo: o herói é o <b>QR Code</b> que o amigo escaneia pra levar as figurinhas pro álbum dele. Todas com <b>alto contraste</b> (nada de texto escuro no verde) e <b>copy nova</b>, variando layout e texto.</p>
+    <p class="how">Tudo no tema <code>Banca — Álbum de Papel</code> (verde do álbum + fichas creme com borda e sombra de "carimbo", acento dourado, tipo condensada). Escolha um layout e/ou um texto: dá pra misturar (ex.: layout da 3 com o texto da 5). Exemplo com <b>12</b> figurinhas na pilha.</p>
+  </header>
+
+  <h2 class="section-title star">⭐ A mistura que você pediu — "Troca feita!" + Vale-figurinhas</h2>
+  <p class="section-sub">3 variações juntando o aviso de sucesso pra você (ideia da op. 2) com o vale-cupom pro amigo (op. 4).</p>
+  <main class="gallery">
+
+    <!-- Mistura A -->
+    <figure class="mock m6">
+      <div class="phone"><div class="screen">
+        <div class="spacer"></div>
+        <div class="win"><h3 class="disp">Troca feita!</h3><p>Você pegou 3 figurinhas novas 🎉</p></div>
+        <div class="vale-card">
+          <div class="vc-top">
+            <div class="vc-foil">★ VALE-FIGURINHAS ★</div>
+            <div class="vc-h">12 figurinhas</div>
+            <div class="vc-sub">pro álbum do seu amigo</div>
+          </div>
+          <hr class="vc-perf" />
+          <div class="vc-bot">
+            <div class="qr-box"><svg data-qr="6" viewBox="0 0 29 29"></svg></div>
+            <p class="vc-redeem">Ele escaneia e resgata 📲</p>
+          </div>
+        </div>
+        <div class="spacer"></div>
+        <button class="btn btn-gold">Pronto</button>
+      </div></div>
+      <figcaption class="mock-cap">
+        <span class="tag">Mistura A · Banner + vale</span>
+        <h2>Sucesso em cima, vale embaixo</h2>
+        <p>"Troca feita!" celebra a SUA jogada; o vale-cupom com o QR fica logo abaixo, pro amigo.</p>
+        <p class="copy"><b>Título:</b> "Troca feita! / Você pegou 3 novas" · <b>CTA:</b> Pronto</p>
+      </figcaption>
+    </figure>
+
+    <!-- Mistura B -->
+    <figure class="mock m7">
+      <div class="phone"><div class="screen">
+        <div class="spacer"></div>
+        <div class="coupon-wrap">
+          <span class="stamp">✓ Troca feita</span>
+          <div class="vale-card">
+            <div class="vc-top">
+              <div class="vc-foil">★ VALE-FIGURINHAS ★</div>
+              <div class="vc-h">12 figurinhas</div>
+              <div class="vc-sub">a pilha que você conferiu</div>
+            </div>
+            <hr class="vc-perf" />
+            <div class="vc-bot">
+              <div class="qr-box"><svg data-qr="7" viewBox="0 0 29 29"></svg></div>
+              <p class="vc-redeem">Mostra pro seu amigo resgatar no álbum dele</p>
+            </div>
+          </div>
+        </div>
+        <div class="spacer"></div>
+        <div class="actions stack" style="width:100%">
+          <button class="btn btn-gold">Fechar</button>
+          <button class="btn-wa-link">Mandar no WhatsApp</button>
+        </div>
+      </div></div>
+      <figcaption class="mock-cap">
+        <span class="tag">Mistura B · Carimbo</span>
+        <h2>Vale carimbado "Troca feita"</h2>
+        <p>O sucesso vira um carimbo verde no canto do vale — a troca foi "fechada". Mais integrado e tátil.</p>
+        <p class="copy"><b>Carimbo:</b> "✓ Troca feita" · <b>CTA:</b> Fechar</p>
+      </figcaption>
+    </figure>
+
+    <!-- Mistura C -->
+    <figure class="mock m8">
+      <div class="phone"><div class="screen">
+        <div class="spacer"></div>
+        <div class="win"><h3 class="disp">Troca feita!</h3></div>
+        <div class="panel">
+          <p class="label">Você ficou com</p>
+          <div class="gets">
+            <div class="code-chip"><span class="ck">✓</span><span class="cc">CIV 12</span><span class="ct">Costa do Marfim</span></div>
+            <div class="code-chip"><span class="ck">✓</span><span class="cc">BRA 03</span><span class="ct">Brasil</span></div>
+            <div class="code-chip"><span class="ck">✓</span><span class="cc">ARG 07</span><span class="ct">Argentina</span></div>
+          </div>
+        </div>
+        <div class="vale-row">
+          <div class="qr-box"><svg data-qr="8" viewBox="0 0 29 29"></svg></div>
+          <div class="vt"><span class="vf">★ VALE PRO AMIGO</span><b>12 figurinhas</b><span>Ele escaneia e resgata.</span></div>
+        </div>
+        <div class="spacer"></div>
+        <button class="btn btn-gold">Beleza, fechar</button>
+      </div></div>
+      <figcaption class="mock-cap">
+        <span class="tag">Mistura C · Troféu + vale</span>
+        <h2>O que você ganhou + vale do amigo</h2>
+        <p>Mostra a SUA conquista (os códigos que você pegou, bem legíveis) e o vale compacto do amigo embaixo.</p>
+        <p class="copy"><b>Título:</b> "Troca feita! / Você ficou com…" · <b>CTA:</b> Beleza, fechar</p>
+      </figcaption>
+    </figure>
+
+  </main>
+
+  <h2 class="section-title">As 5 primeiras opções</h2>
+  <main class="gallery">
+
+    <!-- Opção 1 -->
+    <figure class="mock m1">
+      <div class="phone"><div class="screen">
+        <div class="ticket card">
+          <h3 class="disp">Mostra pro seu amigo</h3>
+          <p class="lead">Ele aponta a câmera aqui e as <b>12 figurinhas</b> vão direto pro álbum dele.</p>
+          <div class="qr-box"><svg data-qr="1" viewBox="0 0 29 29"></svg></div>
+          <span class="chip">⚽ 12 figurinhas</span>
+        </div>
+        <div class="actions stack" style="width:100%">
+          <button class="btn btn-gold">Pronto</button>
+          <button class="btn-wa-link">📲 ou manda no WhatsApp</button>
+        </div>
+      </div></div>
+      <figcaption class="mock-cap">
+        <span class="tag">Opção 1 · Bilhete</span>
+        <h2>Ficha única, QR centralizado</h2>
+        <p>Uma ficha creme de "carimbo" com o QR no meio. Direto e on-brand.</p>
+        <p class="copy"><b>Título:</b> "Mostra pro seu amigo" · <b>CTA:</b> Pronto</p>
+      </figcaption>
+    </figure>
+
+    <!-- Opção 2 -->
+    <figure class="mock m2">
+      <div class="phone"><div class="screen">
+        <div class="top">
+          <h3 class="disp">Troca feita!</h3>
+          <span>Você conferiu a pilha do seu amigo</span>
+        </div>
+        <div class="ticket panel">
+          <p class="label">Você fica com</p>
+          <div class="gets">
+            <div class="code-chip"><span class="ck">✓</span><span class="cc">CIV 12</span><span class="ct">Costa do Marfim</span></div>
+            <div class="code-chip"><span class="ck">✓</span><span class="cc">BRA 03</span><span class="ct">Brasil</span></div>
+            <div class="code-chip"><span class="ck">✓</span><span class="cc">ARG 07</span><span class="ct">Argentina</span></div>
+          </div>
+        </div>
+        <div class="ticket panel">
+          <p class="label">Pro álbum do seu amigo</p>
+          <div class="give">
+            <div class="qr-box"><svg data-qr="2" viewBox="0 0 29 29"></svg></div>
+            <div class="gtext"><b>12 figurinhas</b><span>Ele escaneia e elas entram no álbum dele.</span></div>
+          </div>
+        </div>
+        <div class="spacer"></div>
+        <button class="btn btn-gold">Beleza, fechar</button>
+      </div></div>
+      <figcaption class="mock-cap">
+        <span class="tag">Opção 2 · Leva / Recebe</span>
+        <h2>O que você leva + o QR do amigo</h2>
+        <p>Separa "você fica com" (códigos legíveis, contraste resolvido) de "pro álbum do amigo" (QR).</p>
+        <p class="copy"><b>Título:</b> "Troca feita!" · <b>CTA:</b> Beleza, fechar</p>
+      </figcaption>
+    </figure>
+
+    <!-- Opção 3 -->
+    <figure class="mock m3">
+      <div class="phone"><div class="screen">
+        <p class="hint">Aponta a câmera do seu amigo aqui 👇</p>
+        <div class="qr-box"><svg data-qr="3" viewBox="0 0 29 29"></svg></div>
+        <p class="sub">12 figurinhas entram no álbum dele na hora</p>
+        <div class="actions stack" style="width:100%">
+          <button class="btn btn-gold">Pronto</button>
+          <button class="btn-wa-link">Mandar no WhatsApp</button>
+        </div>
+      </div></div>
+      <figcaption class="mock-cap">
+        <span class="tag">Opção 3 · QR no comando</span>
+        <h2>QR gigante, quase sem texto</h2>
+        <p>O QR domina a tela (estilo enxuto, tipo Scanini). Uma linha em cima, uma embaixo.</p>
+        <p class="copy"><b>Título:</b> "Aponta a câmera do seu amigo aqui" · <b>CTA:</b> Pronto</p>
+      </figcaption>
+    </figure>
+
+    <!-- Opção 4 -->
+    <figure class="mock m4">
+      <div class="phone"><div class="screen">
+        <div class="spacer"></div>
+        <div class="coupon">
+          <div class="stub-top">
+            <div class="foil">★ VALE-FIGURINHAS ★</div>
+            <h3 class="disp">12 figurinhas</h3>
+            <p>da pilha que você conferiu</p>
+          </div>
+          <hr class="perf" />
+          <div class="stub-bot">
+            <div class="qr-box"><svg data-qr="4" viewBox="0 0 29 29"></svg></div>
+            <p class="redeem">Seu amigo escaneia e resgata no álbum dele 📲</p>
+          </div>
+        </div>
+        <div class="spacer"></div>
+        <div class="actions stack" style="width:100%">
+          <button class="btn btn-gold">Fechar</button>
+          <button class="btn-wa-link">Mandar no WhatsApp</button>
+        </div>
+      </div></div>
+      <figcaption class="mock-cap">
+        <span class="tag">Opção 4 · Vale</span>
+        <h2>Cupom "vale-figurinhas" com picote</h2>
+        <p>Vira um vale destacável (kraft + dourado, picote tracejado). Lúdico e tátil, sem ser infantil.</p>
+        <p class="copy"><b>Título:</b> "Vale 12 figurinhas" · <b>CTA:</b> Fechar</p>
+      </figcaption>
+    </figure>
+
+    <!-- Opção 5 -->
+    <figure class="mock m5">
+      <div class="phone"><div class="screen">
+        <div class="spacer"></div>
+        <div class="ticket note">
+          <h3>Pronto! 🎉</h3>
+          <p>Agora mostra o código pro seu amigo. Ele abre a câmera, aponta aqui, e pronto: as <b>12 figurinhas</b> caem no álbum dele.</p>
+        </div>
+        <div class="qrwrap">
+          <div class="qr-box"><svg data-qr="5" viewBox="0 0 29 29"></svg></div>
+          <span class="cap">↑ é só apontar a câmera</span>
+        </div>
+        <div class="spacer"></div>
+        <div class="actions stack" style="width:100%">
+          <button class="btn btn-gold">Voltar pra Banca</button>
+          <button class="btn-wa-link">Mandar pelo zap</button>
+        </div>
+      </div></div>
+      <figcaption class="mock-cap">
+        <span class="tag">Opção 5 · Recado</span>
+        <h2>Recado de amigo + QR embaixo</h2>
+        <p>Texto-forte, voz de amigo num bilhete; o QR vem logo abaixo. Pra quem curte a copy mais calorosa.</p>
+        <p class="copy"><b>Título:</b> "Pronto! Mostra o código" · <b>CTA:</b> Voltar pra Banca</p>
+      </figcaption>
+    </figure>
+
+  </main>
+
+  <script>
+    // Believable-but-fake QR: 29×29 modules with the 3 finder patterns + a seeded module fill.
+    // (Mockup only — not a scannable code.)
+    function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};}
+    function drawQr(svg, seed){
+      const N=29, rnd=mulberry32(seed*2654435761>>>0);
+      const m=Array.from({length:N},()=>Array(N).fill(0));
+      // module fill with a quiet margin of 0 (the white rect is the quiet zone via padding)
+      for(let y=0;y<N;y++)for(let x=0;x<N;x++) m[y][x]=rnd()>0.52?1:0;
+      // finder pattern (7×7) at a corner
+      function finder(ox,oy){
+        for(let y=0;y<7;y++)for(let x=0;x<7;x++){
+          const edge=(x===0||x===6||y===0||y===6);
+          const core=(x>=2&&x<=4&&y>=2&&y<=4);
+          m[oy+y][ox+x]=(edge||core)?1:0;
+        }
+        // clear separator ring
+        for(let y=-1;y<8;y++)for(let x=-1;x<8;x++){const yy=oy+y,xx=ox+x;if(yy<0||xx<0||yy>=N||xx>=N)continue;if(y===-1||y===7||x===-1||x===7)m[yy][xx]=0;}
+      }
+      finder(0,0); finder(N-7,0); finder(0,N-7);
+      // a couple of timing-ish dots for flavor
+      for(let i=8;i<N-8;i++){ m[6][i]=i%2?1:0; m[i][6]=i%2?1:0; }
+      let d='';
+      for(let y=0;y<N;y++)for(let x=0;x<N;x++) if(m[y][x]) d+=`M${x} ${y}h1v1h-1z`;
+      svg.innerHTML=`<rect width="${N}" height="${N}" fill="#fff"/><path d="${d}" fill="#16241c"/>`;
+      svg.setAttribute('shape-rendering','crispEdges');
+    }
+    document.querySelectorAll('svg[data-qr]').forEach(s=>drawQr(s, parseInt(s.dataset.qr,10)+3));
+  </script>
+</body>
+</html>

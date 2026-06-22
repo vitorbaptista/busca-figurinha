@@ -136,14 +136,23 @@ export const pt = {
     finishPileCount: 'na pilha',
     finishTakeCount: 'pra você',
     takenEmpty: 'Você não precisa de nenhuma dessa pilha — mas ainda dá pra mostrar o álbum pro amigo.',
-    // Done state: shown after the CTA fires — QR + warm copy + close.
-    albumDoneTitle: 'Tá pronto pra entregar! 🎉',
-    albumDoneLead: (n: number) =>
-      n === 1
-        ? 'Você escaneou 1 figurinha da pilha dele. Mostra esse QR pro seu amigo: é só apontar a câmera e as figurinhas entram no álbum dele na hora.'
-        : `Você escaneou ${n} figurinhas da pilha dele. Mostra esse QR pro seu amigo: é só apontar a câmera e as figurinhas entram no álbum dele na hora.`,
-    albumDoneCta: 'Pronto, beleza!',
-    // CTA label when taken.length === 0 (nothing to save, but still show the album QR).
+    // Done state ("Troca feita!" + vale-figurinhas): a success line for you + the friend's-álbum QR coupon.
+    albumDoneTitle: 'Troca feita!',
+    // The user's own win — n = how many figurinhas you saved to your collection.
+    albumDoneWin: (n: number) =>
+      n === 0
+        ? 'Pronto! Agora é só passar o álbum pro seu amigo 👇'
+        : n === 1
+          ? 'Você pegou 1 figurinha nova 🎉'
+          : `Você pegou ${n} figurinhas novas 🎉`,
+    // The vale-figurinhas coupon (the QR the friend scans to load THEIR álbum).
+    valeFoil: '★ VALE-FIGURINHAS ★',
+    valeCount: (n: number) => (n === 1 ? '1 figurinha' : `${n} figurinhas`),
+    valeFor: 'pro álbum do seu amigo',
+    valeRedeem: 'Ele escaneia e resgata 📲',
+    albumDoneCta: 'Pronto',
+    albumShareWa: 'ou manda no WhatsApp',
+    // CTA label when taken.length === 0 (nothing to save, but still show the album QR/vale).
     showAlbumCta: 'Mostrar o álbum pro amigo',
   },
 
@@ -190,7 +199,6 @@ export const pt = {
   // their repetidas (you took the others' dupes). (Receiver copy is the import half.)
   pile: {
     qrAria: 'Código QR com as figurinhas escaneadas',
-    shareWhats: 'Mandar no WhatsApp',
     shareCopied: 'Link copiado!',
     shareFail: 'Não rolou compartilhar. Mostre o QR pro seu amigo.',
     // Receiver half: a friend scanned my pile and sent me the link.
