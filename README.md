@@ -126,3 +126,6 @@ figurinhas foram lidas, quantos compartilhamentos). **Sem login e sem dados pess
 nome, e-mail, foto ou texto digitado é enviado. As estatísticas são **agregadas** e o app é
 configurado pra **não armazenar o endereço de IP** — no máximo o país/estado, pra ver de onde
 vem o uso. Não dá pra saber quem está usando, só quanto o app é usado.
+
+Vêm desligadas por padrão. Como ligar (chaves no GitHub) e configurar com privacidade (GeoIP sem
+guardar o IP) está em [`docs/analytics.md`](docs/analytics.md).
