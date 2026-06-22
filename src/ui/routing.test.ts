@@ -10,6 +10,10 @@ describe('screenFromHash', () => {
     expect(screenFromHash('#repetidas')).toBe('repeats');
   });
 
+  it('parses #trocar to trade (conferir + conferir-report never parse back)', () => {
+    expect(screenFromHash('#trocar')).toBe('trade');
+  });
+
   it('tolerates a missing leading #', () => {
     expect(screenFromHash('trocar')).toBe('trade');
   });

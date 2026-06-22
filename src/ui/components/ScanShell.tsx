@@ -46,7 +46,7 @@ export interface ScanShellProps {
   finishAction?: ComponentChildren;
   /** A full-camera overlay panel above cam-bottom (e.g. the multi-sticker panel). */
   overlay?: ComponentChildren;
-  /** cam-bottom dock: verdict + screen-specific content. */
+  /** cam-bottom dock: verdict + screen-specific content. Note: the idle hint is governed by the separate `hideHint` prop, not by this slot. */
   bottom?: ComponentChildren;
   /** Extra control inside the manual sheet (e.g. ScanScreen's "Colar lista"). */
   manualExtra?: ComponentChildren;

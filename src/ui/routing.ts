@@ -19,7 +19,7 @@ const SLUGS: Record<Screen, string> = {
   'conferir-report': 'trocar',
 };
 
-// Reverse map for parsing a hash back to a screen. `report` + `conferir` are omitted (never targets).
+// Reverse map for parsing a hash back to a screen. `report`, `conferir`, and `conferir-report` are omitted (never targets).
 const SCREENS: Record<string, Screen> = {
   escanear: 'scan',
   colecao: 'collection',
