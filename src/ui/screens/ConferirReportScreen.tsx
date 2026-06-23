@@ -1,33 +1,41 @@
 // src/ui/screens/ConferirReportScreen.tsx
-import { useState } from 'preact/hooks';
+import { useMemo, useState } from 'preact/hooks';
 import type { CollectionStore } from '../../types';
 import type { PileReport } from '../../domain/pileSession';
 import { pt } from '../../i18n/pt';
 import { checklist } from '../../data/checklist';
-import { pileShareTextFor, sharePile } from '../../domain/pileShare';
+import { shareLinkFor } from '../../domain/share';
 import { QrCode } from '../components/QrCode';
 
 interface ConferirReportScreenProps {
   report: PileReport;
   collection: CollectionStore;
-  /** Sender's name for the share message (already sanitized; undefined = anonymous). */
+  /** My spares (repeats ∩ owned) go into the "pedido" trade link, so the friend also sees what he can
+   *  take from me. Read-only here. */
+  repeats: CollectionStore;
+  /** Sender's name for the trade link (already sanitized; undefined = anonymous). */
   name?: string;
   onBack: () => void;
 }
 
 /**
- * The Conferir finish step ("Terminar"), symmetric to the album's ReportScreen. Reviews which
- * scanned stickers you actually TOOK, marks them owned, then transitions to a full-screen done
- * state whose hero is the friend's-album QR code — so handing the phone back is one tap.
+ * The Conferir finish step ("Terminar"), reworked as a trade "pedido". The hero is a QR of YOUR OWN
+ * trade link (?t=) — the friend scans it and lands on the regular "Trocar com {você}" receiver screen
+ * (TradeScreen's FriendMatch) with the stickers you picked already under "O que falta pro {você}". You
+ * confirm which of the pile you actually took (one list, pre-checked) and save those to your collection.
+ * The picked set drives BOTH the QR (`missing`) and the save — one source of truth, never two lists.
  */
-export function ConferirReportScreen({ report, collection, name, onBack }: ConferirReportScreenProps) {
-  const { taken, wholePile } = report;
+export function ConferirReportScreen({
+  report,
+  collection,
+  repeats,
+  name,
+  onBack,
+}: ConferirReportScreenProps) {
+  const { taken } = report;
   // Take-mine rows default checked; the user un-checks any they didn't actually take.
   const [checked, setChecked] = useState<Set<string>>(() => new Set(taken.map((e) => e.code)));
-  // What was actually saved this session — excluded from the share QR (you took those dupes).
-  const [savedTaken, setSavedTaken] = useState<Set<string>>(() => new Set());
-  const [done, setDone] = useState(false);
-  const [shareNotice, setShareNotice] = useState<string | null>(null);
+  const [saved, setSaved] = useState(false);
 
   const toggle = (code: string) =>
     setChecked((prev) => {
@@ -36,92 +44,52 @@ export function ConferirReportScreen({ report, collection, name, onBack }: Confe
       return next;
     });
 
+  // The QR is YOUR trade link: `missing` = the picked pile cards (what you want from the friend), so
+  // they appear under "O que falta pro {você}"; `repeats` = your spares so the friend also sees what
+  // he can take. Recomputed as the selection changes.
+  const link = useMemo(() => {
+    const myRepeatCodes = [...repeats.codes()].filter((code) => collection.has(code));
+    return shareLinkFor({ repeats: myRepeatCodes, missing: [...checked], name }, checklist);
+  }, [checked, name, repeats, collection]);
+
   const save = () => {
-    const codes = [...checked];
-    if (codes.length === 0) return;
-    collection.setOwned(codes, true);
+    if (saved) return;
+    collection.setOwned([...checked], true);
+    setSaved(true);
+    // Brief success, then hand back to Trocar (mirrors the album ReportScreen commit timing).
+    window.setTimeout(onBack, 900);
   };
 
-  /** Single handler for the primary CTA: save (when there's something to save) + flip to done. */
-  const finalize = () => {
-    save();
-    // One-shot snapshot — the QR renders with this savedTaken. When taken.length === 0,
-    // savedTaken stays empty → the QR encodes the whole pile (correct: you took nothing).
-    setSavedTaken(new Set(checked));
-    setDone(true);
-  };
-
-  const shareAlbum = async () => {
-    const result = await sharePile(wholePile, [...savedTaken], checklist, name);
-    if (result === 'copied') setShareNotice(pt.pile.shareCopied);
-    else if (result === 'unavailable') setShareNotice(pt.pile.shareFail);
-  };
-
-  // ── Done state — "Troca feita!" success + the friend's vale-figurinhas QR coupon ──
-  if (done) {
-    const { link } = pileShareTextFor(wholePile, [...savedTaken], checklist, name);
+  if (saved) {
     return (
-      <div class="screen report-screen conferir-report-screen">
-        <div class="conferir-done">
-          <div class="conferir-done-win">
-            <h2 class="conferir-done-title">{pt.conferir.albumDoneTitle}</h2>
-            <p class="conferir-done-sub">{pt.conferir.albumDoneWin(savedTaken.size)}</p>
-          </div>
-
-          <div class="vale-card">
-            <div class="vale-top">
-              <div class="vale-foil">{pt.conferir.valeFoil}</div>
-              <div class="vale-count">{pt.conferir.valeCount(wholePile.length)}</div>
-              <div class="vale-sub">{pt.conferir.valeFor}</div>
-            </div>
-            <hr class="vale-perf" />
-            <div class="vale-bot">
-              <div class="trade-qr vale-qr">
-                <QrCode value={link} ariaLabel={pt.pile.qrAria} class="trade-qr-svg" />
-              </div>
-              <p class="vale-redeem">{pt.conferir.valeRedeem}</p>
-            </div>
-          </div>
-
-          {shareNotice && (
-            <p class="conferir-done-notice" role="status" aria-live="polite">
-              {shareNotice}
-            </p>
-          )}
-          <button class="btn btn-gold btn-block" onClick={onBack}>
-            {pt.conferir.albumDoneCta}
-          </button>
-          {/* Subtle remote-share fallback (in-person QR is the hero; this keeps the WhatsApp path). */}
-          <button class="conferir-wa-link" onClick={shareAlbum}>
-            📲 {pt.conferir.albumShareWa}
-          </button>
-        </div>
+      <div class="screen report-done">
+        <div class="report-done-emoji">🎉</div>
+        <h2>{pt.report.added}</h2>
       </div>
     );
   }
 
-  // ── Review state ─────────────────────────────────────────────────────────────
   return (
     <div class="screen report-screen conferir-report-screen">
       <header class="report-header">
         <h1>{pt.conferir.finishTitle}</h1>
-        <div class="report-totals">
-          <div class="total-card">
-            <b>{wholePile.length}</b>
-            <span>{pt.conferir.finishPileCount}</span>
-          </div>
-          <div class="total-card total-keep">
-            <b>{taken.length}</b>
-            <span>{pt.conferir.finishTakeCount}</span>
-          </div>
-        </div>
       </header>
+
+      {/* HERO: the "pedido" QR — your trade link, pre-loaded with the picked stickers. */}
+      <div class="qr-hero">
+        <div class="trade-qr">
+          <span class="ptag">{pt.conferir.reqPtag}</span>
+          <QrCode value={link} ariaLabel={pt.conferir.reqQrAria} class="trade-qr-svg" />
+          <p class="trade-qr-hint">{pt.conferir.reqCaption}</p>
+          <p class="qr-tally">{pt.conferir.reqCount(checked.size)}</p>
+        </div>
+      </div>
 
       <section class="report-section">
         <div class="report-section-head">
-          <h2>{pt.conferir.reviewTitle}</h2>
+          <h2>{pt.conferir.reqConfirmTitle}</h2>
         </div>
-        <p class="report-sub">{pt.conferir.reviewSub}</p>
+        <p class="report-sub">{pt.conferir.reqConfirmSub}</p>
         {taken.length === 0 ? (
           <p class="report-empty">{pt.conferir.takenEmpty}</p>
         ) : (
@@ -144,12 +112,8 @@ export function ConferirReportScreen({ report, collection, name, onBack }: Confe
       </section>
 
       <div class="report-footer">
-        <button
-          class="btn btn-primary btn-block"
-          disabled={taken.length > 0 && checked.size === 0}
-          onClick={finalize}
-        >
-          {taken.length > 0 ? pt.conferir.reviewSave(checked.size) : pt.conferir.showAlbumCta}
+        <button class="btn btn-primary btn-block" disabled={checked.size === 0} onClick={save}>
+          {pt.conferir.reqSave}
         </button>
         <button class="btn btn-ghost btn-block" onClick={onBack}>
           {pt.conferir.back}

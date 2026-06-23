@@ -4,27 +4,24 @@ import { pt } from '../../i18n/pt';
 import { friendsNeeding, huntVerdict } from '../../domain/friendMatch';
 import type { FriendListsStore } from '../../state/friendLists';
 import type { PileSession } from '../../domain/pileSession';
+import { checklist } from '../../data/checklist';
 import { useScanner } from '../hooks/useScanner';
 import { ScanShell } from '../components/ScanShell';
 import { ConferirVerdict, type ConferirVerdictState } from '../components/ConferirVerdict';
-import { ImportSheet } from '../components/ImportSheet';
+import { FriendImportSheet } from '../components/FriendImportSheet';
 
 interface ConferirScreenProps {
   /** Read-only: PRECISO/JÁ TENHO comes from collection.has(code). Never written here (only the
    *  finish step writes). */
   collection: CollectionStore;
-  /** Spares + wishlist — the "Colar lista" import (same pen as Escanear) writes here, not the camera. */
-  repeats: CollectionStore;
-  wants: CollectionStore;
   /** Read-only: friends a scanned sticker serves (friendsNeeding, NOT spare-gated — it's THEIR sticker). */
   friendLists: FriendListsStore;
   settings: SettingsStore;
-  /** The lifted pile accumulator; live reads are recorded here, the finish step reads it. */
+  /** The lifted pile accumulator; live reads (and "Importar a lista do amigo") are recorded here, the
+   *  finish step reads it. */
   pileSession: PileSession;
   /** "Terminar" → build the report + route to the finish step (owned by app.tsx). */
   onFinish: () => void;
-  /** Navigate to Coleção after a "Tenho" import (same as Escanear's pen → Colar lista). */
-  onGoToCollection: () => void;
 }
 
 /**
@@ -36,13 +33,10 @@ interface ConferirScreenProps {
  */
 export function ConferirScreen({
   collection,
-  repeats,
-  wants,
   friendLists,
   settings,
   pileSession,
   onFinish,
-  onGoToCollection,
 }: ConferirScreenProps) {
   const [verdict, setVerdict] = useState<ConferirVerdictState | null>(null);
   const [announce, setAnnounce] = useState('');
@@ -77,6 +71,27 @@ export function ConferirScreen({
           ? pt.conferir.takeWord + ' ' + pt.scan.radarServes(v.forFriends)
           : pt.conferir.skipWord + ' ' + pt.conferir.skipSub;
     setAnnounce(`${entry.display}: ${who}${zwsp}`);
+  };
+
+  // "Importar a lista do amigo" (the pen's Colar lista): recognized codes from the pasted list are fed
+  // into the SAME pile as a live read — each gets its verdict (take-mine/take-friends/skip) so the
+  // Novas/Repetidas counters update, then the sheet closes and you keep scanning. Re-importing a code
+  // already in the pile is a no-op (pileSession dedupes by code).
+  const handleImport = (codes: string[]) => {
+    let added = 0;
+    for (const code of codes) {
+      const entry = checklist.byCode.get(code);
+      if (!entry) continue;
+      const owned = collection.has(entry.code);
+      const friendNames = friendsNeeding(entry.code, friendLists.active());
+      const v = huntVerdict({ owned, friendNames });
+      if (pileSession.add(entry, v.kind)) added += 1;
+    }
+    if (added > 0) bumpTally((n) => n + 1);
+    setShowImport(false);
+    // added < codes.length only when some were already in the pile (parseImport returns valid codes);
+    // added === 0 means the whole paste was a re-read — say that instead of "0 carregadas".
+    setAnnounce(added > 0 ? pt.friendImport.loaded(added) : pt.friendImport.allKnown);
   };
 
   const scanner = useScanner({
@@ -147,16 +162,7 @@ export function ConferirScreen({
         bottom={verdict && <ConferirVerdict state={verdict} onManual={() => setShowManual(true)} />}
       />
       {showImport && (
-        <ImportSheet
-          collection={collection}
-          repeats={repeats}
-          wants={wants}
-          onClose={() => setShowImport(false)}
-          onSeeCollection={() => {
-            setShowImport(false);
-            onGoToCollection();
-          }}
-        />
+        <FriendImportSheet onClose={() => setShowImport(false)} onLoad={handleImport} />
       )}
     </>
   );

@@ -3,6 +3,18 @@
 Notable changes to the sticker scanner. Newest first. No formal releases yet (deploys on push to
 `main`), so entries are grouped by date. Keep this updated when you ship something notable.
 
+## 2026-06-23 — Conferir: "Importar a lista do amigo" e "Terminar" com QR de pedido
+
+### Changed
+- Na tela de **Conferir**, o **"Colar lista"** virou **"Importar a lista do amigo"**: você cola as
+  figurinhas que o **seu amigo tem** e elas entram direto na conferência (atualizando **Novas** e
+  **Repetidas**), aí é só continuar escaneando e **Terminar**. Antes abria a tela de importar pra sua
+  própria coleção ("Tenho / Preciso"), que não fazia sentido aqui.
+- O **"Terminar"** da conferência agora é um **pedido de troca**: mostra um **QR Code** que o seu
+  amigo escaneia pra abrir a sua página de troca — já com as figurinhas que você escolheu na seção
+  **"O que falta pro você"**. Você confirma o que pegou de verdade e salva na coleção. (Substitui o
+  vale-figurinhas que mandava a pilha pro álbum do amigo.)
+
 ## 2026-06-22 — Conferir a pilha do amigo agora termina igual ao Escanear
 
 ### Added

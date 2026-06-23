@@ -1752,6 +1752,14 @@ html.scan-active body {
 .report-section-head h2 {
   color: var(--cream);
 }
+/* a quieter sub-line under a section head (e.g. the Conferir "pedido" confirm hint) */
+.report-sub {
+  margin: 0 0 12px;
+  font-family: var(--font-head);
+  font-size: 0.92rem;
+  line-height: 1.4;
+  color: rgba(244, 236, 216, 0.85);
+}
 .report-empty {
   color: var(--kraft-text);
   background: var(--cream);
@@ -1871,6 +1879,25 @@ html.scan-active body {
   flex-direction: column;
   gap: 10px;
   margin-top: 8px;
+}
+
+/* Conferir "Terminar" pedido: the QR hero (your trade link) centred above the confirm list. Reuses the
+   .trade-qr ticket; .qr-hero just centres it and bounds its width on the report screen. */
+.qr-hero {
+  margin: 4px auto 20px;
+  max-width: 320px;
+}
+.qr-hero .trade-qr {
+  margin: 14px 0 0;
+  width: 100%;
+}
+.qr-tally {
+  margin: 8px 0 0;
+  font-family: var(--font-head);
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: var(--keep);
+  text-align: center;
 }
 
 /* the secondary "só as novas" button + its trade-off note, kept tight together as one unit */

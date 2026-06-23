@@ -152,6 +152,16 @@ export const pt = {
     albumShareWa: 'ou manda no WhatsApp',
     // CTA label when taken.length === 0 (nothing to save, but still show the album QR/vale).
     showAlbumCta: 'Mostrar o álbum pro amigo',
+    // ── Terminar "pedido" (QR em destaque): the QR is YOUR trade link (?t=); the friend scans it and
+    // lands on "Trocar com {você}" with the picked stickers already in "O que falta pro {você}".
+    // The Conferir flow never knows the friend's name → name-agnostic copy ("seu amigo").
+    reqPtag: 'Mostra pro seu amigo',
+    reqCaption: 'Ele escaneia e vê o que te dar.',
+    reqCount: (n: number) => (n === 1 ? '1 figurinha no pedido' : `${n} figurinhas no pedido`),
+    reqConfirmTitle: 'Confirme o que você quer',
+    reqConfirmSub: 'Do que o seu amigo tinha. Desmarque o que você não pegou.',
+    reqSave: 'Peguei essas — salvar',
+    reqQrAria: 'QR Code com a sua lista de troca',
   },
 
   report: {
@@ -269,6 +279,22 @@ export const pt = {
     seeCollection: 'Ver a coleção',
     doneClose: 'Beleza!',
     another: 'Colar outra lista',
+  },
+
+  // Conferir: "Importar a lista do amigo" — paste what the FRIEND has, from his perspective. One input
+  // (no buckets): the recognized codes are loaded into the live pile scan (Novas/Repetidas), exactly
+  // like showing his stickers to the camera. (The give-side travels through the Terminar "pedido" QR.)
+  friendImport: {
+    title: 'Importar a lista do amigo',
+    lead: 'Cole a lista das figurinhas que o seu amigo tem. A gente confere quais você precisa.',
+    placeholder: 'Cole aqui (ex: BRA 3, 6, 10\nMEX 12\nARG 4, 9, 14…)',
+    load: 'Carregar lista',
+    loadCount: (n: number) => (n === 1 ? 'Carregar 1 figurinha' : `Carregar ${n} figurinhas`),
+    loaded: (n: number) =>
+      n === 1 ? '1 figurinha carregada da lista' : `${n} figurinhas carregadas da lista`,
+    // Recognized codes that were ALL already in the pile (a re-paste): say so instead of "0 carregadas".
+    allKnown: 'Essas figurinhas já estavam na pilha',
+    close: 'Fechar',
   },
 
   // The manual "Repetidas" editor — mirrors Coleção but toggles your tradeable spares.
