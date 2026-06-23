@@ -85,9 +85,12 @@ export function ConferirScreen({
     cameraSetting: 'conferirCamera',
   });
 
+  const wholeCount = pileSession.wholePile().length;
   const mineCount = pileSession.takenForMe().length;
-  const friendsCount = pileSession.takenForFriends().length;
-  const hasScanned = pileSession.wholePile().length > 0;
+  // Mirror Escanear's chips: "Novas" = ones you need (take-mine); "Repetidas" = the friend's
+  // stickers you already own (the rest of the pile). The "serve pro amigo" cue lives in the verdict.
+  const repeatedCount = wholeCount - mineCount;
+  const hasScanned = wholeCount > 0;
 
   return (
     <>
@@ -114,14 +117,12 @@ export function ConferirScreen({
           <div class="counters">
             <div class="chip-count">
               <b>{mineCount}</b>
-              <span>{pt.conferir.counterMine}</span>
+              <span>{pt.scan.counters.new}</span>
             </div>
-            {friendsCount > 0 && (
-              <div class="chip-count dup">
-                <b>{friendsCount}</b>
-                <span>{pt.conferir.counterFriends}</span>
-              </div>
-            )}
+            <div class="chip-count dup">
+              <b>{repeatedCount}</b>
+              <span>{pt.scan.counters.repeated}</span>
+            </div>
           </div>
         }
         finishAction={
