@@ -256,13 +256,10 @@ export function App() {
       {screen === 'conferir' && (
         <ConferirScreen
           collection={collection}
-          repeats={repeats}
-          wants={wants}
           friendLists={friendLists}
           settings={settings}
           pileSession={pileSession}
           onFinish={finishConferir}
-          onGoToCollection={() => setScreen('collection')}
         />
       )}
 
@@ -270,6 +267,7 @@ export function App() {
         <ConferirReportScreen
           report={pileReport}
           collection={collection}
+          repeats={repeats}
           name={sanitizeName(settings.get().name) || undefined}
           onBack={() => {
             setPileReport(null);
