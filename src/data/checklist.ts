@@ -1,7 +1,7 @@
 import type { Checklist, ChecklistEntry, StickerType, TeamGroup } from '../types';
 
 // Official Panini FIFA World Cup 2026 album: 48 teams × 20 stickers + 20 special "FWC"
-// stickers = 980, plus 12 Coca-Cola exclusive "CC" stickers = 992 total. Codes are FIFA
+// stickers = 980, plus 14 Coca-Cola exclusive "CC" stickers = 994 total. Codes are FIFA
 // 3-letter team abbreviations + number,
 // matching the codes printed on the back of each sticker (e.g. "CIV 12", "EGY 4").
 // Cross-verified across the official Panini pack-contents page and three secondary
@@ -87,15 +87,16 @@ const ALBUM_GROUPS: { group: string; codes: string[] }[] = [
 const SPECIAL_NAME = 'Especiais';
 const SPECIAL_CODE = 'FWC';
 
-// Coca-Cola exclusive section: CC1..CC12. These are NOT in the regular packs — they only come
-// behind the peel-back label of specially marked Coca-Cola bottles, and the album has a dedicated
-// Coca-Cola page for them, so they count toward completing the album.
-// Players (CC1..CC12): Lamine Yamal, Joshua Kimmich, Harry Kane, Santiago Giménez, Antonee Robinson,
-// Jefferson Lerma, Edson Álvarez, Virgil van Dijk, Alphonso Davies, Weston McKennie,
-// Lautaro Martínez, Gabriel Magalhães.
+// Coca-Cola exclusive section: CC1..CC14 (the Brazil / Latin America edition; the USA/Canada album
+// has only CC1..CC12). These are NOT in the regular packs — they only come behind the peel-back label
+// of specially marked Coca-Cola bottles, and the album has a dedicated Coca-Cola page for them, so
+// they count toward completing the album.
+// Players (CC1..CC14): Lamine Yamal, Joshua Kimmich, Harry Kane, Santiago Giménez, Joško Gvardiol,
+// Federico Valverde, Jefferson Lerma, Enner Valencia, Gabriel Magalhães, Virgil van Dijk,
+// Alphonso Davies, Emiliano Martínez, Raúl Jiménez, Lautaro Martínez.
 const COKE_NAME = 'Coca-Cola';
 const COKE_CODE = 'CC';
-const COKE_COUNT = 12;
+const COKE_COUNT = 14;
 
 function teamEntries(team: RawTeam): ChecklistEntry[] {
   const entries: ChecklistEntry[] = [];

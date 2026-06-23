@@ -11,7 +11,8 @@ export interface ImportResult {
   /** Recognized canonical codes, deduped, in album order. */
   codes: string[];
   /** `${teamCode}${number}` tokens whose team is known but whose code isn't in this album (the
-   *  994-vs-992 album mismatch), in appearance order — surfaced so the import preview can show how
+   *  album mismatch — a code another app's album has but ours doesn't), in appearance order —
+   *  surfaced so the import preview can show how
    *  many were skipped and the user can trust the count. */
   unrecognized: string[];
   /** Name of the strategy that parsed the text (for debugging/telemetry). */
