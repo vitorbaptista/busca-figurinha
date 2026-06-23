@@ -2138,12 +2138,15 @@ html.scan-active body {
   margin-bottom: 16px;
   animation: slide-in 0.25s ease;
 }
+/* keep-soft / dupe-soft are translucent and .settings-notice has no bg of its own — composite the
+   tint OVER cream, or the notice tints the dark album page and its text nearly vanishes (~1.5:1).
+   Mirrors the .report-row.is-checked fix. */
 .notice-ok {
-  background: var(--keep-soft);
+  background: linear-gradient(var(--keep-soft), var(--keep-soft)), var(--cream);
   color: var(--keep);
 }
 .notice-error {
-  background: var(--dupe-soft);
+  background: linear-gradient(var(--dupe-soft), var(--dupe-soft)), var(--cream);
   color: var(--dupe);
 }
 
