@@ -1899,6 +1899,21 @@ html.scan-active body {
   color: var(--keep);
   text-align: center;
 }
+/* secondary "compartilhar no WhatsApp" link under the QR (same pedido, sent online). The in-person QR
+   stays the hero; this is the subtle remote-share path (reuses the cream .conferir-wa-link). */
+.req-share {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  margin: -8px 0 18px;
+}
+.req-share-notice {
+  font-family: var(--font-head);
+  font-weight: 700;
+  font-size: 0.85rem;
+  color: var(--gold);
+}
 
 /* the secondary "só as novas" button + its trade-off note, kept tight together as one unit */
 .report-skip {

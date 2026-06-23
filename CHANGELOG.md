@@ -14,6 +14,8 @@ Notable changes to the sticker scanner. Newest first. No formal releases yet (de
   amigo escaneia pra abrir a sua página de troca — já com as figurinhas que você escolheu na seção
   **"O que falta pro você"**. Você confirma o que pegou de verdade e salva na coleção. (Substitui o
   vale-figurinhas que mandava a pilha pro álbum do amigo.)
+- O **"Terminar"** também ganhou um **"Compartilhar no WhatsApp"**, pra fechar a troca **à distância**:
+  manda o mesmo pedido pro amigo sem precisar estar junto (o QR continua sendo o atalho presencial).
 
 ## 2026-06-22 — Conferir a pilha do amigo agora termina igual ao Escanear
 

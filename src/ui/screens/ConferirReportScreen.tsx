@@ -4,7 +4,7 @@ import type { CollectionStore } from '../../types';
 import type { PileReport } from '../../domain/pileSession';
 import { pt } from '../../i18n/pt';
 import { checklist } from '../../data/checklist';
-import { shareLinkFor } from '../../domain/share';
+import { shareLinkFor, shareTrades } from '../../domain/share';
 import { QrCode } from '../components/QrCode';
 
 interface ConferirReportScreenProps {
@@ -36,6 +36,7 @@ export function ConferirReportScreen({
   // Take-mine rows default checked; the user un-checks any they didn't actually take.
   const [checked, setChecked] = useState<Set<string>>(() => new Set(taken.map((e) => e.code)));
   const [saved, setSaved] = useState(false);
+  const [shareNotice, setShareNotice] = useState<string | null>(null);
 
   const toggle = (code: string) =>
     setChecked((prev) => {
@@ -44,13 +45,21 @@ export function ConferirReportScreen({
       return next;
     });
 
-  // The QR is YOUR trade link: `missing` = the picked pile cards (what you want from the friend), so
-  // they appear under "O que falta pro {você}"; `repeats` = your spares so the friend also sees what
-  // he can take. Recomputed as the selection changes.
-  const link = useMemo(() => {
+  // The "pedido" payload: `missing` = the picked pile cards (what you want from the friend), so they
+  // appear under "O que falta pro {você}"; `repeats` = your spares so the friend also sees what he can
+  // take. Drives BOTH the QR (in person) and the WhatsApp share (online) so they stay byte-identical.
+  const payload = useMemo(() => {
     const myRepeatCodes = [...repeats.codes()].filter((code) => collection.has(code));
-    return shareLinkFor({ repeats: myRepeatCodes, missing: [...checked], name }, checklist);
+    return { repeats: myRepeatCodes, missing: [...checked], name };
   }, [checked, name, repeats, collection]);
+  const link = useMemo(() => shareLinkFor(payload, checklist), [payload]);
+
+  // Same pedido, sent remotely: native share → WhatsApp (wa.me) → clipboard fallback.
+  const shareWa = async () => {
+    const result = await shareTrades(payload, checklist);
+    if (result === 'copied') setShareNotice(pt.conferir.reqShareCopied);
+    else if (result === 'unavailable') setShareNotice(pt.conferir.reqShareFail);
+  };
 
   const save = () => {
     if (saved) return;
@@ -83,6 +92,18 @@ export function ConferirReportScreen({
           <p class="trade-qr-hint">{pt.conferir.reqCaption}</p>
           <p class="qr-tally">{pt.conferir.reqCount(checked.size)}</p>
         </div>
+      </div>
+
+      {/* The QR is the in-person hero; this makes the SAME pedido work online too (trocar à distância). */}
+      <div class="req-share">
+        <button class="conferir-wa-link" type="button" onClick={shareWa}>
+          📲 {pt.conferir.reqShareWa}
+        </button>
+        {shareNotice && (
+          <span class="req-share-notice" role="status" aria-live="polite">
+            {shareNotice}
+          </span>
+        )}
       </div>
 
       <section class="report-section">

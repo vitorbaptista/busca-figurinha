@@ -162,6 +162,10 @@ export const pt = {
     reqConfirmSub: 'Do que o seu amigo tinha. Desmarque o que você não pegou.',
     reqSave: 'Peguei essas — salvar',
     reqQrAria: 'QR Code com a sua lista de troca',
+    // The same pedido, but sent remotely — so a trade works online too, not just in person.
+    reqShareWa: 'Compartilhar no WhatsApp',
+    reqShareCopied: 'Link copiado!',
+    reqShareFail: 'Não rolou. Mostre o QR pro seu amigo.',
   },
 
   report: {
