@@ -3703,14 +3703,6 @@ html.scan-active body {
   line-height: 1;
 }
 
-/* Top-left group: back icon + the running tally */
-.conferir-top-left {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  min-width: 0;
-}
-
 /* The take/save bar (above the docked verdict) */
 .conferir-save {
   width: 100%;

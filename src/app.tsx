@@ -256,11 +256,13 @@ export function App() {
       {screen === 'conferir' && (
         <ConferirScreen
           collection={collection}
+          repeats={repeats}
+          wants={wants}
           friendLists={friendLists}
           settings={settings}
           pileSession={pileSession}
           onFinish={finishConferir}
-          onBack={() => setScreen('trade')}
+          onGoToCollection={() => setScreen('collection')}
         />
       )}
 
