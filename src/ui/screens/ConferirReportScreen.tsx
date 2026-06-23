@@ -57,27 +57,43 @@ export function ConferirReportScreen({ report, collection, name, onBack }: Confe
     else if (result === 'unavailable') setShareNotice(pt.pile.shareFail);
   };
 
-  // ── Done state ──────────────────────────────────────────────────────────────
+  // ── Done state — "Troca feita!" success + the friend's vale-figurinhas QR coupon ──
   if (done) {
     const { link } = pileShareTextFor(wholePile, [...savedTaken], checklist, name);
     return (
       <div class="screen report-screen conferir-report-screen">
-        <div class="conferir-album-done">
-          <h2 class="conferir-album-done-title">{pt.conferir.albumDoneTitle}</h2>
-          <p class="conferir-album-done-lead">{pt.conferir.albumDoneLead(wholePile.length)}</p>
-          <div class="trade-qr conferir-album-qr">
-            <QrCode value={link} ariaLabel={pt.pile.qrAria} class="trade-qr-svg" />
+        <div class="conferir-done">
+          <div class="conferir-done-win">
+            <h2 class="conferir-done-title">{pt.conferir.albumDoneTitle}</h2>
+            <p class="conferir-done-sub">{pt.conferir.albumDoneWin(savedTaken.size)}</p>
           </div>
+
+          <div class="vale-card">
+            <div class="vale-top">
+              <div class="vale-foil">{pt.conferir.valeFoil}</div>
+              <div class="vale-count">{pt.conferir.valeCount(wholePile.length)}</div>
+              <div class="vale-sub">{pt.conferir.valeFor}</div>
+            </div>
+            <hr class="vale-perf" />
+            <div class="vale-bot">
+              <div class="trade-qr vale-qr">
+                <QrCode value={link} ariaLabel={pt.pile.qrAria} class="trade-qr-svg" />
+              </div>
+              <p class="vale-redeem">{pt.conferir.valeRedeem}</p>
+            </div>
+          </div>
+
           {shareNotice && (
-            <p class="conferir-album-notice" role="status" aria-live="polite">
+            <p class="conferir-done-notice" role="status" aria-live="polite">
               {shareNotice}
             </p>
           )}
-          <button class="btn btn-primary btn-block" onClick={onBack}>
+          <button class="btn btn-gold btn-block" onClick={onBack}>
             {pt.conferir.albumDoneCta}
           </button>
-          <button class="btn-wa" onClick={shareAlbum}>
-            📲 {pt.pile.shareWhats}
+          {/* Subtle remote-share fallback (in-person QR is the hero; this keeps the WhatsApp path). */}
+          <button class="conferir-wa-link" onClick={shareAlbum}>
+            📲 {pt.conferir.albumShareWa}
           </button>
         </div>
       </div>

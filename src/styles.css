@@ -1784,7 +1784,10 @@ html.scan-active body {
   transition: background 0.15s ease, box-shadow 0.08s ease;
 }
 .report-row.is-checked {
-  background: var(--keep-soft);
+  /* keep-soft is translucent: composite it OVER the cream row, not the dark album bg behind the
+     screen, or checked rows render dark-green and the ink code text fails contrast (the Conferir
+     "Terminar" list was unreadable for this reason; album report shared the same latent bug). */
+  background: linear-gradient(var(--keep-soft), var(--keep-soft)), var(--cream);
   box-shadow: 3px 3px 0 var(--gold-deep);
 }
 .report-row input {
@@ -3745,51 +3748,135 @@ html.scan-active body {
   box-shadow: 2px 2px 0 var(--paper-edge);
 }
 
-/* ===== Conferir — done state (QR handoff screen after saving) ===== */
-.conferir-album-done {
+/* ===== Conferir — done state: "Troca feita!" + vale-figurinhas (QR handoff) ===== */
+.conferir-done {
   display: flex;
   flex-direction: column;
   align-items: center;
   text-align: center;
-  padding: 28px 16px 20px;
-  gap: 0;
+  gap: 18px;
+  /* centre the success+coupon in the viewport, but allow scroll on short phones (min-height, not height) */
+  min-height: calc(100dvh - var(--nav-h) - var(--safe-top) - var(--safe-bottom) - 56px);
+  justify-content: center;
+  padding: 8px 0 4px;
 }
-.conferir-album-done-title {
-  font-family: var(--font-head);
-  font-size: 1.45rem;
-  font-weight: 700;
-  color: var(--ink);
-  margin: 0 0 10px;
+/* The user's own win — gold album-display headline, cream sub, on the album-green bg */
+.conferir-done-title {
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: 2.6rem;
+  line-height: 0.95;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin: 0;
   text-wrap: balance;
 }
-.conferir-album-done-lead {
+.conferir-done-sub {
+  font-family: var(--font-head);
+  font-weight: 600;
   font-size: 0.95rem;
-  line-height: 1.5;
-  color: var(--ink);
-  max-width: 34ch;
-  margin: 0 0 4px;
+  color: var(--cream);
+  margin: 8px 0 0;
 }
-/* QR ticket — reuses .trade-qr; override size for the handoff context */
-.conferir-album-qr {
-  margin: 12px 0 16px;
+/* The vale-figurinhas coupon (cream print-ticket with a kraft tear line) */
+.vale-card {
+  width: 100%;
+  max-width: 340px;
+  background: var(--cream);
+  border: 2.5px solid var(--ink);
+  border-radius: var(--radius);
+  box-shadow: 5px 5px 0 var(--paper-edge);
+  overflow: hidden;
 }
-.conferir-album-qr .trade-qr-svg {
-  width: min(200px, 70vw);
-}
-/* Inline notice for the WhatsApp share result */
-.conferir-album-notice {
-  font-size: 0.88rem;
-  font-weight: 700;
-  color: var(--paper);
-  margin: 0 0 10px;
+.vale-top {
+  padding: 15px 16px 13px;
   text-align: center;
+  color: var(--ink);
 }
-.conferir-album-done .btn-block {
+.vale-foil {
+  font-family: var(--font-head);
+  font-weight: 700;
+  font-size: 0.72rem;
+  letter-spacing: 0.14em;
+  /* kraft-toned, not gold-deep: gold-deep on cream is only ~2:1 (fails AA at this size). The gold
+     foil accent still leads on the "TROCA FEITA!" headline + the Pronto CTA. */
+  color: var(--kraft-text);
+}
+.vale-count {
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: 1.9rem;
+  line-height: 1;
+  color: var(--ink);
+  margin: 4px 0 3px;
+}
+.vale-sub {
+  font-family: var(--font-head);
+  font-weight: 500;
+  font-size: 0.85rem;
+  color: var(--kraft-text);
+}
+.vale-perf {
+  border: 0;
+  border-top: 2.5px dashed var(--kraft-deep);
+  margin: 0;
+}
+.vale-bot {
+  background: var(--cream-dim);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+.vale-qr {
+  margin: 0;
+}
+.vale-qr .trade-qr-svg {
+  width: min(168px, 60vw);
+}
+.vale-redeem {
+  font-family: var(--font-head);
+  font-weight: 600;
+  font-size: 0.82rem;
+  color: var(--kraft-text);
+  text-align: center;
+  margin: 0;
+}
+/* share-result notice — cream on the dark album bg (clears AA; was low-contrast green) */
+.conferir-done-notice {
+  font-family: var(--font-head);
+  font-weight: 700;
+  font-size: 0.88rem;
+  color: var(--cream);
+  margin: 0;
+}
+.conferir-done .btn-block {
   width: 100%;
   max-width: 340px;
 }
-.conferir-album-done .btn-wa {
-  margin-top: 10px;
+/* subtle WhatsApp text link — the in-person QR is the hero; this keeps the remote-share path */
+.conferir-wa-link {
+  background: none;
+  border: 0;
+  color: var(--cream);
+  font-family: var(--font-head);
+  font-weight: 600;
+  font-size: 0.9rem;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  padding: 6px;
+  cursor: pointer;
+  min-height: 44px;
+}
+/* gold finish CTA — the "Pronto"/done action (gold = finish per the design system) */
+.btn-gold {
+  background: var(--gold);
+  color: var(--ink);
+  box-shadow: 4px 4px 0 var(--gold-deep);
+}
+.btn-gold:active {
+  box-shadow: 2px 2px 0 var(--gold-deep);
 }
 
 /* ===== Pilha viral: receber a pilha (import) — reuse .name-card ===== */
