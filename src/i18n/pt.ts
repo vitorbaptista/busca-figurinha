@@ -116,8 +116,6 @@ export const pt = {
     skipWord: 'JÁ TENHO',
     skipSub: 'Pode deixar — você já tem e ninguém precisa',
     // Running tally as you sweep the pile + the save-to-album action.
-    counterMine: 'pra você',
-    counterFriends: 'pros amigos',
     save: (n: number) => (n === 1 ? 'Salvar 1 na coleção' : `Salvar ${n} na coleção`),
     saved: (n: number) =>
       n === 1 ? '1 figurinha salva na coleção! ✓' : `${n} figurinhas salvas na coleção! ✓`,

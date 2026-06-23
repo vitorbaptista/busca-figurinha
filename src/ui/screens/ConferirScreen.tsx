@@ -7,11 +7,15 @@ import type { PileSession } from '../../domain/pileSession';
 import { useScanner } from '../hooks/useScanner';
 import { ScanShell } from '../components/ScanShell';
 import { ConferirVerdict, type ConferirVerdictState } from '../components/ConferirVerdict';
+import { ImportSheet } from '../components/ImportSheet';
 
 interface ConferirScreenProps {
   /** Read-only: PRECISO/JÁ TENHO comes from collection.has(code). Never written here (only the
    *  finish step writes). */
   collection: CollectionStore;
+  /** Spares + wishlist — the "Colar lista" import (same pen as Escanear) writes here, not the camera. */
+  repeats: CollectionStore;
+  wants: CollectionStore;
   /** Read-only: friends a scanned sticker serves (friendsNeeding, NOT spare-gated — it's THEIR sticker). */
   friendLists: FriendListsStore;
   settings: SettingsStore;
@@ -19,7 +23,8 @@ interface ConferirScreenProps {
   pileSession: PileSession;
   /** "Terminar" → build the report + route to the finish step (owned by app.tsx). */
   onFinish: () => void;
-  onBack: () => void;
+  /** Navigate to Coleção after a "Tenho" import (same as Escanear's pen → Colar lista). */
+  onGoToCollection: () => void;
 }
 
 /**
@@ -31,15 +36,18 @@ interface ConferirScreenProps {
  */
 export function ConferirScreen({
   collection,
+  repeats,
+  wants,
   friendLists,
   settings,
   pileSession,
   onFinish,
-  onBack,
+  onGoToCollection,
 }: ConferirScreenProps) {
   const [verdict, setVerdict] = useState<ConferirVerdictState | null>(null);
   const [announce, setAnnounce] = useState('');
   const [showManual, setShowManual] = useState(false);
+  const [showImport, setShowImport] = useState(false);
   // A monotonic tick bumped on each NEW read so the chips re-read the (non-reactive) pileSession.
   const [, bumpTally] = useState(0);
   const flashCounterRef = useRef(0);
@@ -77,57 +85,79 @@ export function ConferirScreen({
     cameraSetting: 'conferirCamera',
   });
 
+  const wholeCount = pileSession.wholePile().length;
   const mineCount = pileSession.takenForMe().length;
-  const friendsCount = pileSession.takenForFriends().length;
-  const hasScanned = pileSession.wholePile().length > 0;
+  // Mirror Escanear's chips: "Novas" = ones you need (take-mine); "Repetidas" = the friend's
+  // stickers you already own (the rest of the pile). The "serve pro amigo" cue lives in the verdict.
+  const repeatedCount = wholeCount - mineCount;
+  const hasScanned = wholeCount > 0;
 
   return (
-    <ScanShell
-      rootClass="conferir-screen"
-      pageTitle={pt.conferir.pageTitle}
-      pageSubtitle={pt.conferir.pageSubtitle}
-      announce={announce}
-      holdStillText={pt.conferir.holdStill}
-      cameraState={scanner.cameraState}
-      ocrReady={scanner.ocrReady}
-      ocrFailed={scanner.ocrFailed}
-      ocrProgress={scanner.ocrProgress}
-      reading={scanner.reading}
-      hideHint={!!verdict}
-      facing={scanner.facing}
-      videoLayerRef={scanner.videoLayerRef}
-      onFlip={scanner.flipCamera}
-      onRetry={scanner.retryCamera}
-      manualOpen={showManual}
-      setManualOpen={setShowManual}
-      onManualSubmit={(v) => scanner.submitManualCode(v)}
-      topLeft={
-        <div class="conferir-top-left">
-          <button class="cam-icon-btn" onClick={onBack} aria-label={pt.conferir.back} title={pt.conferir.back}>
-            ←
-          </button>
+    <>
+      <ScanShell
+        rootClass="conferir-screen"
+        pageTitle={pt.conferir.pageTitle}
+        pageSubtitle={pt.conferir.pageSubtitle}
+        announce={announce}
+        holdStillText={pt.conferir.holdStill}
+        cameraState={scanner.cameraState}
+        ocrReady={scanner.ocrReady}
+        ocrFailed={scanner.ocrFailed}
+        ocrProgress={scanner.ocrProgress}
+        reading={scanner.reading}
+        hideHint={!!verdict}
+        facing={scanner.facing}
+        videoLayerRef={scanner.videoLayerRef}
+        onFlip={scanner.flipCamera}
+        onRetry={scanner.retryCamera}
+        manualOpen={showManual}
+        setManualOpen={setShowManual}
+        onManualSubmit={(v) => scanner.submitManualCode(v)}
+        topLeft={
           <div class="counters">
             <div class="chip-count">
               <b>{mineCount}</b>
-              <span>{pt.conferir.counterMine}</span>
+              <span>{pt.scan.counters.new}</span>
             </div>
-            {friendsCount > 0 && (
-              <div class="chip-count dup">
-                <b>{friendsCount}</b>
-                <span>{pt.conferir.counterFriends}</span>
-              </div>
-            )}
+            <div class="chip-count dup">
+              <b>{repeatedCount}</b>
+              <span>{pt.scan.counters.repeated}</span>
+            </div>
           </div>
-        </div>
-      }
-      finishAction={
-        hasScanned && (
-          <button class="finish-pill" onClick={onFinish}>
-            {pt.scan.finish}
+        }
+        finishAction={
+          hasScanned && (
+            <button class="finish-pill" onClick={onFinish}>
+              {pt.scan.finish}
+            </button>
+          )
+        }
+        manualExtra={
+          <button
+            class="manual-import"
+            type="button"
+            onClick={() => {
+              setShowManual(false);
+              setShowImport(true);
+            }}
+          >
+            📋 {pt.collection.importCta}
           </button>
-        )
-      }
-      bottom={verdict && <ConferirVerdict state={verdict} onManual={() => setShowManual(true)} />}
-    />
+        }
+        bottom={verdict && <ConferirVerdict state={verdict} onManual={() => setShowManual(true)} />}
+      />
+      {showImport && (
+        <ImportSheet
+          collection={collection}
+          repeats={repeats}
+          wants={wants}
+          onClose={() => setShowImport(false)}
+          onSeeCollection={() => {
+            setShowImport(false);
+            onGoToCollection();
+          }}
+        />
+      )}
+    </>
   );
 }
