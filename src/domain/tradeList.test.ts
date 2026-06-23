@@ -103,8 +103,8 @@ describe('parseTradeListDetailed', () => {
     // codes match the existing parser exactly (album order, deduped).
     expect(detailed.codes).toEqual(parseTradeList(pasted, checklist));
     expect(detailed.codes).toEqual(['MEX2', 'FWC8', 'CC4']);
-    // Known team, number outside THIS album (the 994-vs-992 mismatch) is surfaced, in
-    // appearance order. An unknown team (ABC) is never seen, so it adds no noise.
+    // Known team, number outside THIS album (a code another app's album has but ours doesn't) is
+    // surfaced, in appearance order. An unknown team (ABC) is never seen, so it adds no noise.
     expect(detailed.unrecognized).toEqual(['MEX25', 'FWC20', 'CC15']);
   });
 

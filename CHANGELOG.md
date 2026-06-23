@@ -3,6 +3,18 @@
 Notable changes to the sticker scanner. Newest first. No formal releases yet (deploys on push to
 `main`), so entries are grouped by date. Keep this updated when you ship something notable.
 
+## 2026-06-23 — Coca-Cola até CC14 e listas com "(×2)" carregam certo
+
+### Added
+- **As figurinhas CC13 e CC14 da Coca-Cola** entraram no álbum (edição Brasil / América Latina), que
+  passa de 992 para **994** figurinhas. Antes, colar uma lista que tivesse **CC13** acusava a
+  figurinha como "não reconhecida".
+
+### Fixed
+- **Colar uma lista de repetidas com marcador de quantidade** (ex.: `MEX20 (×2)`, `SUI5 (×3)`) agora
+  carrega só as figurinhas certas. Antes, o número de dentro do `(×2)` era lido como se fosse uma
+  figurinha — `(×2)` virava um falso `MEX2`.
+
 ## 2026-06-23 — Conferir: "Importar a lista do amigo" e "Terminar" com QR de pedido
 
 ### Changed

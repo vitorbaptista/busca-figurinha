@@ -156,7 +156,7 @@ function codeFromTeamNumber(teamCode: string, rawNumber: string, checklist: Chec
 
 /** Like parseTradeList, but also reports tokens it saw but could NOT place: a `${teamCode}${number}`
  *  whose team is in the checklist yet whose number falls outside THIS album (e.g. an importer's list
- *  from an app with a slightly different album — our 992 vs their 994). These feed the import preview's
+ *  from an app whose album includes a code ours doesn't). These feed the import preview's
  *  "não reconhecidas" count. `unrecognized` is in appearance order, deduped; tokens for unknown teams
  *  are never seen (they stay glued to their letters and aren't number-matched), so they add no noise. */
 export function parseTradeListDetailed(
@@ -167,9 +167,15 @@ export function parseTradeListDetailed(
   const seenUnknown = new Set<string>();
   const unrecognized: string[] = [];
   const numberRe = /\b\d{1,3}\b/g;
+  // Copy-count marker in a "Repetidas" list, e.g. "MEX20 (×2)" / "SUI5 (×3)" (× is U+00D7; tolerate
+  // an ASCII x too). Stripped before the number scan so the multiplier digit isn't read as a sticker
+  // number — "(×2)" must never inject a phantom MEX2.
+  const copyMarkerRe = /\(\s*[×xX]\s*\d{1,3}\s*\)/g;
 
-  for (const line of text.split(/\r?\n/)) {
-    if (/https?:\/\//i.test(line)) continue;
+  for (const rawLine of text.split(/\r?\n/)) {
+    if (/https?:\/\//i.test(rawLine)) continue;
+    // Replace the marker with a space (never the empty string) so it can't glue two tokens together.
+    const line = rawLine.replace(copyMarkerRe, ' ');
 
     if (/\b00\b/.test(line) && checklist.byCode.has('00')) {
       found.add('00');
